@@ -38,7 +38,8 @@ namespace thecalcify
     {
         public string token, licenceDate, username, password;
         public bool _headersWritten = false;
-        public int fontSize = 12;
+        public int fontSize = 12, RemainingDays;
+        private bool isRunning = true;
         private DateTime _lastReconnectAttempt = DateTime.MinValue;
         private readonly TimeSpan _reconnectThrottle = TimeSpan.FromSeconds(10); // prevent spam
         public HubConnection connection;
@@ -50,12 +51,14 @@ namespace thecalcify
         //public List<string> selectedSymbols = new List<string>();
         //public List<string> symbolMaster = new List<string>();
         //public List<(string Symbol, string SymbolName)> SymbolName = new List<(string Symbol, string SymbolName)>();
-        //public List<string> identifiers;
+        public List<string> identifiers;
         private System.Windows.Forms.Timer signalRTimer;
         public List<MarketDataDTO> pastRateTickDTO = new List<MarketDataDTO>();
         public MarketApiResponse resultdefault;
         public System.Data.DataTable marketDataTable = new System.Data.DataTable();
         public Common commonClass;
+        public List<string> symbolMaster = new List<string>();
+        public List<(string Symbol, string SymbolName)> SymbolName = new List<(string Symbol, string SymbolName)>();
         private Dictionary<string, double> previousAskMap = new Dictionary<string, double>();
         public string[] numericColumns = new[] {
             "Bid", "Ask", "LTP", "High", "Low", "Open", "Close", "Net Chng",
@@ -149,7 +152,21 @@ namespace thecalcify
             username = login?.username ?? string.Empty;
             password = login?.userpassword ?? string.Empty;
 
-            licenceExpire.Text = "Licence Expired On :- " + licenceDate;
+            DateTime txtlicenceDate = DateTime.Parse(licenceDate);
+            DateTime currentDate = DateTime.Now.Date;
+            TimeSpan diff = txtlicenceDate - currentDate;
+            RemainingDays = diff.Days;
+            if (RemainingDays <= 7)
+            {
+                Thread t = new Thread(new ThreadStart(CheckLicenceLoop));
+                t.IsBackground = true; // Thread will close when app closes
+                t.Start();
+            }
+            else
+            {
+                licenceExpire.Text = licenceExpire.Text + licenceDate;
+            }
+            //licenceExpire.Text = "Licence Expired On :- " + licenceDate;
 
 
             // --- FORM PROPERTIES ---
@@ -162,7 +179,7 @@ namespace thecalcify
             BeginInvoke((MethodInvoker)(() =>
             {
                 InitializeDataGridView();
-            })); 
+            }));
             await LoadInitialMarketDataAsync();
             SignalRTimer();
             await SignalREvent();
@@ -177,6 +194,62 @@ namespace thecalcify
 
 
         }
+
+        /// <summary>
+        /// Method Used to check licence lable update 
+        /// </summary>
+        private void CheckLicenceLoop()
+        {
+            while (isRunning)
+            {
+                DateTime txtlicenceDate = DateTime.Parse(licenceDate);
+                DateTime currentDate = DateTime.Now.Date;
+                TimeSpan diff = txtlicenceDate - currentDate;
+                int licenceRemainingDays = diff.Days;
+
+                if (this.InvokeRequired)
+                {
+                    this.Invoke((MethodInvoker)(() =>
+                    {
+                        UpdateLicenceLabel(licenceRemainingDays);
+                    }));
+                }
+                else
+                {
+                    UpdateLicenceLabel(licenceRemainingDays);
+                }
+
+                Thread.Sleep(500);
+            }
+        }
+
+        private void UpdateLicenceLabel(int licenceRemainingDays)
+        {
+            if (licenceRemainingDays < 0)
+            {
+                //Console.WriteLine("❌ Licence expired. Application will now exit.");
+                isRunning = false;
+                Login login = new Login();
+                login.Show();
+
+                //this.Close();
+                this.Hide();
+                this.Dispose();
+                return;
+            }
+            else if (licenceRemainingDays <= 7)
+            {
+                licenceExpire.Text = $"⚠ Licence expires in {licenceRemainingDays} days!";
+                licenceExpire.ForeColor = Color.Red;
+                licenceExpire.Visible = !licenceExpire.Visible; // blink
+            }
+            else
+            {
+                licenceExpire.Text = $"Licence valid for {licenceRemainingDays} days.";
+                licenceExpire.ForeColor = Color.Green;
+            }
+        }
+
 
         private static void Application_ThreadException(object sender, ThreadExceptionEventArgs e)
         {
@@ -245,34 +318,56 @@ namespace thecalcify
                 connection.Closed += async (error) =>
                 {
                     Console.WriteLine("Connection closed");
-                    await Task.Delay(new Random().Next(0, 5) * 1000);
+                    await Task.Delay(new Random().Next(0, 5) * 1000);   
                 };
 
                 connection.Reconnected += async (connectionId) =>
                 {
                     Console.WriteLine("Reconnected to SignalR hub");
+
                     try
                     {
-                        await connection.InvokeAsync("SubscribeSymbols", instruments);
+                        //if (selectedSymbols.Count != 0)
+                        //    identifiers = new List<string>(selectedSymbols);
+
+                        await connection.InvokeAsync("SubscribeSymbols", identifiers);
                         Console.WriteLine("Resubscribed after reconnect.");
                     }
                     catch (Exception ex)
                     {
+                        Console.WriteLine("Failed to resubscribe after reconnect.");
                         ApplicationLogger.LogException(ex);
                     }
                 };
 
+
+                //var currentIdentifiers = new List<string>(identifiers); // snapshot copy
                 await connection.StartAsync();
 
-                if (connection.State == HubConnectionState.Connected)
+                try
                 {
-                    await connection.InvokeAsync("SubscribeSymbols", instruments);
-                    SetupUpdateTimer();
+                    if (connection.State == HubConnectionState.Connected)
+                    {
+                        //if (selectedSymbols.Count != 0)
+                        //    identifiers = new List<string>(selectedSymbols);
+
+                        //if (currentIdentifiers.Count() != identifiers.Count())
+                        //    identifiers = currentIdentifiers;
+
+                        await connection.InvokeAsync("SubscribeSymbols", identifiers);
+                        SetupUpdateTimer();
+                    }
                 }
-            }
-            catch (TaskCanceledException ex)
-            {
-                ApplicationLogger.LogException(ex);
+                catch (TaskCanceledException ex)
+                {
+                    Console.WriteLine("SignalR task canceled: likely due to timeout or connection issue.");
+                    ApplicationLogger.LogException(ex);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Error during SubscribeSymbols call.");
+                    ApplicationLogger.LogException(ex);
+                }
             }
             catch (Exception ex)
             {
@@ -332,7 +427,7 @@ namespace thecalcify
 
         private void AddMissingRows()
         {
-            foreach (var symbol in instruments)
+            foreach (var symbol in identifiers)
             {
                 if (!marketDataTable.AsEnumerable().Any(row => row.Field<string>("symbol") == symbol))
                 {
@@ -429,7 +524,7 @@ namespace thecalcify
             {
                 defaultGrid.SuspendLayout();
 
-                int count = instruments.Count;
+                int count = identifiers.Count;
 
                 foreach (var newData in updates)
                 {
@@ -746,16 +841,24 @@ namespace thecalcify
                     if (resultdefault?.data != null)
                     {
                         // Filter out instruments not in the valid list
-                        resultdefault.data = resultdefault.data
-                            .Where(x => !string.IsNullOrEmpty(x.i) && instruments.Contains(x.i))
-                            .ToList();
-
-                        // Update on UI thread
                         this.Invoke((MethodInvoker)delegate
                         {
                             pastRateTickDTO = resultdefault.data;
 
-                            if (resultdefault.data != null && marketDataTable.Columns.Contains("symbol") )
+                            // Extract all non-null, non-empty "i" values into identifiers list
+                            identifiers = resultdefault.data
+                                .Where(x => !string.IsNullOrEmpty(x.i))
+                                .Select(x => x.i)
+                                .ToList();
+
+                            symbolMaster = identifiers;
+
+                            SymbolName = resultdefault.data
+                                .Where(x => !string.IsNullOrEmpty(x.i) && !string.IsNullOrEmpty(x.n))
+                                .Select(x => (Symbol: x.i, SymbolName: x.n))
+                                .ToList();
+
+                            if (resultdefault.data != null && marketDataTable.Columns.Contains("symbol"))
                             {
                                 ApplyBatchUpdates(resultdefault.data);
                             }
@@ -828,6 +931,7 @@ namespace thecalcify
 
         private void Home_FormClosed(object sender, FormClosedEventArgs e)
         {
+            isRunning = false;
             System.Windows.Forms.Application.Exit();
         }
 
@@ -985,10 +1089,10 @@ namespace thecalcify
                 try
                 {
                     await connection.StartAsync();
-                    await connection.InvokeAsync("SubscribeSymbols", instruments);
+                    await connection.InvokeAsync("SubscribeSymbols", identifiers);
                     ApplicationLogger.Log("Reconnected and resubscribed.");
                 }
-                catch (Exception ex)
+                catch (Exception ex)    
                 {
                     ApplicationLogger.Log($"Reconnect failed: {ex.Message}");
                 }
@@ -1399,7 +1503,7 @@ namespace thecalcify
             }
         }
 
-        public void KillProcess() 
+        public void KillProcess()
         {
             // Kill any EXCEL processes without a main window (ghost/background instances)
             foreach (var process in Process.GetProcessesByName("EXCEL"))

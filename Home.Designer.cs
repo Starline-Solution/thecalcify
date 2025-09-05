@@ -37,11 +37,13 @@
             this.toolsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.disconnectESCToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
-            this.licenceExpire = new System.Windows.Forms.ToolStripStatusLabel();
+            //this.bottomPanel = new System.Windows.Forms.Panel();
+            this.licenceExpire = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.defaultGrid)).BeginInit();
             this.ClickMenuStrip.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
+            //this.bottomPanel.SuspendLayout();
             this.SuspendLayout();
             // 
             // defaultGrid
@@ -102,17 +104,36 @@
             // statusStrip1
             // 
             this.statusStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
-            this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.licenceExpire});
+            //this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            //this.licenceExpire});
             this.statusStrip1.Location = new System.Drawing.Point(0, 682);
             this.statusStrip1.Name = "statusStrip1";
             this.statusStrip1.Size = new System.Drawing.Size(1115, 26);
             this.statusStrip1.TabIndex = 2;
             this.statusStrip1.Text = "statusStrip1";
-            // 
+            // bottomPanel
+            this.bottomPanel = new System.Windows.Forms.Panel();
+            this.bottomPanel.Controls.Add(this.licenceExpire);
+            this.bottomPanel.Controls.Add(this.statusStrip1);
+            this.bottomPanel.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.bottomPanel.Location = new System.Drawing.Point(0, 682);
+            this.bottomPanel.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.bottomPanel.Name = "bottomPanel";
+            this.bottomPanel.Size = new System.Drawing.Size(1115, 26);
+            this.bottomPanel.TabIndex = 4;
+
             // licenceExpire
-            // 
-            this.licenceExpire.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.licenceExpire.AutoSize = true;
+            this.licenceExpire.Dock = System.Windows.Forms.DockStyle.Right;
+            this.licenceExpire.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold);
+            this.licenceExpire.Location = new System.Drawing.Point(936, 0);
+            this.licenceExpire.Name = "licenceExpire";
+            this.licenceExpire.Padding = new System.Windows.Forms.Padding(0, 4, 10, 0);
+            this.licenceExpire.Size = new System.Drawing.Size(179, 24);
+            this.licenceExpire.TabIndex = 0;
+            this.licenceExpire.Text = "Licence Expired :- ";
+            this.licenceExpire.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+
             this.licenceExpire.Name = "licenceExpire";
             this.licenceExpire.Size = new System.Drawing.Size(129, 20);
             this.licenceExpire.Text = "Licence Expired :- ";
@@ -127,20 +148,20 @@
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.defaultGrid);
             this.Controls.Add(this.menuStrip1);
+            this.Controls.Add(this.bottomPanel);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "thecalcify";
             this.Text = "thecalcify";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Home_FormClosed);
             this.Load += new System.EventHandler(this.Home_Load);
-            //this.Layout += new System.Windows.Forms.LayoutEventHandler(this.thecalcify_Layout);
             ((System.ComponentModel.ISupportInitialize)(this.defaultGrid)).EndInit();
             this.ClickMenuStrip.ResumeLayout(false);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
-            this.statusStrip1.ResumeLayout(false);
-            this.statusStrip1.PerformLayout();
-            this.ResumeLayout(false);
+            //this.bottomPanel.ResumeLayout(false);
+            //this.bottomPanel.PerformLayout();
+            this.ResumeLayout(false);   
             this.PerformLayout();
 
         }
@@ -152,7 +173,8 @@
         private System.Windows.Forms.ToolStripMenuItem toolsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem disconnectESCToolStripMenuItem;
         private System.Windows.Forms.StatusStrip statusStrip1;
-        private System.Windows.Forms.ToolStripStatusLabel licenceExpire;
+        private System.Windows.Forms.Label licenceExpire;
+        private System.Windows.Forms.Panel bottomPanel;
         private System.Windows.Forms.ContextMenuStrip ClickMenuStrip;
         private System.Windows.Forms.ToolStripMenuItem ExportToExcelToolStripMenuItem;
     }
