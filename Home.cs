@@ -37,7 +37,7 @@ namespace thecalcify
     public partial class thecalcify : Form
     {
         public string token, licenceDate, username, password;
-        public bool _headersWritten = false;
+        public bool _headersWritten = false,_isResizing = false;
         public int fontSize = 12;
         private DateTime _lastReconnectAttempt = DateTime.MinValue;
         private readonly TimeSpan _reconnectThrottle = TimeSpan.FromSeconds(10); // prevent spam
@@ -46,11 +46,6 @@ namespace thecalcify
         private System.Windows.Forms.Timer _updateTimer;
         private readonly Dictionary<string, DataRow> symbolRowMap = new Dictionary<string, DataRow>();
         private DateTime lastUiUpdate = DateTime.MinValue;
-        //public bool isLoadedSymbol = false;
-        //public List<string> selectedSymbols = new List<string>();
-        //public List<string> symbolMaster = new List<string>();
-        //public List<(string Symbol, string SymbolName)> SymbolName = new List<(string Symbol, string SymbolName)>();
-        //public List<string> identifiers;
         private System.Windows.Forms.Timer signalRTimer;
         public List<MarketDataDTO> pastRateTickDTO = new List<MarketDataDTO>();
         public MarketApiResponse resultdefault;
@@ -994,8 +989,6 @@ namespace thecalcify
                 }
             }
         }
-
-        private bool _isResizing = false;
 
         private void ResizeDataGridToFitWindow()
         {
