@@ -14,92 +14,47 @@ namespace thecalcify.Helper
 {
     public class Common
     {
-        private System.Windows.Forms.Timer internetCheckTimer;
+        private Timer internetCheckTimer;
         private bool isInternetAvailable = true;
-        private readonly Control uiContext; // store a reference to the UI thread control
 
-        public Common(Control control)
+        public Common()
         {
-            uiContext = control;
+
         }
 
         public bool IsFileLocked(string filePath)
         {
+            FileStream stream = null;
+
+            if(!Directory.Exists(Path.GetDirectoryName(filePath)))
+            {
+                return false; // It's a directory, not a file
+            }
+
+            if(!File.Exists(filePath))
+            {
+                return false; // File does not exist, so it's not locked
+            }
+
             try
             {
-                using (FileStream stream = File.Open(filePath, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
-                {
-                    return false; // File is not locked
-                }
+                // Try to open the file with exclusive access
+                stream = new FileStream(filePath, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
             }
             catch (IOException)
             {
-                return true; // File is locked by Excel or another process
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Unexpected error: " + ex.Message);
-                ApplicationLogger.LogException(ex);
+                // The file is unavailable because it is still being written to
+                // or being processed by another thread or process
                 return true;
             }
+            finally
+            {
+                stream?.Close();
+            }
+
+            // File is not locked
+            return false;
         }
-
-
-        //public bool IsFileLocked(string filePath)
-        //{
-        //    try
-        //    {
-        //        // Try to get a running Excel instance
-        //        var excelApp = (Application)System.Runtime.InteropServices.Marshal.GetActiveObject("Excel.Application");
-        //        if (excelApp != null)
-        //        {
-        //            // Kill any EXCEL processes without a main window (ghost/background instances)
-        //            foreach (var process in Process.GetProcessesByName("EXCEL"))
-        //            {
-        //                try
-        //                {
-        //                    if (string.IsNullOrEmpty(process.MainWindowTitle))
-        //                    {
-        //                        process.Kill();
-        //                        process.WaitForExit(); // ensure it's gone
-        //                    }
-        //                }
-        //                catch (Exception ex)
-        //                {
-        //                    Console.WriteLine("Error killing Excel process: " + ex.Message);
-        //                    ApplicationLogger.LogException(ex);
-        //                }
-        //            }
-
-        //            // Check if the given workbook is open in Excel
-        //            foreach (Workbook wb in excelApp.Workbooks)
-        //            {
-        //                if (string.Equals(wb.FullName, filePath, StringComparison.OrdinalIgnoreCase))
-        //                {
-        //                    return true; // File is open in Excel
-        //                }
-        //            }
-
-        //            return false; // File not open in Excel
-        //        }
-
-        //        return false; // Excel not running
-        //    }
-        //    catch (System.Runtime.InteropServices.COMException)
-        //    {
-        //        //ApplicationLogger.LogException(comEx);
-        //        // Excel is not running
-        //        return false;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        // Log or handle unexpected errors
-        //        Console.WriteLine("Error: " + ex.Message);
-        //        ApplicationLogger.LogException(ex);
-        //        return false;
-        //    }
-        //}
-
 
         public bool InternetAvilable()
         {

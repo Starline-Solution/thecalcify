@@ -130,7 +130,7 @@ namespace thecalcify
 
         private async void Home_Load(object sender, EventArgs e)
         {
-            commonClass = new Common(this);
+            commonClass = new Common();
 
             // --- UI SETUP (non-data related) ---
             this.AutoScaleMode = AutoScaleMode.Dpi;
@@ -928,6 +928,7 @@ namespace thecalcify
 
         private void Home_FormClosed(object sender, FormClosedEventArgs e)
         {
+            KillProcess();
             isRunning = false;
             System.Windows.Forms.Application.Exit();
         }
@@ -1130,6 +1131,7 @@ namespace thecalcify
 
         private void ExportToExcelToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            KillProcess();
             ExportExcelOnClick();
         }
 
@@ -1475,21 +1477,40 @@ namespace thecalcify
         {
             try
             {
-                excelApp = GetRunningExcelInstance();
-                if (excelApp == null)
+                if (commonClass.IsFileLocked(excelFilePath))
+                {
+
+                    excelApp = GetRunningExcelInstance();
+                    if (excelApp == null)
+                        return false;
+
+                    workbook = RetryComCall(() => excelApp.Workbooks
+                        .Cast<Excel.Workbook>()
+                        .FirstOrDefault(w => w.Name.Equals("thecalcify.xlsx", StringComparison.OrdinalIgnoreCase)));
+
+                    if (workbook == null)
+                        return false;
+
+                    worksheet = RetryComCall(() => (Excel.Worksheet)workbook.Sheets["Sheet1"]);
+
+                    if (worksheet == null)
+                        return false;
+
+                    // ✅ Clear data except header
+                    Excel.Range usedRange = worksheet.UsedRange;
+                    if (usedRange.Rows.Count > 1)
+                    {
+                        Excel.Range rowsToClear = worksheet.Range["A2", usedRange.Cells[usedRange.Rows.Count, usedRange.Columns.Count]];
+                        rowsToClear.ClearContents(); // Clears data but keeps formatting and headers
+                     
+                    }
+
+
+                    _excelInitialized = worksheet != null;
+                    return _excelInitialized;
+                }
+                else
                     return false;
-
-                workbook = RetryComCall(() => excelApp.Workbooks
-                    .Cast<Excel.Workbook>()
-                    .FirstOrDefault(w => w.Name.Equals("thecalcify.xlsx", StringComparison.OrdinalIgnoreCase)));
-
-                if (workbook == null)
-                    return false;
-
-                worksheet = RetryComCall(() => (Excel.Worksheet)workbook.Sheets["Sheet1"]);
-
-                _excelInitialized = worksheet != null;
-                return _excelInitialized;
             }
             catch (Exception ex)
             {

@@ -24,7 +24,7 @@ namespace thecalcify
             this.FormClosed += Login_FormClosed;
             this.StartPosition = FormStartPosition.CenterScreen;
 
-            CommonClass = new Common(this);
+            CommonClass = new Common();
 
             // Initialize eye button
             InitializeEyeButton();
