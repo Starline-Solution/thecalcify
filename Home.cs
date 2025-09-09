@@ -47,7 +47,7 @@ namespace thecalcify
         public HubConnection connection;
         private ConcurrentQueue<MarketDataDTO> _updateQueue = new ConcurrentQueue<MarketDataDTO>();
         private System.Windows.Forms.Timer _updateTimer;
-        private readonly Dictionary<string, DataRow> symbolRowMap = new Dictionary<string, DataRow>();
+        private readonly Dictionary<string, int> symbolRowMap = new Dictionary<string, int>();
         private DateTime lastUiUpdate = DateTime.MinValue;
         public List<string> identifiers;
         public List<string> selectedSymbols = new List<string>();
@@ -55,10 +55,10 @@ namespace thecalcify
         private System.Windows.Forms.Timer signalRTimer;
         public List<MarketDataDTO> pastRateTickDTO = new List<MarketDataDTO>();
         public MarketApiResponse resultdefault;
-        public System.Data.DataTable marketDataTable = new System.Data.DataTable();
+        //public System.Data.DataTable marketDataTable = new System.Data.DataTable();
         public Common commonClass;
         public List<string> symbolMaster = new List<string>();
-        public List<(string Symbol, string SymbolName)> SymbolName = new List<(string Symbol, string SymbolName)>();
+        //public List<(string Symbol, string SymbolName)> SymbolName = new List<(string Symbol, string SymbolName)>();
         private Dictionary<string, double> previousAskMap = new Dictionary<string, double>();
         public string[] numericColumns = new[] {
             "Bid", "Ask", "LTP", "High", "Low", "Open", "Close", "Net Chng",
@@ -218,8 +218,8 @@ namespace thecalcify
             CurrentInstance = this;
 
             // --- INITIALIZE DATA STRUCTURES ---
-            marketDataTable = new System.Data.DataTable();
-            SetupDataTable();
+            //marketDataTable = new System.Data.DataTable();
+            //SetupDataTable();
             BeginInvoke((MethodInvoker)(() =>
             {
                 InitializeDataGridView();
@@ -251,7 +251,7 @@ namespace thecalcify
                 ApplicationLogger.LogException(ex);
             }
 
-            // No need for Application.Exit();
+             System.Windows.Forms.Application.Exit();
         }
 
 
@@ -433,19 +433,21 @@ namespace thecalcify
 
                 var currentIdentifiers = new List<string>(identifiers); // snapshot copy
 
-                for (int attempt = 0; attempt < 3; attempt++)
-                {
-                    try
-                    {
+                //for (int attempt = 0; attempt < 3; attempt++)
+                //{
+                //    try
+                //    {
+                //        await connection.StartAsync();
+                //        break; // success
+                //    }
+                //    catch (Exception ex)
+                //    {
+                //        Console.WriteLine($"Attempt {attempt + 1} failed: {ex.Message}");
+                //        if (attempt < 2) await Task.Delay(3000);
+                //    }
+                //}
                         await connection.StartAsync();
-                        break; // success
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"Attempt {attempt + 1} failed: {ex.Message}");
-                        if (attempt < 2) await Task.Delay(3000);
-                    }
-                }
+
 
                 try
                 {
@@ -530,20 +532,40 @@ namespace thecalcify
         {
             lock (_tableLock)
             {
-                var rowsToRemove = marketDataTable.AsEnumerable()
-                    .Where(row => row.RowState != DataRowState.Deleted && row.RowState != DataRowState.Detached)
-                    .Where(row => row.Table.Columns.Contains("symbol"))
-                    .Where(row => row.Table.Columns.Cast<DataColumn>()
-                        .Where(c => c.ColumnName != "symbol")
-                        .All(c => IsNullOrEmptyOrPlaceholder(row[c])))
-                    .ToList();
+                var rowsToRemove = new List<DataGridViewRow>();
+
+                foreach (DataGridViewRow row in defaultGrid.Rows)
+                {
+                    // Skip new rows if AllowUserToAddRows is accidentally enabled
+                    if (row.IsNewRow) continue;
+
+                    var symbolCell = row.Cells["symbol"];
+                    if (symbolCell == null) continue;
+
+                    bool isEmpty = true;
+
+                    foreach (DataGridViewCell cell in row.Cells)
+                    {
+                        if (cell.OwningColumn.Name == "symbol") continue;
+
+                        if (!IsNullOrEmptyOrPlaceholder(cell.Value))
+                        {
+                            isEmpty = false;
+                            break;
+                        }
+                    }
+
+                    if (isEmpty)
+                        rowsToRemove.Add(row);
+                }
 
                 foreach (var row in rowsToRemove)
                 {
-                    marketDataTable.Rows.Remove(row);
+                    defaultGrid.Rows.Remove(row);
                 }
             }
         }
+
 
         private void AddMissingRows()
         {
@@ -551,14 +573,31 @@ namespace thecalcify
             {
                 foreach (var symbol in identifiers)
                 {
-                    if (!marketDataTable.AsEnumerable().Any(row => row.Field<string>("symbol") == symbol))
+                    if (!IsSymbolPresentInGrid(symbol))
                     {
                         var dto = pastRateTickDTO?.FirstOrDefault(x => x.i == symbol);
-                        if (dto != null) AddRowFromDTO(dto);
+                        if (dto != null)
+                        {
+                            AddRowFromDTO(dto);
+                        }
                     }
-                } 
+                }
             }
         }
+
+        private bool IsSymbolPresentInGrid(string symbol)
+        {
+            foreach (DataGridViewRow row in defaultGrid.Rows)
+            {
+                if (row.IsNewRow) continue;
+
+                var cell = row.Cells["symbol"];
+                if (cell?.Value?.ToString() == symbol)
+                    return true;
+            }
+            return false;
+        }
+
 
         private bool IsNullOrEmptyOrPlaceholder(object val)
         {
@@ -567,32 +606,41 @@ namespace thecalcify
 
         private void AddRowFromDTO(MarketDataDTO dto)
         {
-            var row = marketDataTable.NewRow();
+            object[] rowData = new object[]
+            {
+                dto.i,                                // symbol
+                dto.n ?? "--",                        // Name
+                dto.b ?? "--",                        // Bid
+                dto.a ?? "--",                        // Ask
+                dto.ltp ?? "--",                      // LTP
+                dto.h ?? "--",                        // High
+                dto.l ?? "--",                        // Low
+                dto.o ?? "--",                        // Open
+                dto.c ?? "--",                        // Close
+                dto.d ?? "--",                        // Net Chng
+                dto.atp ?? "--",                      // ATP
+                dto.bq ?? "--",                       // Bid Size
+                dto.tbq ?? "--",                      // Total Bid Size
+                dto.sq ?? "--",                       // Ask Size
+                dto.tsq ?? "--",                      // Total Ask Size
+                dto.vt ?? "--",                       // Volume
+                dto.oi ?? "--",                       // Open Interest
+                dto.ltq ?? "--",                      // Last Size
+                dto.v ?? "--",                        // V
+                commonClass.timeStampConvert(dto.t)   // Time
+            };
 
-            row["symbol"] = dto.i;
-            row["Name"] = dto.n ?? "--";
-            row["Bid"] = dto.b ?? "--";
-            row["Ask"] = dto.a ?? "--";
-            row["LTP"] = dto.ltp ?? "--";
-            row["High"] = dto.h ?? "--";
-            row["Low"] = dto.l ?? "--";
-            row["Open"] = dto.o ?? "--";
-            row["Close"] = dto.c ?? "--";
-            row["V"] = dto.v ?? "--";
-            row["Net Chng"] = dto.d ?? "--";
-            row["Time"] = commonClass.timeStampConvert(dto.t);
-            row["ATP"] = dto.atp ?? "--";
-            row["Bid Size"] = dto.bq ?? "--";
-            row["Total Bid Size"] = dto.tbq ?? "--";
-            row["Ask Size"] = dto.sq ?? "--";
-            row["Total Ask Size"] = dto.tsq ?? "--";
-            row["Volume"] = dto.vt ?? "--";
-            row["Open Interest"] = dto.oi ?? "--";
-            row["Last Size"] = dto.ltq ?? "--";
+            if (defaultGrid.Columns.Count == 0)
+            {
+                InitializeDataGridView(); // or any custom setup that defines columns
+            }
 
-            marketDataTable.Rows.Add(row);
-            symbolRowMap[dto.i] = row;
+            int newRowIdx = defaultGrid.Rows.Add(rowData);
+
+            // Update symbolRowMap with new row index
+            symbolRowMap[dto.i] = newRowIdx;
         }
+
 
         private void UpdateTimer_Tick(object sender, EventArgs e)
         {
@@ -647,142 +695,134 @@ namespace thecalcify
             try
             {
                 defaultGrid.SuspendLayout();
-
-                int count = identifiers.Count;
-
                 lock (_tableLock)
                 {
                     foreach (var newData in updates)
                     {
-                        if (newData == null || string.IsNullOrEmpty(newData.i)) continue;
 
-                        // Find or create row
-                        if (!symbolRowMap.TryGetValue(newData.i, out var row))
+                        if (newData == null || string.IsNullOrEmpty(newData.i))
+                            continue;
+
+                        // Add missing row if not present
+                        if (!symbolRowMap.TryGetValue(newData.i, out int rowIndex))
                         {
-                            row = marketDataTable.NewRow();
-                            row["symbol"] = newData.i;
-                            row["Name"] = "N/A"; // Initialize Name if needed
-                            marketDataTable.Rows.Add(row);
-                            symbolRowMap[newData.i] = row;
+                            var dto = pastRateTickDTO?.FirstOrDefault(x => x.i == newData.i);
+                            if (dto != null)
+                                AddRowFromDTO(dto);
+
+                            if (!symbolRowMap.TryGetValue(newData.i, out rowIndex))
+                                continue; // Skip if still not added
                         }
 
-                        // Keep previous values before update
-                        object[] previousRow = row.ItemArray.Clone() as object[];
+                        var row = defaultGrid.Rows[rowIndex];
 
-                        // Update data
-                        if (row["Name"].ToString() == "N/A")
+                        // Store previous values for color comparison
+                        var previousValues = new Dictionary<string, string>();
+                        foreach (string colName in numericColumns)
                         {
-                            // Find the symbol in pastRateTickDTO and get the name
-                            var symbolName = pastRateTickDTO?
-                                .FirstOrDefault(x => x.i == newData.i)?.n ?? "N/A";
-
-                            UpdateRowValue(row, "Name", symbolName);
+                            if (defaultGrid.Columns.Contains(colName))
+                            {
+                                previousValues[colName] = row.Cells[colName].Value?.ToString() ?? "";
+                            }
                         }
-                        UpdateRowValue(row, "Bid", newData.b);
-                        UpdateRowValue(row, "Ask", newData.a);
-                        UpdateRowValue(row, "LTP", newData.ltp);
-                        UpdateRowValue(row, "High", newData.h);
-                        UpdateRowValue(row, "Low", newData.l);
-                        UpdateRowValue(row, "Open", newData.o);
-                        UpdateRowValue(row, "Close", newData.c);
-                        UpdateRowValue(row, "Net Chng", newData.d);
-                        UpdateRowValue(row, "V", newData.v);
-                        UpdateRowValue(row, "ATP", newData.atp);
-                        UpdateRowValue(row, "Bid Size", newData.bq);
-                        UpdateRowValue(row, "Total Bid Size", newData.tbq);
-                        UpdateRowValue(row, "Ask Size", newData.sq);
-                        UpdateRowValue(row, "Total Ask Size", newData.tsq);
-                        UpdateRowValue(row, "Volume", newData.vt);
-                        UpdateRowValue(row, "Open Interest", newData.oi);
-                        UpdateRowValue(row, "Last Size", newData.ltq);
-                        UpdateRowValue(row, "Time", commonClass.timeStampConvert(newData.t));
 
-                        // Track Ask price change
+
+
+                        // Update values
+                        SetCellValue(row, "Bid", newData.b);
+                        SetCellValue(row, "Ask", newData.a);
+                        SetCellValue(row, "LTP", newData.ltp);
+                        SetCellValue(row, "High", newData.h);
+                        SetCellValue(row, "Low", newData.l);
+                        SetCellValue(row, "Open", newData.o);
+                        SetCellValue(row, "Close", newData.c);
+                        SetCellValue(row, "Net Chng", newData.d);
+                        SetCellValue(row, "V", newData.v);
+                        SetCellValue(row, "ATP", newData.atp);
+                        SetCellValue(row, "Bid Size", newData.bq);
+                        SetCellValue(row, "Total Bid Size", newData.tbq);
+                        SetCellValue(row, "Ask Size", newData.sq);
+                        SetCellValue(row, "Total Ask Size", newData.tsq);
+                        SetCellValue(row, "Volume", newData.vt);
+                        SetCellValue(row, "Open Interest", newData.oi);
+                        SetCellValue(row, "Last Size", newData.ltq);
+                        SetCellValue(row, "Time", commonClass.timeStampConvert(newData.t));
+
+                        // Set name if still default
+                        var nameCell = row.Cells["Name"];
+                        if ((nameCell.Value?.ToString() ?? "N/A") == "N/A")
+                        {
+                            var name = pastRateTickDTO?.FirstOrDefault(x => x.i == newData.i)?.n ?? "--";
+                            nameCell.Value = name;
+                        }
+
+                        if (nameCell.Value.ToString() == "slmini") 
+                        {
+                        
+                        }
+
+                        // Ask price arrow direction
                         bool hasAskChange = false;
-                        int askDirection = 0; // 1 for up, -1 for down
-                        string askValue = newData.a?.ToString();
+                        int askDirection = 0;
+                        string askStr = newData.a;
 
-                        try
+                        if (!string.IsNullOrEmpty(askStr) && double.TryParse(askStr, out double newAsk))
                         {
-                            if (!string.IsNullOrEmpty(askValue)
-                                            && double.TryParse(askValue, out double newAsk))
+                            if (previousAskMap.TryGetValue(newData.i, out double previousAsk))
                             {
-                                if (previousAskMap.TryGetValue(newData.i, out double previousAsk))
+                                if (newAsk > previousAsk)
                                 {
-                                    if (newAsk > previousAsk)
-                                    {
-                                        askDirection = 1;
-                                        hasAskChange = true;
-                                    }
-                                    else if (newAsk < previousAsk)
-                                    {
-                                        askDirection = -1;
-                                        hasAskChange = true;
-                                    }
+                                    askDirection = 1;
+                                    hasAskChange = true;
                                 }
-
-                                previousAskMap[newData.i] = newAsk;
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine("Error parsing rate value at ApplyBatch: " + ex.Message);
-                        }
-
-                        // Update DataGridView row
-                        var dgvRow = defaultGrid.Rows
-                            .Cast<DataGridViewRow>()
-                            .FirstOrDefault(r => r.Cells["symbol"].Value?.ToString() == newData.i);
-
-                        if (dgvRow != null)
-                        {
-                            // Color numeric columns based on value change
-                            foreach (var colName in numericColumns)
-                            {
-                                if (!marketDataTable.Columns.Contains(colName)) continue;
-                                if (!defaultGrid.Columns.Contains(colName)) continue;
-
-                                var cell = dgvRow.Cells[colName];
-                                var colIndex = marketDataTable.Columns[colName].Ordinal;
-                                var oldVal = previousRow[colIndex];
-                                var newVal = row[colName];
-
-                                if (IsNumericChange(oldVal, newVal, out var changeDirection))
+                                else if (newAsk < previousAsk)
                                 {
-                                    if (changeDirection == 1)
-                                        cell.Style.ForeColor = Color.Green;
-                                    else if (changeDirection == -1)
-                                        cell.Style.ForeColor = Color.Red;
+                                    askDirection = -1;
+                                    hasAskChange = true;
                                 }
                             }
 
-                            var nameCell = dgvRow.Cells["Name"];
+                            previousAskMap[newData.i] = newAsk;
+                        }
 
-                            // Update "Name" column with arrow and color based on Ask direction
-                            // Get current name value and remove any existing arrows
-                            string rawName = row["Name"]?.ToString() ?? string.Empty;
-                            string baseName = rawName.Replace(" ▲", "").Replace(" ▼", "").Trim();
-                            Color color = nameCell.Style.ForeColor;
+                        // Highlight changed numeric values
+                        foreach (string colName in numericColumns)
+                        {
+                            if (!defaultGrid.Columns.Contains(colName)) continue;
 
-                            if (hasAskChange)
+                            var cell = row.Cells[colName];
+                            var prev = previousValues.TryGetValue(colName, out string prevVal) ? prevVal : "";
+                            var curr = cell.Value?.ToString() ?? "";
+
+                            if (IsNumericChange(prev, curr, out int direction))
                             {
-                                if (askDirection == 1)
-                                {
-                                    nameCell.Value = $"{baseName} ▲";
-                                    nameCell.Style.ForeColor = Color.Green;
-                                }
-                                else if (askDirection == -1)
-                                {
-                                    nameCell.Value = $"{baseName} ▼";
-                                    nameCell.Style.ForeColor = Color.Red;
-                                }
+                                if (direction == 1)
+                                    cell.Style.ForeColor = Color.Green;
+                                else if (direction == -1)
+                                    cell.Style.ForeColor = Color.Red;
+                            }
+                        }
+
+                        // Update "Name" column with arrows
+                        if (hasAskChange)
+                        {
+                            string baseName = (nameCell.Value?.ToString() ?? "").Replace(" ▲", "").Replace(" ▼", "").Trim();
+                            if (askDirection == 1)
+                            {
+                                nameCell.Value = baseName + " ▲";
+                                nameCell.Style.ForeColor = Color.Green;
+                            }
+                            else if (askDirection == -1)
+                            {
+                                nameCell.Value = baseName + " ▼";
+                                nameCell.Style.ForeColor = Color.Red;
                             }
                         }
                     }
 
                     UpdateExcelDataEfficiently(defaultGrid);
 
-                    // Throttle UI updates
+                    // Throttle font refresh
                     if ((DateTime.Now - lastUiUpdate).TotalMilliseconds > 120)
                     {
                         defaultGrid.DefaultCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", fontSize);
@@ -801,72 +841,106 @@ namespace thecalcify
             }
         }
 
-        private void UpdateRowValue(DataRow row, string columnName, object value)
+        private void SetCellValue(DataGridViewRow row, string columnName, object value)
         {
-            if (!row.Table.Columns.Contains(columnName)) return;
-
-            try
-            {
-                var currentValue = row[columnName];
-
-                // Default: keep original value (e.g., "--", "N/A", "text") unless it's null
-                var newValue = value ?? "";
-
-
-                // If it's a numeric column, try to parse the value
-                if (IsNumericColumn(columnName))
-                {
-                    try
-                    {
-                        // Only parse if it's not "--" or empty
-                        if (value is string s &&
-                        s != "--" &&
-                        !string.IsNullOrWhiteSpace(s) &&
-                        decimal.TryParse(s, NumberStyles.Any, CultureInfo.InvariantCulture, out decimal decimalValue))
-                        {
-                            newValue = decimalValue;
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine("Error parsing rate value at UpdateRowValue: " + ex.Message);
-                    }
-                }
-
-                // Update only if changed
-                if (!object.Equals(currentValue, newValue))
-                {
-                    row[columnName] = newValue;
-                }
-            }
-            catch
-            {
-                // Fallback: set raw value
-                row[columnName] = value ?? "";
-            }
+            if (defaultGrid.Columns.Contains(columnName))
+                row.Cells[columnName].Value = value ?? "--";
         }
 
-        private bool IsNumericColumn(string columnName)
+
+        private bool IsNumericChange(object oldVal, object newVal, out int direction)
         {
-            return columnName == "Bid" ||
-                   columnName == "Ask" ||
-                   columnName == "LTP" ||
-                   columnName == "High" ||
-                   columnName == "Low" ||
-                   columnName == "Open" ||
-                   columnName == "Close" ||
-                   columnName == "Net Chng" ||
-                   columnName == "ATP" ||
-                   columnName == "Bid Size" ||
-                   columnName == "Total Bid Size" ||
-                   columnName == "Ask Size" ||
-                   columnName == "Total Ask Size" ||
-                   columnName == "Volume" ||
-                   columnName == "Open Interest" ||
-                   columnName == "Last Size";
+            direction = 0;
+
+            if (oldVal == null || newVal == null) return false;
+
+            string oldStr = oldVal.ToString();
+            string newStr = newVal.ToString();
+
+            if (double.TryParse(oldStr, out double oldNum) && double.TryParse(newStr, out double newNum))
+            {
+                if (newNum > oldNum)
+                {
+                    direction = 1;
+                    return true;
+                }
+                else if (newNum < oldNum)
+                {
+                    direction = -1;
+                    return true;
+                }
+            }
+
+            return false;
         }
 
-        private void disconnectESCToolStripMenuItem_Click(object sender, EventArgs e)
+
+        //private void UpdateRowValue(DataRow row, string columnName, object value)
+        //{
+        //    if (!row.Table.Columns.Contains(columnName)) return;
+
+        //    try
+        //    {
+        //        var currentValue = row[columnName];
+
+        //        // Default: keep original value (e.g., "--", "N/A", "text") unless it's null
+        //        var newValue = value ?? "";
+
+
+        //        // If it's a numeric column, try to parse the value
+        //        if (IsNumericColumn(columnName))
+        //        {
+        //            try
+        //            {
+        //                // Only parse if it's not "--" or empty
+        //                if (value is string s &&
+        //                s != "--" &&
+        //                !string.IsNullOrWhiteSpace(s) &&
+        //                decimal.TryParse(s, NumberStyles.Any, CultureInfo.InvariantCulture, out decimal decimalValue))
+        //                {
+        //                    newValue = decimalValue;
+        //                }
+        //            }
+        //            catch (Exception ex)
+        //            {
+        //                Console.WriteLine("Error parsing rate value at UpdateRowValue: " + ex.Message);
+        //            }
+        //        }
+
+        //        // Update only if changed
+        //        if (!object.Equals(currentValue, newValue))
+        //        {
+        //            row[columnName] = newValue;
+        //        }
+        //    }
+        //    catch
+        //    {
+        //        // Fallback: set raw value
+        //        row[columnName] = value ?? "";
+        //    }
+        //}
+
+        //private bool IsNumericColumn(string columnName)
+        //{
+        //    return columnName == "Bid" ||
+        //           columnName == "Ask" ||
+        //           columnName == "LTP" ||
+        //           columnName == "High" ||
+        //           columnName == "Low" ||
+        //           columnName == "Open" ||
+        //           columnName == "Close" ||
+        //           columnName == "Net Chng" ||
+        //           columnName == "ATP" ||
+        //           columnName == "Bid Size" ||
+        //           columnName == "Total Bid Size" ||
+        //           columnName == "Ask Size" ||
+        //           columnName == "Total Ask Size" ||
+        //           columnName == "Volume" ||
+        //           columnName == "Open Interest" ||
+        //           columnName == "Last Size";
+        //}
+
+        private void DisconnectESCToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // Switch to LoginForm and dispose current form
             Login loginForm = new Login();
@@ -876,48 +950,17 @@ namespace thecalcify
             this.Dispose();
         }
 
-        private bool IsNumericChange(object oldValue, object newValue, out int changeDirection)
-        {
-            changeDirection = 0;
-            const decimal tolerance = 0.0000001m;
-
-            try
-            {
-                if (oldValue == DBNull.Value) oldValue = null;
-                if (newValue == DBNull.Value) newValue = null;
-
-                if (oldValue == null || newValue == null || oldValue.ToString() == "--" || oldValue.ToString() == "N/A" || newValue.ToString() == "--" || newValue.ToString() == "N/A" || oldValue.ToString() == "NaN" || newValue.ToString() == "NaN")
-                    return false;
-
-
-                decimal oldDec = oldValue == null ? 0 : Convert.ToDecimal(oldValue);
-                decimal newDec = newValue == null ? 0 : Convert.ToDecimal(newValue);
-
-                if (Math.Abs(newDec - oldDec) > tolerance)
-                {
-                    changeDirection = newDec > oldDec ? 1 : -1;
-                    return true;
-                }
-                return false;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
         private void BuildSymbolRowMap()
         {
             symbolRowMap.Clear();
-            foreach (DataRow row in marketDataTable.Rows)
+            for (int i = 0; i < defaultGrid.Rows.Count; i++)
             {
-                var symbol = row["symbol"]?.ToString();
+                string symbol = defaultGrid.Rows[i].Cells["symbol"].Value?.ToString();
                 if (!string.IsNullOrEmpty(symbol))
-                {
-                    symbolRowMap[symbol] = row;
-                }
+                    symbolRowMap[symbol] = i;
             }
         }
+
 
         private string DecompressGzip(byte[] compressed)
         {
@@ -957,28 +1000,30 @@ namespace thecalcify
 
                     if (resultdefault?.data != null)
                     {
+
+
                         // Filter out instruments not in the valid list
                         this.Invoke((MethodInvoker)delegate
                         {
                             pastRateTickDTO = resultdefault.data;
 
-                            // Extract all non-null, non-empty "i" values into identifiers list
-                            identifiers = resultdefault.data
-                                .Where(x => !string.IsNullOrEmpty(x.i))
-                                .Select(x => x.i)
-                                .ToList();
-
-                            symbolMaster = identifiers;
-
-                            SymbolName = resultdefault.data
-                                .Where(x => !string.IsNullOrEmpty(x.i) && !string.IsNullOrEmpty(x.n))
-                                .Select(x => (Symbol: x.i, SymbolName: x.n))
-                                .ToList();
-
-                            if (resultdefault.data != null && marketDataTable.Columns.Contains("symbol"))
+                            if (identifiers == null)
                             {
-                                ApplyBatchUpdates(resultdefault.data);
+                                // Extract all non-null, non-empty "i" values into identifiers list
+                                identifiers = resultdefault.data
+                                    .Where(x => !string.IsNullOrEmpty(x.i))
+                                    .Select(x => x.i)
+                                    .ToList();
+
+                                symbolMaster = identifiers; 
                             }
+
+                            // ✅ Filter resultdefault.data to keep only symbols in identifiers
+                            resultdefault.data = resultdefault.data
+                                .Where(x => identifiers.Contains(x.i))
+                                .ToList();
+
+                            ApplyBatchUpdates(resultdefault.data);
                         });
                     }
                 }
@@ -990,105 +1035,113 @@ namespace thecalcify
             }
         }
 
-        private void SetupDataTable()
-        {
-            marketDataTable.Clear();
-            marketDataTable.Columns.Clear();
+        //private void SetupDataTable()
+        //{
+        //    marketDataTable.Clear();
+        //    marketDataTable.Columns.Clear();
 
+
+        //    string[] columns = {
+        //        "symbol", "Name", "Bid", "Ask", "LTP", "High", "Low", "Open", "Close", "Net Chng", "ATP",
+        //        "Bid Size", "Total Bid Size", "Ask Size", "Total Ask Size", "Volume", "Open Interest", "Last Size", "V", "Time"
+        //    };
+
+        //    Type[] types = {
+        //        typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string),
+        //        typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string),
+        //        typeof(string), typeof(string), typeof(string), typeof(string), typeof(string)
+        //    };
+
+        //    for (int i = 0; i < columns.Length; i++) marketDataTable.Columns.Add(columns[i], types[i]);
+
+        //    foreach (var symbol in instruments)
+        //    {
+        //        marketDataTable.Rows.Add(
+        //            symbol,         // symbol
+        //            "N/A",          // Name
+        //            "N/A",          // Bid
+        //            "N/A",          // Ask
+        //            "N/A",          // LTP
+        //            "N/A",          // High
+        //            "N/A",          // Low
+        //            "N/A",          // Open
+        //            "N/A",          // Close
+        //            "N/A",          // Net Chng
+        //            "N/A",          // ATP
+        //            "N/A",          // Bid Size
+        //            "N/A",          // Total Bid Size
+        //            "N/A",          // Ask Size
+        //            "N/A",          // Total Ask Size
+        //            "N/A",          // Volume
+        //            "N/A",          // Open Interest
+        //            "N/A",          // Last Size
+        //            "N/A",          // V
+        //            "N/A"           // Time
+        //        );
+        //    }
+
+        //    foreach (DataColumn column in marketDataTable.Columns)
+        //        if (!columnPreferencesDefault.Contains(column.ColumnName))
+        //            column.ColumnMapping = MappingType.Hidden; // ✅ Call symbol map builder here
+
+        //    BuildSymbolRowMap();
+        //    if (resultdefault != null && resultdefault.data != null)
+        //    {
+        //        ApplyBatchUpdates(resultdefault.data);
+        //    }
+        //}
+
+        private void InitializeGridColumns()
+        {
+            defaultGrid.Columns.Clear();
 
             string[] columns = {
-                "symbol", "Name", "Bid", "Ask", "LTP", "High", "Low", "Open", "Close", "Net Chng", "ATP",
-                "Bid Size", "Total Bid Size", "Ask Size", "Total Ask Size", "Volume", "Open Interest", "Last Size", "V", "Time"
-            };
+        "symbol", "Name", "Bid", "Ask", "LTP", "High", "Low", "Open", "Close", "Net Chng", "ATP",
+        "Bid Size", "Total Bid Size", "Ask Size", "Total Ask Size", "Volume", "Open Interest", "Last Size", "V", "Time"
+    };
 
-            Type[] types = {
-                typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string),
-                typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string),
-                typeof(string), typeof(string), typeof(string), typeof(string), typeof(string)
-            };
-
-            for (int i = 0; i < columns.Length; i++) marketDataTable.Columns.Add(columns[i], types[i]);
-
-            foreach (var symbol in instruments)
+            foreach (string colName in columns)
             {
-                marketDataTable.Rows.Add(
-                    symbol,         // symbol
-                    "N/A",          // Name
-                    "N/A",          // Bid
-                    "N/A",          // Ask
-                    "N/A",          // LTP
-                    "N/A",          // High
-                    "N/A",          // Low
-                    "N/A",          // Open
-                    "N/A",          // Close
-                    "N/A",          // Net Chng
-                    "N/A",          // ATP
-                    "N/A",          // Bid Size
-                    "N/A",          // Total Bid Size
-                    "N/A",          // Ask Size
-                    "N/A",          // Total Ask Size
-                    "N/A",          // Volume
-                    "N/A",          // Open Interest
-                    "N/A",          // Last Size
-                    "N/A",          // V
-                    "N/A"           // Time
-                );
-            }
-
-            foreach (DataColumn column in marketDataTable.Columns)
-                if (!columnPreferencesDefault.Contains(column.ColumnName))
-                    column.ColumnMapping = MappingType.Hidden; // ✅ Call symbol map builder here
-
-            BuildSymbolRowMap();
-            if (resultdefault != null && resultdefault.data != null)
-            {
-                ApplyBatchUpdates(resultdefault.data);
+                var col = new DataGridViewTextBoxColumn
+                {
+                    Name = colName,
+                    HeaderText = colName,
+                    ReadOnly = true
+                };
+                defaultGrid.Columns.Add(col);
             }
         }
 
-        private void InitializeDataGridView()
+        private void PopulateGridRows()
         {
-            defaultGrid.SuspendLayout();
-            defaultGrid.DataSource = null;
-            defaultGrid.Columns.Clear();
+            defaultGrid.Rows.Clear();
 
-            defaultGrid.AutoGenerateColumns = true;
-            defaultGrid.AllowUserToAddRows = false;
-            defaultGrid.DataSource = marketDataTable;
-            defaultGrid.ScrollBars = System.Windows.Forms.ScrollBars.Horizontal | System.Windows.Forms.ScrollBars.Vertical;
-
-            // Manually recreate columns if mismatch
-            if (defaultGrid.ColumnCount != marketDataTable.Columns.Count)
+            foreach (var symbol in identifiers)
             {
-                defaultGrid.Columns.Clear();
-                foreach (DataColumn col in marketDataTable.Columns)
+                defaultGrid.Rows.Add(new object[]
                 {
-                    var gridCol = new DataGridViewTextBoxColumn
-                    {
-                        Name = col.ColumnName,
-                        HeaderText = col.ColumnName,
-                        DataPropertyName = col.ColumnName,
-                        ReadOnly = true
-                    };
-                    defaultGrid.Columns.Add(gridCol);
-                }
-
-                defaultGrid.DataSource = marketDataTable;
+            symbol, "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A",
+            "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A"
+                });
             }
+        }
 
-            // Immediately hide non-preferred columns before resume layout
+        private void ApplyColumnPreferences()
+        {
             foreach (DataGridViewColumn col in defaultGrid.Columns)
             {
-                if (!columnPreferencesDefault.Contains(col.Name))
-                {
-                    col.Visible = false; // 🔑 This prevents flicker!
-                    continue;
-                }
-
+                col.Visible = columnPreferencesDefault.Contains(col.Name);
                 col.ReadOnly = true;
                 col.SortMode = DataGridViewColumnSortMode.Automatic;
                 col.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
                 col.Resizable = DataGridViewTriState.True;
+
+
+                if(col.Name == "symbol" || col.Name == "V")
+                {
+                    col.Visible = false; // Always hide symbol column
+                }
+
 
                 switch (col.Name)
                 {
@@ -1119,20 +1172,41 @@ namespace thecalcify
                         break;
                 }
             }
+        }
+
+
+        private void InitializeDataGridView()
+        {
+            defaultGrid.SuspendLayout();
+
+            defaultGrid.DataSource = null;
+            defaultGrid.Rows.Clear();
+            defaultGrid.Columns.Clear();
+
+            defaultGrid.AllowUserToAddRows = false;
+            defaultGrid.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+            defaultGrid.AutoGenerateColumns = false;
+
+            InitializeGridColumns();
+            PopulateGridRows();
+            ApplyColumnPreferences();
+            BuildSymbolRowMap();
+
+            if (resultdefault?.data != null)
+            {
+                // ✅ Filter resultdefault.data to keep only symbols in identifiers
+                resultdefault.data = resultdefault.data
+                    .Where(x => identifiers.Contains(x.i))
+                    .ToList();
+                ApplyBatchUpdates(resultdefault.data);
+            }
 
             defaultGrid.DefaultCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", fontSize, FontStyle.Regular);
             defaultGrid.ColumnHeadersDefaultCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", fontSize, FontStyle.Bold);
             defaultGrid.ColumnHeadersHeight = 70;
             defaultGrid.AllowUserToResizeColumns = true;
 
-            defaultGrid.ResumeLayout();
-
-            Console.WriteLine("Client Size: " + defaultGrid.ClientSize);
-            Console.WriteLine("Display Rectangle: " + defaultGrid.DisplayRectangle);
-            Console.WriteLine("Row count: " + defaultGrid.Rows.Count);
-            Console.WriteLine("Columns: " + defaultGrid.Columns.Count);
-
-            // Enable smooth scrolling
+            // Smooth scrolling
             typeof(DataGridView).InvokeMember(
                 "DoubleBuffered",
                 BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.SetProperty,
@@ -1141,16 +1215,7 @@ namespace thecalcify
                 new object[] { true }
             );
 
-            defaultGrid.CellMouseDown += (s, e) =>
-            {
-                Console.WriteLine($"CellMouseDown at Row {e.RowIndex}, Col {e.ColumnIndex}");
-            };
-
-            defaultGrid.MouseClick += (s, e) =>
-            {
-                Console.WriteLine($"MouseClick: Button={e.Button}");
-            };
-
+            defaultGrid.ResumeLayout();
         }
 
         private void DefaultGrid_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
@@ -1257,16 +1322,21 @@ namespace thecalcify
         {
             Thread excelThread = new Thread(() =>
             {
-
                 try
                 {
                     string folderPath = Path.GetDirectoryName(excelFilePath);
                     if (!Directory.Exists(folderPath))
                         Directory.CreateDirectory(folderPath);
 
+                    // Get visible and exportable columns from the grid
+                    var exportableColumns = defaultGrid.Columns
+                        .Cast<DataGridViewColumn>()
+                        .Where(c => c.Visible && c.Name != "symbol" && c.Name != "V")
+                        .OrderBy(c => c.DisplayIndex)
+                        .ToList();
+
                     if (!File.Exists(excelFilePath))
                     {
-                        // Create new Excel application
                         excelApp = new Excel.Application
                         {
                             Visible = false,
@@ -1277,19 +1347,13 @@ namespace thecalcify
                         worksheet = (Excel.Worksheet)workbook.Sheets[1];
                         worksheet.Name = "Sheet1";
 
-                        // Write headers (excluding "symbol" and "V")
-                        int headerIndex = 1;
-                        foreach (DataColumn column in marketDataTable.Columns)
+                        // Write headers
+                        for (int i = 0; i < exportableColumns.Count; i++)
                         {
-                            if (column.ColumnName == "symbol" || column.ColumnName == "V") continue;
-                            worksheet.Cells[1, headerIndex++] = column.ColumnName;
+                            worksheet.Cells[1, i + 1] = exportableColumns[i].HeaderText;
                         }
 
-                        // Save new file
-                        workbook.SaveAs(
-                            excelFilePath,
-                            Excel.XlFileFormat.xlOpenXMLWorkbook);
-
+                        workbook.SaveAs(excelFilePath, Excel.XlFileFormat.xlOpenXMLWorkbook);
                         workbook.Close(false);
                         excelApp.Quit();
 
@@ -1305,13 +1369,11 @@ namespace thecalcify
 
                     EnsureFullFolderAccess(folderPath);
 
-                    // Open existing file
                     excelApp = new Excel.Application
                     {
                         Visible = false,
                         DisplayAlerts = false,
-                        UserControl = true,
-                        //IgnoreRemoteRequests = true
+                        UserControl = true
                     };
 
                     workbook = excelApp.Workbooks.Open(excelFilePath);
@@ -1320,25 +1382,23 @@ namespace thecalcify
                     if (worksheet == null)
                         worksheet = (Excel.Worksheet)workbook.Sheets[1];
 
-                    var visibleColumns = marketDataTable.Columns.Cast<DataColumn>()
-                        .Where(c => c.ColumnName != "symbol" && c.ColumnName != "V")
-                        .ToList();
-
-                    // Write headers again (overwrite)
-                    for (int col = 0; col < visibleColumns.Count; col++)
+                    // Write headers (overwrite)
+                    for (int i = 0; i < exportableColumns.Count; i++)
                     {
-                        worksheet.Cells[1, col + 1] = visibleColumns[col].ColumnName;
+                        worksheet.Cells[1, i + 1] = exportableColumns[i].HeaderText;
                     }
 
-                    int rowCount = marketDataTable.Rows.Count;
-                    int colCount = visibleColumns.Count;
+                    int rowCount = defaultGrid.Rows.Count;
+                    int colCount = exportableColumns.Count;
                     object[,] dataArray = new object[rowCount, colCount];
 
                     for (int r = 0; r < rowCount; r++)
                     {
+                        var gridRow = defaultGrid.Rows[r];
                         for (int c = 0; c < colCount; c++)
                         {
-                            dataArray[r, c] = marketDataTable.Rows[r][visibleColumns[c].ColumnName];
+                            var col = exportableColumns[c];
+                            dataArray[r, c] = gridRow.Cells[col.Name].Value ?? "--";
                         }
                     }
 
@@ -1355,13 +1415,14 @@ namespace thecalcify
                 }
                 catch (Exception ex)
                 {
-                    ApplicationLogger.Log($"Error accessing Excel instance ExportExcelOnClick: {ex.Message} And {ex.StackTrace}");
+                    ApplicationLogger.Log($"Error accessing Excel instance ExportExcelOnClick: {ex.Message}\n{ex.StackTrace}");
                 }
             });
 
             excelThread.SetApartmentState(ApartmentState.STA);
             excelThread.Start();
         }
+
 
         private void ReleaseExcelObjects(params object[] comObjects)
         {
@@ -1677,8 +1738,8 @@ namespace thecalcify
                 identifiers = selectedSymbols;
                 isLoadedSymbol = true;
                 titleLabel.Text = Path.GetFileNameWithoutExtension(Filename).ToUpper();
-                marketDataTable = new System.Data.DataTable(); // Ensure this is created first
-                SetupDataTable();                  // Set up columns
+                //marketDataTable = new System.Data.DataTable(); // Ensure this is created first
+                //SetupDataTable();                  // Set up columns
                 InitializeDataGridView();          // Configure the grid
                 await SignalREvent();
             }
@@ -1709,13 +1770,13 @@ namespace thecalcify
             saveFileName = null;
             isEdit = false;
             identifiers = symbolMaster;
-            marketDataTable = new System.Data.DataTable(); // Ensure this is created first
-            SetupDataTable();                  // Set up columns
+            //marketDataTable = new System.Data.DataTable(); // Ensure this is created first
+            //SetupDataTable();                  // Set up columns
             InitializeDataGridView();          // Configure the grid
             await SignalREvent();
         }
 
-        private void newCTRLNToolStripMenuItem1_Click(object sender, EventArgs e)
+        private void NewCTRLNToolStripMenuItem1_Click(object sender, EventArgs e)
         {
             try
             {
@@ -1744,7 +1805,7 @@ namespace thecalcify
                     fontSize = fontSize,
                     pastRateTickDTO = pastRateTickDTO,
                     isEditMarketWatch = true,
-                    SymbolName = SymbolName,
+                    //SymbolName = SymbolName,
                 };
 
                 // 4. Handle edit mode specific setup
@@ -1768,6 +1829,7 @@ namespace thecalcify
                 MessageBox.Show($"Error switching to new market watch: {ex.Message}");
             }
         }
+
         private void ClearCollections()
         {
             lock (_updateQueue)
@@ -1780,12 +1842,12 @@ namespace thecalcify
                 symbolRowMap.Clear();
             }
 
-            lock (marketDataTable)
-            {
-                marketDataTable.Clear();
-                marketDataTable.Dispose();
-                marketDataTable = new System.Data.DataTable(); // Reinitialize if needed
-            }
+            //lock (marketDataTable)
+            //{
+            //    marketDataTable.Clear();
+            //    marketDataTable.Dispose();
+            //    marketDataTable = new System.Data.DataTable(); // Reinitialize if needed
+            //}
 
             previousAsks.Clear();
             //pastRateTickDTO.Clear();

@@ -172,7 +172,7 @@ namespace thecalcify
             this.disconnectESCToolStripMenuItem.Name = "disconnectESCToolStripMenuItem";
             this.disconnectESCToolStripMenuItem.Size = new System.Drawing.Size(243, 26);
             this.disconnectESCToolStripMenuItem.Text = "Disconnect    (ESC)";
-            this.disconnectESCToolStripMenuItem.Click += new System.EventHandler(this.disconnectESCToolStripMenuItem_Click);
+            this.disconnectESCToolStripMenuItem.Click += new System.EventHandler(this.DisconnectESCToolStripMenuItem_Click);
             // 
             // fullScreenF11ToolStripMenuItem
             // 
@@ -196,7 +196,7 @@ namespace thecalcify
             this.newCTRLNToolStripMenuItem1.Name = "newCTRLNToolStripMenuItem1";
             this.newCTRLNToolStripMenuItem1.Size = new System.Drawing.Size(233, 26);
             this.newCTRLNToolStripMenuItem1.Text = "New      (CTRL+N)";
-            this.newCTRLNToolStripMenuItem1.Click += new System.EventHandler(this.newCTRLNToolStripMenuItem1_Click);
+            this.newCTRLNToolStripMenuItem1.Click += new System.EventHandler(this.NewCTRLNToolStripMenuItem1_Click);
             // 
             // viewToolStripMenuItem
             // 
@@ -384,32 +384,45 @@ namespace thecalcify
 
             if (keywords.Count == 0)
             {
-                // Reset all filters
-                if (defaultGrid?.DataSource is DataTable dt)
+                // Reset all rows visible in defaultGrid
+                if (defaultGrid != null)
                 {
-                    dt.DefaultView.RowFilter = "";
+                    foreach (DataGridViewRow row in defaultGrid.Rows)
+                    {
+                        if (!row.IsNewRow)
+                            row.Visible = true;
+                    }
                 }
 
+                // Reset all rows visible in EditableMarketWatchGrid instance
                 EditableMarketWatchGrid editableMarketWatchGrid = EditableMarketWatchGrid.CurrentInstance;
                 if (editableMarketWatchGrid != null)
                 {
                     editableMarketWatchGrid.serchstring = "";
                     foreach (DataGridViewRow row in editableMarketWatchGrid.Rows)
                     {
-                        row.Visible = true;
+                        if (!row.IsNewRow)
+                            row.Visible = true;
                     }
                 }
             }
             else
             {
-                // Build RowFilter for defaultGrid
-                if (defaultGrid?.DataSource is DataTable dt)
+                // Filter rows in defaultGrid based on "Name" column
+                if (defaultGrid != null)
                 {
-                    var rowFilter = string.Join(" OR ", keywords
-                        .Select(k => $"Name LIKE '%{k.Replace("'", "''")}%'"));
-                    dt.DefaultView.RowFilter = rowFilter;
+                    foreach (DataGridViewRow row in defaultGrid.Rows)
+                    {
+                        if (!row.IsNewRow && row.Cells["Name"].Value != null)
+                        {
+                            string name = row.Cells["Name"].Value.ToString();
+                            bool match = keywords.Any(k => name.IndexOf(k, StringComparison.OrdinalIgnoreCase) >= 0);
+                            row.Visible = match;
+                        }
+                    }
                 }
 
+                // Filter rows in EditableMarketWatchGrid instance
                 EditableMarketWatchGrid editableMarketWatchGrid = EditableMarketWatchGrid.CurrentInstance;
                 if (editableMarketWatchGrid != null)
                 {
