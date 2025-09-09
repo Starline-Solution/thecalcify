@@ -49,6 +49,8 @@ namespace thecalcify
         private readonly Dictionary<string, DataRow> symbolRowMap = new Dictionary<string, DataRow>();
         private DateTime lastUiUpdate = DateTime.MinValue;
         public List<string> identifiers;
+        public List<string> selectedSymbols = new List<string>();
+        public bool isLoadedSymbol = false;
         private System.Windows.Forms.Timer signalRTimer;
         public List<MarketDataDTO> pastRateTickDTO = new List<MarketDataDTO>();
         public MarketApiResponse resultdefault;
@@ -120,8 +122,21 @@ namespace thecalcify
         private Excel.Workbook workbook;
         private Excel.Worksheet worksheet;
         private bool _excelInitialized = false;
-
-
+        private bool isFullScreen = false;
+        private System.Drawing.Rectangle _dragBoxFromMouseDown = System.Drawing.Rectangle.Empty, prevBounds;
+        private FormWindowState prevState;
+        private FormBorderStyle prevStyle;
+        public string saveFileName;
+        private Thread licenceThread;
+        public static thecalcify CurrentInstance { get; private set; }
+        public List<string> columnPreferences;
+        public string lastOpenMarketWatch = string.Empty;
+        public enum MarketWatchViewMode
+        {
+            Default,
+            New
+        }
+        public MarketWatchViewMode marketWatchViewMode = MarketWatchViewMode.Default;
 
         public thecalcify()
         {
@@ -141,6 +156,8 @@ namespace thecalcify
                      ControlStyles.AllPaintingInWmPaint |
                      ControlStyles.UserPaint, true);
 
+            // --- PARALLEL INITIALIZATION ---
+            var initializationTasks = new List<Task>();
 
             // Get login info (if not already available)
             Login login = Login.CurrentInstance;
@@ -150,19 +167,32 @@ namespace thecalcify
             password = login?.userpassword ?? string.Empty;
 
             DateTime txtlicenceDate = DateTime.Parse(licenceDate);
-            DateTime currentDate = DateTime.Now.Date;
-            TimeSpan diff = txtlicenceDate - currentDate;
-            RemainingDays = diff.Days;
-            if (RemainingDays <= 7)
+                DateTime currentDate = DateTime.Now.Date;
+                TimeSpan diff = txtlicenceDate - currentDate;
+                RemainingDays = diff.Days;
+                if (RemainingDays <= 7)
+                {
+                    licenceThread = new Thread(new ThreadStart(CheckLicenceLoop));
+                    licenceThread.IsBackground = true; // Thread will close when app closes
+                    licenceThread.Start();
+                }
+                else
+                {
+                    licenceExpire.Text = licenceExpire.Text + licenceDate;
+                }
+            initializationTasks.Add(Task.Run(() =>
             {
-                Thread t = new Thread(new ThreadStart(CheckLicenceLoop));
-                t.IsBackground = true; // Thread will close when app closes
-                t.Start();
-            }
-            else
-            {
-                licenceExpire.Text = licenceExpire.Text + licenceDate;
-            }
+                // --- COMMON CLASS ---
+                commonClass = new Common(this);
+                commonClass.StartInternetMonitor();
+
+                // --- MARKET WATCH + COLUMNS ---
+                var (currentWatch, currentColumns) = CredentialManager.GetCurrentMarketWatchWithColumns();
+                lastOpenMarketWatch = currentWatch ?? "Default";
+                columnPreferences = (currentColumns?.Count == 0 || currentColumns == null) ?
+                    (columnPreferencesDefault ?? new List<string>()) : currentColumns;
+            }));
+
             //licenceExpire.Text = "Licence Expired On :- " + licenceDate;
 
 
@@ -247,6 +277,17 @@ namespace thecalcify
             }
         }
 
+        public void LiveRateGrid()
+        {
+            if (!isLoadedSymbol)
+                marketWatchViewMode = MarketWatchViewMode.Default;
+
+            // Hide the DataGridView
+            defaultGrid.Visible = true;
+            defaultGrid.BringToFront();
+            defaultGrid.Focus();
+            newMarketWatchMenuItem.Enabled = true;
+        }
 
         private static void Application_ThreadException(object sender, ThreadExceptionEventArgs e)
         {
@@ -496,7 +537,8 @@ namespace thecalcify
             try
             {
 
-                updates = updates.Where(x => !string.IsNullOrEmpty(x.t) && x.t != "N/A").OrderByDescending(x => DateTime.ParseExact(x.t, "hh:mm:ss tt", CultureInfo.InvariantCulture)).ToList();
+                //updates = updates.Where(x => !string.IsNullOrEmpty(x.t) && x.t != "N/A").OrderByDescending(x => DateTime.ParseExact(x.t, "hh:mm:ss tt", CultureInfo.InvariantCulture)).ToList();
+                updates = updates.Where(x => long.TryParse(x.t, out _)).OrderByDescending(x => DateTimeOffset.FromUnixTimeMilliseconds(long.Parse(x.t)).LocalDateTime).ToList();
 
             }
             catch (Exception)
@@ -1111,9 +1153,6 @@ namespace thecalcify
                 if (menuStrip1 != null)
                     availableHeight -= menuStrip1.Height;
 
-                if (statusStrip1 != null)
-                    availableHeight -= statusStrip1.Height;
-
                 defaultGrid.Location = new System.Drawing.Point(0, menuStrip1?.Height ?? 0);
                 defaultGrid.Size = new Size(availableWidth, availableHeight);
             }
@@ -1405,6 +1444,58 @@ namespace thecalcify
             wb.Close(false);
             excelApp.StatusBar = "New workbook creation is disabled";
             Console.WriteLine("New workbook creation is disabled.");
+        }
+
+        private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using (var aboutForm = new About(username, password, licenceDate))
+            {
+                if (isFullScreen)
+                {
+                    aboutForm.StartPosition = FormStartPosition.CenterParent;
+                    aboutForm.TopMost = true; // Ensures it stays above the full-screen window
+                    aboutForm.ShowDialog(this); // Pass the main form as owner
+                }
+                else
+                {
+                    aboutForm.ShowDialog();
+                }
+            }
+        }
+
+        private void fullScreenF11ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (!isFullScreen)
+            {
+                // Store previous state
+                prevState = this.WindowState;
+                prevStyle = this.FormBorderStyle;
+                prevBounds = this.Bounds;
+
+                // Set up full screen
+                this.FormBorderStyle = FormBorderStyle.None;
+                this.TopMost = true;
+                System.Drawing.Rectangle full = Screen.GetBounds(this);
+                this.Bounds = full;
+                WinApi.SetFullScreen(this.Handle);
+
+                isFullScreen = true;
+
+                fullScreenF11ToolStripMenuItem.Text = "Exit Full Screen (Esc)";
+
+            }
+            else
+            {
+                // Restore previous layout
+                this.WindowState = prevState;
+                this.FormBorderStyle = prevStyle;
+                this.Bounds = prevBounds;
+                this.TopMost = false;
+
+                isFullScreen = false;
+
+                fullScreenF11ToolStripMenuItem.Text = "Full Screen (F11)";
+            }
         }
 
         private void DefaultGrid_DataSourceChanged(object sender, EventArgs e)

@@ -17,9 +17,17 @@ namespace thecalcify.Helper
         private Timer internetCheckTimer;
         private bool isInternetAvailable = true;
 
+        public Common(Control control)
+        {
+            //uiContext = control;
+            //SystemEvents.PowerModeChanged += OnPowerChange;
+            //NetworkChange.NetworkAvailabilityChanged += OnNetworkAvailabilityChanged;
+            //NetworkChange.NetworkAddressChanged += OnNetworkAddressChanged;
+        }
+
         public Common()
         {
-
+            
         }
 
         public bool IsFileLocked(string filePath)
