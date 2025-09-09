@@ -42,7 +42,7 @@ namespace thecalcify
     {
         public string token, licenceDate, username, password;
 
-        public bool _headersWritten = false,_isResizing = false;
+        public bool _headersWritten = false, _isResizing = false;
         public int fontSize = 12, RemainingDays;
         private bool isRunning = true;
         private DateTime _lastReconnectAttempt = DateTime.MinValue;
@@ -193,19 +193,19 @@ namespace thecalcify
             password = login?.userpassword ?? string.Empty;
 
             DateTime txtlicenceDate = DateTime.Parse(licenceDate);
-                DateTime currentDate = DateTime.Now.Date;
-                TimeSpan diff = txtlicenceDate - currentDate;
-                RemainingDays = diff.Days;
-                if (RemainingDays <= 7)
-                {
-                    licenceThread = new Thread(new ThreadStart(CheckLicenceLoop));
-                    licenceThread.IsBackground = true; // Thread will close when app closes
-                    licenceThread.Start();
-                }
-                else
-                {
-                    licenceExpire.Text = licenceExpire.Text + licenceDate;
-                }
+            DateTime currentDate = DateTime.Now.Date;
+            TimeSpan diff = txtlicenceDate - currentDate;
+            RemainingDays = diff.Days;
+            if (RemainingDays <= 7)
+            {
+                licenceThread = new Thread(new ThreadStart(CheckLicenceLoop));
+                licenceThread.IsBackground = true; // Thread will close when app closes
+                licenceThread.Start();
+            }
+            else
+            {
+                licenceExpire.Text = licenceExpire.Text + licenceDate;
+            }
             initializationTasks.Add(Task.Run(() =>
             {
                 // --- COMMON CLASS ---
@@ -266,7 +266,7 @@ namespace thecalcify
                 ApplicationLogger.LogException(ex);
             }
 
-             System.Windows.Forms.Application.Exit();
+            System.Windows.Forms.Application.Exit();
         }
 
 
@@ -424,7 +424,7 @@ namespace thecalcify
                 connection.Closed += async (error) =>
                 {
                     Console.WriteLine("Connection closed");
-                    await Task.Delay(new Random().Next(0, 5) * 1000);   
+                    await Task.Delay(new Random().Next(0, 5) * 1000);
                 };
 
                 connection.Reconnected += async (connectionId) =>
@@ -461,7 +461,7 @@ namespace thecalcify
                 //        if (attempt < 2) await Task.Delay(3000);
                 //    }
                 //}
-                        await connection.StartAsync();
+                await connection.StartAsync();
 
 
                 try
@@ -771,9 +771,9 @@ namespace thecalcify
                             nameCell.Value = name;
                         }
 
-                        if (nameCell.Value.ToString() == "slmini") 
+                        if (nameCell.Value.ToString() == "slmini")
                         {
-                        
+
                         }
 
                         // Ask price arrow direction
@@ -1035,7 +1035,7 @@ namespace thecalcify
                                      .Select(x => (Symbol: x.i, SymbolName: x.n))
 
                              .ToList();
-                                symbolMaster = identifiers; 
+                                symbolMaster = identifiers;
                             }
 
                             // ✅ Filter resultdefault.data to keep only symbols in identifiers
@@ -1157,7 +1157,7 @@ namespace thecalcify
                 col.Resizable = DataGridViewTriState.True;
 
 
-                if(col.Name == "symbol" || col.Name == "V")
+                if (col.Name == "symbol" || col.Name == "V")
                 {
                     col.Visible = false; // Always hide symbol column
                 }
@@ -2352,13 +2352,14 @@ namespace thecalcify
                 e.Handled = true;
             }
 
-            if (e.Control && e.KeyCode == Keys.D && connectionViewMode != ConnectionViewMode.Disconnect)
+            if (e.KeyCode == Keys.F11)
             {
-                DisconnectESCToolStripMenuItem_Click(this, EventArgs.Empty);
+                fullScreenF11ToolStripMenuItem_Click(this, EventArgs.Empty);
                 e.Handled = true;
             }
+            
 
-            if (e.KeyCode == Keys.F11)
+            if (e.KeyCode == Keys.Escape)
             {
                 fullScreenF11ToolStripMenuItem_Click(this, EventArgs.Empty);
                 e.Handled = true;
@@ -2466,7 +2467,7 @@ namespace thecalcify
                     {
                         Excel.Range rowsToClear = worksheet.Range["A2", usedRange.Cells[usedRange.Rows.Count, usedRange.Columns.Count]];
                         rowsToClear.ClearContents(); // Clears data but keeps formatting and headers
-                     
+
                     }
 
 
@@ -2670,13 +2671,20 @@ namespace thecalcify
                         columnPreferences.Add("V");
                     }
 
+                    InitializeDataGridView();
 
                     // Update DataGridView column visibility
                     foreach (DataGridViewColumn column in defaultGrid.Columns)
                     {
-                        column.Visible = columnPreferences.Contains(column.Name);
+                        if (column.Name.ToLower() == "symbol" || column.Name.ToLower() == "v")
+                        {
+                            column.Visible = false;
+                        }
+                        else
+                        {
+                            column.Visible = columnPreferences.Contains(column.Name);
+                        }
                     }
-
 
                     panelAddColumns.Visible = false;
                     //MessageBox.Show("Columns updated successfully!");
@@ -2735,14 +2743,13 @@ namespace thecalcify
             {
                 if (column.Name == "symbol" || column.Name == "V")
                 {
-                    column.Visible = true;
+                    column.Visible = false;
                 }
-                else
-                {
-                    column.Visible = columnPreferences.Contains(column.Name);
-                }
+                //else
+                //{
+                //    column.Visible = columnPreferences.Contains(column.Name) ? true : false;
+                //}
             }
-
 
             panelAddColumns.Visible = true;
             panelAddColumns.BringToFront();
@@ -2945,6 +2952,11 @@ namespace thecalcify
                     selectedSymbols = currentlyCheckedSymbols;
                     editableMarketWatchGrid.SaveSymbols(selectedSymbols);
                     identifiers = selectedSymbols;
+                    BeginInvoke((MethodInvoker)(() =>
+                    {
+                        InitializeDataGridView();
+                    }));
+                    await LoadInitialMarketDataAsync();
                     await SignalREvent();
 
                     panelAddSymbols.Visible = false;
