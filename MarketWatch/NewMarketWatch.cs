@@ -1661,12 +1661,12 @@ namespace thecalcify.MarketWatch
                 thecalcify live_Rate = thecalcify.CurrentInstance;
                 if (live_Rate == null)
                     live_Rate.LiveRateGrid();
-                //if (saveFileName != null)
-                //{
-                //    live_Rate.titleLabel.Text = $"{saveFileName}";
-                //}
-                //live_Rate.isdeleted = false;
-                //live_Rate.MenuLoad();
+                if (saveFileName != null)
+                {
+                    live_Rate.titleLabel.Text = $"{saveFileName}";
+                }
+                live_Rate.isdeleted = false;
+                live_Rate.MenuLoad();
             }
         }
 

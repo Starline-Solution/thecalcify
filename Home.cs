@@ -30,6 +30,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using thecalcify.Helper;
+using thecalcify.MarketWatch;
 using Excel = Microsoft.Office.Interop.Excel;
 
 namespace thecalcify
@@ -121,6 +122,8 @@ namespace thecalcify
         private Excel.Application excelApp;
         private Excel.Workbook workbook;
         private Excel.Worksheet worksheet;
+        public bool isEdit = false;
+        private readonly Dictionary<string, decimal> previousAsks = new Dictionary<string, decimal>();
         private bool _excelInitialized = false;
         private bool isFullScreen = false;
         private System.Drawing.Rectangle _dragBoxFromMouseDown = System.Drawing.Rectangle.Empty, prevBounds;
@@ -128,7 +131,13 @@ namespace thecalcify
         private FormBorderStyle prevStyle;
         public string saveFileName;
         private Thread licenceThread;
+        public bool isGrid = true, reloadGrid = true;
+        public bool isdeleted = false;
+        public readonly string AppFolder = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        "thecalcify");
         public static thecalcify CurrentInstance { get; private set; }
+        public List<string> FileLists = new List<string>();
         public List<string> columnPreferences;
         public string lastOpenMarketWatch = string.Empty;
         public enum MarketWatchViewMode
@@ -194,11 +203,17 @@ namespace thecalcify
             }));
 
             //licenceExpire.Text = "Licence Expired On :- " + licenceDate;
+            MenuLoad();
 
+
+            // --- LOAD INITIAL DATA ASYNCHRONOUSLY ---
+            await LoadInitialMarketDataAsync();
 
             // --- FORM PROPERTIES ---
             this.WindowState = FormWindowState.Maximized;
             defaultGrid.Size = new Size(this.ClientSize.Width, this.ClientSize.Height);
+
+            CurrentInstance = this;
 
             // --- INITIALIZE DATA STRUCTURES ---
             marketDataTable = new System.Data.DataTable();
@@ -365,8 +380,8 @@ namespace thecalcify
 
                     try
                     {
-                        //if (selectedSymbols.Count != 0)
-                        //    identifiers = new List<string>(selectedSymbols);
+                        if (selectedSymbols.Count != 0)
+                            identifiers = new List<string>(selectedSymbols);
 
                         await connection.InvokeAsync("SubscribeSymbols", identifiers);
                         Console.WriteLine("Resubscribed after reconnect.");
@@ -378,6 +393,7 @@ namespace thecalcify
                     }
                 };
 
+                var currentIdentifiers = new List<string>(identifiers); // snapshot copy
 
                 //var currentIdentifiers = new List<string>(identifiers); // snapshot copy
                 await connection.StartAsync();
@@ -386,11 +402,11 @@ namespace thecalcify
                 {
                     if (connection.State == HubConnectionState.Connected)
                     {
-                        //if (selectedSymbols.Count != 0)
-                        //    identifiers = new List<string>(selectedSymbols);
+                        if (selectedSymbols.Count != 0)
+                            identifiers = new List<string>(selectedSymbols);
 
-                        //if (currentIdentifiers.Count() != identifiers.Count())
-                        //    identifiers = currentIdentifiers;
+                        if (currentIdentifiers.Count() != identifiers.Count())
+                            identifiers = currentIdentifiers;
 
                         await connection.InvokeAsync("SubscribeSymbols", identifiers);
                         SetupUpdateTimer();
@@ -437,7 +453,7 @@ namespace thecalcify
 
                 var json = DecompressGzip(Convert.FromBase64String(base64));
                 var data = JsonConvert.DeserializeObject<MarketDataDTO>(json);
-                if (data == null || !(instruments?.Contains(data.i) ?? false)) return;
+                if (data == null || !(identifiers?.Contains(data.i) ?? false)) return;
 
                 _updateQueue.Enqueue(data);
             }
@@ -1461,6 +1477,386 @@ namespace thecalcify
                     aboutForm.ShowDialog();
                 }
             }
+        }
+
+        private void SetActiveMenuItem(ToolStripMenuItem activeItem)
+        {
+            foreach (ToolStripMenuItem item in viewToolStripMenuItem.DropDownItems)
+            {
+                item.Enabled = true;
+                item.Checked = false;
+            }
+
+            activeItem.Enabled = false;
+            activeItem.Checked = true;
+        }
+
+        public void MenuLoad()
+        {
+            try
+            {
+
+                // Final folder path
+                string finalPath = Path.Combine(AppFolder, username);
+
+                // Get all .slt files from the application folder
+                List<string> fileNames = Directory.GetFiles(finalPath, "*.slt")
+                                                 .Select(Path.GetFileNameWithoutExtension)
+                                                 .ToList();
+
+                FileLists = fileNames;
+
+                // Clear existing menu items
+                viewToolStripMenuItem.DropDownItems.Clear();
+                // Add Default menu item with click handler
+                ToolStripMenuItem defaultMenuItem = new ToolStripMenuItem("Default");
+                defaultMenuItem.Click += async (sender, e) =>
+                {
+                    var clickedItem = (ToolStripMenuItem)sender;
+                    await DefaultToolStripMenuItem_Click(sender, e);
+                    addEditSymbolsToolStripMenuItem.Enabled = false;
+                    SetActiveMenuItem(clickedItem);
+                    saveMarketWatchHost.Visible = false;
+                    lastOpenMarketWatch = "Default";
+                    await LoadInitialMarketDataAsync();
+                    isGrid = true;
+                    reloadGrid = true;
+                };
+                if (fileNames.Count > 0)
+                {
+                    if (isdeleted == true)
+                    {
+                        defaultMenuItem.Enabled = false;
+                    }
+                }
+
+                defaultMenuItem.Enabled = true;
+                viewToolStripMenuItem.DropDownItems.Add(defaultMenuItem);
+
+                // Add each file as a menu item with a click handler
+                foreach (string fileName in fileNames)
+                {
+                    ToolStripMenuItem menuItem = new ToolStripMenuItem(fileName);
+                    menuItem.Click += async (sender, e) =>
+                    {
+                        var clickedItem = (ToolStripMenuItem)sender;
+
+                        saveFileName = clickedItem.Text;
+                        addEditSymbolsToolStripMenuItem.Enabled = true;
+
+                        LoadSymbol(Path.Combine(saveFileName + ".slt"));
+
+                        SetActiveMenuItem(clickedItem);
+                        titleLabel.Text = saveFileName.ToUpper();
+                        isEdit = false;
+                        saveMarketWatchHost.Visible = false;
+                        lastOpenMarketWatch = saveFileName;
+                        await LoadInitialMarketDataAsync();
+                        isGrid = true;
+                        reloadGrid = true;
+
+                    };
+                    viewToolStripMenuItem.DropDownItems.Add(menuItem);
+                }
+            }
+            catch (DirectoryNotFoundException)
+            {
+                // Clear existing menu items
+                viewToolStripMenuItem.DropDownItems.Clear();
+                // Add Default menu item with click handler
+                ToolStripMenuItem defaultMenuItem = new ToolStripMenuItem("Default");
+                defaultMenuItem.Click += async (sender, e) =>
+                {
+
+                    var clickedItem = (ToolStripMenuItem)sender;
+                    await DefaultToolStripMenuItem_Click(sender, e);
+                    MenuLoad();
+                    addEditSymbolsToolStripMenuItem.Enabled = false;
+                    saveFileName = null;
+                    SetActiveMenuItem(clickedItem);
+                    saveMarketWatchHost.Visible = false;
+                    titleLabel.Text = "DEFAULT";
+                    lastOpenMarketWatch = "Default";
+                    await LoadInitialMarketDataAsync();
+                    isGrid = true;
+                    reloadGrid = true;
+                };
+                defaultMenuItem.Enabled = false;
+                viewToolStripMenuItem.DropDownItems.Add(defaultMenuItem);
+            }
+            catch (Exception ex)
+            {
+                ApplicationLogger.LogException(ex);
+            }
+        }
+
+        public async void LoadSymbol(string Filename)
+        {
+            try
+            {
+                string finalPath = Path.Combine(AppFolder, username);
+                selectedSymbols.Clear();
+                Filename = Path.Combine(finalPath, Filename);
+                string cipherText = File.ReadAllText(Filename);
+                string json = CryptoHelper.Decrypt(cipherText, EditableMarketWatchGrid.passphrase);
+                var symbols = System.Text.Json.JsonSerializer.Deserialize<List<string>>(json);
+                selectedSymbols.AddRange(symbols);
+                identifiers = selectedSymbols;
+                isLoadedSymbol = true;
+                titleLabel.Text = Path.GetFileNameWithoutExtension(Filename).ToUpper();
+                marketDataTable = new System.Data.DataTable(); // Ensure this is created first
+                SetupDataTable();                  // Set up columns
+                InitializeDataGridView();          // Configure the grid
+                await SignalREvent();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("File Was Never Save Or Moved Please Try Again!", "Load Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ApplicationLogger.LogException(ex);
+            }
+
+            LiveRateGrid();
+
+            MenuLoad();
+
+        }
+
+        public async Task DefaultToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            EditableMarketWatchGrid editableMarketWatchGrid = EditableMarketWatchGrid.CurrentInstance;
+            editableMarketWatchGrid?.Dispose();
+            toolsToolStripMenuItem.Enabled = true;
+            isLoadedSymbol = false;
+            LiveRateGrid();
+            txtsearch.Text = string.Empty;
+            await LoadInitialMarketDataAsync();
+
+            MenuLoad();
+            titleLabel.Text = "DEFAULT";
+            saveFileName = null;
+            isEdit = false;
+            identifiers = symbolMaster;
+            marketDataTable = new System.Data.DataTable(); // Ensure this is created first
+            SetupDataTable();                  // Set up columns
+            InitializeDataGridView();          // Configure the grid
+            await SignalREvent();
+        }
+
+        private void newCTRLNToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // 6. Clean up current resources before switching
+                CleanupBeforeViewSwitch();
+
+
+                // 1. Set new view mode
+                marketWatchViewMode = MarketWatchViewMode.New;
+
+                // 2. Reset state if not in edit mode
+                if (!isEdit)
+                {
+                    selectedSymbols.Clear();
+                    saveFileName = null;
+                    isLoadedSymbol = false;
+                }
+
+                // 3. Create and configure new editable grid
+                var editableGrid = new EditableMarketWatchGrid
+                {
+                    Name = "editableMarketWatchGridView",
+                    Dock = DockStyle.Fill,
+                    columnPreferences = columnPreferences,
+                    columnPreferencesDefault = columnPreferencesDefault,
+                    fontSize = fontSize,
+                    pastRateTickDTO = pastRateTickDTO,
+                    isEditMarketWatch = true,
+                    SymbolName = SymbolName,
+                };
+
+                // 4. Handle edit mode specific setup
+                if (isEdit && editableGrid.selectedSymbols != null && saveFileName != null)
+                {
+                    editableGrid.saveFileName = saveFileName;
+                }
+
+                // 5. Add to controls and bring to front
+                this.Controls.Add(editableGrid);
+                editableGrid.BringToFront();
+                editableGrid.Focus();
+
+
+                // 7. Update UI state
+                UpdateUIStateForNewMarketWatch();
+            }
+            catch (Exception ex)
+            {
+                ApplicationLogger.LogException(ex);
+                MessageBox.Show($"Error switching to new market watch: {ex.Message}");
+            }
+        }
+        private void ClearCollections()
+        {
+            lock (_updateQueue)
+            {
+                while (_updateQueue.TryDequeue(out _)) { }
+            }
+
+            lock (symbolRowMap)
+            {
+                symbolRowMap.Clear();
+            }
+
+            lock (marketDataTable)
+            {
+                marketDataTable.Clear();
+                marketDataTable.Dispose();
+                marketDataTable = new System.Data.DataTable(); // Reinitialize if needed
+            }
+
+            previousAsks.Clear();
+            //pastRateTickDTO.Clear();
+        }
+
+        private void UpdateUIStateForNewMarketWatch()
+        {
+            try
+            {
+
+                ClearCollections();
+
+                // Update menu items
+                toolsToolStripMenuItem.Enabled = true;
+                newMarketWatchMenuItem.Enabled = false;
+
+                // Update save button visibility
+                saveMarketWatchHost.Visible = true;
+                saveMarketWatchHost.Text = "Save MarketWatch";
+
+                // Update status label
+
+                // Update title based on edit mode
+                titleLabel.Text = isEdit
+                    ? $"Edit {saveFileName?.ToUpper() ?? "Unknown"} MarketWatch"
+                    : "New MarketWatch";
+
+                // Reset save file name
+                saveFileName = null;
+
+                // Enable all items in the Open menu
+                foreach (ToolStripMenuItem item in viewToolStripMenuItem.DropDownItems)
+                {
+                    item.Enabled = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                ApplicationLogger.LogException(ex);
+            }
+        }
+
+        private void CleanupBeforeViewSwitch()
+        {
+            // 1. Dispose SignalR connection properly
+            DisposeSignalRConnection();
+
+            // 2. Stop and dispose timers
+            signalRTimer?.Stop();
+            signalRTimer?.Dispose();
+            signalRTimer = null;
+
+            _updateTimer?.Stop();
+            _updateTimer?.Dispose();
+            _updateTimer = null;
+            while (_updateQueue.TryDequeue(out _)) { }
+            txtsearch.Text = string.Empty;
+            // 3. Clean up DataGridView
+            CleanupDataGridView();
+
+            // 4. Dispose existing editable grid if exists
+            var existingGrid = this.Controls.Find("editableMarketWatchGridView", true).FirstOrDefault();
+            if (existingGrid != null)
+            {
+                this.Controls.Remove(existingGrid);
+                existingGrid.Dispose();
+            }
+
+            // 5. Clean up Excel resources
+            CleanupExcel();
+
+        }
+
+        private void CleanupExcel()
+        {
+            try
+            {
+                if (worksheet != null)
+                {
+                    Marshal.ReleaseComObject(worksheet);
+                    worksheet = null;
+                }
+                if (workbook != null)
+                {
+                    workbook.Close(false);
+                    Marshal.ReleaseComObject(workbook);
+                    workbook = null;
+                }
+                if (excelApp != null)
+                {
+                    excelApp.Quit();
+                    Marshal.ReleaseComObject(excelApp);
+                    excelApp = null;
+                }
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+            }
+            catch (Exception ex)
+            {
+                ApplicationLogger.LogException(ex);
+            }
+        }
+
+        private void DisposeSignalRConnection()
+        {
+            if (connection != null)
+            {
+                try
+                {
+                    connection.StopAsync().Wait();
+                    connection.DisposeAsync().AsTask().Wait();
+                }
+                catch (Exception ex)
+                {
+                    ApplicationLogger.LogException(ex);
+                }
+                finally
+                {
+                    connection = null; // ✅ CRUCIAL
+                }
+            }
+        }
+
+        private void CleanupDataGridView()
+        {
+            defaultGrid.SuspendLayout();
+            defaultGrid.Visible = false;
+
+            // Unbind data
+            defaultGrid.DataSource = null;
+
+            // Clear the grid only after unbinding
+            defaultGrid.Rows.Clear();
+            defaultGrid.Columns.Clear();
+
+            //// Dispose cell styles and other resources
+            //dataGridView1.DefaultCellStyle = new DataGridViewCellStyle();
+            //dataGridView1.ColumnHeadersDefaultCellStyle = new DataGridViewCellStyle();
+
+            // Dispose cell styles and other resources
+            defaultGrid.DefaultCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", fontSize);
+            defaultGrid.ColumnHeadersDefaultCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", fontSize + 1.5f, FontStyle.Bold);
+
+            defaultGrid.ResumeLayout();
         }
 
         private void fullScreenF11ToolStripMenuItem_Click(object sender, EventArgs e)
