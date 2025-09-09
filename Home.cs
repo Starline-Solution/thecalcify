@@ -31,7 +31,10 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using thecalcify.Helper;
 using thecalcify.MarketWatch;
+using Button = System.Windows.Forms.Button;
 using Excel = Microsoft.Office.Interop.Excel;
+using Label = System.Windows.Forms.Label;
+using TextBox = System.Windows.Forms.TextBox;
 
 namespace thecalcify
 {
@@ -132,6 +135,10 @@ namespace thecalcify
         public string saveFileName;
         private Thread licenceThread;
         public bool isGrid = true, reloadGrid = true;
+        private CheckedListBox checkedListColumns;
+        private Button btnSelectAllColumns;
+        private Button btnConfirmAddColumns;
+        private Button btnCancelAddColumns;
         public bool isdeleted = false;
         public readonly string AppFolder = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
@@ -148,6 +155,14 @@ namespace thecalcify
         public MarketWatchViewMode marketWatchViewMode = MarketWatchViewMode.Default;
         private readonly object _tableLock = new object();
         private readonly object _reconnectLock = new object();
+        public ConnectionViewMode connectionViewMode = ConnectionViewMode.Connect;
+        public enum ConnectionViewMode
+        {
+            Connect,
+            Disconnect
+        }
+        public List<(string Symbol, string SymbolName)> SymbolName = new List<(string Symbol, string SymbolName)>();
+
 
         public thecalcify()
         {
@@ -1015,6 +1030,11 @@ namespace thecalcify
                                     .Select(x => x.i)
                                     .ToList();
 
+                                SymbolName = resultdefault.data
+                                     .Where(x => !string.IsNullOrEmpty(x.i) && !string.IsNullOrEmpty(x.n))
+                                     .Select(x => (Symbol: x.i, SymbolName: x.n))
+
+                             .ToList();
                                 symbolMaster = identifiers; 
                             }
 
@@ -1805,7 +1825,7 @@ namespace thecalcify
                     fontSize = fontSize,
                     pastRateTickDTO = pastRateTickDTO,
                     isEditMarketWatch = true,
-                    //SymbolName = SymbolName,
+                    SymbolName = SymbolName,
                 };
 
                 // 4. Handle edit mode specific setup
@@ -1971,6 +1991,263 @@ namespace thecalcify
             }
         }
 
+        private void deleteToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (FileLists == null || FileLists.Count == 0)
+            {
+                MessageBox.Show("No Market Watch available to delete.", "Information",
+                              MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            using (var selectionForm = new Form())
+            {
+                selectionForm.Text = "Select Market Watch to Delete";
+                selectionForm.Width = 600;
+                selectionForm.Height = 500;
+                selectionForm.FormBorderStyle = FormBorderStyle.FixedDialog;
+                selectionForm.StartPosition = FormStartPosition.CenterParent;
+                selectionForm.BackColor = Color.White;
+                selectionForm.Font = new System.Drawing.Font("Microsoft Sans Serif", 9);
+                selectionForm.Icon = SystemIcons.WinLogo;
+
+                var headerPanel = new Panel
+                {
+                    Dock = DockStyle.Top,
+                    Height = 50,
+                    BackColor = Color.FromArgb(0, 120, 215)
+                };
+
+                var headerLabel = new Label
+                {
+                    Text = "Select Market Watch to Delete",
+                    Dock = DockStyle.Fill,
+                    ForeColor = Color.White,
+                    TextAlign = ContentAlignment.MiddleLeft,
+                    Font = new System.Drawing.Font("Microsoft Sans Serif", 12, FontStyle.Bold),
+                    Padding = new Padding(15, 0, 0, 0)
+                };
+                headerPanel.Controls.Add(headerLabel);
+
+                // Search box for filtering
+                var searchBox = new TextBox
+                {
+                    Dock = DockStyle.Top,
+                    Height = 30,
+                    Margin = new Padding(10, 10, 10, 5),
+                    Font = new System.Drawing.Font("Microsoft Sans Serif", 9),
+                    Text = "Search Here..."
+
+                };
+
+                // Modern list view with checkboxes
+                var listView = new ListView
+                {
+                    Dock = DockStyle.Fill,
+                    CheckBoxes = true,
+                    View = View.Details,
+                    FullRowSelect = true,
+                    GridLines = false,
+                    MultiSelect = false,
+                    BorderStyle = BorderStyle.None,
+                    BackColor = SystemColors.Window
+                };
+
+                // Modern column headers
+                listView.Columns.Add("Market Watch Name", 300);
+                listView.Columns.Add("Path", 250);
+
+                // Add files to list view
+                foreach (string filePath in FileLists)
+                {
+                    if (filePath != saveFileName)
+                    {
+                        var item = new ListViewItem(Path.GetFileName(filePath));
+                        item.SubItems.Add(filePath);
+                        item.Tag = filePath; // Store full path in tag
+                        listView.Items.Add(item);
+                    }
+                }
+
+                if (listView.Items.Count == 0)
+                {
+                    MessageBox.Show("There is only one MarketWatch and that Open so can't Delete.", "Information",
+                             MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+                // Selection controls panel
+                var controlsPanel = new Panel
+                {
+                    Dock = DockStyle.Bottom,
+                    Height = 50,
+                    BackColor = Color.FromArgb(240, 240, 240)
+                };
+
+                // Modern flat buttons
+                var selectAllButton = new Button
+                {
+                    Text = "Select All",
+                    FlatStyle = FlatStyle.Flat,
+                    BackColor = Color.White,
+                    ForeColor = Color.FromArgb(0, 120, 215),
+                    Height = 30,
+                    Width = 120,
+                    Anchor = AnchorStyles.Left | AnchorStyles.Bottom,
+                    Margin = new Padding(10, 10, 0, 10)
+                };
+
+
+                var deleteButton = new Button
+                {
+                    Text = "Delete Selected",
+                    FlatStyle = FlatStyle.Flat,
+                    BackColor = Color.FromArgb(0, 120, 215),
+                    ForeColor = Color.White,
+                    Height = 30,
+                    Width = 120,
+                    Anchor = AnchorStyles.Right | AnchorStyles.Bottom,
+                    Margin = new Padding(0, 10, 90, 10)
+                };
+
+                var cancelButton = new Button
+                {
+                    Text = "Cancel",
+                    FlatStyle = FlatStyle.Flat,
+                    BackColor = Color.White,
+                    ForeColor = Color.FromArgb(0, 120, 215),
+                    Height = 30,
+                    Width = 80,
+                    Anchor = AnchorStyles.Right | AnchorStyles.Bottom,
+                    Margin = new Padding(0, 10, 10, 10)
+                };
+
+                // Button event handlers
+                selectAllButton.Click += (s, args) =>
+                {
+                    foreach (ListViewItem item in listView.Items)
+                    {
+                        item.Checked = true;
+                    }
+                };
+
+
+                cancelButton.Click += (s, args) => selectionForm.DialogResult = DialogResult.Cancel;
+
+                deleteButton.Click += (s, args) =>
+                {
+                    var selectedFiles = listView.CheckedItems.Cast<ListViewItem>()
+                                             .Select(item => item.Tag.ToString())
+                                             .ToList();
+
+                    if (selectedFiles.Count == 0)
+                    {
+                        MessageBox.Show("Please select at least one Market Watch to delete.",
+                                        "No Selection",
+                                        MessageBoxButtons.OK,
+                                        MessageBoxIcon.Information);
+                        return;
+                    }
+
+                    // Modern confirmation dialog
+                    var confirmResult = MessageBox.Show($"Are you sure you want to delete {selectedFiles.Count} Market Watch(s)?",
+                                                     "Confirm Deletion",
+                                                     MessageBoxButtons.YesNo,
+                                                     MessageBoxIcon.Warning,
+                                                     MessageBoxDefaultButton.Button2);
+
+                    if (confirmResult == DialogResult.Yes)
+                    {
+                        int successCount = 0;
+                        var failedDeletions = new List<string>();
+
+                        foreach (string filePath in selectedFiles)
+                        {
+                            if (saveFileName == filePath)
+                            {
+                                MessageBox.Show("Can't Delete Open MarketWatch", "Delete Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                return;
+                            }
+                            string fullpath = Path.Combine(AppFolder, username, $"{filePath}.slt");
+                            try
+                            {
+                                File.Delete(fullpath);
+                                successCount++;
+                                isdeleted = true;
+                            }
+                            catch (Exception ex)
+                            {
+                                failedDeletions.Add($"{Path.GetFileName(filePath)}: {ex.Message}");
+                                ApplicationLogger.LogException(ex);
+                            }
+                        }
+
+                        // Modern result display
+                        var resultMessage = new StringBuilder();
+                        resultMessage.AppendLine($"Successfully deleted {successCount} Market Watch(s).");
+
+                        if (failedDeletions.Count > 0)
+                        {
+                            resultMessage.AppendLine();
+                            resultMessage.AppendLine("The following files couldn't be deleted:");
+                            resultMessage.AppendLine(string.Join(Environment.NewLine, failedDeletions));
+                        }
+
+                        MessageBox.Show(resultMessage.ToString(),
+                                      "Deletion Results",
+                                      MessageBoxButtons.OK,
+                                      failedDeletions.Count > 0 ? MessageBoxIcon.Warning : MessageBoxIcon.Information);
+
+                        if (successCount > 0)
+                        {
+                            selectionForm.DialogResult = DialogResult.OK;
+                        }
+
+                        MenuLoad();
+                    }
+                };
+
+                // Search functionality
+                searchBox.TextChanged += (s, args) =>
+                {
+                    listView.BeginUpdate();
+                    listView.Items.Clear();
+
+                    foreach (string filePath in FileLists.Where(f =>
+                        Path.GetFileName(f).IndexOf(searchBox.Text, StringComparison.OrdinalIgnoreCase) >= 0))
+                    {
+                        var item = new ListViewItem(Path.GetFileName(filePath));
+                        item.SubItems.Add(filePath);
+                        item.Tag = filePath;
+                        listView.Items.Add(item);
+                    }
+
+                    listView.EndUpdate();
+                };
+
+                // Add controls to panels
+                controlsPanel.Controls.Add(selectAllButton);
+                controlsPanel.Controls.Add(deleteButton);
+                controlsPanel.Controls.Add(cancelButton);
+
+                // Add controls to form
+                selectionForm.Controls.Add(listView);
+                selectionForm.Controls.Add(searchBox);
+                selectionForm.Controls.Add(headerPanel);
+                selectionForm.Controls.Add(controlsPanel);
+
+                // Set form buttons
+                selectionForm.AcceptButton = deleteButton;
+                selectionForm.CancelButton = cancelButton;
+
+                // Show dialog
+                if (selectionForm.ShowDialog() == DialogResult.OK)
+                {
+                    saveFileName = null;
+                }
+            }
+        }
+
         private void CleanupDataGridView()
         {
             defaultGrid.SuspendLayout();
@@ -2029,6 +2306,71 @@ namespace thecalcify
             }
         }
 
+        private void defaultGrid_CellMouseDown(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Right && e.RowIndex >= 0 && e.ColumnIndex >= 0)
+            {
+                defaultGrid.ClearSelection();
+            }
+        }
+
+        private void defaultGrid_CellMouseEnter(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex >= 0)
+            {
+                defaultGrid.Rows[e.RowIndex].DefaultCellStyle.BackColor = Color.FromArgb(245, 245, 245);
+            }
+        }
+
+        private void defaultGrid_CellMouseLeave(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex >= 0)
+            {
+                if (e.RowIndex % 2 == 0)
+                    defaultGrid.Rows[e.RowIndex].DefaultCellStyle.BackColor = Color.White;
+                else
+                    defaultGrid.Rows[e.RowIndex].DefaultCellStyle.BackColor = Color.FromArgb(248, 248, 248);
+            }
+        }
+
+        private void Thecalcify_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Shift && e.KeyCode == Keys.Escape)
+            {
+                var result = MessageBox.Show("Do you want to Exit Application?", "Exit Application", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                if (result == DialogResult.Yes)
+                {
+                    this.Close(); // Close the login form
+                    System.Windows.Forms.Application.Exit(); // Terminate the application
+
+                }
+            }
+
+            if (e.Control && e.KeyCode == Keys.N && marketWatchViewMode != MarketWatchViewMode.New)
+            {
+                NewCTRLNToolStripMenuItem1_Click(this, EventArgs.Empty);
+                e.Handled = true;
+            }
+
+            if (e.Control && e.KeyCode == Keys.D && connectionViewMode != ConnectionViewMode.Disconnect)
+            {
+                DisconnectESCToolStripMenuItem_Click(this, EventArgs.Empty);
+                e.Handled = true;
+            }
+
+            if (e.KeyCode == Keys.F11)
+            {
+                fullScreenF11ToolStripMenuItem_Click(this, EventArgs.Empty);
+                e.Handled = true;
+            }
+
+            if (e.KeyCode == Keys.U && e.Control)
+            {
+                aboutToolStripMenuItem_Click(this, EventArgs.Empty);
+                e.Handled = true;
+            }
+        }
+
         private void DefaultGrid_DataSourceChanged(object sender, EventArgs e)
         {
             try
@@ -2055,7 +2397,7 @@ namespace thecalcify
             }
         }
 
-        private void thecalcify_Layout(object sender, LayoutEventArgs e)
+        private void Thecalcify_Layout(object sender, LayoutEventArgs e)
         {
             ResizeDataGridToFitWindow();
         }
@@ -2141,6 +2483,505 @@ namespace thecalcify
             }
         }
 
+        private void AddEditColumnsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+            if (panelAddSymbols != null && panelAddSymbols.Visible)
+                panelAddSymbols.Visible = false;
+
+            // Create panel if it hasn't been initialized yet
+            if (panelAddColumns == null)
+            {
+                // Initialize panel
+                panelAddColumns = new Panel
+                {
+                    Size = new System.Drawing.Size(500, 500),
+                    BackColor = Color.White,
+                    BorderStyle = BorderStyle.None,
+                    Visible = false,
+                    Padding = new Padding(20),
+                };
+
+                panelAddColumns.Paint += (s2, e2) =>
+                {
+                    ControlPaint.DrawBorder(e2.Graphics, panelAddColumns.ClientRectangle,
+                        Color.LightGray, 2, ButtonBorderStyle.Solid,
+                        Color.LightGray, 2, ButtonBorderStyle.Solid,
+                        Color.LightGray, 2, ButtonBorderStyle.Solid,
+                        Color.LightGray, 2, ButtonBorderStyle.Solid);
+                };
+
+                panelAddColumns.Location = new System.Drawing.Point(
+                    (this.Width - panelAddColumns.Width) / 2,
+                    (this.Height - panelAddColumns.Height) / 2
+                );
+
+                // Title label
+                Label titleLabel = new Label
+                {
+                    Text = "📊 Add / Edit Columns",
+                    Font = new System.Drawing.Font("Microsoft Sans Serif Semibold", 16, FontStyle.Bold),
+                    ForeColor = Color.FromArgb(50, 50, 50),
+                    Dock = DockStyle.Top,
+                    Height = 50,
+                    TextAlign = ContentAlignment.MiddleCenter,
+                    Padding = new Padding(0, 10, 0, 10)
+                };
+
+                // CheckedListBox
+                checkedListColumns = new CheckedListBox
+                {
+                    Height = 320,
+                    Dock = DockStyle.Top,
+                    Font = new System.Drawing.Font("Microsoft Sans Serif", 10),
+                    BorderStyle = BorderStyle.FixedSingle,
+                    CheckOnClick = true,
+                    BackColor = Color.White
+                };
+
+                // Add Spacer Panel for spacing
+                Panel spacerPanel = new Panel
+                {
+                    Height = 10, // Adjust height as needed
+                    Dock = DockStyle.Top
+                };
+
+                // Button container
+                Panel buttonPanel = new Panel
+                {
+                    Height = 80,
+                    Dock = DockStyle.Bottom,
+                    Padding = new Padding(10),
+                    BackColor = Color.White
+                };
+
+                // Buttons
+                btnSelectAllColumns = new Button
+                {
+                    Text = "Select All",
+                    Height = 40,
+                    Width = 120,
+                    BackColor = Color.FromArgb(0, 122, 204),
+                    ForeColor = Color.White,
+                    FlatStyle = FlatStyle.Flat,
+                    Font = new System.Drawing.Font("Microsoft Sans Serif", 10, FontStyle.Bold),
+                    Cursor = Cursors.Hand
+                };
+                btnSelectAllColumns.FlatAppearance.BorderSize = 0;
+
+                btnConfirmAddColumns = new Button
+                {
+                    Text = "✔ Save",
+                    Height = 40,
+                    Width = 120,
+                    BackColor = Color.FromArgb(0, 122, 204),
+                    ForeColor = Color.White,
+                    FlatStyle = FlatStyle.Flat,
+                    Font = new System.Drawing.Font("Microsoft Sans Serif", 10, FontStyle.Bold),
+                    Cursor = Cursors.Hand
+                };
+                btnConfirmAddColumns.FlatAppearance.BorderSize = 0;
+
+                btnCancelAddColumns = new Button
+                {
+                    Text = "✖ Cancel",
+                    Height = 40,
+                    Width = 120,
+                    BackColor = Color.LightGray,
+                    ForeColor = Color.Black,
+                    FlatStyle = FlatStyle.Flat,
+                    Font = new System.Drawing.Font("Microsoft Sans Serif", 10, FontStyle.Bold),
+                    Cursor = Cursors.Hand
+                };
+                btnCancelAddColumns.FlatAppearance.BorderSize = 0;
+
+                // Layout
+                btnSelectAllColumns.Location = new System.Drawing.Point(30, 22);
+                btnConfirmAddColumns.Location = new System.Drawing.Point(170, 22);
+                btnCancelAddColumns.Location = new System.Drawing.Point(310, 22);
+
+                buttonPanel.Controls.Add(btnSelectAllColumns);
+                buttonPanel.Controls.Add(btnConfirmAddColumns);
+                buttonPanel.Controls.Add(btnCancelAddColumns);
+
+                panelAddColumns.Controls.Add(checkedListColumns);
+                panelAddColumns.Controls.Add(spacerPanel);
+                panelAddColumns.Controls.Add(buttonPanel);
+                panelAddColumns.Controls.Add(titleLabel);
+
+                this.Controls.Add(panelAddColumns);
+
+                this.Resize += (s3, e3) =>
+                {
+                    panelAddColumns.Location = new System.Drawing.Point(
+                        (this.Width - panelAddColumns.Width) / 2,
+                        (this.Height - panelAddColumns.Height) / 2
+                    );
+                };
+
+                // Hook up events
+                btnSelectAllColumns.Click += (s, e2) =>
+                {
+                    bool allChecked = true;
+                    for (int i = 0; i < checkedListColumns.Items.Count; i++)
+                    {
+                        if (!checkedListColumns.GetItemChecked(i))
+                        {
+                            allChecked = false;
+                            break;
+                        }
+                    }
+
+                    bool check = !allChecked;
+                    btnSelectAllColumns.Text = check ? "Unselect All" : "Select All";
+
+                    for (int i = 0; i < checkedListColumns.Items.Count; i++)
+                    {
+                        checkedListColumns.SetItemChecked(i, check);
+                    }
+                };
+
+                btnConfirmAddColumns.Click += (s, e2) =>
+                {
+                    var currentlyChecked = checkedListColumns.CheckedItems.Cast<string>().ToList();
+                    var previouslySelected = columnPreferences.Count > 0 ? columnPreferences : columnPreferencesDefault;
+
+
+                    if (!currentlyChecked.Any())
+                    {
+                        MessageBox.Show("Please select at least one column.");
+                        return;
+                    }
+
+                    if (currentlyChecked.SequenceEqual(previouslySelected))
+                    {
+                        MessageBox.Show("No changes made.");
+                        panelAddColumns.Visible = false;
+                        return;
+                    }
+
+                    // Save the new column preferences
+                    columnPreferences = currentlyChecked;
+
+                    // Make sure Symbol column is always visible in the grid
+                    if (!columnPreferences.Contains("symbol"))
+                    {
+                        columnPreferences.Add("symbol");
+                        columnPreferences.Add("V");
+                    }
+
+
+                    // Update DataGridView column visibility
+                    foreach (DataGridViewColumn column in defaultGrid.Columns)
+                    {
+                        column.Visible = columnPreferences.Contains(column.Name);
+                    }
+
+
+                    panelAddColumns.Visible = false;
+                    //MessageBox.Show("Columns updated successfully!");
+
+                };
+
+                btnCancelAddColumns.Click += (s, e2) =>
+                {
+                    panelAddColumns.Visible = false;
+                };
+            }
+
+            // Refresh items before showing
+            checkedListColumns.Items.Clear();
+
+
+            // Get the columns to display (use allColumns if no preferences set)
+            var columnsToShow = columnPreferences.Count > 0 ? columnPreferences : columnPreferencesDefault;
+
+            // Add selected columns first (preserving order)
+            foreach (string column in columnPreferencesDefault)
+            {
+                if (columnsToShow.Contains(column) && column != "symbol" && column != "V")
+                {
+                    checkedListColumns.Items.Add(column, true);
+
+                }
+            }
+
+            // Then add unselected columns
+            foreach (string column in columnPreferencesDefault)
+            {
+                if (!columnsToShow.Contains(column) && column != "symbol" && column != "V")
+                {
+                    checkedListColumns.Items.Add(column, false);
+                }
+            }
+
+
+            // Update Select All button text
+            btnSelectAllColumns.Text = checkedListColumns.CheckedItems.Count == checkedListColumns.Items.Count
+                ? "Unselect All"
+                : "Select All";
+
+
+
+            // Make sure Symbol column is always visible in the grid
+            if (!columnPreferences.Contains("symbol"))
+            {
+                columnPreferences.Add("symbol");
+                columnPreferences.Add("V");
+            }
+
+            // Update DataGridView column visibility to ensure Symbol & V are always visible
+            foreach (DataGridViewColumn column in defaultGrid.Columns)
+            {
+                if (column.Name == "symbol" || column.Name == "V")
+                {
+                    column.Visible = true;
+                }
+                else
+                {
+                    column.Visible = columnPreferences.Contains(column.Name);
+                }
+            }
+
+
+            panelAddColumns.Visible = true;
+            panelAddColumns.BringToFront();
+        }
+
+        private void AddEditSymbolsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (panelAddColumns != null && panelAddColumns.Visible)
+                panelAddColumns.Visible = false;
+
+            // Create panel if it hasn't been initialized yet
+            if (panelAddSymbols == null)
+            {
+                // Initialize panel
+                panelAddSymbols = new Panel
+                {
+                    Size = new System.Drawing.Size(500, 500),
+                    BackColor = Color.White,
+                    BorderStyle = BorderStyle.None,
+                    Visible = false,
+                    Padding = new Padding(20),
+                };
+
+                panelAddSymbols.Paint += (s2, e2) =>
+                {
+                    ControlPaint.DrawBorder(e2.Graphics, panelAddSymbols.ClientRectangle,
+                        Color.LightGray, 2, ButtonBorderStyle.Solid,
+                        Color.LightGray, 2, ButtonBorderStyle.Solid,
+                        Color.LightGray, 2, ButtonBorderStyle.Solid,
+                        Color.LightGray, 2, ButtonBorderStyle.Solid);
+                };
+
+                panelAddSymbols.Location = new System.Drawing.Point(
+                    (this.Width - panelAddSymbols.Width) / 2,
+                    (this.Height - panelAddSymbols.Height) / 2
+                );
+
+                // Title label
+                Label titleLabel = new Label
+                {
+                    Text = "🔄 Add / Edit Symbols",
+                    Font = new System.Drawing.Font("Microsoft Sans Serif Semibold", 16, FontStyle.Bold),
+                    ForeColor = Color.FromArgb(50, 50, 50),
+                    Dock = DockStyle.Top,
+                    Height = 50,
+                    TextAlign = ContentAlignment.MiddleCenter,
+                    Padding = new Padding(0, 10, 0, 10)
+                };
+
+                // CheckedListBox
+                checkedListSymbols = new CheckedListBox
+                {
+                    Height = 320,
+                    Dock = DockStyle.Top,
+                    Font = new System.Drawing.Font("Microsoft Sans Serif", 10),
+                    BorderStyle = BorderStyle.FixedSingle,
+                    CheckOnClick = true,
+                    BackColor = Color.White
+                };
+
+                // Button container
+                Panel buttonPanel = new Panel
+                {
+                    Height = 80,
+                    Dock = DockStyle.Bottom,
+                    Padding = new Padding(10),
+                    BackColor = Color.White
+                };
+
+                // Buttons
+                btnSelectAllSymbols = new Button
+                {
+                    Text = "Select All",
+                    Height = 40,
+                    Width = 120,
+                    BackColor = Color.FromArgb(0, 122, 204),
+                    ForeColor = Color.White,
+                    FlatStyle = FlatStyle.Flat,
+                    Font = new System.Drawing.Font("Microsoft Sans Serif", 10, FontStyle.Bold),
+                    Cursor = Cursors.Hand
+                };
+                btnSelectAllSymbols.FlatAppearance.BorderSize = 0;
+
+                btnConfirmAddSymbols = new Button
+                {
+                    Text = "✔ Save",
+                    Height = 40,
+                    Width = 120,
+                    BackColor = Color.FromArgb(0, 122, 204),
+                    ForeColor = Color.White,
+                    FlatStyle = FlatStyle.Flat,
+                    Font = new System.Drawing.Font("Microsoft Sans Serif", 10, FontStyle.Bold),
+                    Cursor = Cursors.Hand
+                };
+                btnConfirmAddSymbols.FlatAppearance.BorderSize = 0;
+
+                btnCancelAddSymbols = new Button
+                {
+                    Text = "✖ Cancel",
+                    Height = 40,
+                    Width = 120,
+                    BackColor = Color.LightGray,
+                    ForeColor = Color.Black,
+                    FlatStyle = FlatStyle.Flat,
+                    Font = new System.Drawing.Font("Microsoft Sans Serif", 10, FontStyle.Bold),
+                    Cursor = Cursors.Hand
+                };
+                btnCancelAddSymbols.FlatAppearance.BorderSize = 0;
+
+                // Layout
+                btnSelectAllSymbols.Location = new System.Drawing.Point(30, 35);
+                btnConfirmAddSymbols.Location = new System.Drawing.Point(170, 35);
+                btnCancelAddSymbols.Location = new System.Drawing.Point(310, 35);
+
+                titleLabel.Dock = DockStyle.Top;
+                checkedListSymbols.Dock = DockStyle.Fill; // So it takes remaining space
+                buttonPanel.Dock = DockStyle.Bottom;
+
+
+                buttonPanel.Controls.Add(btnSelectAllSymbols);
+                buttonPanel.Controls.Add(btnConfirmAddSymbols);
+                buttonPanel.Controls.Add(btnCancelAddSymbols);
+
+                panelAddSymbols.Controls.Add(buttonPanel);  // bottom first
+                panelAddSymbols.Controls.Add(checkedListSymbols); // middle
+                panelAddSymbols.Controls.Add(titleLabel);   // top last
+
+
+                this.Controls.Add(panelAddSymbols);
+
+                this.Resize += (s3, e3) =>
+                {
+                    panelAddSymbols.Location = new System.Drawing.Point(
+                        (this.Width - panelAddSymbols.Width) / 2,
+                        (this.Height - panelAddSymbols.Height) / 2
+                    );
+                };
+
+                // Hook up events
+
+                btnSelectAllSymbols.Click += (s, e2) =>
+                {
+                    bool allChecked = true;
+                    for (int i = 0; i < checkedListSymbols.Items.Count; i++)
+                    {
+                        if (!checkedListSymbols.GetItemChecked(i))
+                        {
+                            allChecked = false;
+                            break;
+                        }
+                    }
+
+                    bool check = !allChecked;
+                    btnSelectAllSymbols.Text = check ? "Unselect All" : "Select All";
+
+                    for (int i = 0; i < checkedListSymbols.Items.Count; i++)
+                    {
+                        checkedListSymbols.SetItemChecked(i, check);
+                    }
+                };
+
+                btnConfirmAddSymbols.Click += async (s, e2) =>
+                {
+                    // Get the checked display names (SymbolName)
+                    var currentlyCheckedNames = checkedListSymbols.CheckedItems.Cast<string>().ToList();
+
+
+                    // If nothing is selected
+                    if (!currentlyCheckedNames.Any())
+                    {
+                        MessageBox.Show("Please select at least one symbol to confirm.", "No Selection", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        return;
+                    }
+
+
+                    // Map checked names back to their symbols
+                    var currentlyCheckedSymbols = SymbolName
+                        .Where(x => currentlyCheckedNames.Contains(x.SymbolName))
+                        .Select(x => x.Symbol)
+                        .ToList();
+
+                    // Compare with previous selection
+                    var previouslySelected = selectedSymbols;
+
+                    var addedSymbols = currentlyCheckedSymbols.Except(previouslySelected).ToList();
+                    var removedSymbols = previouslySelected.Except(currentlyCheckedSymbols).ToList();
+
+                    if (!addedSymbols.Any() && !removedSymbols.Any())
+                    {
+                        MessageBox.Show("No changes made.");
+                        return;
+                    }
+
+
+                    // Save changes
+                    EditableMarketWatchGrid editableMarketWatchGrid = EditableMarketWatchGrid.CurrentInstance ?? new EditableMarketWatchGrid();
+                    editableMarketWatchGrid.isGrid = false;
+                    editableMarketWatchGrid.saveFileName = saveFileName;
+                    editableMarketWatchGrid.username = username;
+                    selectedSymbols = currentlyCheckedSymbols;
+                    editableMarketWatchGrid.SaveSymbols(selectedSymbols);
+                    identifiers = selectedSymbols;
+                    await SignalREvent();
+
+                    panelAddSymbols.Visible = false;
+                };
+
+                btnCancelAddSymbols.Click += (s, e2) =>
+                {
+                    panelAddSymbols.Visible = false;
+                };
+            }
+
+            // Refresh items before showing
+            checkedListSymbols.Items.Clear();
+
+            // Add selected symbols first
+            foreach (var item in SymbolName)
+            {
+                if (identifiers.Contains(item.Symbol))
+                {
+                    checkedListSymbols.Items.Add(item.SymbolName, true); // Display symbol name
+                }
+            }
+
+            // Then unselected symbols
+            foreach (var item in SymbolName)
+            {
+                if (!identifiers.Contains(item.Symbol))
+                {
+                    checkedListSymbols.Items.Add(item.SymbolName, false);
+                }
+            }
+
+
+            panelAddSymbols.Visible = true;
+            panelAddSymbols.BringToFront();
+
+        }
         public void KillProcess()
         {
             // Kill any EXCEL processes without a main window (ghost/background instances)
