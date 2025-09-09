@@ -45,6 +45,7 @@ namespace thecalcify
             this.Tools = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.ExportToExcelToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.addEditSymbolsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.addEditColumnsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.toolsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.disconnectESCToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -103,7 +104,8 @@ namespace thecalcify
             this.defaultGrid.Dock = System.Windows.Forms.DockStyle.Fill;
             this.defaultGrid.EnableHeadersVisualStyles = false;
             this.defaultGrid.GridColor = System.Drawing.Color.Gainsboro;
-            this.defaultGrid.Location = new System.Drawing.Point(0, 60);
+            this.defaultGrid.Location = new System.Drawing.Point(0, 58);
+            this.defaultGrid.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.defaultGrid.MultiSelect = false;
             this.defaultGrid.Name = "defaultGrid";
             this.defaultGrid.ReadOnly = true;
@@ -111,10 +113,13 @@ namespace thecalcify
             this.defaultGrid.RowHeadersWidth = 51;
             this.defaultGrid.RowTemplate.Height = 36;
             this.defaultGrid.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.CellSelect;
-            this.defaultGrid.Size = new System.Drawing.Size(1115, 622);
+            this.defaultGrid.Size = new System.Drawing.Size(1115, 624);
             this.defaultGrid.TabIndex = 1;
             this.defaultGrid.DataSourceChanged += new System.EventHandler(this.DefaultGrid_DataSourceChanged);
             this.defaultGrid.CellFormatting += new System.Windows.Forms.DataGridViewCellFormattingEventHandler(this.DefaultGrid_CellFormatting);
+            this.defaultGrid.CellMouseDown += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.defaultGrid_CellMouseDown);
+            this.defaultGrid.CellMouseEnter += new System.Windows.Forms.DataGridViewCellEventHandler(this.defaultGrid_CellMouseEnter);
+            this.defaultGrid.CellMouseLeave += new System.Windows.Forms.DataGridViewCellEventHandler(this.defaultGrid_CellMouseLeave);
             this.defaultGrid.DataBindingComplete += new System.Windows.Forms.DataGridViewBindingCompleteEventHandler(this.DefaultGrid_DataBindingComplete);
             // 
             // Tools
@@ -122,14 +127,15 @@ namespace thecalcify
             this.Tools.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.Tools.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.ExportToExcelToolStripMenuItem,
-            this.addEditSymbolsToolStripMenuItem});
+            this.addEditSymbolsToolStripMenuItem,
+            this.addEditColumnsToolStripMenuItem});
             this.Tools.Name = "ClickMenuStrip";
-            this.Tools.Size = new System.Drawing.Size(199, 52);
+            this.Tools.Size = new System.Drawing.Size(200, 76);
             // 
             // ExportToExcelToolStripMenuItem
             // 
             this.ExportToExcelToolStripMenuItem.Name = "ExportToExcelToolStripMenuItem";
-            this.ExportToExcelToolStripMenuItem.Size = new System.Drawing.Size(198, 24);
+            this.ExportToExcelToolStripMenuItem.Size = new System.Drawing.Size(199, 24);
             this.ExportToExcelToolStripMenuItem.Text = "Export To Excel";
             this.ExportToExcelToolStripMenuItem.Click += new System.EventHandler(this.ExportToExcelToolStripMenuItem_Click);
             // 
@@ -137,9 +143,16 @@ namespace thecalcify
             // 
             this.addEditSymbolsToolStripMenuItem.Enabled = false;
             this.addEditSymbolsToolStripMenuItem.Name = "addEditSymbolsToolStripMenuItem";
-            this.addEditSymbolsToolStripMenuItem.Size = new System.Drawing.Size(198, 24);
+            this.addEditSymbolsToolStripMenuItem.Size = new System.Drawing.Size(199, 24);
             this.addEditSymbolsToolStripMenuItem.Text = "Add/Edit Symbols";
             this.addEditSymbolsToolStripMenuItem.Click += new System.EventHandler(this.AddEditSymbolsToolStripMenuItem_Click);
+            // 
+            // addEditColumnsToolStripMenuItem
+            // 
+            this.addEditColumnsToolStripMenuItem.Name = "addEditColumnsToolStripMenuItem";
+            this.addEditColumnsToolStripMenuItem.Size = new System.Drawing.Size(199, 24);
+            this.addEditColumnsToolStripMenuItem.Text = "Add/Edit Columns";
+            this.addEditColumnsToolStripMenuItem.Click += new System.EventHandler(this.AddEditColumnsToolStripMenuItem_Click);
             // 
             // menuStrip1
             // 
@@ -154,7 +167,7 @@ namespace thecalcify
             this.menuStrip1.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.HorizontalStackWithOverflow;
             this.menuStrip1.Location = new System.Drawing.Point(0, 30);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(1115, 30);
+            this.menuStrip1.Size = new System.Drawing.Size(1115, 28);
             this.menuStrip1.TabIndex = 1;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -164,20 +177,20 @@ namespace thecalcify
             this.disconnectESCToolStripMenuItem,
             this.fullScreenF11ToolStripMenuItem});
             this.toolsToolStripMenuItem.Name = "toolsToolStripMenuItem";
-            this.toolsToolStripMenuItem.Size = new System.Drawing.Size(64, 26);
+            this.toolsToolStripMenuItem.Size = new System.Drawing.Size(64, 24);
             this.toolsToolStripMenuItem.Text = "Tools";
             // 
             // disconnectESCToolStripMenuItem
             // 
             this.disconnectESCToolStripMenuItem.Name = "disconnectESCToolStripMenuItem";
-            this.disconnectESCToolStripMenuItem.Size = new System.Drawing.Size(243, 26);
-            this.disconnectESCToolStripMenuItem.Text = "Disconnect    (ESC)";
+            this.disconnectESCToolStripMenuItem.Size = new System.Drawing.Size(287, 26);
+            this.disconnectESCToolStripMenuItem.Text = "Disconnect  (Shift + ESC)";
             this.disconnectESCToolStripMenuItem.Click += new System.EventHandler(this.DisconnectESCToolStripMenuItem_Click);
             // 
             // fullScreenF11ToolStripMenuItem
             // 
             this.fullScreenF11ToolStripMenuItem.Name = "fullScreenF11ToolStripMenuItem";
-            this.fullScreenF11ToolStripMenuItem.Size = new System.Drawing.Size(243, 26);
+            this.fullScreenF11ToolStripMenuItem.Size = new System.Drawing.Size(287, 26);
             this.fullScreenF11ToolStripMenuItem.Text = "Full Screen (F11)";
             this.fullScreenF11ToolStripMenuItem.Click += new System.EventHandler(this.fullScreenF11ToolStripMenuItem_Click);
             // 
@@ -209,11 +222,12 @@ namespace thecalcify
             this.deleteToolStripMenuItem.Name = "deleteToolStripMenuItem";
             this.deleteToolStripMenuItem.Size = new System.Drawing.Size(233, 26);
             this.deleteToolStripMenuItem.Text = "Delete";
+            this.deleteToolStripMenuItem.Click += new System.EventHandler(this.deleteToolStripMenuItem_Click);
             // 
             // aboutToolStripMenuItem
             // 
             this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
-            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(66, 26);
+            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(66, 24);
             this.aboutToolStripMenuItem.Text = "About";
             this.aboutToolStripMenuItem.Click += new System.EventHandler(this.aboutToolStripMenuItem_Click);
             // 
@@ -342,6 +356,7 @@ namespace thecalcify
             this.Text = "thecalcify";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Home_FormClosed);
             this.Load += new System.EventHandler(this.Home_Load);
+            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Thecalcify_KeyDown);
             ((System.ComponentModel.ISupportInitialize)(this.defaultGrid)).EndInit();
             this.Tools.ResumeLayout(false);
             this.menuStrip1.ResumeLayout(false);
@@ -460,243 +475,6 @@ namespace thecalcify
             //    editableMarketWatchGrid.UpdateGridColumnVisibility();
             //}
         }
-
-        private void AddEditSymbolsToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            //if (panelAddColumns != null && panelAddColumns.Visible)
-            //    panelAddColumns.Visible = false;
-
-            //// Create panel if it hasn't been initialized yet
-            //if (panelAddSymbols == null)
-            //{
-            //    // Initialize panel
-            //    panelAddSymbols = new Panel
-            //    {
-            //        Size = new System.Drawing.Size(500, 500),
-            //        BackColor = Color.White,
-            //        BorderStyle = BorderStyle.None,
-            //        Visible = false,
-            //        Padding = new Padding(20),
-            //    };
-
-            //    panelAddSymbols.Paint += (s2, e2) =>
-            //    {
-            //        ControlPaint.DrawBorder(e2.Graphics, panelAddSymbols.ClientRectangle,
-            //            Color.LightGray, 2, ButtonBorderStyle.Solid,
-            //            Color.LightGray, 2, ButtonBorderStyle.Solid,
-            //            Color.LightGray, 2, ButtonBorderStyle.Solid,
-            //            Color.LightGray, 2, ButtonBorderStyle.Solid);
-            //    };
-
-            //    panelAddSymbols.Location = new System.Drawing.Point(
-            //        (this.Width - panelAddSymbols.Width) / 2,
-            //        (this.Height - panelAddSymbols.Height) / 2
-            //    );
-
-            //    // Title label
-            //    Label titleLabel = new Label
-            //    {
-            //        Text = "🔄 Add / Edit Symbols",
-            //        Font = new System.Drawing.Font("Microsoft Sans Serif Semibold", 16, FontStyle.Bold),
-            //        ForeColor = Color.FromArgb(50, 50, 50),
-            //        Dock = DockStyle.Top,
-            //        Height = 50,
-            //        TextAlign = ContentAlignment.MiddleCenter,
-            //        Padding = new Padding(0, 10, 0, 10)
-            //    };
-
-            //    // CheckedListBox
-            //    checkedListSymbols = new CheckedListBox
-            //    {
-            //        Height = 320,
-            //        Dock = DockStyle.Top,
-            //        Font = new System.Drawing.Font("Microsoft Sans Serif", 10),
-            //        BorderStyle = BorderStyle.FixedSingle,
-            //        CheckOnClick = true,
-            //        BackColor = Color.White
-            //    };
-
-            //    // Button container
-            //    Panel buttonPanel = new Panel
-            //    {
-            //        Height = 80,
-            //        Dock = DockStyle.Bottom,
-            //        Padding = new Padding(10),
-            //        BackColor = Color.White
-            //    };
-
-            //    // Buttons
-            //    btnSelectAllSymbols = new Button
-            //    {
-            //        Text = "Select All",
-            //        Height = 40,
-            //        Width = 120,
-            //        BackColor = Color.FromArgb(0, 122, 204),
-            //        ForeColor = Color.White,
-            //        FlatStyle = FlatStyle.Flat,
-            //        Font = new System.Drawing.Font("Microsoft Sans Serif", 10, FontStyle.Bold),
-            //        Cursor = Cursors.Hand
-            //    };
-            //    btnSelectAllSymbols.FlatAppearance.BorderSize = 0;
-
-            //    btnConfirmAddSymbols = new Button
-            //    {
-            //        Text = "✔ Save",
-            //        Height = 40,
-            //        Width = 120,
-            //        BackColor = Color.FromArgb(0, 122, 204),
-            //        ForeColor = Color.White,
-            //        FlatStyle = FlatStyle.Flat,
-            //        Font = new System.Drawing.Font("Microsoft Sans Serif", 10, FontStyle.Bold),
-            //        Cursor = Cursors.Hand
-            //    };
-            //    btnConfirmAddSymbols.FlatAppearance.BorderSize = 0;
-
-            //    btnCancelAddSymbols = new Button
-            //    {
-            //        Text = "✖ Cancel",
-            //        Height = 40,
-            //        Width = 120,
-            //        BackColor = Color.LightGray,
-            //        ForeColor = Color.Black,
-            //        FlatStyle = FlatStyle.Flat,
-            //        Font = new System.Drawing.Font("Microsoft Sans Serif", 10, FontStyle.Bold),
-            //        Cursor = Cursors.Hand
-            //    };
-            //    btnCancelAddSymbols.FlatAppearance.BorderSize = 0;
-
-            //    // Layout
-            //    btnSelectAllSymbols.Location = new Point(30, 35);
-            //    btnConfirmAddSymbols.Location = new Point(170, 35);
-            //    btnCancelAddSymbols.Location = new Point(310, 35);
-
-            //    titleLabel.Dock = DockStyle.Top;
-            //    checkedListSymbols.Dock = DockStyle.Fill; // So it takes remaining space
-            //    buttonPanel.Dock = DockStyle.Bottom;
-
-
-            //    buttonPanel.Controls.Add(btnSelectAllSymbols);
-            //    buttonPanel.Controls.Add(btnConfirmAddSymbols);
-            //    buttonPanel.Controls.Add(btnCancelAddSymbols);
-
-            //    panelAddSymbols.Controls.Add(buttonPanel);  // bottom first
-            //    panelAddSymbols.Controls.Add(checkedListSymbols); // middle
-            //    panelAddSymbols.Controls.Add(titleLabel);   // top last
-
-
-            //    this.Controls.Add(panelAddSymbols);
-
-            //    this.Resize += (s3, e3) =>
-            //    {
-            //        panelAddSymbols.Location = new Point(
-            //            (this.Width - panelAddSymbols.Width) / 2,
-            //            (this.Height - panelAddSymbols.Height) / 2
-            //        );
-            //    };
-
-            //    // Hook up events
-
-            //    btnSelectAllSymbols.Click += (s, e2) =>
-            //    {
-            //        bool allChecked = true;
-            //        for (int i = 0; i < checkedListSymbols.Items.Count; i++)
-            //        {
-            //            if (!checkedListSymbols.GetItemChecked(i))
-            //            {
-            //                allChecked = false;
-            //                break;
-            //            }
-            //        }
-
-            //        bool check = !allChecked;
-            //        btnSelectAllSymbols.Text = check ? "Unselect All" : "Select All";
-
-            //        for (int i = 0; i < checkedListSymbols.Items.Count; i++)
-            //        {
-            //            checkedListSymbols.SetItemChecked(i, check);
-            //        }
-            //    };
-
-            //    btnConfirmAddSymbols.Click += async (s, e2) =>
-            //    {
-            //        // Get the checked display names (SymbolName)
-            //        var currentlyCheckedNames = checkedListSymbols.CheckedItems.Cast<string>().ToList();
-
-
-            //        // If nothing is selected
-            //        if (!currentlyCheckedNames.Any())
-            //        {
-            //            MessageBox.Show("Please select at least one symbol to confirm.", "No Selection", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            //            return;
-            //        }
-
-
-            //        // Map checked names back to their symbols
-            //        var currentlyCheckedSymbols = SymbolName
-            //            .Where(x => currentlyCheckedNames.Contains(x.SymbolName))
-            //            .Select(x => x.Symbol)
-            //            .ToList();
-
-            //        // Compare with previous selection
-            //        var previouslySelected = selectedSymbols;
-
-            //        var addedSymbols = currentlyCheckedSymbols.Except(previouslySelected).ToList();
-            //        var removedSymbols = previouslySelected.Except(currentlyCheckedSymbols).ToList();
-
-            //        if (!addedSymbols.Any() && !removedSymbols.Any())
-            //        {
-            //            MessageBox.Show("No changes made.");
-            //            return;
-            //        }
-
-
-            //        // Save changes
-            //        EditableMarketWatchGrid editableMarketWatchGrid = EditableMarketWatchGrid.CurrentInstance ?? new EditableMarketWatchGrid();
-            //        editableMarketWatchGrid.isGrid = false;
-            //        editableMarketWatchGrid.saveFileName = saveFileName;
-            //        editableMarketWatchGrid.username = username;
-            //        selectedSymbols = currentlyCheckedSymbols;
-            //        editableMarketWatchGrid.SaveSymbols(selectedSymbols);
-            //        identifiers = selectedSymbols;
-            //        await SignalREvent();
-
-            //        panelAddSymbols.Visible = false;
-            //    };
-
-            //    btnCancelAddSymbols.Click += (s, e2) =>
-            //    {
-            //        panelAddSymbols.Visible = false;
-            //    };
-            //}
-
-            //// Refresh items before showing
-            //checkedListSymbols.Items.Clear();
-
-            //// Add selected symbols first
-            //foreach (var item in SymbolName)
-            //{
-            //    if (identifiers.Contains(item.Symbol))
-            //    {
-            //        checkedListSymbols.Items.Add(item.SymbolName, true); // Display symbol name
-            //    }
-            //}
-
-            //// Then unselected symbols
-            //foreach (var item in SymbolName)
-            //{
-            //    if (!identifiers.Contains(item.Symbol))
-            //    {
-            //        checkedListSymbols.Items.Add(item.SymbolName, false);
-            //    }
-            //}
-
-
-            //panelAddSymbols.Visible = true;
-            //panelAddSymbols.BringToFront();
-
-
-        }
-
         #endregion
 
         private DataGridView defaultGrid;
@@ -708,6 +486,7 @@ namespace thecalcify
         private ContextMenuStrip Tools;
         private ToolStripMenuItem ExportToExcelToolStripMenuItem;
         private ToolStripMenuItem addEditSymbolsToolStripMenuItem;
+        private ToolStripMenuItem addEditColumnsToolStripMenuItem;
         private ToolStripMenuItem fullScreenF11ToolStripMenuItem;
         private ToolStripMenuItem aboutToolStripMenuItem;
         private Panel panelAddColumns;
