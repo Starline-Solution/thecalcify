@@ -103,7 +103,7 @@ namespace thecalcify
             this.defaultGrid.Dock = System.Windows.Forms.DockStyle.Fill;
             this.defaultGrid.EnableHeadersVisualStyles = false;
             this.defaultGrid.GridColor = System.Drawing.Color.Gainsboro;
-            this.defaultGrid.Location = new System.Drawing.Point(0, 58);
+            this.defaultGrid.Location = new System.Drawing.Point(0, 60);
             this.defaultGrid.MultiSelect = false;
             this.defaultGrid.Name = "defaultGrid";
             this.defaultGrid.ReadOnly = true;
@@ -111,7 +111,7 @@ namespace thecalcify
             this.defaultGrid.RowHeadersWidth = 51;
             this.defaultGrid.RowTemplate.Height = 36;
             this.defaultGrid.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.CellSelect;
-            this.defaultGrid.Size = new System.Drawing.Size(1115, 624);
+            this.defaultGrid.Size = new System.Drawing.Size(1115, 622);
             this.defaultGrid.TabIndex = 1;
             this.defaultGrid.DataSourceChanged += new System.EventHandler(this.DefaultGrid_DataSourceChanged);
             this.defaultGrid.CellFormatting += new System.Windows.Forms.DataGridViewCellFormattingEventHandler(this.DefaultGrid_CellFormatting);
@@ -154,7 +154,7 @@ namespace thecalcify
             this.menuStrip1.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.HorizontalStackWithOverflow;
             this.menuStrip1.Location = new System.Drawing.Point(0, 30);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(1115, 28);
+            this.menuStrip1.Size = new System.Drawing.Size(1115, 30);
             this.menuStrip1.TabIndex = 1;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -164,7 +164,7 @@ namespace thecalcify
             this.disconnectESCToolStripMenuItem,
             this.fullScreenF11ToolStripMenuItem});
             this.toolsToolStripMenuItem.Name = "toolsToolStripMenuItem";
-            this.toolsToolStripMenuItem.Size = new System.Drawing.Size(64, 24);
+            this.toolsToolStripMenuItem.Size = new System.Drawing.Size(64, 26);
             this.toolsToolStripMenuItem.Text = "Tools";
             // 
             // disconnectESCToolStripMenuItem
@@ -213,7 +213,7 @@ namespace thecalcify
             // aboutToolStripMenuItem
             // 
             this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
-            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(66, 24);
+            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(66, 26);
             this.aboutToolStripMenuItem.Text = "About";
             this.aboutToolStripMenuItem.Click += new System.EventHandler(this.aboutToolStripMenuItem_Click);
             // 
@@ -321,6 +321,7 @@ namespace thecalcify
             this.txtsearch.Size = new System.Drawing.Size(176, 27);
             this.txtsearch.TabIndex = 6;
             this.txtsearch.TextChanged += new System.EventHandler(this.Txtsearch_TextChanged);
+            this.txtsearch.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Txtsearch_KeyDown);
             // 
             // thecalcify
             // 
@@ -374,39 +375,39 @@ namespace thecalcify
         private void Txtsearch_TextChanged(object sender, EventArgs e)
         {
             string filterText = txtsearch.Text.Trim();
-            if (string.IsNullOrEmpty(filterText))
+
+            // Split filter by comma, trim each part, and remove empty strings
+            var keywords = filterText.Split(',')
+                                     .Select(k => k.Trim())
+                                     .Where(k => !string.IsNullOrEmpty(k))
+                                     .ToList();
+
+            if (keywords.Count == 0)
             {
-                // Check if DataGridView and DataSource are valid
-                if (defaultGrid != null || defaultGrid.DataSource != null)
+                // Reset all filters
+                if (defaultGrid?.DataSource is DataTable dt)
                 {
-                    DataTable dt = defaultGrid.DataSource as DataTable;
-                    if (dt != null)
+                    dt.DefaultView.RowFilter = "";
+                }
+
+                EditableMarketWatchGrid editableMarketWatchGrid = EditableMarketWatchGrid.CurrentInstance;
+                if (editableMarketWatchGrid != null)
+                {
+                    editableMarketWatchGrid.serchstring = "";
+                    foreach (DataGridViewRow row in editableMarketWatchGrid.Rows)
                     {
-                        dt.DefaultView.RowFilter = "";
-                    }
-                    else
-                    {
-                        EditableMarketWatchGrid editableMarketWatchGrid = EditableMarketWatchGrid.CurrentInstance;
-                        if (editableMarketWatchGrid != null)
-                        {
-                            editableMarketWatchGrid.serchstring = filterText;
-                            foreach (DataGridViewRow row in editableMarketWatchGrid.Rows)
-                            {
-                                row.Visible = true;
-                            }
-                        }
+                        row.Visible = true;
                     }
                 }
             }
             else
             {
-                if (defaultGrid != null || defaultGrid  .DataSource != null)
+                // Build RowFilter for defaultGrid
+                if (defaultGrid?.DataSource is DataTable dt)
                 {
-                    DataTable dt = defaultGrid.DataSource as DataTable;
-                    if (dt != null)
-                    {
-                        dt.DefaultView.RowFilter = string.Format("Name LIKE '%{0}%'", filterText.Replace("'", "''"));
-                    }
+                    var rowFilter = string.Join(" OR ", keywords
+                        .Select(k => $"Name LIKE '%{k.Replace("'", "''")}%'"));
+                    dt.DefaultView.RowFilter = rowFilter;
                 }
 
                 EditableMarketWatchGrid editableMarketWatchGrid = EditableMarketWatchGrid.CurrentInstance;
@@ -414,27 +415,26 @@ namespace thecalcify
                 {
                     editableMarketWatchGrid.serchstring = filterText;
 
+                    if (editableMarketWatchGrid.Rows.Count == 1)
+                    {
+                        MessageBox.Show("Please Select Value Before Search", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        txtsearch.Text = string.Empty;
+                        return;
+                    }
+
                     foreach (DataGridViewRow row in editableMarketWatchGrid.Rows)
                     {
-
-                        if (editableMarketWatchGrid.Rows.Count == 1)
+                        if (!row.IsNewRow && row.Cells["Name"].Value != null)
                         {
-                            MessageBox.Show("Please Select Value Before Search", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                            txtsearch.Text = string.Empty;
-
-                        }
-                        else if (!row.IsNewRow) // ignore the last empty row
-                        {
-                            bool visible = row.Cells["Name"].Value != null &&
-                                           row.Cells["Name"].Value.ToString()
-                                           .IndexOf(filterText, StringComparison.OrdinalIgnoreCase) >= 0;
-
-                            row.Visible = visible;
+                            string name = row.Cells["Name"].Value.ToString();
+                            bool match = keywords.Any(k => name.IndexOf(k, StringComparison.OrdinalIgnoreCase) >= 0);
+                            row.Visible = match;
                         }
                     }
                 }
             }
         }
+
 
         private void FontSizeComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {

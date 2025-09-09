@@ -89,35 +89,35 @@ namespace thecalcify
             "Last Size"
         };
 
-        List<string> instruments = new List<string>
-        {
-            "GOLDFUTURE_I",
-            "GOLDFUTURE_II",
-            "GOLDFUTURE_III",
-            "SILVERFUTURE_I",
-            "SILVERFUTURE_II",
-            "SILVERFUTURE_III",
-            "GOLDM_I",
-            "GOLDM_II",
-            "SILVERM_I",
-            "SILVERM_II",
-            "GOLDSPOT_I",
-            "SILVERSPOT_I",
-            "INRSPOT_I",
-            "GOLDCOMEX_I",
-            "GOLDCOMEX_II",
-            "SILVERCOMEX_I",
-            "SILVERCOMEX_II",
-            "DGINR_I",
-            "DGINR_II",
-            "GOLDAM_I",
-            "GOLDPM_I",
-            "SILVERFIX_I",
-            "FBIL_USD",
-            "DGINRSPOT_I",
-            "CDUTY",
-            "DGINRSPOT_II"
-        };
+        List<string> instruments = new List<string>();
+        //{
+        //    "GOLDFUTURE_I",
+        //    "GOLDFUTURE_II",
+        //    "GOLDFUTURE_III",
+        //    "SILVERFUTURE_I",
+        //    "SILVERFUTURE_II",
+        //    "SILVERFUTURE_III",
+        //    "GOLDM_I",
+        //    "GOLDM_II",
+        //    "SILVERM_I",
+        //    "SILVERM_II",
+        //    "GOLDSPOT_I",
+        //    "SILVERSPOT_I",
+        //    "INRSPOT_I",
+        //    "GOLDCOMEX_I",
+        //    "GOLDCOMEX_II",
+        //    "SILVERCOMEX_I",
+        //    "SILVERCOMEX_II",
+        //    "DGINR_I",
+        //    "DGINR_II",
+        //    "GOLDAM_I",
+        //    "GOLDPM_I",
+        //    "SILVERFIX_I",
+        //    "FBIL_USD",
+        //    "DGINRSPOT_I",
+        //    "CDUTY",
+        //    "DGINRSPOT_II"
+        //};
         private readonly string excelFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonDocuments), "thecalcify", "thecalcify.xlsx");
         private Excel.Application excelApp;
         private Excel.Workbook workbook;
@@ -146,6 +146,8 @@ namespace thecalcify
             New
         }
         public MarketWatchViewMode marketWatchViewMode = MarketWatchViewMode.Default;
+        private readonly object _tableLock = new object();
+        private readonly object _reconnectLock = new object();
 
         public thecalcify()
         {
@@ -236,32 +238,68 @@ namespace thecalcify
 
 
         }
+        private void Home_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            isRunning = false;
+
+            try
+            {
+                KillProcess();
+            }
+            catch (Exception ex)
+            {
+                ApplicationLogger.LogException(ex);
+            }
+
+            // No need for Application.Exit();
+        }
+
 
         /// <summary>
         /// Method Used to check licence lable update 
         /// </summary>
         private void CheckLicenceLoop()
         {
-            while (isRunning)
+            try
             {
-                DateTime txtlicenceDate = DateTime.Parse(licenceDate);
-                DateTime currentDate = DateTime.Now.Date;
-                TimeSpan diff = txtlicenceDate - currentDate;
-                int licenceRemainingDays = diff.Days;
-
-                if (this.InvokeRequired)
+                while (isRunning)
                 {
-                    this.Invoke((MethodInvoker)(() =>
+                    DateTime txtlicenceDate = DateTime.Parse(licenceDate);
+                    DateTime currentDate = DateTime.Now.Date;
+                    TimeSpan diff = txtlicenceDate - currentDate;
+                    int licenceRemainingDays = diff.Days;
+
+                    if (!this.IsHandleCreated || this.IsDisposed)
+                        break; // Exit if form is disposed or handle not created
+
+                    try
                     {
-                        UpdateLicenceLabel(licenceRemainingDays);
-                    }));
-                }
-                else
-                {
-                    UpdateLicenceLabel(licenceRemainingDays);
-                }
+                        if (this.InvokeRequired)
+                        {
+                            this.Invoke((MethodInvoker)(() =>
+                            {
+                                if (!this.IsDisposed)
+                                    UpdateLicenceLabel(licenceRemainingDays);
+                            }));
+                        }
+                        else
+                        {
+                            if (!this.IsDisposed)
+                                UpdateLicenceLabel(licenceRemainingDays);
+                        }
+                    }
+                    catch (ObjectDisposedException)
+                    {
+                        // Form is disposed during invoke — safely exit
+                        break;
+                    }
 
-                Thread.Sleep(500);
+                    Thread.Sleep(500);
+                }
+            }
+            catch (Exception ex)
+            {
+                ApplicationLogger.LogException(ex);
             }
         }
 
@@ -395,8 +433,19 @@ namespace thecalcify
 
                 var currentIdentifiers = new List<string>(identifiers); // snapshot copy
 
-                //var currentIdentifiers = new List<string>(identifiers); // snapshot copy
-                await connection.StartAsync();
+                for (int attempt = 0; attempt < 3; attempt++)
+                {
+                    try
+                    {
+                        await connection.StartAsync();
+                        break; // success
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Attempt {attempt + 1} failed: {ex.Message}");
+                        if (attempt < 2) await Task.Delay(3000);
+                    }
+                }
 
                 try
                 {
@@ -445,10 +494,24 @@ namespace thecalcify
 
             try
             {
-                lock (marketDataTable)
+                if (defaultGrid.InvokeRequired)
                 {
-                    CleanupEmptyRows();
-                    AddMissingRows();
+                    defaultGrid.BeginInvoke((MethodInvoker)(() =>
+                    {
+                        lock (_tableLock)
+                        {
+                            CleanupEmptyRows();
+                            AddMissingRows();
+                        }
+                    }));
+                }
+                else
+                {
+                    lock (_tableLock)
+                    {
+                        CleanupEmptyRows();
+                        AddMissingRows();
+                    }
                 }
 
                 var json = DecompressGzip(Convert.FromBase64String(base64));
@@ -465,29 +528,35 @@ namespace thecalcify
 
         private void CleanupEmptyRows()
         {
-            var rowsToRemove = marketDataTable.AsEnumerable()
-                .Where(row => row.RowState != DataRowState.Deleted && row.RowState != DataRowState.Detached)
-                .Where(row => row.Table.Columns.Contains("symbol"))
-                .Where(row => row.Table.Columns.Cast<DataColumn>()
-                    .Where(c => c.ColumnName != "symbol")
-                    .All(c => IsNullOrEmptyOrPlaceholder(row[c])))
-                .ToList();
-
-            foreach (var row in rowsToRemove)
+            lock (_tableLock)
             {
-                marketDataTable.Rows.Remove(row);
+                var rowsToRemove = marketDataTable.AsEnumerable()
+                    .Where(row => row.RowState != DataRowState.Deleted && row.RowState != DataRowState.Detached)
+                    .Where(row => row.Table.Columns.Contains("symbol"))
+                    .Where(row => row.Table.Columns.Cast<DataColumn>()
+                        .Where(c => c.ColumnName != "symbol")
+                        .All(c => IsNullOrEmptyOrPlaceholder(row[c])))
+                    .ToList();
+
+                foreach (var row in rowsToRemove)
+                {
+                    marketDataTable.Rows.Remove(row);
+                }
             }
         }
 
         private void AddMissingRows()
         {
-            foreach (var symbol in identifiers)
+            lock (_tableLock)
             {
-                if (!marketDataTable.AsEnumerable().Any(row => row.Field<string>("symbol") == symbol))
+                foreach (var symbol in identifiers)
                 {
-                    var dto = pastRateTickDTO?.FirstOrDefault(x => x.i == symbol);
-                    if (dto != null) AddRowFromDTO(dto);
-                }
+                    if (!marketDataTable.AsEnumerable().Any(row => row.Field<string>("symbol") == symbol))
+                    {
+                        var dto = pastRateTickDTO?.FirstOrDefault(x => x.i == symbol);
+                        if (dto != null) AddRowFromDTO(dto);
+                    }
+                } 
             }
         }
 
@@ -581,157 +650,150 @@ namespace thecalcify
 
                 int count = identifiers.Count;
 
-                foreach (var newData in updates)
+                lock (_tableLock)
                 {
-                    if (newData == null || string.IsNullOrEmpty(newData.i)) continue;
-
-                    // Find or create row
-                    if (!symbolRowMap.TryGetValue(newData.i, out var row))
+                    foreach (var newData in updates)
                     {
-                        row = marketDataTable.NewRow();
-                        row["symbol"] = newData.i;
-                        row["Name"] = "N/A"; // Initialize Name if needed
-                        marketDataTable.Rows.Add(row);
-                        symbolRowMap[newData.i] = row;
-                    }
+                        if (newData == null || string.IsNullOrEmpty(newData.i)) continue;
 
-                    // Keep previous values before update
-                    object[] previousRow = row.ItemArray.Clone() as object[];
-
-                    // Update data
-                    if (row["Name"].ToString() == "N/A")
-                    {
-                        // Find the symbol in pastRateTickDTO and get the name
-                        var symbolName = pastRateTickDTO?
-                            .FirstOrDefault(x => x.i == newData.i)?.n ?? "N/A";
-
-                        UpdateRowValue(row, "Name", symbolName);
-                    }
-                    UpdateRowValue(row, "Bid", newData.b);
-                    UpdateRowValue(row, "Ask", newData.a);
-                    UpdateRowValue(row, "LTP", newData.ltp);
-                    UpdateRowValue(row, "High", newData.h);
-                    UpdateRowValue(row, "Low", newData.l);
-                    UpdateRowValue(row, "Open", newData.o);
-                    UpdateRowValue(row, "Close", newData.c);
-                    UpdateRowValue(row, "Net Chng", newData.d);
-                    UpdateRowValue(row, "V", newData.v);
-                    UpdateRowValue(row, "ATP", newData.atp);
-                    UpdateRowValue(row, "Bid Size", newData.bq);
-                    UpdateRowValue(row, "Total Bid Size", newData.tbq);
-                    UpdateRowValue(row, "Ask Size", newData.sq);
-                    UpdateRowValue(row, "Total Ask Size", newData.tsq);
-                    UpdateRowValue(row, "Volume", newData.vt);
-                    UpdateRowValue(row, "Open Interest", newData.oi);
-                    UpdateRowValue(row, "Last Size", newData.ltq);
-                    UpdateRowValue(row, "Time", commonClass.timeStampConvert(newData.t));
-
-                    // Track Ask price change
-                    bool hasAskChange = false;
-                    int askDirection = 0; // 1 for up, -1 for down
-                    string askValue = newData.a?.ToString();
-
-                    try
-                    {
-                        if (!string.IsNullOrEmpty(askValue)
-                                        && double.TryParse(askValue, out double newAsk))
+                        // Find or create row
+                        if (!symbolRowMap.TryGetValue(newData.i, out var row))
                         {
-                            if (previousAskMap.TryGetValue(newData.i, out double previousAsk))
+                            row = marketDataTable.NewRow();
+                            row["symbol"] = newData.i;
+                            row["Name"] = "N/A"; // Initialize Name if needed
+                            marketDataTable.Rows.Add(row);
+                            symbolRowMap[newData.i] = row;
+                        }
+
+                        // Keep previous values before update
+                        object[] previousRow = row.ItemArray.Clone() as object[];
+
+                        // Update data
+                        if (row["Name"].ToString() == "N/A")
+                        {
+                            // Find the symbol in pastRateTickDTO and get the name
+                            var symbolName = pastRateTickDTO?
+                                .FirstOrDefault(x => x.i == newData.i)?.n ?? "N/A";
+
+                            UpdateRowValue(row, "Name", symbolName);
+                        }
+                        UpdateRowValue(row, "Bid", newData.b);
+                        UpdateRowValue(row, "Ask", newData.a);
+                        UpdateRowValue(row, "LTP", newData.ltp);
+                        UpdateRowValue(row, "High", newData.h);
+                        UpdateRowValue(row, "Low", newData.l);
+                        UpdateRowValue(row, "Open", newData.o);
+                        UpdateRowValue(row, "Close", newData.c);
+                        UpdateRowValue(row, "Net Chng", newData.d);
+                        UpdateRowValue(row, "V", newData.v);
+                        UpdateRowValue(row, "ATP", newData.atp);
+                        UpdateRowValue(row, "Bid Size", newData.bq);
+                        UpdateRowValue(row, "Total Bid Size", newData.tbq);
+                        UpdateRowValue(row, "Ask Size", newData.sq);
+                        UpdateRowValue(row, "Total Ask Size", newData.tsq);
+                        UpdateRowValue(row, "Volume", newData.vt);
+                        UpdateRowValue(row, "Open Interest", newData.oi);
+                        UpdateRowValue(row, "Last Size", newData.ltq);
+                        UpdateRowValue(row, "Time", commonClass.timeStampConvert(newData.t));
+
+                        // Track Ask price change
+                        bool hasAskChange = false;
+                        int askDirection = 0; // 1 for up, -1 for down
+                        string askValue = newData.a?.ToString();
+
+                        try
+                        {
+                            if (!string.IsNullOrEmpty(askValue)
+                                            && double.TryParse(askValue, out double newAsk))
                             {
-                                if (newAsk > previousAsk)
+                                if (previousAskMap.TryGetValue(newData.i, out double previousAsk))
                                 {
-                                    askDirection = 1;
-                                    hasAskChange = true;
+                                    if (newAsk > previousAsk)
+                                    {
+                                        askDirection = 1;
+                                        hasAskChange = true;
+                                    }
+                                    else if (newAsk < previousAsk)
+                                    {
+                                        askDirection = -1;
+                                        hasAskChange = true;
+                                    }
                                 }
-                                else if (newAsk < previousAsk)
+
+                                previousAskMap[newData.i] = newAsk;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine("Error parsing rate value at ApplyBatch: " + ex.Message);
+                        }
+
+                        // Update DataGridView row
+                        var dgvRow = defaultGrid.Rows
+                            .Cast<DataGridViewRow>()
+                            .FirstOrDefault(r => r.Cells["symbol"].Value?.ToString() == newData.i);
+
+                        if (dgvRow != null)
+                        {
+                            // Color numeric columns based on value change
+                            foreach (var colName in numericColumns)
+                            {
+                                if (!marketDataTable.Columns.Contains(colName)) continue;
+                                if (!defaultGrid.Columns.Contains(colName)) continue;
+
+                                var cell = dgvRow.Cells[colName];
+                                var colIndex = marketDataTable.Columns[colName].Ordinal;
+                                var oldVal = previousRow[colIndex];
+                                var newVal = row[colName];
+
+                                if (IsNumericChange(oldVal, newVal, out var changeDirection))
                                 {
-                                    askDirection = -1;
-                                    hasAskChange = true;
+                                    if (changeDirection == 1)
+                                        cell.Style.ForeColor = Color.Green;
+                                    else if (changeDirection == -1)
+                                        cell.Style.ForeColor = Color.Red;
                                 }
                             }
 
-                            previousAskMap[newData.i] = newAsk;
+                            var nameCell = dgvRow.Cells["Name"];
+
+                            // Update "Name" column with arrow and color based on Ask direction
+                            // Get current name value and remove any existing arrows
+                            string rawName = row["Name"]?.ToString() ?? string.Empty;
+                            string baseName = rawName.Replace(" ▲", "").Replace(" ▼", "").Trim();
+                            Color color = nameCell.Style.ForeColor;
+
+                            if (hasAskChange)
+                            {
+                                if (askDirection == 1)
+                                {
+                                    nameCell.Value = $"{baseName} ▲";
+                                    nameCell.Style.ForeColor = Color.Green;
+                                }
+                                else if (askDirection == -1)
+                                {
+                                    nameCell.Value = $"{baseName} ▼";
+                                    nameCell.Style.ForeColor = Color.Red;
+                                }
+                            }
                         }
                     }
-                    catch (Exception ex)
+
+                    UpdateExcelDataEfficiently(defaultGrid);
+
+                    // Throttle UI updates
+                    if ((DateTime.Now - lastUiUpdate).TotalMilliseconds > 120)
                     {
-                        Console.WriteLine("Error parsing rate value at ApplyBatch: " + ex.Message);
+                        defaultGrid.DefaultCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", fontSize);
+                        defaultGrid.RowHeadersDefaultCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", fontSize + 1.5f, FontStyle.Bold);
+                        lastUiUpdate = DateTime.Now;
                     }
-
-                    // Update DataGridView row
-                    var dgvRow = defaultGrid.Rows
-                        .Cast<DataGridViewRow>()
-                        .FirstOrDefault(r => r.Cells["symbol"].Value?.ToString() == newData.i);
-
-                    if (dgvRow != null)
-                    {
-                        // Color numeric columns based on value change
-                        foreach (var colName in numericColumns)
-                        {
-                            if (!marketDataTable.Columns.Contains(colName)) continue;
-                            if (!defaultGrid.Columns.Contains(colName)) continue;
-
-                            var cell = dgvRow.Cells[colName];
-                            var colIndex = marketDataTable.Columns[colName].Ordinal;
-                            var oldVal = previousRow[colIndex];
-                            var newVal = row[colName];
-
-                            if (IsNumericChange(oldVal, newVal, out var changeDirection))
-                            {
-                                if (changeDirection == 1)
-                                    cell.Style.ForeColor = Color.Green;
-                                else if (changeDirection == -1)
-                                    cell.Style.ForeColor = Color.Red;
-                            }
-                        }
-
-                        var nameCell = dgvRow.Cells["Name"];
-
-                        // Update "Name" column with arrow and color based on Ask direction
-                        // Get current name value and remove any existing arrows
-                        string rawName = row["Name"]?.ToString() ?? string.Empty;
-                        string baseName = rawName.Replace(" ▲", "").Replace(" ▼", "").Trim();
-                        Color color = nameCell.Style.ForeColor;
-
-                        if (hasAskChange)
-                        {
-                            if (askDirection == 1)
-                            {
-                                nameCell.Value = $"{baseName} ▲";
-                                nameCell.Style.ForeColor = Color.Green;
-                            }
-                            else if (askDirection == -1)
-                            {
-                                nameCell.Value = $"{baseName} ▼";
-                                nameCell.Style.ForeColor = Color.Red;
-                            }
-                        }
-                    }
-                }
-
-                //RequestExcelUpdate(defaultGrid);
-
-                // Just before Notify
-                //if (MarketDataEventHub.Instance.SubscriberCount == 0)
-                //{
-                //    ApplicationLogger.Log("No subscribers to MarketDataEventHub.");
-                //}
-
-                UpdateExcelDataEfficiently(defaultGrid);
-
-                // Throttle UI updates
-                if ((DateTime.Now - lastUiUpdate).TotalMilliseconds > 120)
-                {
-                    defaultGrid.DefaultCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", fontSize);
-                    defaultGrid.RowHeadersDefaultCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", fontSize + 1.5f, FontStyle.Bold);
-                    //defaultGrid.Invalidate();
-                    lastUiUpdate = DateTime.Now;
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error during batch update: {ex}");
-                //ApplicationLogger.LogException(ex);
             }
             finally
             {
@@ -824,7 +886,7 @@ namespace thecalcify
                 if (oldValue == DBNull.Value) oldValue = null;
                 if (newValue == DBNull.Value) newValue = null;
 
-                if (oldValue == null || newValue == null || oldValue.ToString() == "--" || oldValue.ToString() == "N/A" || newValue.ToString() == "--" || newValue.ToString() == "N/A")
+                if (oldValue == null || newValue == null || oldValue.ToString() == "--" || oldValue.ToString() == "N/A" || newValue.ToString() == "--" || newValue.ToString() == "N/A" || oldValue.ToString() == "NaN" || newValue.ToString() == "NaN")
                     return false;
 
 
@@ -984,13 +1046,6 @@ namespace thecalcify
             }
         }
 
-        private void Home_FormClosed(object sender, FormClosedEventArgs e)
-        {
-            KillProcess();
-            isRunning = false;
-            System.Windows.Forms.Application.Exit();
-        }
-
         private void InitializeDataGridView()
         {
             defaultGrid.SuspendLayout();
@@ -1116,42 +1171,52 @@ namespace thecalcify
         private void OnNetworkAvailabilityChanged(object sender, NetworkAvailabilityEventArgs e)
         {
             if (e.IsAvailable)
-                AttemptReconnect("Network availability restored.");
+                _ = AttemptReconnectAsync("Network availability restored.");
             else
                 ApplicationLogger.Log("Network unavailable.");
         }
 
         private void OnNetworkAddressChanged(object sender, EventArgs e)
         {
-            AttemptReconnect("Network address changed.");
+            _ = AttemptReconnectAsync("Network address changed.");
         }
 
         private void OnPowerModeChanged(object sender, PowerModeChangedEventArgs e)
         {
             if (e.Mode == PowerModes.Resume)
-                AttemptReconnect("System resumed from sleep/hibernate.");
+                _ = AttemptReconnectAsync("System resumed from sleep/hibernate.");
         }
 
-        private async void AttemptReconnect(string reason)
+        private async Task AttemptReconnectAsync(string reason)
         {
-            if (DateTime.Now - _lastReconnectAttempt < _reconnectThrottle)
-                return;
+            lock (_reconnectLock)
+            {
+                if (DateTime.Now - _lastReconnectAttempt < _reconnectThrottle)
+                    return;
 
-            _lastReconnectAttempt = DateTime.Now;
+                _lastReconnectAttempt = DateTime.Now;
+            }
+
             ApplicationLogger.Log($"Attempting reconnect due to: {reason}");
 
-            if (connection == null || connection.State != HubConnectionState.Connected)
+            try
             {
-                try
+                if (connection == null)
+                {
+                    connection = BuildConnection();
+                    connection.On<string>("excelRate", OnExcelRateReceived);
+                }
+
+                if (connection.State != HubConnectionState.Connected)
                 {
                     await connection.StartAsync();
                     await connection.InvokeAsync("SubscribeSymbols", identifiers);
                     ApplicationLogger.Log("Reconnected and resubscribed.");
                 }
-                catch (Exception ex)    
-                {
-                    ApplicationLogger.Log($"Reconnect failed: {ex.Message}");
-                }
+            }
+            catch (Exception ex)
+            {
+                ApplicationLogger.Log($"Reconnect failed: {ex.Message}");
             }
         }
 
@@ -1177,8 +1242,6 @@ namespace thecalcify
                 _isResizing = false;
             }
         }
-
-
 
         #endregion
 
@@ -1476,6 +1539,16 @@ namespace thecalcify
                 {
                     aboutForm.ShowDialog();
                 }
+            }
+        }
+
+        private void Txtsearch_KeyDown(object sender, KeyEventArgs e)
+        {
+            // Check if Ctrl + Backspace is pressed
+            if (e.Control && e.KeyCode == Keys.Back)
+            {
+                txtsearch.Clear();  // Clear all text
+                e.SuppressKeyPress = true; // Prevent default backspace behavior
             }
         }
 
