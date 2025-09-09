@@ -27,7 +27,9 @@ namespace thecalcify.Helper
         {
             usernameLabel.Text = username;
             licenceExpireLabel.Text = licenceExpiryDate;
-            appVersionLabel.Text = Application.ProductVersion;
+            string[] parts = Application.ProductVersion.Split('.');
+            string result = string.Join(".", parts.Take(3));
+            appVersionLabel.Text = result;
             userPasswordLabel.Text = password;
         }
 

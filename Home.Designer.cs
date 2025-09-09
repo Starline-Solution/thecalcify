@@ -49,7 +49,12 @@ namespace thecalcify
             this.toolsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.disconnectESCToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.fullScreenF11ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.newCTRLNToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.newCTRLNToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.viewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.saveMarketWatchHost = new System.Windows.Forms.ToolStripMenuItem();
             this.headerPanel = new System.Windows.Forms.Panel();
             this.titleLabel = new System.Windows.Forms.Label();
             this.licenceExpire = new System.Windows.Forms.Label();
@@ -144,6 +149,7 @@ namespace thecalcify
             this.menuStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolsToolStripMenuItem,
+            this.newCTRLNToolStripMenuItem,
             this.aboutToolStripMenuItem});
             this.menuStrip1.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.HorizontalStackWithOverflow;
             this.menuStrip1.Location = new System.Drawing.Point(0, 30);
@@ -175,12 +181,53 @@ namespace thecalcify
             this.fullScreenF11ToolStripMenuItem.Text = "Full Screen (F11)";
             this.fullScreenF11ToolStripMenuItem.Click += new System.EventHandler(this.fullScreenF11ToolStripMenuItem_Click);
             // 
+            // newCTRLNToolStripMenuItem
+            // 
+            this.newCTRLNToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.newCTRLNToolStripMenuItem1,
+            this.viewToolStripMenuItem,
+            this.deleteToolStripMenuItem});
+            this.newCTRLNToolStripMenuItem.Name = "newCTRLNToolStripMenuItem";
+            this.newCTRLNToolStripMenuItem.Size = new System.Drawing.Size(127, 24);
+            this.newCTRLNToolStripMenuItem.Text = "Market Watch";
+            // 
+            // newCTRLNToolStripMenuItem1
+            // 
+            this.newCTRLNToolStripMenuItem1.Name = "newCTRLNToolStripMenuItem1";
+            this.newCTRLNToolStripMenuItem1.Size = new System.Drawing.Size(233, 26);
+            this.newCTRLNToolStripMenuItem1.Text = "New      (CTRL+N)";
+            this.newCTRLNToolStripMenuItem1.Click += new System.EventHandler(this.newCTRLNToolStripMenuItem1_Click);
+            // 
+            // viewToolStripMenuItem
+            // 
+            this.viewToolStripMenuItem.Name = "viewToolStripMenuItem";
+            this.viewToolStripMenuItem.Size = new System.Drawing.Size(233, 26);
+            this.viewToolStripMenuItem.Text = "View";
+            // 
+            // deleteToolStripMenuItem
+            // 
+            this.deleteToolStripMenuItem.Name = "deleteToolStripMenuItem";
+            this.deleteToolStripMenuItem.Size = new System.Drawing.Size(233, 26);
+            this.deleteToolStripMenuItem.Text = "Delete";
+            // 
             // aboutToolStripMenuItem
             // 
             this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
             this.aboutToolStripMenuItem.Size = new System.Drawing.Size(66, 24);
             this.aboutToolStripMenuItem.Text = "About";
             this.aboutToolStripMenuItem.Click += new System.EventHandler(this.aboutToolStripMenuItem_Click);
+            // 
+            // saveMarketWatchHost
+            // 
+            this.saveMarketWatchHost.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.saveMarketWatchHost.BackColor = System.Drawing.Color.Transparent;
+            this.saveMarketWatchHost.ForeColor = System.Drawing.Color.Black;
+            this.saveMarketWatchHost.Margin = new System.Windows.Forms.Padding(5, 0, 10, 0);
+            this.saveMarketWatchHost.Name = "saveMarketWatchHost";
+            this.saveMarketWatchHost.Size = new System.Drawing.Size(164, 24);
+            this.saveMarketWatchHost.Text = "Save MarketWatch";
+            this.saveMarketWatchHost.Visible = false;
+            this.saveMarketWatchHost.Click += new System.EventHandler(this.SaveMarketWatchHost_Click);
             // 
             // headerPanel
             // 
@@ -202,7 +249,7 @@ namespace thecalcify
             this.titleLabel.Name = "titleLabel";
             this.titleLabel.Size = new System.Drawing.Size(1115, 30);
             this.titleLabel.TabIndex = 0;
-            this.titleLabel.Text = "HOME";
+            this.titleLabel.Text = "DEFAULT";
             this.titleLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // licenceExpire
@@ -304,6 +351,24 @@ namespace thecalcify
             this.ResumeLayout(false);
             this.PerformLayout();
 
+        }
+
+        private void SaveMarketWatchHost_Click(object sender, EventArgs e)
+        {
+            if (saveMarketWatchHost.Text == "Save MarketWatch")
+            {
+                EditableMarketWatchGrid editableMarketWatchGrid = EditableMarketWatchGrid.CurrentInstance;
+
+                if (editableMarketWatchGrid != null && editableMarketWatchGrid.selectedSymbols != null)
+                {
+                    selectedSymbols = editableMarketWatchGrid.selectedSymbols;
+                    editableMarketWatchGrid.SaveSymbols(selectedSymbols);
+                }
+                else
+                {
+                    MessageBox.Show("No active market watch grid found.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
         }
 
         private void Txtsearch_TextChanged(object sender, EventArgs e)
@@ -643,7 +708,11 @@ namespace thecalcify
         private ComboBox fontSizeComboBox;
         private System.Windows.Forms.ToolStripMenuItem newMarketWatchMenuItem;
         private System.Windows.Forms.Panel headerPanel;
-        private System.Windows.Forms.Label titleLabel;
-
+        public System.Windows.Forms.Label titleLabel;
+        private ToolStripMenuItem saveMarketWatchHost;
+        private ToolStripMenuItem newCTRLNToolStripMenuItem;
+        private ToolStripMenuItem newCTRLNToolStripMenuItem1;
+        private ToolStripMenuItem viewToolStripMenuItem;
+        private ToolStripMenuItem deleteToolStripMenuItem;
     }
 }
