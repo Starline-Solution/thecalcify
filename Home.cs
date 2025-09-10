@@ -1,4 +1,5 @@
 ﻿using ClosedXML.Excel;
+using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Office.Interop.Excel;
 using Microsoft.Win32;
@@ -408,6 +409,7 @@ namespace thecalcify
                 .WithUrl("http://api.thecalcify.com/excel?user=calcify&auth=Starline@1008&type=mobile", options =>
                 {
                     options.Headers.Add("Origin", "http://api.thecalcify.com/");
+                    options.Transports = HttpTransportType.LongPolling | HttpTransportType.ServerSentEvents | HttpTransportType.WebSockets | HttpTransportType.None; // try fallback
                 })
                 .WithAutomaticReconnect()
                 .Build();
@@ -466,7 +468,7 @@ namespace thecalcify
 
                 try
                 {
-                    if (connection.State == HubConnectionState.Connected)
+                    if (connection != null && connection.State == HubConnectionState.Connected)
                     {
                         if (selectedSymbols.Count != 0)
                             identifiers = new List<string>(selectedSymbols);
@@ -474,7 +476,8 @@ namespace thecalcify
                         if (currentIdentifiers.Count() != identifiers.Count())
                             identifiers = currentIdentifiers;
 
-                        await connection.InvokeAsync("SubscribeSymbols", identifiers);
+                        var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                        await connection.InvokeAsync("SubscribeSymbols", identifiers, cts.Token);
                         SetupUpdateTimer();
                     }
                 }
@@ -1015,14 +1018,12 @@ namespace thecalcify
 
                     if (resultdefault?.data != null)
                     {
-
-
                         // Filter out instruments not in the valid list
                         this.Invoke((MethodInvoker)delegate
                         {
                             pastRateTickDTO = resultdefault.data;
 
-                            if (identifiers == null)
+                            if (identifiers == null || saveFileName == null)
                             {
                                 // Extract all non-null, non-empty "i" values into identifiers list
                                 identifiers = resultdefault.data
@@ -1032,9 +1033,8 @@ namespace thecalcify
 
                                 SymbolName = resultdefault.data
                                      .Where(x => !string.IsNullOrEmpty(x.i) && !string.IsNullOrEmpty(x.n))
-                                     .Select(x => (Symbol: x.i, SymbolName: x.n))
+                                     .Select(x => (Symbol: x.i, SymbolName: x.n)).ToList();
 
-                             .ToList();
                                 symbolMaster = identifiers;
                             }
 
@@ -1054,62 +1054,6 @@ namespace thecalcify
                 ApplicationLogger.LogException(ex);
             }
         }
-
-        //private void SetupDataTable()
-        //{
-        //    marketDataTable.Clear();
-        //    marketDataTable.Columns.Clear();
-
-
-        //    string[] columns = {
-        //        "symbol", "Name", "Bid", "Ask", "LTP", "High", "Low", "Open", "Close", "Net Chng", "ATP",
-        //        "Bid Size", "Total Bid Size", "Ask Size", "Total Ask Size", "Volume", "Open Interest", "Last Size", "V", "Time"
-        //    };
-
-        //    Type[] types = {
-        //        typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string),
-        //        typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string),
-        //        typeof(string), typeof(string), typeof(string), typeof(string), typeof(string)
-        //    };
-
-        //    for (int i = 0; i < columns.Length; i++) marketDataTable.Columns.Add(columns[i], types[i]);
-
-        //    foreach (var symbol in instruments)
-        //    {
-        //        marketDataTable.Rows.Add(
-        //            symbol,         // symbol
-        //            "N/A",          // Name
-        //            "N/A",          // Bid
-        //            "N/A",          // Ask
-        //            "N/A",          // LTP
-        //            "N/A",          // High
-        //            "N/A",          // Low
-        //            "N/A",          // Open
-        //            "N/A",          // Close
-        //            "N/A",          // Net Chng
-        //            "N/A",          // ATP
-        //            "N/A",          // Bid Size
-        //            "N/A",          // Total Bid Size
-        //            "N/A",          // Ask Size
-        //            "N/A",          // Total Ask Size
-        //            "N/A",          // Volume
-        //            "N/A",          // Open Interest
-        //            "N/A",          // Last Size
-        //            "N/A",          // V
-        //            "N/A"           // Time
-        //        );
-        //    }
-
-        //    foreach (DataColumn column in marketDataTable.Columns)
-        //        if (!columnPreferencesDefault.Contains(column.ColumnName))
-        //            column.ColumnMapping = MappingType.Hidden; // ✅ Call symbol map builder here
-
-        //    BuildSymbolRowMap();
-        //    if (resultdefault != null && resultdefault.data != null)
-        //    {
-        //        ApplyBatchUpdates(resultdefault.data);
-        //    }
-        //}
 
         private void InitializeGridColumns()
         {
@@ -1502,6 +1446,29 @@ namespace thecalcify
                 if (rows == 0 || cols == 0)
                     return;
 
+
+                // --- Check if A1 is empty ---
+                var cellA1 = RetryComCall(() => worksheet.Cells[1, 1]);
+                var valueA1 = RetryComCall(() => cellA1.Value2);
+                bool isA1Empty = valueA1 == null || string.IsNullOrWhiteSpace(valueA1.ToString());
+                Marshal.ReleaseComObject(cellA1);
+
+                // --- Write headers only if A1 is empty ---
+                if (isA1Empty)
+                {
+                    object[] headers = new object[cols];
+                    for (int c = 0; c < cols; c++)
+                    {
+                        headers[c] = visibleCols[c].HeaderText ?? visibleCols[c].Name;
+                    }
+
+                    var headerRange = RetryComCall(() => worksheet.Range[
+                        worksheet.Cells[1, 1], worksheet.Cells[1, cols]]);
+                    RetryComCall(() => headerRange.Value2 = headers);
+                    Marshal.ReleaseComObject(headerRange);
+                }
+
+
                 object[,] data = new object[rows, cols];
                 int timeColIdx = visibleCols.FindIndex(c => c.Name == "Time");
 
@@ -1788,11 +1755,11 @@ namespace thecalcify
             isLoadedSymbol = false;
             LiveRateGrid();
             txtsearch.Text = string.Empty;
+            saveFileName = null;
             await LoadInitialMarketDataAsync();
 
             MenuLoad();
             titleLabel.Text = "DEFAULT";
-            saveFileName = null;
             isEdit = false;
             identifiers = symbolMaster;
             //marketDataTable = new System.Data.DataTable(); // Ensure this is created first

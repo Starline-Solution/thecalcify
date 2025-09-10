@@ -1072,6 +1072,12 @@
         "Entry"
         {
         "MsmKey" = "8:_753AE77B37E0142C5A84B206B82B1F55"
+        "OwnerKey" = "8:_CD8B0DE0DD1ADF0C3D3189D7E309B5DD"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_753AE77B37E0142C5A84B206B82B1F55"
         "OwnerKey" = "8:_C644CA98BBD9492C8EF1E64B7ABBCEE9"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -2953,6 +2959,20 @@
     {
         "CustomAction"
         {
+            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_D0FF93F328A74DEEB63819D6C52AB211"
+            {
+            "Name" = "8:Primary output from thecalcify.CustomActions (Active)"
+            "Condition" = "8:"
+            "Object" = "8:_C644CA98BBD9492C8EF1E64B7ABBCEE9"
+            "FileType" = "3:1"
+            "InstallAction" = "3:1"
+            "Arguments" = "8:"
+            "EntryPoint" = "8:"
+            "Sequence" = "3:1"
+            "Identifier" = "8:_1BB7A4DD_4EFD_4D3C_8984_EDA01387BC77"
+            "InstallerClass" = "11:TRUE"
+            "CustomActionData" = "8:"
+            }
             "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_E8D196FEEBF04AF785E3E70FD05688B3"
             {
             "Name" = "8:Primary output from thecalcify.CustomActions (Active)"
@@ -7748,7 +7768,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:thecalcify"
         "ProductCode" = "8:{45A18102-1652-4AAA-8C62-4306D49EF5AB}"
-        "PackageCode" = "8:{EA586582-E22E-4E79-96E5-23C64EC5E28F}"
+        "PackageCode" = "8:{5EA3641E-5578-420A-BD7F-1B5224081F82}"
         "UpgradeCode" = "8:{70860E47-3845-4018-84C7-E2722A27A219}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"

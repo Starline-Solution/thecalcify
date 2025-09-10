@@ -232,11 +232,21 @@ namespace thecalcify.MarketWatch
             rightClickMenu.Items.Add(addColumn);
 
             this.CellMouseClick += EditableMarketWatchGrid_CellMouseClick;
+            this.EditingControlShowing += EditableMarketWatchGrid_EditingControlShowing;
 
 
 
             editableMarketWatchGridView = this;
         }
+
+        private void EditableMarketWatchGrid_EditingControlShowing(object sender, DataGridViewEditingControlShowingEventArgs e)
+        {
+            if (e.Control is ComboBox comboBox)
+            {
+                comboBox.Font = new Font(this.Font.FontFamily, this.fontSize);
+            }
+        }
+
 
         private void ApplyFixedColumnWidths(DataGridView dgv)
         {
@@ -933,6 +943,10 @@ namespace thecalcify.MarketWatch
                         {
                             gridColumn.DisplayIndex = i;
                         }
+                    }
+                    if (gridColumn is DataGridViewComboBoxColumn comboBoxCol)
+                    {
+                        comboBoxCol.DefaultCellStyle.Font = new Font(this.Font.FontFamily, this.fontSize);
                     }
                 }
 
