@@ -1656,17 +1656,17 @@ namespace thecalcify
             }
         }
 
-        private void SetActiveMenuItem(ToolStripMenuItem activeItem)
-        {
-            foreach (ToolStripMenuItem item in viewToolStripMenuItem.DropDownItems)
-            {
-                item.Enabled = true;
-                item.Checked = false;
-            }
+        //private void SetActiveMenuItem(ToolStripMenuItem activeItem)
+        //{
+        //    foreach (ToolStripMenuItem item in viewToolStripMenuItem.DropDownItems)
+        //    {
+        //        item.Enabled = true;
+        //        item.Checked = false;
+        //    }
 
-            activeItem.Enabled = false;
-            activeItem.Checked = true;
-        }
+        //    activeItem.Enabled = false;
+        //    activeItem.Checked = true;
+        //}
 
         public void MenuLoad()
         {
@@ -1696,22 +1696,14 @@ namespace thecalcify
                     var clickedItem = (ToolStripMenuItem)sender;
                     await DefaultToolStripMenuItem_Click(sender, e);
                     addEditSymbolsToolStripMenuItem.Enabled = false;
-                    SetActiveMenuItem(clickedItem);
-                    saveMarketWatchHost.Visible = false;
+                    //SetActiveMenuItem(clickedItem);
+                    //saveMarketWatchHost.Visible = false;
                     lastOpenMarketWatch = "Default";
                     await LoadInitialMarketDataAsync();
                     isGrid = true;
                     reloadGrid = true;
                 };
-                if (fileNames.Count > 0)
-                {
-                    if (isdeleted == true)
-                    {
-                        defaultMenuItem.Enabled = false;
-                    }
-                }
 
-                defaultMenuItem.Enabled = true;
                 viewToolStripMenuItem.DropDownItems.Add(defaultMenuItem);
 
                 // Add each file as a menu item with a click handler
@@ -1732,10 +1724,10 @@ namespace thecalcify
 
                         LoadSymbol(Path.Combine(saveFileName + ".slt"));
 
-                        SetActiveMenuItem(clickedItem);
+                        //SetActiveMenuItem(clickedItem);
                         titleLabel.Text = saveFileName.ToUpper();
                         isEdit = false;
-                        saveMarketWatchHost.Visible = false;
+                        //saveMarketWatchHost.Visible = false;
                         lastOpenMarketWatch = saveFileName;
                         await LoadInitialMarketDataAsync();
                         isGrid = true;
@@ -1762,15 +1754,15 @@ namespace thecalcify
                     MenuLoad();
                     addEditSymbolsToolStripMenuItem.Enabled = false;
                     saveFileName = null;
-                    SetActiveMenuItem(clickedItem);
-                    saveMarketWatchHost.Visible = false;
+                    //SetActiveMenuItem(clickedItem);
+                    //saveMarketWatchHost.Visible = false;
                     titleLabel.Text = "DEFAULT";
                     lastOpenMarketWatch = "Default";
                     await LoadInitialMarketDataAsync();
                     isGrid = true;
                     reloadGrid = true;
                 };
-                defaultMenuItem.Enabled = false;
+                defaultMenuItem.Enabled = true;
                 viewToolStripMenuItem.DropDownItems.Add(defaultMenuItem);
             }
             catch (Exception ex)
@@ -1787,6 +1779,7 @@ namespace thecalcify
         {
             try
             {
+                fontSizeComboBox.Visible = true;
                 string finalPath = Path.Combine(AppFolder, username);
                 selectedSymbols.Clear();
                 Filename = Path.Combine(finalPath, Filename);
@@ -1796,6 +1789,7 @@ namespace thecalcify
                 selectedSymbols.AddRange(symbols);
                 identifiers = selectedSymbols;
                 isLoadedSymbol = true;
+                marketWatchViewMode = MarketWatchViewMode.Default;
                 titleLabel.Text = Path.GetFileNameWithoutExtension(Filename).ToUpper();
                 //marketDataTable = new System.Data.DataTable(); // Ensure this is created first
                 //SetupDataTable();                  // Set up columns
@@ -1816,6 +1810,8 @@ namespace thecalcify
 
         public async Task DefaultToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            fontSizeComboBox.Visible = true;
+
             EditableMarketWatchGrid editableMarketWatchGrid = EditableMarketWatchGrid.CurrentInstance;
             editableMarketWatchGrid?.Dispose();
             toolsToolStripMenuItem.Enabled = true;
@@ -1924,9 +1920,10 @@ namespace thecalcify
                 newCTRLNToolStripMenuItem1.Enabled = false;
 
                 // Update save button visibility
-                saveMarketWatchHost.Visible = true;
-                saveMarketWatchHost.Text = "Save MarketWatch";
+                //saveMarketWatchHost.Visible = true;
+                //saveMarketWatchHost.Text = "Save MarketWatch";
 
+                fontSizeComboBox.Visible = false;
                 // Update status label
 
                 // Update title based on edit mode
@@ -2396,7 +2393,7 @@ namespace thecalcify
             //    FullScreenF11ToolStripMenuItem_Click(this, EventArgs.Empty);
             //    e.Handled = true;
             //}
-            
+
 
             if (e.KeyCode == Keys.Escape)
             {
@@ -2408,6 +2405,24 @@ namespace thecalcify
             {
                 aboutToolStripMenuItem_Click(this, EventArgs.Empty);
                 e.Handled = true;
+            }
+        }
+
+        private void titleLabel_TextChanged(object sender, EventArgs e)
+        {
+            if (titleLabel != null)
+            {
+                if (titleLabel.Text.ToLower() == "new marketwatch")
+                {
+                    saveMarketWatchHost.Visible = true;
+                    saveMarketWatchHost.Text = "Save MarketWatch";
+                }
+                else
+                {
+                    saveMarketWatchHost.Visible = false;
+                }
+
+                txtsearch.Text = null;
             }
         }
 

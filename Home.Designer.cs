@@ -268,6 +268,7 @@ namespace thecalcify
             this.titleLabel.TabIndex = 0;
             this.titleLabel.Text = "DEFAULT";
             this.titleLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.titleLabel.TextChanged += new System.EventHandler(this.titleLabel_TextChanged);
             // 
             // licenceExpire
             // 
