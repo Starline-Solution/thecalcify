@@ -3,6 +3,7 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
+using thecalcify.Helper;
 using thecalcify.MarketWatch;
 
 
@@ -50,12 +51,12 @@ namespace thecalcify
             this.toolsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.disconnectESCToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.fullScreenF11ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.saveMarketWatchHost = new System.Windows.Forms.ToolStripMenuItem();
             this.newCTRLNToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.newCTRLNToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.viewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.saveMarketWatchHost = new System.Windows.Forms.ToolStripMenuItem();
             this.headerPanel = new System.Windows.Forms.Panel();
             this.titleLabel = new System.Windows.Forms.Label();
             this.licenceExpire = new System.Windows.Forms.Label();
@@ -162,6 +163,7 @@ namespace thecalcify
             this.menuStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolsToolStripMenuItem,
+            this.saveMarketWatchHost,
             this.newCTRLNToolStripMenuItem,
             this.aboutToolStripMenuItem});
             this.menuStrip1.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.HorizontalStackWithOverflow;
@@ -193,6 +195,18 @@ namespace thecalcify
             this.fullScreenF11ToolStripMenuItem.Size = new System.Drawing.Size(287, 26);
             this.fullScreenF11ToolStripMenuItem.Text = "Full Screen (ESC)";
             this.fullScreenF11ToolStripMenuItem.Click += new System.EventHandler(this.FullScreenF11ToolStripMenuItem_Click);
+            // 
+            // saveMarketWatchHost
+            // 
+            this.saveMarketWatchHost.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.saveMarketWatchHost.BackColor = System.Drawing.Color.Transparent;
+            this.saveMarketWatchHost.ForeColor = System.Drawing.Color.Black;
+            this.saveMarketWatchHost.Margin = new System.Windows.Forms.Padding(5, 0, 10, 0);
+            this.saveMarketWatchHost.Name = "saveMarketWatchHost";
+            this.saveMarketWatchHost.Size = new System.Drawing.Size(164, 24);
+            this.saveMarketWatchHost.Text = "Save MarketWatch";
+            this.saveMarketWatchHost.Visible = false;
+            this.saveMarketWatchHost.Click += new System.EventHandler(this.SaveMarketWatchHost_Click);
             // 
             // newCTRLNToolStripMenuItem
             // 
@@ -231,18 +245,6 @@ namespace thecalcify
             this.aboutToolStripMenuItem.Text = "About";
             this.aboutToolStripMenuItem.ToolTipText = "Click CTRL + U";
             this.aboutToolStripMenuItem.Click += new System.EventHandler(this.aboutToolStripMenuItem_Click);
-            // 
-            // saveMarketWatchHost
-            // 
-            this.saveMarketWatchHost.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.saveMarketWatchHost.BackColor = System.Drawing.Color.Transparent;
-            this.saveMarketWatchHost.ForeColor = System.Drawing.Color.Black;
-            this.saveMarketWatchHost.Margin = new System.Windows.Forms.Padding(5, 0, 10, 0);
-            this.saveMarketWatchHost.Name = "saveMarketWatchHost";
-            this.saveMarketWatchHost.Size = new System.Drawing.Size(164, 24);
-            this.saveMarketWatchHost.Text = "Save MarketWatch";
-            this.saveMarketWatchHost.Visible = false;
-            this.saveMarketWatchHost.Click += new System.EventHandler(this.SaveMarketWatchHost_Click);
             // 
             // headerPanel
             // 
@@ -322,6 +324,7 @@ namespace thecalcify
             this.fontSizeComboBox.TabIndex = 5;
             this.fontSizeComboBox.Text = "Font Size";
             this.fontSizeComboBox.SelectedIndexChanged += new System.EventHandler(this.FontSizeComboBox_SelectedIndexChanged);
+            this.fontSizeComboBox.TextChanged += new System.EventHandler(this.FontSizeComboBox_TextChanged);
             // 
             // newMarketWatchMenuItem
             // 
@@ -467,15 +470,55 @@ namespace thecalcify
 
         private void FontSizeComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            fontSize = Convert.ToInt32(fontSizeComboBox.SelectedItem.ToString());
-
-            //EditableMarketWatchGrid editableMarketWatchGrid = EditableMarketWatchGrid.CurrentInstance;
-            //if (editableMarketWatchGrid != null)
-            //{
-            //    editableMarketWatchGrid.fontSize = fontSize;
-            //    editableMarketWatchGrid.UpdateGridColumnVisibility();
-            //}
+            ApplyFontSizeFromComboBox();
         }
+
+        private void FontSizeComboBox_TextChanged(object sender, EventArgs e)
+        {
+            ApplyFontSizeFromComboBox();
+        }
+
+        private void ApplyFontSizeFromComboBox()
+        {
+            int _fontSize;
+
+            try
+
+            {
+                if (int.TryParse(fontSizeComboBox.Text, out _fontSize))
+
+                {
+
+                    if (_fontSize < 10 || _fontSize > 30)
+
+                    {
+
+                        _fontSize = 12;
+
+                    }
+
+                    fontSize = _fontSize;
+
+                    EditableMarketWatchGrid editableMarketWatchGrid = EditableMarketWatchGrid.CurrentInstance;
+
+                    if (editableMarketWatchGrid != null)
+                    {
+                        editableMarketWatchGrid.fontSize = _fontSize;
+                        editableMarketWatchGrid.UpdateGridColumnVisibility();
+                        //editableMarketWatchGrid.UpdateGridFontSize();
+                    }
+                }
+
+            }
+
+            catch (Exception ex)
+            {
+                ApplicationLogger.Log($"Error applying font size");
+                ApplicationLogger.LogException(ex);
+            }
+
+        }
+
         #endregion
 
         private DataGridView defaultGrid;
