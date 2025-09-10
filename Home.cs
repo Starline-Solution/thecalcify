@@ -642,7 +642,7 @@ namespace thecalcify
                 dto.oi ?? "--",                       // Open Interest
                 dto.ltq ?? "--",                      // Last Size
                 dto.v ?? "--",                        // V
-                commonClass.timeStampConvert(dto.t)   // Time
+                commonClass.TimeStampConvert(dto.t)   // Time
             };
 
             if (defaultGrid.Columns.Count == 0)
@@ -761,7 +761,7 @@ namespace thecalcify
                         SetCellValue(row, "Volume", newData.vt);
                         SetCellValue(row, "Open Interest", newData.oi);
                         SetCellValue(row, "Last Size", newData.ltq);
-                        SetCellValue(row, "Time", commonClass.timeStampConvert(newData.t));
+                        SetCellValue(row, "Time", commonClass.TimeStampConvert(newData.t));
 
                         // Set name if still default
                         var nameCell = row.Cells["Name"];
@@ -1388,6 +1388,7 @@ namespace thecalcify
                     }
 
                     EnsureFullFolderAccess(folderPath);
+                    commonClass.CreateShortCut(excelFilePath);
 
                     excelApp = new Excel.Application
                     {
@@ -1742,6 +1743,10 @@ namespace thecalcify
             {
                 ApplicationLogger.LogException(ex);
             }
+            finally
+            {
+                DefaultGrid_DataSourceChanged(this, EventArgs.Empty);
+            }
         }
 
         public async void LoadSymbol(string Filename)
@@ -1991,7 +1996,7 @@ namespace thecalcify
             }
         }
 
-        private void deleteToolStripMenuItem_Click(object sender, EventArgs e)
+        private void DeleteToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (FileLists == null || FileLists.Count == 0)
             {
@@ -2271,7 +2276,7 @@ namespace thecalcify
             defaultGrid.ResumeLayout();
         }
 
-        private void fullScreenF11ToolStripMenuItem_Click(object sender, EventArgs e)
+        private void FullScreenF11ToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (!isFullScreen)
             {
@@ -2302,11 +2307,11 @@ namespace thecalcify
 
                 isFullScreen = false;
 
-                fullScreenF11ToolStripMenuItem.Text = "Full Screen (F11)";
+                fullScreenF11ToolStripMenuItem.Text = "Full Screen (ESC)";
             }
         }
 
-        private void defaultGrid_CellMouseDown(object sender, DataGridViewCellMouseEventArgs e)
+        private void DefaultGrid_CellMouseDown(object sender, DataGridViewCellMouseEventArgs e)
         {
             if (e.Button == MouseButtons.Right && e.RowIndex >= 0 && e.ColumnIndex >= 0)
             {
@@ -2314,7 +2319,7 @@ namespace thecalcify
             }
         }
 
-        private void defaultGrid_CellMouseEnter(object sender, DataGridViewCellEventArgs e)
+        private void DefaultGrid_CellMouseEnter(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex >= 0)
             {
@@ -2322,7 +2327,7 @@ namespace thecalcify
             }
         }
 
-        private void defaultGrid_CellMouseLeave(object sender, DataGridViewCellEventArgs e)
+        private void DefaultGrid_CellMouseLeave(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex >= 0)
             {
@@ -2352,16 +2357,16 @@ namespace thecalcify
                 e.Handled = true;
             }
 
-            if (e.KeyCode == Keys.F11)
-            {
-                fullScreenF11ToolStripMenuItem_Click(this, EventArgs.Empty);
-                e.Handled = true;
-            }
+            //if (e.KeyCode == Keys.F11)
+            //{
+            //    FullScreenF11ToolStripMenuItem_Click(this, EventArgs.Empty);
+            //    e.Handled = true;
+            //}
             
 
             if (e.KeyCode == Keys.Escape)
             {
-                fullScreenF11ToolStripMenuItem_Click(this, EventArgs.Empty);
+                FullScreenF11ToolStripMenuItem_Click(this, EventArgs.Empty);
                 e.Handled = true;
             }
 
@@ -2379,18 +2384,21 @@ namespace thecalcify
                 if (!_excelInitialized && !TryInitializeExcel())
                     return;
 
-                Range usedRange = worksheet.UsedRange;
-                int totalRows = usedRange.Rows.Count;
-                int totalCols = usedRange.Columns.Count;
+                // Clear entire sheet (Sheet1)
+                worksheet.Cells.Clear();
 
-                if (totalRows > 1 && totalCols > 0)
+                // Get visible and exportable columns from the grid
+                var exportableColumns = defaultGrid.Columns
+                    .Cast<DataGridViewColumn>()
+                    .Where(c => c.Visible && c.Name != "symbol" && c.Name != "V")
+                    .OrderBy(c => c.DisplayIndex)
+                    .ToList();
+
+                // Write headers
+                for (int i = 0; i < exportableColumns.Count; i++)
                 {
-                    Range clearRange = worksheet.Range[worksheet.Cells[2, 1], worksheet.Cells[totalRows, totalCols]];
-                    clearRange.ClearContents();
-                    Marshal.ReleaseComObject(clearRange);
+                    worksheet.Cells[1, i + 1] = exportableColumns[i].HeaderText;
                 }
-
-                Marshal.ReleaseComObject(usedRange);
             }
             catch (Exception ex)
             {
@@ -2687,6 +2695,8 @@ namespace thecalcify
                     }
 
                     panelAddColumns.Visible = false;
+
+                    DefaultGrid_DataSourceChanged(sender, EventArgs.Empty);
                     //MessageBox.Show("Columns updated successfully!");
 
                 };
@@ -2994,6 +3004,7 @@ namespace thecalcify
             panelAddSymbols.BringToFront();
 
         }
+
         public void KillProcess()
         {
             // Kill any EXCEL processes without a main window (ghost/background instances)

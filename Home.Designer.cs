@@ -117,9 +117,9 @@ namespace thecalcify
             this.defaultGrid.TabIndex = 1;
             this.defaultGrid.DataSourceChanged += new System.EventHandler(this.DefaultGrid_DataSourceChanged);
             this.defaultGrid.CellFormatting += new System.Windows.Forms.DataGridViewCellFormattingEventHandler(this.DefaultGrid_CellFormatting);
-            this.defaultGrid.CellMouseDown += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.defaultGrid_CellMouseDown);
-            this.defaultGrid.CellMouseEnter += new System.Windows.Forms.DataGridViewCellEventHandler(this.defaultGrid_CellMouseEnter);
-            this.defaultGrid.CellMouseLeave += new System.Windows.Forms.DataGridViewCellEventHandler(this.defaultGrid_CellMouseLeave);
+            this.defaultGrid.CellMouseDown += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.DefaultGrid_CellMouseDown);
+            this.defaultGrid.CellMouseEnter += new System.Windows.Forms.DataGridViewCellEventHandler(this.DefaultGrid_CellMouseEnter);
+            this.defaultGrid.CellMouseLeave += new System.Windows.Forms.DataGridViewCellEventHandler(this.DefaultGrid_CellMouseLeave);
             this.defaultGrid.DataBindingComplete += new System.Windows.Forms.DataGridViewBindingCompleteEventHandler(this.DefaultGrid_DataBindingComplete);
             // 
             // Tools
@@ -191,8 +191,8 @@ namespace thecalcify
             // 
             this.fullScreenF11ToolStripMenuItem.Name = "fullScreenF11ToolStripMenuItem";
             this.fullScreenF11ToolStripMenuItem.Size = new System.Drawing.Size(287, 26);
-            this.fullScreenF11ToolStripMenuItem.Text = "Full Screen (F11)";
-            this.fullScreenF11ToolStripMenuItem.Click += new System.EventHandler(this.fullScreenF11ToolStripMenuItem_Click);
+            this.fullScreenF11ToolStripMenuItem.Text = "Full Screen (ESC)";
+            this.fullScreenF11ToolStripMenuItem.Click += new System.EventHandler(this.FullScreenF11ToolStripMenuItem_Click);
             // 
             // newCTRLNToolStripMenuItem
             // 
@@ -222,7 +222,7 @@ namespace thecalcify
             this.deleteToolStripMenuItem.Name = "deleteToolStripMenuItem";
             this.deleteToolStripMenuItem.Size = new System.Drawing.Size(233, 26);
             this.deleteToolStripMenuItem.Text = "Delete";
-            this.deleteToolStripMenuItem.Click += new System.EventHandler(this.deleteToolStripMenuItem_Click);
+            this.deleteToolStripMenuItem.Click += new System.EventHandler(this.DeleteToolStripMenuItem_Click);
             // 
             // aboutToolStripMenuItem
             // 

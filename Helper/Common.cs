@@ -1,4 +1,5 @@
-﻿using Microsoft.Win32;
+﻿using IWshRuntimeLibrary;
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -39,7 +40,7 @@ namespace thecalcify.Helper
                 return false; // It's a directory, not a file
             }
 
-            if(!File.Exists(filePath))
+            if(!System.IO.File.Exists(filePath))
             {
                 return false; // File does not exist, so it's not locked
             }
@@ -161,7 +162,7 @@ namespace thecalcify.Helper
             return 0m; // Default fallback value
         }
 
-        public string timeStampConvert(string value)
+        public string TimeStampConvert(string value)
         {
             try
             {
@@ -194,6 +195,43 @@ namespace thecalcify.Helper
                 return null;
             }
         }
+
+        public void CreateShortCut(string filepath)
+        {
+            // Path to the file you want to create a shortcut for
+            //string targetPath = filepath; // Change this
+            string shortcutName = "thecalcify Excel";
+            string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+            string shortcutPath = Path.Combine(desktopPath, shortcutName + ".lnk");
+
+            // Create WSH Shell
+            WshShell shell = new WshShell();
+            IWshShortcut shortcut = (IWshShortcut)shell.CreateShortcut(shortcutPath);
+
+            shortcut.TargetPath = filepath;
+            shortcut.WorkingDirectory = Path.GetDirectoryName(filepath);
+            shortcut.WindowStyle = 1;
+            shortcut.Description = "Runs thecalcify Excel as Administrator";
+            shortcut.IconLocation = filepath;
+
+            // This causes the program to request elevation when run
+            shortcut.Arguments = ""; // Optional: add arguments if needed
+            shortcut.Save();
+
+            // Now we need to mark the shortcut to always run as admin
+            // Unfortunately, IWshShortcut doesn't support setting "RunAsAdministrator" directly
+            // Instead, we must manually modify the shortcut file
+
+            byte[] bytes = System.IO.File.ReadAllBytes(shortcutPath);
+            // Set the 21st byte (index 0x15) to 0x22 (original value | 0x20)
+            // This sets the "RunAs" flag
+            if (bytes.Length > 0x15)
+            {
+                bytes[0x15] |= 0x20;
+                System.IO.File.WriteAllBytes(shortcutPath, bytes);
+            }
+        }
+
     }
 
 

@@ -1074,7 +1074,7 @@ namespace thecalcify.MarketWatch
                                     row["Open Interest"] = data.oi ?? "--";
                                     row["Last Size"] = data.ltq ?? "--";
                                     row["V"] = data.v ?? "--";
-                                    row["Time"] = CommonClass.timeStampConvert(data.t);
+                                    row["Time"] = CommonClass.TimeStampConvert(data.t);
 
                                     if (!isSymbolMasterInitialized)
                                     {
@@ -1241,7 +1241,7 @@ namespace thecalcify.MarketWatch
                                     row["Open Interest"] = dto.oi;
                                     row["Last Size"] = dto.ltq;
                                     row["V"] = dto.v;
-                                    row["Time"] = CommonClass.timeStampConvert(dto.t);
+                                    row["Time"] = CommonClass.TimeStampConvert(dto.t);
                                     return row;
                                 }).ToArray();
                             }
@@ -1346,7 +1346,7 @@ namespace thecalcify.MarketWatch
                         gridRow.Cells["Open Interest"].Value = dto.oi;
                         gridRow.Cells["Last Size"].Value = dto.ltq;
                         gridRow.Cells["V"].Value = dto.v;
-                        gridRow.Cells["Time"].Value = CommonClass.timeStampConvert(dto.t);
+                        gridRow.Cells["Time"].Value = CommonClass.TimeStampConvert(dto.t);
 
                         //isFirstSet = true;
                     }
@@ -1843,7 +1843,7 @@ namespace thecalcify.MarketWatch
             differs |= !Equals(gridRow.Cells["Open Interest"].Value ?? "--", dto.oi);
             differs |= !Equals(gridRow.Cells["Last Size"].Value ?? "--", dto.ltq);
             differs |= !Equals(gridRow.Cells["V"].Value?.ToString() ?? "--", dto.v);
-            differs |= !Equals(gridRow.Cells["Time"].Value?.ToString() ?? "--", CommonClass.timeStampConvert(dto.t));
+            differs |= !Equals(gridRow.Cells["Time"].Value?.ToString() ?? "--", CommonClass.TimeStampConvert(dto.t));
 
             return differs;
         }
