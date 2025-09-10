@@ -20,6 +20,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.NetworkInformation;
+using System.Net.Sockets;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -43,7 +44,7 @@ namespace thecalcify
     {
         public string token, licenceDate, username, password;
 
-        public bool _headersWritten = false, _isResizing = false;
+        public bool _headersWritten = false, _isResizing = false, isDisconnecting = false;
         public int fontSize = 12, RemainingDays;
         private bool isRunning = true;
         private DateTime _lastReconnectAttempt = DateTime.MinValue;
@@ -355,7 +356,7 @@ namespace thecalcify
             defaultGrid.Visible = true;
             defaultGrid.BringToFront();
             defaultGrid.Focus();
-            newMarketWatchMenuItem.Enabled = true;
+            newCTRLNToolStripMenuItem1.Enabled = true;
         }
 
         private static void Application_ThreadException(object sender, ThreadExceptionEventArgs e)
@@ -426,27 +427,35 @@ namespace thecalcify
                 connection.Closed += async (error) =>
                 {
                     Console.WriteLine("Connection closed");
-                    await Task.Delay(new Random().Next(0, 5) * 1000);
+                    if (!isDisconnecting)
+                    {
+                        await Task.Delay(new Random().Next(0, 5) * 1000);
+                        // Possibly try reconnect manually if needed
+                    }
                 };
 
                 connection.Reconnected += async (connectionId) =>
                 {
-                    Console.WriteLine("Reconnected to SignalR hub");
-
-                    try
+                    if (!isDisconnecting)
                     {
-                        if (selectedSymbols.Count != 0)
-                            identifiers = new List<string>(selectedSymbols);
+                        Console.WriteLine("Reconnected to SignalR hub");
 
-                        await connection.InvokeAsync("SubscribeSymbols", identifiers);
-                        Console.WriteLine("Resubscribed after reconnect.");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine("Failed to resubscribe after reconnect.");
-                        ApplicationLogger.LogException(ex);
+                        try
+                        {
+                            if (selectedSymbols.Count != 0)
+                                identifiers = new List<string>(selectedSymbols);
+
+                            await connection.InvokeAsync("SubscribeSymbols", identifiers);
+                            Console.WriteLine("Resubscribed after reconnect.");
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine("Failed to resubscribe after reconnect.");
+                            ApplicationLogger.LogException(ex);
+                        }
                     }
                 };
+
 
                 var currentIdentifiers = new List<string>(identifiers); // snapshot copy
 
@@ -960,13 +969,59 @@ namespace thecalcify
 
         private void DisconnectESCToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            // Switch to LoginForm and dispose current form
-            Login loginForm = new Login();
-            loginForm.Show();
+            try
+            {
+                // 1️⃣ Stop background processes
+                StopBackgroundTasks(); // You define this method
 
-            this.Hide();
-            this.Dispose();
+                // 2️⃣ Unsubscribe event handlers
+                UnsubscribeAllEvents(); // Optional, but recommended if you manually subscribed
+
+                // 3️⃣ Show Login Form
+                Login loginForm = new Login();
+                loginForm.Show();
+
+                // 4️⃣ Dispose current form
+                this.Hide();      // optional: avoid flicker before dispose
+                this.Dispose();   // frees unmanaged resources
+                this.Close();   // frees unmanaged resources
+
+                // 5️⃣ Kill extra processes if needed (use with caution)
+                KillProcess();    // Only if you're absolutely sure it's safe to kill processes
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error during disconnect: " + ex.Message);
+            }
         }
+
+        private void UnsubscribeAllEvents()
+        {
+            NetworkChange.NetworkAvailabilityChanged -= OnNetworkAvailabilityChanged;
+            NetworkChange.NetworkAddressChanged -= OnNetworkAddressChanged;
+            SystemEvents.PowerModeChanged -= OnPowerModeChanged;
+            System.Windows.Forms.Application.ThreadException -= Application_ThreadException;
+            AppDomain.CurrentDomain.UnhandledException -= CurrentDomain_UnhandledException;
+        }
+
+        private async void StopBackgroundTasks()
+        {
+            isDisconnecting = true; // 🔐 prevent reconnect
+            if (connection != null)
+            {
+                await connection.StopAsync();
+                await connection.DisposeAsync(); // ✅ Full cleanup
+            }
+
+            if (signalRTimer != null)
+            {
+                signalRTimer.Stop();
+                signalRTimer.Dispose();
+                signalRTimer = null;
+            }
+        }
+
+
 
         private void BuildSymbolRowMap()
         {
@@ -1634,6 +1689,10 @@ namespace thecalcify
                 ToolStripMenuItem defaultMenuItem = new ToolStripMenuItem("Default");
                 defaultMenuItem.Click += async (sender, e) =>
                 {
+                    selectedSymbols.Clear();
+                    identifiers.Clear();
+                    symbolMaster.Clear();
+                    saveFileName = null;
                     var clickedItem = (ToolStripMenuItem)sender;
                     await DefaultToolStripMenuItem_Click(sender, e);
                     addEditSymbolsToolStripMenuItem.Enabled = false;
@@ -1661,6 +1720,11 @@ namespace thecalcify
                     ToolStripMenuItem menuItem = new ToolStripMenuItem(fileName);
                     menuItem.Click += async (sender, e) =>
                     {
+                        selectedSymbols.Clear();
+                        identifiers.Clear();
+                        symbolMaster.Clear();
+                        saveFileName = null;
+
                         var clickedItem = (ToolStripMenuItem)sender;
 
                         saveFileName = clickedItem.Text;
@@ -1689,6 +1753,9 @@ namespace thecalcify
                 ToolStripMenuItem defaultMenuItem = new ToolStripMenuItem("Default");
                 defaultMenuItem.Click += async (sender, e) =>
                 {
+                    selectedSymbols.Clear();
+                    identifiers.Clear();
+                    symbolMaster.Clear();
 
                     var clickedItem = (ToolStripMenuItem)sender;
                     await DefaultToolStripMenuItem_Click(sender, e);
@@ -1854,7 +1921,7 @@ namespace thecalcify
 
                 // Update menu items
                 toolsToolStripMenuItem.Enabled = true;
-                newMarketWatchMenuItem.Enabled = false;
+                newCTRLNToolStripMenuItem1.Enabled = false;
 
                 // Update save button visibility
                 saveMarketWatchHost.Visible = true;
