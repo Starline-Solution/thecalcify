@@ -18,95 +18,84 @@ namespace thecalcify.MarketWatch
 {
     public class EditableMarketWatchGrid : DataGridView
     {
+        #region Declarations and Initializations
+
+        // ======================
+        // 📌 Config / Constants
+        // ======================
+        public static readonly string AppFolder = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "thecalcify");
+
+        public static readonly string SymbolListFile = Path.Combine(AppFolder, "symbols.slt");
+        public static readonly string passphrase = "v@d{4NME4sOSywXF";
+
+        // ======================
+        // 📌 Core Data / State
+        // ======================
         public readonly DataTable marketWatchDatatable = new DataTable();
+
         private List<string> symbolMaster = new List<string>();
         public List<(string Symbol, string SymbolName)> SymbolName = new List<(string Symbol, string SymbolName)>();
         private bool isSymbolMasterInitialized = false;
         public List<string> selectedSymbols = new List<string>();
-        public int fontSize = 12; // Default font size
-        private readonly Helper.Common CommonClass;
-        private HubConnection connection;
+        public List<MarketDataDTO> pastRateTickDTO = new List<MarketDataDTO>();
         public List<string> identifiers;
-        public static EditableMarketWatchGrid CurrentInstance { get; private set; }
-        public bool isEditMarketWatch = false;
-        private DataGridView editableMarketWatchGridView;
-        public static readonly string AppFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "thecalcify");
-        public static readonly string SymbolListFile = Path.Combine(AppFolder, "symbols.slt");
-        public static readonly string passphrase = "v@d{4NME4sOSywXF";
+
+        // ======================
+        // 📌 User / Preferences
+        // ======================
+        public int fontSize = 12; // Default font size
+
         public string saveFileName, serchstring, username;
-        public bool isDelete = false;
         public List<string> columnPreferences = new List<string>();
         public List<string> columnPreferencesDefault = new List<string>();
+
+        // ======================
+        // 📌 Flags / Metadata
+        // ======================
+        public static EditableMarketWatchGrid CurrentInstance { get; private set; }
+
+        public bool isEditMarketWatch = false;
+        public bool isDelete = false;
+        public bool isGrid = true; // Flag to check if this is a grid or not
+
+        // ======================
+        // 📌 Services / Helpers
+        // ======================
+        private readonly Helper.Common CommonClass;
+
+        private HubConnection connection;
+        private SynchronizationContext _uiContext;
+
+        // ======================
+        // 📌 UI Elements
+        // ======================
+        private DataGridView editableMarketWatchGridView;
+
         private ContextMenuStrip rightClickMenu;
+
+        // Panel for Symbols
         private Panel panelAddSymbols;
+
         private CheckedListBox checkedListSymbols;
         private Button btnConfirmAddSymbols;
         private Button btnCancelAddSymbols;
-        private Button btnSelectAllSymbols;  // declare this with other buttons
-        public bool isGrid = true; // Flag to check if this is a grid or not
+        private Button btnSelectAllSymbols;
+
+        // Panel for Columns
         private Panel panelAddColumns;
+
         private CheckedListBox checkedListColumns;
         private Button btnSelectAllColumns;
         private Button btnConfirmAddColumns;
         private Button btnCancelAddColumns;
-        public List<MarketDataDTO> pastRateTickDTO = new List<MarketDataDTO>();
-        private SynchronizationContext _uiContext;
 
+        #endregion Declarations and Initializations
 
+        #region 🔄 Initialization / Lifecycle
 
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                // Dispose custom UI elements
-                panelAddSymbols?.Dispose();
-                checkedListSymbols?.Dispose();
-                btnConfirmAddSymbols?.Dispose();
-                btnCancelAddSymbols?.Dispose();
-                btnSelectAllSymbols?.Dispose();
-
-                panelAddColumns?.Dispose();
-                checkedListColumns?.Dispose();
-                btnConfirmAddColumns?.Dispose();
-                btnCancelAddColumns?.Dispose();
-                btnSelectAllColumns?.Dispose();
-
-                rightClickMenu?.Dispose();
-
-                // Clear references to managed resources
-                symbolMaster?.Clear();
-                SymbolName?.Clear();
-                selectedSymbols?.Clear();
-                identifiers?.Clear();
-                pastRateTickDTO?.Clear();
-
-                // Stop and dispose SignalR connection
-                if (connection != null)
-                {
-                    try
-                    {
-                        connection.StopAsync().Wait();
-                        connection.DisposeAsync().AsTask().Wait();
-                    }
-                    catch (Exception ex)
-                    {
-                        ApplicationLogger.LogException(ex);
-                    }
-                    finally
-                    {
-                        connection = null;
-                    }
-                }
-
-                // Clear event handlers to prevent painting exceptions
-                this.DataSource = null;
-                this.Rows.Clear();
-                this.Columns.Clear();
-            }
-
-            base.Dispose(disposing);
-        }
-
+        // Constructor, identifier loading, datatable/grid initialization, tooltip & add-symbol panel
         public EditableMarketWatchGrid()
         {
             _uiContext = SynchronizationContext.Current;
@@ -143,14 +132,6 @@ namespace thecalcify.MarketWatch
             rightClickMenu.Items.Add(addColumn);
 
             this.CellMouseClick += EditableMarketWatchGrid_CellMouseClick;
-        }
-
-        private void EditableMarketWatchGrid_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Control && e.KeyCode == Keys.S)
-            {
-                SaveSymbols(selectedSymbols);
-            }
         }
 
         private void InitializeDataTable()
@@ -219,8 +200,6 @@ namespace thecalcify.MarketWatch
                     System.Reflection.BindingFlags.SetProperty,
                     null, this, new object[] { true });
 
-
-
             rightClickMenu = new ContextMenuStrip();
 
             var addItem = new ToolStripMenuItem("Add/Edit Symbol");
@@ -234,78 +213,13 @@ namespace thecalcify.MarketWatch
             this.CellMouseClick += EditableMarketWatchGrid_CellMouseClick;
             this.EditingControlShowing += EditableMarketWatchGrid_EditingControlShowing;
 
-
-
             editableMarketWatchGridView = this;
-        }
-
-        private void EditableMarketWatchGrid_EditingControlShowing(object sender, DataGridViewEditingControlShowingEventArgs e)
-        {
-            if (e.Control is ComboBox comboBox)
-            {
-                comboBox.Font = new Font(this.Font.FontFamily, this.fontSize);
-            }
-        }
-
-
-        private void ApplyFixedColumnWidths(DataGridView dgv)
-        {
-            foreach (DataGridViewColumn col in this.Columns)
-            {
-                if (col.Name != "Name")
-                    col.ReadOnly = true;
-                col.SortMode = DataGridViewColumnSortMode.Automatic;
-                col.Resizable = DataGridViewTriState.True;
-
-                switch (col.Name)
-                {
-                    case "Time":
-                        col.Width = 250;
-                        break;
-                    case "Name":
-                        col.Width = 210;
-                        break;
-                    case "Bid":
-                    case "Ask":
-                    case "LTP":
-                    case "High":
-                    case "Low":
-                    case "Open":
-                    case "Close":
-                    case "ATP":
-                    case "Total Bid Size":
-                    case "Ask Size":
-                    case "Open Interest":
-                    case "Last Size":
-                        col.Width = 170;
-                        break;
-                    case "Total Ask Size":
-                        col.Width = 100;
-                        break;
-                    case "Volume":
-                    case "Bid Size":
-                    case "Net Chng":
-                        col.Width = 120;
-                        break;
-                    default:
-                        col.Width = 100;
-                        break;
-                }
-            }
-        }
-
-        private void DataErrorHandle(object sender, DataGridViewDataErrorEventArgs e)
-        {
-            ApplicationLogger.Log("DataGridView error: " + e.Exception?.Message);
-            e.ThrowException = false; // prevent exception from bubbling
         }
 
         private void InitializeAddSymbolPanel()
         {
-
             if (panelAddColumns != null && panelAddColumns.Visible)
                 panelAddColumns.Visible = false;
-
 
             // Container panel (with padding and rounded look)
             panelAddSymbols = new Panel
@@ -347,7 +261,6 @@ namespace thecalcify.MarketWatch
             };
             btnSelectAllSymbols.FlatAppearance.BorderSize = 0;
             btnSelectAllSymbols.Click += BtnSelectAllSymbols_Click;
-
 
             // Title label
             Label titleLabel = new Label
@@ -437,30 +350,186 @@ namespace thecalcify.MarketWatch
             };
         }
 
-        private void BtnSelectAllSymbols_Click(object sender, EventArgs e)
+        #endregion 🔄 Initialization / Lifecycle
+
+        #region 🌐 Connection Handling
+
+        // SignalR setup, connection management, event subscriptions
+        public async Task SignalREventAsync()
         {
-            bool allChecked = true;
-
-            // Check if all items are already checked
-            for (int i = 0; i < checkedListSymbols.Items.Count; i++)
+            try
             {
-                if (!checkedListSymbols.GetItemChecked(i))
+                // Initialize identifiers from Live_Rate
+                thecalcify live_Rate = thecalcify.CurrentInstance;
+                identifiers = live_Rate?.identifiers ?? new List<string>();
+
+                // Configure SignalR connection
+                connection = new HubConnectionBuilder()
+                    .WithUrl("http://api.thecalcify.com/excel?user=calcify&auth=Starline@1008&type=mobile", options =>
+                    {
+                        options.Headers.Add("Origin", "http://api.thecalcify.com/");
+                    })
+                    .WithAutomaticReconnect(new[]
+                    {
+                        TimeSpan.Zero,
+                        TimeSpan.FromSeconds(1),
+                        TimeSpan.FromSeconds(5),
+                        TimeSpan.FromSeconds(10)
+                    })
+                    .Build();
+
+                // Handle incoming data
+                connection.On<string>("excelRate", (base64) =>
                 {
-                    allChecked = false;
-                    break;
-                }
+                    try
+                    {
+                        Console.WriteLine("Received data from SignalR");
+
+                        var json = DecompressGzip(Convert.FromBase64String(base64));
+                        //Console.WriteLine($"Decompressed JSON: {json}");
+
+                        var data = JsonSerializer.Deserialize<MarketDataDTO>(json);
+
+                        if (data != null)
+                        {
+                            _uiContext?.Post(_ =>
+                            {
+                                try
+                                {
+                                    SuspendLayout();
+
+                                    // Try to find existing row by symbol
+                                    var existingRow = marketWatchDatatable.AsEnumerable()
+                                        .FirstOrDefault(r => r.Field<string>("symbol") == data.i);
+
+                                    DataRow row;
+
+                                    if (existingRow != null)
+                                    {
+                                        // Update existing row
+                                        row = existingRow;
+                                    }
+                                    else
+                                    {
+                                        // Create new row only if not exists
+                                        row = marketWatchDatatable.NewRow();
+                                        row["symbol"] = data.i ?? "--";
+                                        marketWatchDatatable.Rows.Add(row);
+                                    }
+
+                                    row["Name"] = data.n;
+                                    row["Bid"] = data.b ?? "--";
+                                    row["Ask"] = data.a ?? "--";
+                                    row["High"] = data.h ?? "--";
+                                    row["Low"] = data.l ?? "--";
+                                    row["Open"] = data.o ?? "--";
+                                    row["Close"] = data.c ?? "--";
+                                    row["LTP"] = data.ltp ?? "--";
+                                    row["Net Chng"] = data.d ?? "--";
+                                    row["ATP"] = data.atp ?? "--";
+                                    row["Bid Size"] = data.bq ?? "--";
+                                    row["Total Bid Size"] = data.tbq ?? "--";
+                                    row["Ask Size"] = data.sq ?? "--";
+                                    row["Total Ask Size"] = data.tsq ?? "--";
+                                    row["Volume"] = data.vt ?? "--";
+                                    row["Open Interest"] = data.oi ?? "--";
+                                    row["Last Size"] = data.ltq ?? "--";
+                                    row["V"] = data.v ?? "--";
+                                    row["Time"] = CommonClass.TimeStampConvert(data.t);
+
+                                    if (!isSymbolMasterInitialized)
+                                    {
+                                        symbolMaster = identifiers;
+                                        AddManualEditableRow();
+                                        isSymbolMasterInitialized = true;
+                                    }
+
+                                    UpdateGridWithLatestData();
+                                    //UpdateGridColumnVisibility();
+                                }
+                                catch (Exception ex)
+                                {
+                                    Console.WriteLine($"UI Update Error: {ex}");
+                                    ApplicationLogger.LogException(ex);
+                                }
+                                finally
+                                {
+                                    ResumeLayout();
+                                }
+                            }, null);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error processing data: {ex}");
+                        ApplicationLogger.LogException(ex);
+                    }
+                });
+
+                // Handle connection events
+                connection.Closed += async (error) =>
+                {
+                    Console.WriteLine($"Connection closed: {error?.Message}");
+                    await Task.Delay(new Random().Next(1000, 5000));
+                    try
+                    {
+                        if (connection != null)
+                        {
+                            if (connection.State == HubConnectionState.Disconnected)
+                            {
+                                await connection.StartAsync();
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        ApplicationLogger.LogException(ex);
+                        Console.WriteLine($"Reconnection failed: {ex.Message}");
+                    }
+                };
+
+                connection.Reconnected += async (connectionId) =>
+                {
+                    Console.WriteLine($"Reconnected with ID: {connectionId}");
+                    await connection.InvokeAsync("SubscribeSymbols", identifiers);
+                };
+
+                //if (connection.State == HubConnectionState.Disconnected)
+                //{
+                // Start connection
+                await connection.StartAsync();
+                //}
+                await connection.InvokeAsync("SubscribeSymbols", identifiers);
+                //UpdateGridColumnVisibility();
+                Console.WriteLine("Successfully connected to SignalR hub");
             }
-
-            // If all checked, uncheck all; else check all
-            bool check = !allChecked;
-            if (!check)
-                btnSelectAllSymbols.Text = "Select All"; // Change button text to "Select All"
-            else
-                btnSelectAllSymbols.Text = "Unselect All"; // Change button text to "Unselect All"
-
-            for (int i = 0; i < checkedListSymbols.Items.Count; i++)
+            catch (Exception ex)
             {
-                checkedListSymbols.SetItemChecked(i, check);
+                MessageBox.Show($"Connection error: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ApplicationLogger.LogException(ex);
+                Console.WriteLine($"Connection failed: {ex}");
+            }
+        }
+
+        #endregion 
+
+        #region UI / Event Handlers
+
+        // KeyDown, editing, cell events, and button click handlers
+
+        private void EditableMarketWatchGrid_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Control && e.KeyCode == Keys.S)
+            {
+                SaveSymbols(selectedSymbols);
+            }
+        }
+
+        private void EditableMarketWatchGrid_EditingControlShowing(object sender, DataGridViewEditingControlShowingEventArgs e)
+        {
+            if (e.Control is ComboBox comboBox)
+            {
+                comboBox.Font = new Font(this.Font.FontFamily, this.fontSize);
             }
         }
 
@@ -476,6 +545,119 @@ namespace thecalcify.MarketWatch
             }
         }
 
+        private void EditableMarketWatchGrid_CurrentCellDirtyStateChanged(object sender, EventArgs e)
+        {
+            if (this.IsCurrentCellDirty)
+            {
+                this.CommitEdit(DataGridViewDataErrorContexts.Commit);
+            }
+        }
+
+        private void EditableMarketWatchGrid_CellValueChanged(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex < 0 || e.ColumnIndex < 0) return;
+
+            var grid = sender as DataGridView;
+
+            // Trigger only when "Name" column changes
+            if (grid.Columns[e.ColumnIndex].Name == "Name")
+            {
+                var selectedName = grid.Rows[e.RowIndex].Cells["Name"].Value?.ToString();
+
+                if (!string.IsNullOrEmpty(selectedName))
+                {
+                    // Map selected Name -> Symbol using SymbolName list
+                    var matchedSymbol = SymbolName
+                        .FirstOrDefault(sn => sn.SymbolName == selectedName).Symbol;
+
+                    if (!string.IsNullOrEmpty(matchedSymbol))
+                    {
+                        // Store symbol in hidden column for backend processing
+                        if (grid.Columns["symbol"] != null &&
+                            !grid.Columns["symbol"].Visible &&
+                            e.RowIndex >= 0)
+                        {
+                            grid.Rows[e.RowIndex].Cells["symbol"].Value = matchedSymbol;
+                        }
+                        // Add Symbol to List for Saving in Future
+                        if (!selectedSymbols.Contains(matchedSymbol))
+                            selectedSymbols.Add(matchedSymbol);
+
+                        // Search in DataTable
+                        DataRow[] foundRows = marketWatchDatatable.Select($"Symbol = '{matchedSymbol}'");
+
+                        if (foundRows.Length == 0)
+                        {
+                            // Search in DTO if not found
+                            var foundInDto = pastRateTickDTO.Where(x => x.i == matchedSymbol).ToList();
+
+                            if (foundInDto.Count > 0)
+                            {
+                                foundRows = foundInDto.Select(dto =>
+                                {
+                                    var row = marketWatchDatatable.NewRow();
+                                    row["symbol"] = dto.i;
+                                    row["Name"] = dto.n;
+                                    row["Bid"] = dto.b;
+                                    row["Ask"] = dto.a;
+                                    row["LTP"] = dto.ltp;
+                                    row["High"] = dto.h;
+                                    row["Low"] = dto.l;
+                                    row["Open"] = dto.o;
+                                    row["Close"] = dto.c;
+                                    row["Net Chng"] = dto.d;
+                                    row["ATP"] = dto.atp;
+                                    row["Bid Size"] = dto.bq;
+                                    row["Total Bid Size"] = dto.tbq;
+                                    row["Ask Size"] = dto.sq;
+                                    row["Total Ask Size"] = dto.tsq;
+                                    row["Volume"] = dto.vt;
+                                    row["Open Interest"] = dto.oi;
+                                    row["Last Size"] = dto.ltq;
+                                    row["V"] = dto.v;
+                                    row["Time"] = CommonClass.TimeStampConvert(dto.t);
+                                    return row;
+                                }).ToArray();
+                            }
+                        }
+
+                        // Populate UI columns from found row
+                        if (foundRows.Length > 0)
+                        {
+                            DataRow row = foundRows[0];
+
+                            foreach (DataColumn column in marketWatchDatatable.Columns)
+                            {
+                                if (column.ColumnMapping != MappingType.Hidden &&
+                                    grid.Columns.Contains(column.ColumnName) &&
+                                    column.ColumnName != "symbol" &&
+                                    column.ColumnName != "Name") // Skip these
+                                {
+                                    grid.Rows[e.RowIndex].Cells[column.ColumnName].Value = row[column];
+                                }
+                            }
+                        }
+
+                        // Add a new empty row if last row was just filled
+                        if (e.RowIndex == grid.Rows.Count - 1)
+                        {
+                            int newRowIndex = grid.Rows.Add();
+                            grid.Rows[newRowIndex].Cells["Name"] = new DataGridViewComboBoxCell
+                            {
+                                DisplayStyle = DataGridViewComboBoxDisplayStyle.ComboBox,
+                                FlatStyle = FlatStyle.Flat,
+                                DataSource = SymbolName.Select(sn => sn.SymbolName).ToList(),
+                            };
+                            grid.Rows[newRowIndex].Cells["Name"].Style.Font =
+                                new System.Drawing.Font("Microsoft Sans Serif", fontSize, FontStyle.Regular);
+                        }
+
+                        UpdateGridWithLatestData();
+                    }
+                }
+            }
+        }
+
         private void AddSymbol_Click(object sender, EventArgs e)
         {
             ShowAddSymbolPanel();
@@ -484,51 +666,6 @@ namespace thecalcify.MarketWatch
         private void AddColumn_Click(object sender, EventArgs e)
         {
             ShowAddColumnPanel();
-        }
-
-        private void ShowAddSymbolPanel()
-        {
-            try
-            {
-                // Clear existing items
-                checkedListSymbols.Items.Clear();
-
-                // Get current symbols from grid (if any)
-                var currentSymbols = new List<string>();
-                foreach (DataGridViewRow row in editableMarketWatchGridView.Rows)
-                {
-                    if (!row.IsNewRow && row.Cells["symbol"].Value != null)
-                    {
-                        currentSymbols.Add(row.Cells["symbol"].Value.ToString());
-                    }
-                }
-
-                // Populate the checklist with ALL available symbols
-                foreach (var symbolInfo in SymbolName)
-                {
-                    bool isChecked = currentSymbols.Contains(symbolInfo.Symbol);
-                    checkedListSymbols.Items.Add(symbolInfo.SymbolName, isChecked);
-                }
-
-                // Update the Select All button state
-                UpdateSelectAllButtonState();
-
-                // Show the panel
-                panelAddSymbols.Visible = true;
-                panelAddSymbols.BringToFront();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error showing symbol panel: {ex.Message}");
-                ApplicationLogger.LogException(ex);
-            }
-        }
-
-        private void UpdateSelectAllButtonState()
-        {
-            bool allChecked = checkedListSymbols.Items.Count > 0 &&
-                             checkedListSymbols.CheckedItems.Count == checkedListSymbols.Items.Count;
-            btnSelectAllSymbols.Text = allChecked ? "Unselect All" : "Select All";
         }
 
         private void BtnConfirmAddSymbols_Click(object sender, EventArgs e)
@@ -582,17 +719,93 @@ namespace thecalcify.MarketWatch
             }
         }
 
+        private void BtnSelectAllSymbols_Click(object sender, EventArgs e)
+        {
+            bool allChecked = true;
+
+            // Check if all items are already checked
+            for (int i = 0; i < checkedListSymbols.Items.Count; i++)
+            {
+                if (!checkedListSymbols.GetItemChecked(i))
+                {
+                    allChecked = false;
+                    break;
+                }
+            }
+
+            // If all checked, uncheck all; else check all
+            bool check = !allChecked;
+            if (!check)
+                btnSelectAllSymbols.Text = "Select All"; // Change button text to "Select All"
+            else
+                btnSelectAllSymbols.Text = "Unselect All"; // Change button text to "Unselect All"
+
+            for (int i = 0; i < checkedListSymbols.Items.Count; i++)
+            {
+                checkedListSymbols.SetItemChecked(i, check);
+            }
+        }
+
         private void BtnCancelAddSymbols_Click(object sender, EventArgs e)
         {
             panelAddSymbols.Visible = false;
         }
 
+        #endregion 
+
+        #region UI Helpers (Panels & Styling)
+
+        // Panel management, grid column styling, and error handling
+
+        private void ShowAddSymbolPanel()
+        {
+            try
+            {
+                // Clear existing items
+                checkedListSymbols.Items.Clear();
+
+                // Get current symbols from grid (if any)
+                var currentSymbols = new List<string>();
+                foreach (DataGridViewRow row in editableMarketWatchGridView.Rows)
+                {
+                    if (!row.IsNewRow && row.Cells["symbol"].Value != null)
+                    {
+                        currentSymbols.Add(row.Cells["symbol"].Value.ToString());
+                    }
+                }
+
+                // Populate the checklist with ALL available symbols
+                foreach (var symbolInfo in SymbolName)
+                {
+                    bool isChecked = currentSymbols.Contains(symbolInfo.Symbol);
+                    checkedListSymbols.Items.Add(symbolInfo.SymbolName, isChecked);
+                }
+
+                // Update the Select All button state
+                UpdateSelectAllButtonState();
+
+                // Show the panel
+                panelAddSymbols.Visible = true;
+                panelAddSymbols.BringToFront();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error showing symbol panel: {ex.Message}");
+                ApplicationLogger.LogException(ex);
+            }
+        }
+
+        private void UpdateSelectAllButtonState()
+        {
+            bool allChecked = checkedListSymbols.Items.Count > 0 &&
+                             checkedListSymbols.CheckedItems.Count == checkedListSymbols.Items.Count;
+            btnSelectAllSymbols.Text = allChecked ? "Unselect All" : "Select All";
+        }
+
         private void ShowAddColumnPanel()
         {
-
             if (panelAddSymbols != null && panelAddSymbols.Visible)
                 panelAddSymbols.Visible = false;
-
 
             // Create panel if it hasn't been initialized yet
             if (panelAddColumns == null)
@@ -751,7 +964,6 @@ namespace thecalcify.MarketWatch
                     var currentlyChecked = checkedListColumns.CheckedItems.Cast<string>().ToList();
                     var previouslySelected = columnPreferences.Count > 0 ? columnPreferences : columnPreferencesDefault;
 
-
                     if (!currentlyChecked.Any())
                     {
                         MessageBox.Show("Please select at least one column.");
@@ -789,11 +1001,8 @@ namespace thecalcify.MarketWatch
                     // Update grid column visibility
                     UpdateGridColumnVisibility();
 
-
-
                     panelAddColumns.Visible = false;
                     //MessageBox.Show("Columns updated successfully!");
-
                 };
 
                 btnCancelAddColumns.Click += (s, e2) =>
@@ -804,7 +1013,6 @@ namespace thecalcify.MarketWatch
 
             // Refresh items before showing
             checkedListColumns.Items.Clear();
-
 
             // Get the columns to display (use allColumns if no preferences set)
             var columnsToShow = columnPreferences.Count > 0 ? columnPreferences : columnPreferencesDefault;
@@ -831,8 +1039,6 @@ namespace thecalcify.MarketWatch
             btnSelectAllColumns.Text = checkedListColumns.CheckedItems.Count == checkedListColumns.Items.Count
                 ? "Unselect All"
                 : "Select All";
-
-
 
             // Make sure Symbol column is always visible in the grid
             if (!columnPreferences.Contains("symbol"))
@@ -866,14 +1072,12 @@ namespace thecalcify.MarketWatch
 
             try
             {
-
                 // Store current column widths before making changes
                 var currentWidths = new Dictionary<string, int>();
                 foreach (DataGridViewColumn col in this.Columns)
                 {
                     currentWidths[col.Name] = col.Width;
                 }
-
 
                 //var columnsToAdd = marketWatchDatatable?.Columns
                 //      .Cast<DataColumn>()
@@ -882,7 +1086,6 @@ namespace thecalcify.MarketWatch
 
                 var columnsToAdd = marketWatchDatatable?.Columns.Cast<DataColumn>().ToList();
 
-
                 if (columnsToAdd == null) return;
 
                 var existingColumnsDict = this.Columns
@@ -890,7 +1093,6 @@ namespace thecalcify.MarketWatch
                     .ToDictionary(c => c.Name, c => c);
 
                 var desiredColumnNames = columnsToAdd.Select(c => c.ColumnName).ToList();
-
 
                 // Step 1: Add missing columns
                 foreach (var dataColumn in columnsToAdd)
@@ -1006,302 +1208,69 @@ namespace thecalcify.MarketWatch
             }
         }
 
-        public async Task SignalREventAsync()
+        private void ApplyFixedColumnWidths(DataGridView dgv)
         {
-            try
+            foreach (DataGridViewColumn col in this.Columns)
             {
-                // Initialize identifiers from Live_Rate
-                thecalcify live_Rate = thecalcify.CurrentInstance;
-                identifiers = live_Rate?.identifiers ?? new List<string>();
+                if (col.Name != "Name")
+                    col.ReadOnly = true;
+                col.SortMode = DataGridViewColumnSortMode.Automatic;
+                col.Resizable = DataGridViewTriState.True;
 
-                // Configure SignalR connection
-                connection = new HubConnectionBuilder()
-                    .WithUrl("http://api.thecalcify.com/excel?user=calcify&auth=Starline@1008&type=mobile", options =>
-                    {
-                        options.Headers.Add("Origin", "http://api.thecalcify.com/");
-                    })
-                    .WithAutomaticReconnect(new[]
-                    {
-                        TimeSpan.Zero,
-                        TimeSpan.FromSeconds(1),
-                        TimeSpan.FromSeconds(5),
-                        TimeSpan.FromSeconds(10)
-                    })
-                    .Build();
-
-                // Handle incoming data
-                connection.On<string>("excelRate", (base64) =>
+                switch (col.Name)
                 {
-                    try
-                    {
-                        Console.WriteLine("Received data from SignalR");
+                    case "Time":
+                        col.Width = 250;
+                        break;
 
-                        var json = DecompressGzip(Convert.FromBase64String(base64));
-                        //Console.WriteLine($"Decompressed JSON: {json}");
+                    case "Name":
+                        col.Width = 210;
+                        break;
 
-                        var data = JsonSerializer.Deserialize<MarketDataDTO>(json);
+                    case "Bid":
+                    case "Ask":
+                    case "LTP":
+                    case "High":
+                    case "Low":
+                    case "Open":
+                    case "Close":
+                    case "ATP":
+                    case "Total Bid Size":
+                    case "Ask Size":
+                    case "Open Interest":
+                    case "Last Size":
+                        col.Width = 170;
+                        break;
 
-                        if (data != null)
-                        {
-                            _uiContext?.Post(_ =>
-                            {
-                                try
-                                {
-                                    SuspendLayout();
+                    case "Total Ask Size":
+                        col.Width = 100;
+                        break;
 
-                                    // Try to find existing row by symbol
-                                    var existingRow = marketWatchDatatable.AsEnumerable()
-                                        .FirstOrDefault(r => r.Field<string>("symbol") == data.i);
+                    case "Volume":
+                    case "Bid Size":
+                    case "Net Chng":
+                        col.Width = 120;
+                        break;
 
-                                    DataRow row;
-
-                                    if (existingRow != null)
-                                    {
-                                        // Update existing row
-                                        row = existingRow;
-                                    }
-                                    else
-                                    {
-                                        // Create new row only if not exists
-                                        row = marketWatchDatatable.NewRow();
-                                        row["symbol"] = data.i ?? "--";
-                                        marketWatchDatatable.Rows.Add(row);
-                                    }
-
-
-
-                                    row["Name"] = data.n;
-                                    row["Bid"] = data.b ?? "--";
-                                    row["Ask"] = data.a ?? "--";
-                                    row["High"] = data.h ?? "--";
-                                    row["Low"] = data.l ?? "--";
-                                    row["Open"] = data.o ?? "--";
-                                    row["Close"] = data.c ?? "--";
-                                    row["LTP"] = data.ltp ?? "--";
-                                    row["Net Chng"] = data.d ?? "--";
-                                    row["ATP"] = data.atp ?? "--";
-                                    row["Bid Size"] = data.bq ?? "--";
-                                    row["Total Bid Size"] = data.tbq ?? "--";
-                                    row["Ask Size"] = data.sq ?? "--";
-                                    row["Total Ask Size"] = data.tsq ?? "--";
-                                    row["Volume"] = data.vt ?? "--";
-                                    row["Open Interest"] = data.oi ?? "--";
-                                    row["Last Size"] = data.ltq ?? "--";
-                                    row["V"] = data.v ?? "--";
-                                    row["Time"] = CommonClass.TimeStampConvert(data.t);
-
-                                    if (!isSymbolMasterInitialized)
-                                    {
-                                        symbolMaster = identifiers;
-                                        AddManualEditableRow();
-                                        isSymbolMasterInitialized = true;
-                                    }
-
-                                    UpdateGridWithLatestData();
-                                    //UpdateGridColumnVisibility();
-                                }
-                                catch (Exception ex)
-                                {
-                                    Console.WriteLine($"UI Update Error: {ex}");
-                                    ApplicationLogger.LogException(ex);
-                                }
-                                finally
-                                {
-                                    ResumeLayout();
-                                }
-                            }, null);
-
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"Error processing data: {ex}");
-                        ApplicationLogger.LogException(ex);
-                    }
-                });
-
-
-                // Handle connection events
-                connection.Closed += async (error) =>
-                {
-                    Console.WriteLine($"Connection closed: {error?.Message}");
-                    await Task.Delay(new Random().Next(1000, 5000));
-                    try
-                    {
-                        if (connection != null)
-                        {
-                            if (connection.State == HubConnectionState.Disconnected)
-                            {
-                                await connection.StartAsync();
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        ApplicationLogger.LogException(ex);
-                        Console.WriteLine($"Reconnection failed: {ex.Message}");
-                    }
-                };
-
-                connection.Reconnected += async (connectionId) =>
-                {
-                    Console.WriteLine($"Reconnected with ID: {connectionId}");
-                    await connection.InvokeAsync("SubscribeSymbols", identifiers);
-                };
-
-                //if (connection.State == HubConnectionState.Disconnected)
-                //{
-                // Start connection
-                await connection.StartAsync();
-                //}
-                await connection.InvokeAsync("SubscribeSymbols", identifiers);
-                //UpdateGridColumnVisibility();
-                Console.WriteLine("Successfully connected to SignalR hub");
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Connection error: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                ApplicationLogger.LogException(ex);
-                Console.WriteLine($"Connection failed: {ex}");
-            }
-        }
-
-        private static object TryParseDecimal(string input)
-        {
-            if (decimal.TryParse(input, NumberStyles.Number, CultureInfo.CurrentCulture, out var result))
-                return result;
-
-            return input;
-        }
-
-        private string DecompressGzip(byte[] compressed)
-        {
-            using (var input = new MemoryStream(compressed))
-            using (var gzip = new GZipStream(input, CompressionMode.Decompress))
-            using (var output = new MemoryStream())
-            {
-                gzip.CopyTo(output);
-                return Encoding.UTF8.GetString(output.ToArray());
-            }
-        }
-
-        private void EditableMarketWatchGrid_CurrentCellDirtyStateChanged(object sender, EventArgs e)
-        {
-            if (this.IsCurrentCellDirty)
-            {
-                this.CommitEdit(DataGridViewDataErrorContexts.Commit);
-            }
-        }
-
-        private void EditableMarketWatchGrid_CellValueChanged(object sender, DataGridViewCellEventArgs e)
-        {
-            if (e.RowIndex < 0 || e.ColumnIndex < 0) return;
-
-            var grid = sender as DataGridView;
-
-            // Trigger only when "Name" column changes
-            if (grid.Columns[e.ColumnIndex].Name == "Name")
-            {
-                var selectedName = grid.Rows[e.RowIndex].Cells["Name"].Value?.ToString();
-
-                if (!string.IsNullOrEmpty(selectedName))
-                {
-                    // Map selected Name -> Symbol using SymbolName list
-                    var matchedSymbol = SymbolName
-                        .FirstOrDefault(sn => sn.SymbolName == selectedName).Symbol;
-
-                    if (!string.IsNullOrEmpty(matchedSymbol))
-                    {
-                        // Store symbol in hidden column for backend processing
-                        if (grid.Columns["symbol"] != null &&
-                            !grid.Columns["symbol"].Visible &&
-                            e.RowIndex >= 0)
-                        {
-                            grid.Rows[e.RowIndex].Cells["symbol"].Value = matchedSymbol;
-                        }
-                        // Add Symbol to List for Saving in Future
-                        if (!selectedSymbols.Contains(matchedSymbol))
-                            selectedSymbols.Add(matchedSymbol);
-
-                        // Search in DataTable
-                        DataRow[] foundRows = marketWatchDatatable.Select($"Symbol = '{matchedSymbol}'");
-
-                        if (foundRows.Length == 0)
-                        {
-                            // Search in DTO if not found
-                            var foundInDto = pastRateTickDTO.Where(x => x.i == matchedSymbol).ToList();
-
-                            if (foundInDto.Count > 0)
-                            {
-                                foundRows = foundInDto.Select(dto =>
-                                {
-                                    var row = marketWatchDatatable.NewRow();
-                                    row["symbol"] = dto.i;
-                                    row["Name"] = dto.n;
-                                    row["Bid"] = dto.b;
-                                    row["Ask"] = dto.a;
-                                    row["LTP"] = dto.ltp;
-                                    row["High"] = dto.h;
-                                    row["Low"] = dto.l;
-                                    row["Open"] = dto.o;
-                                    row["Close"] = dto.c;
-                                    row["Net Chng"] = dto.d;
-                                    row["ATP"] = dto.atp;
-                                    row["Bid Size"] = dto.bq;
-                                    row["Total Bid Size"] = dto.tbq;
-                                    row["Ask Size"] = dto.sq;
-                                    row["Total Ask Size"] = dto.tsq;
-                                    row["Volume"] = dto.vt;
-                                    row["Open Interest"] = dto.oi;
-                                    row["Last Size"] = dto.ltq;
-                                    row["V"] = dto.v;
-                                    row["Time"] = CommonClass.TimeStampConvert(dto.t);
-                                    return row;
-                                }).ToArray();
-                            }
-                        }
-
-                        // Populate UI columns from found row
-                        if (foundRows.Length > 0)
-                        {
-                            DataRow row = foundRows[0];
-
-                            foreach (DataColumn column in marketWatchDatatable.Columns)
-                            {
-                                if (column.ColumnMapping != MappingType.Hidden &&
-                                    grid.Columns.Contains(column.ColumnName) &&
-                                    column.ColumnName != "symbol" &&
-                                    column.ColumnName != "Name") // Skip these
-                                {
-                                    grid.Rows[e.RowIndex].Cells[column.ColumnName].Value = row[column];
-                                }
-                            }
-                        }
-
-                        // Add a new empty row if last row was just filled
-                        if (e.RowIndex == grid.Rows.Count - 1)
-                        {
-                            int newRowIndex = grid.Rows.Add();
-                            grid.Rows[newRowIndex].Cells["Name"] = new DataGridViewComboBoxCell
-                            {
-                                DisplayStyle = DataGridViewComboBoxDisplayStyle.ComboBox,
-                                FlatStyle = FlatStyle.Flat,
-                                DataSource = SymbolName.Select(sn => sn.SymbolName).ToList(),
-                            };
-                            grid.Rows[newRowIndex].Cells["Name"].Style.Font =
-                                new System.Drawing.Font("Microsoft Sans Serif", fontSize, FontStyle.Regular);
-                        }
-
-                        UpdateGridWithLatestData();
-                    }
+                    default:
+                        col.Width = 100;
+                        break;
                 }
             }
         }
 
+        private void DataErrorHandle(object sender, DataGridViewDataErrorEventArgs e)
+        {
+            ApplicationLogger.Log("DataGridView error: " + e.Exception?.Message);
+            e.ThrowException = false; // prevent exception from bubbling
+        }
+
+        #endregion 4. 🎨 UI Helpers (Panels & Styling)
+
+        #region Data / Grid Update and saving methods
+        // Data and grid update methods
         private void UpdateGridWithLatestData()
         {
-
-
             // Create a dictionary for faster lookup of market data
             var marketDataDict = new Dictionary<string, DataRow>();
             foreach (DataRow row in marketWatchDatatable.Rows)
@@ -1409,7 +1378,6 @@ namespace thecalcify.MarketWatch
                 }
             }
 
-
             // ✅ Column header style
             DataGridViewCellStyle columnHeaderStyle = new DataGridViewCellStyle
             {
@@ -1483,7 +1451,6 @@ namespace thecalcify.MarketWatch
                             }
                         }
 
-
                         // ✅ Apply fresh style with correct color
                         cell.Style = new DataGridViewCellStyle
                         {
@@ -1525,8 +1492,129 @@ namespace thecalcify.MarketWatch
                 }
             }
         }
+        private void AddManualEditableRow()
+        {
+            Columns?.Clear();
 
+            var columnsToAdd = marketWatchDatatable?.Columns
+                  .Cast<DataColumn>()
+                  .Where(col => col.ColumnMapping != MappingType.Hidden)
+                  .ToList();
 
+            // 1️⃣ Create dropdown column for "Name"
+            var nameColumn = new DataGridViewComboBoxColumn
+            {
+                Name = "Name",
+                HeaderText = "Name",
+                DisplayStyle = DataGridViewComboBoxDisplayStyle.ComboBox,
+                FlatStyle = FlatStyle.Standard, // More native look
+                Width = 200,
+                DataSource = SymbolName.Select(sn => sn.SymbolName).ToList(),
+                ReadOnly = false,
+            };
+
+            nameColumn.CellTemplate.Style.Font = new System.Drawing.Font("Microsoft Sans Serif", fontSize, FontStyle.Regular);
+            Columns.Add(nameColumn);
+
+            // 2️⃣ Add all other columns from DataTable except "symbol" (hidden)
+            foreach (var dataColumn in columnsToAdd)
+            {
+                if (dataColumn.ColumnName.Equals("symbol", StringComparison.OrdinalIgnoreCase) ||
+                    dataColumn.ColumnName.Equals("Name", StringComparison.OrdinalIgnoreCase))
+                    continue; // symbol column will be hidden, backend only
+
+                var gridColumn = new DataGridViewTextBoxColumn
+                {
+                    Name = dataColumn.ColumnName,
+                    HeaderText = dataColumn.ColumnName,
+                    ValueType = dataColumn.DataType,
+                    ReadOnly = false
+                };
+
+                if (dataColumn.DataType == typeof(decimal) ||
+                    dataColumn.DataType == typeof(double) ||
+                    dataColumn.DataType == typeof(float))
+                {
+                    gridColumn.DefaultCellStyle.Format = "N2";
+                    gridColumn.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+                }
+                else if (dataColumn.DataType == typeof(DateTime))
+                {
+                    gridColumn.DefaultCellStyle.Format = "HH:mm:ss:fff";
+                }
+
+                Columns.Add(gridColumn);
+            }
+
+            // 3️⃣ Add the hidden backend "symbol" column
+            var hiddenSymbolColumn = new DataGridViewTextBoxColumn
+            {
+                Name = "symbol",
+                HeaderText = "symbol",
+                Visible = false // hide from user
+            };
+            Columns.Add(hiddenSymbolColumn);
+
+            // 4️⃣ Hide V column if it exists
+            if (this.Columns.Contains("V"))
+                this.Columns["V"].Visible = false;
+
+            // After adding all columns, apply fixed widths
+            ApplyFixedColumnWidths(this);
+
+            // 5️⃣ Add an empty row
+            int rowIndex = Rows.Add();
+            Rows[rowIndex].Height = (int)Math.Ceiling(fontSize * 2.8);
+        }
+        private void SetSymbolAndTriggerUpdate(int rowIndex, string symbolName, bool isNewRow = false)
+        {
+            // Validate row index
+            if (rowIndex < 0 || rowIndex >= Rows.Count)
+                throw new ArgumentOutOfRangeException(nameof(rowIndex));
+
+            // Validate symbol name
+            if (string.IsNullOrEmpty(symbolName))
+            {
+                Rows[rowIndex].Cells["Name"].Value = null;
+                return;
+            }
+
+            // Only add new row if explicitly requested
+            if (isNewRow)
+            {
+                rowIndex = Rows.Add();
+                Rows[rowIndex].Height = (int)Math.Ceiling(fontSize * 2.8);
+            }
+
+            // Set the value in the "Name" combobox column
+            if (Columns["Name"] is DataGridViewComboBoxColumn)
+            {
+                //// Set the display value
+                //Rows[rowIndex].Cells["Name"].Value = symbolName;
+
+                // Find the corresponding Symbol object
+                var symbolInfo = SymbolName.FirstOrDefault(sn =>
+                    string.Equals(sn.SymbolName, symbolName, StringComparison.OrdinalIgnoreCase));
+
+                if (symbolInfo.SymbolName != null)
+                {
+                    // Set the hidden symbol column value
+                    Rows[rowIndex].Cells["symbol"].Value = symbolInfo.Symbol;
+                    //Rows[rowIndex].Cells["Name"].Value = symbolInfo.SymbolName;
+
+                    // Trigger update
+                    OnCellValueChanged(new DataGridViewCellEventArgs(
+                        Columns["Name"].Index,
+                        rowIndex));
+                }
+                else
+                {
+                    // Clear if symbol not found
+                    Rows[rowIndex].Cells["Name"].Value = null;
+                    //Rows[rowIndex].Cells["symbol"].Value = null;
+                }
+            }
+        }
         public void SaveSymbols(List<string> SymbolList)
         {
             try
@@ -1547,7 +1635,6 @@ namespace thecalcify.MarketWatch
                     MessageBox.Show("Please select at least one symbol.");
                     return;
                 }
-
 
                 int symbolCount = SymbolList.Count;
                 int rowCount = editableMarketWatchGridView.NewRowIndex >= 0
@@ -1622,7 +1709,6 @@ namespace thecalcify.MarketWatch
                             if (!Directory.Exists(finalPath))
                                 Directory.CreateDirectory(finalPath);
 
-
                             // Save to the user-selected filename
                             File.WriteAllText(saveDialog.FileName, encryptedJson);
 
@@ -1634,7 +1720,6 @@ namespace thecalcify.MarketWatch
                             saveFileName = Path.GetFileNameWithoutExtension(saveDialog.FileName);
 
                             MessageBox.Show($"{Path.GetFileNameWithoutExtension(saveDialog.FileName)} MarketWatch Save Successfully", "MarketWatch Save", MessageBoxButtons.OK);
-
                         }
                     }
                 }
@@ -1684,156 +1769,27 @@ namespace thecalcify.MarketWatch
             }
         }
 
-        private void AddManualEditableRow()
+        #endregion
+
+        #region Other methods and helpers
+        // Other helper methods
+        private static object TryParseDecimal(string input)
         {
-            Columns?.Clear();
+            if (decimal.TryParse(input, NumberStyles.Number, CultureInfo.CurrentCulture, out var result))
+                return result;
 
-
-            var columnsToAdd = marketWatchDatatable?.Columns
-                  .Cast<DataColumn>()
-                  .Where(col => col.ColumnMapping != MappingType.Hidden)
-                  .ToList();
-
-            // 1️⃣ Create dropdown column for "Name"
-            var nameColumn = new DataGridViewComboBoxColumn
-            {
-                Name = "Name",
-                HeaderText = "Name",
-                DisplayStyle = DataGridViewComboBoxDisplayStyle.ComboBox,
-                FlatStyle = FlatStyle.Standard, // More native look
-                Width = 200,
-                DataSource = SymbolName.Select(sn => sn.SymbolName).ToList(),
-                ReadOnly = false,
-            };
-
-            nameColumn.CellTemplate.Style.Font = new System.Drawing.Font("Microsoft Sans Serif", fontSize, FontStyle.Regular);
-            Columns.Add(nameColumn);
-
-            // 2️⃣ Add all other columns from DataTable except "symbol" (hidden)
-            foreach (var dataColumn in columnsToAdd)
-            {
-                if (dataColumn.ColumnName.Equals("symbol", StringComparison.OrdinalIgnoreCase) ||
-                    dataColumn.ColumnName.Equals("Name", StringComparison.OrdinalIgnoreCase))
-                    continue; // symbol column will be hidden, backend only
-
-                var gridColumn = new DataGridViewTextBoxColumn
-                {
-                    Name = dataColumn.ColumnName,
-                    HeaderText = dataColumn.ColumnName,
-                    ValueType = dataColumn.DataType,
-                    ReadOnly = false
-                };
-
-                if (dataColumn.DataType == typeof(decimal) ||
-                    dataColumn.DataType == typeof(double) ||
-                    dataColumn.DataType == typeof(float))
-                {
-                    gridColumn.DefaultCellStyle.Format = "N2";
-                    gridColumn.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-                }
-                else if (dataColumn.DataType == typeof(DateTime))
-                {
-                    gridColumn.DefaultCellStyle.Format = "HH:mm:ss:fff";
-                }
-
-                Columns.Add(gridColumn);
-            }
-
-            // 3️⃣ Add the hidden backend "symbol" column
-            var hiddenSymbolColumn = new DataGridViewTextBoxColumn
-            {
-                Name = "symbol",
-                HeaderText = "symbol",
-                Visible = false // hide from user
-            };
-            Columns.Add(hiddenSymbolColumn);
-
-            // 4️⃣ Hide V column if it exists
-            if (this.Columns.Contains("V"))
-                this.Columns["V"].Visible = false;
-
-
-            // After adding all columns, apply fixed widths
-            ApplyFixedColumnWidths(this);
-
-
-            // 5️⃣ Add an empty row
-            int rowIndex = Rows.Add();
-            Rows[rowIndex].Height = (int)Math.Ceiling(fontSize * 2.8);
+            return input;
         }
-
-        private void SetSymbolAndTriggerUpdate(int rowIndex, string symbolName, bool isNewRow = false)
+        private string DecompressGzip(byte[] compressed)
         {
-            // Validate row index
-            if (rowIndex < 0 || rowIndex >= Rows.Count)
-                throw new ArgumentOutOfRangeException(nameof(rowIndex));
-
-            // Validate symbol name
-            if (string.IsNullOrEmpty(symbolName))
+            using (var input = new MemoryStream(compressed))
+            using (var gzip = new GZipStream(input, CompressionMode.Decompress))
+            using (var output = new MemoryStream())
             {
-                Rows[rowIndex].Cells["Name"].Value = null;
-                return;
-            }
-
-            // Only add new row if explicitly requested
-            if (isNewRow)
-            {
-                rowIndex = Rows.Add();
-                Rows[rowIndex].Height = (int)Math.Ceiling(fontSize * 2.8);
-            }
-
-            // Set the value in the "Name" combobox column
-            if (Columns["Name"] is DataGridViewComboBoxColumn)
-            {
-                //// Set the display value
-                //Rows[rowIndex].Cells["Name"].Value = symbolName;
-
-                // Find the corresponding Symbol object
-                var symbolInfo = SymbolName.FirstOrDefault(sn =>
-                    string.Equals(sn.SymbolName, symbolName, StringComparison.OrdinalIgnoreCase));
-
-                if (symbolInfo.SymbolName != null)
-                {
-                    // Set the hidden symbol column value
-                    Rows[rowIndex].Cells["symbol"].Value = symbolInfo.Symbol;
-                    //Rows[rowIndex].Cells["Name"].Value = symbolInfo.SymbolName;
-
-                    // Trigger update
-                    OnCellValueChanged(new DataGridViewCellEventArgs(
-                        Columns["Name"].Index,
-                        rowIndex));
-                }
-                else
-                {
-                    // Clear if symbol not found
-                    Rows[rowIndex].Cells["Name"].Value = null;
-                    //Rows[rowIndex].Cells["symbol"].Value = null;
-                }
+                gzip.CopyTo(output);
+                return Encoding.UTF8.GetString(output.ToArray());
             }
         }
-
-        private bool IsRowDataDifferent(DataGridViewRow gridRow, DataRow dataRow)
-        {
-            foreach (DataColumn col in marketWatchDatatable.Columns)
-            {
-                string colName = col.ColumnName;
-                if (colName == "symbol") continue; // skip symbol column
-
-                var gridValue = gridRow.Cells[colName].Value;
-                var dataValue = dataRow[colName];
-
-                // Handle DBNull and null equivalence
-                if (dataValue == DBNull.Value) dataValue = null;
-
-                if ((gridValue == null && dataValue != null) ||
-                    (gridValue != null && !gridValue.Equals(dataValue)))
-                {
-                    return true; // values differ
-                }
-            }
-            return false; // all values equal
-        }
-
         private bool IsRowDataDifferent(DataGridViewRow gridRow, MarketDataDTO dto)
         {
             // Replace YourDtoType with the actual DTO type and compare relevant fields
@@ -1861,20 +1817,6 @@ namespace thecalcify.MarketWatch
 
             return differs;
         }
-
-        public bool IsValidSymbolName(string inputName)
-        {
-            if (string.IsNullOrWhiteSpace(inputName))
-                return false;
-
-            var validSymbolNames = new HashSet<string>(
-                SymbolName.Select(sn => sn.SymbolName),
-                StringComparer.OrdinalIgnoreCase
-            );
-
-            return validSymbolNames.Contains(inputName);
-        }
-
+        #endregion
     }
-
 }

@@ -1,33 +1,24 @@
-﻿using ClosedXML.Excel;
-using Microsoft.AspNetCore.Http.Connections;
+﻿using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.SignalR.Client;
-using Microsoft.Office.Interop.Excel;
 using Microsoft.Win32;
 using Newtonsoft.Json;
 using System;
-using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
-using System.Data.Common;
 using System.Diagnostics;
 using System.Drawing;
-using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.NetworkInformation;
-using System.Net.Sockets;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.AccessControl;
 using System.Security.Principal;
 using System.Text;
-using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -42,129 +33,155 @@ namespace thecalcify
 {
     public partial class thecalcify : Form
     {
+        #region Declaration and Initialization
+
+        // ======================
+        // 📌 Config / Constants
+        // ======================
+        public readonly string AppFolder = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "thecalcify");
+
+        private readonly string excelFilePath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.CommonDocuments),
+            "thecalcify", "thecalcify.xlsx");
+
+        private readonly TimeSpan _reconnectThrottle = TimeSpan.FromSeconds(10); // prevent spam
+
+        // ======================
+        // 📌 User / Credentials
+        // ======================
         public string token, licenceDate, username, password;
 
+        // ======================
+        // 📌 Flags / States
+        // ======================
         public bool _headersWritten = false, _isResizing = false, isDisconnecting = false, isConnectionDisposed = false;
-        public int fontSize = 12, RemainingDays;
-        private bool isRunning = true;
-        private DateTime _lastReconnectAttempt = DateTime.MinValue;
-        private readonly TimeSpan _reconnectThrottle = TimeSpan.FromSeconds(10); // prevent spam
-        public HubConnection connection;
-        private ConcurrentQueue<MarketDataDTO> _updateQueue = new ConcurrentQueue<MarketDataDTO>();
-        private System.Windows.Forms.Timer _updateTimer;
-        private readonly Dictionary<string, int> symbolRowMap = new Dictionary<string, int>();
-        private DateTime lastUiUpdate = DateTime.MinValue;
-        public List<string> identifiers;
-        public List<string> selectedSymbols = new List<string>();
-        public bool isLoadedSymbol = false;
-        private System.Windows.Forms.Timer signalRTimer;
-        public List<MarketDataDTO> pastRateTickDTO = new List<MarketDataDTO>();
-        public MarketApiResponse resultdefault;
-        //public System.Data.DataTable marketDataTable = new System.Data.DataTable();
-        public Common commonClass;
-        public List<string> symbolMaster = new List<string>();
-        //public List<(string Symbol, string SymbolName)> SymbolName = new List<(string Symbol, string SymbolName)>();
-        private Dictionary<string, double> previousAskMap = new Dictionary<string, double>();
-        public string[] numericColumns = new[] {
-            "Bid", "Ask", "LTP", "High", "Low", "Open", "Close", "Net Chng",
-            "ATP", "Bid Size", "Total Bid Size", "Ask Size",
-            "Total Ask Size", "Volume", "Open Interest", "Last Size"
-        };
-        public List<string> columnPreferencesDefault = new List<string>()
-        {
-            "symbol",
-            "Name",
-            "Bid",
-            "Ask",
-            "High",
-            "Low",
-            "Open",
-            "Close",
-            "LTP",
-            "Net Chng",
-            "V",
-            "Time",
-            "ATP",
-            "Bid Size",
-            "Total Bid Size",
-            "Ask Size",
-            "Total Ask Size",
-            "Volume",
-            "Open Interest",
-            "Last Size"
-        };
 
-        List<string> instruments = new List<string>();
-        //{
-        //    "GOLDFUTURE_I",
-        //    "GOLDFUTURE_II",
-        //    "GOLDFUTURE_III",
-        //    "SILVERFUTURE_I",
-        //    "SILVERFUTURE_II",
-        //    "SILVERFUTURE_III",
-        //    "GOLDM_I",
-        //    "GOLDM_II",
-        //    "SILVERM_I",
-        //    "SILVERM_II",
-        //    "GOLDSPOT_I",
-        //    "SILVERSPOT_I",
-        //    "INRSPOT_I",
-        //    "GOLDCOMEX_I",
-        //    "GOLDCOMEX_II",
-        //    "SILVERCOMEX_I",
-        //    "SILVERCOMEX_II",
-        //    "DGINR_I",
-        //    "DGINR_II",
-        //    "GOLDAM_I",
-        //    "GOLDPM_I",
-        //    "SILVERFIX_I",
-        //    "FBIL_USD",
-        //    "DGINRSPOT_I",
-        //    "CDUTY",
-        //    "DGINRSPOT_II"
-        //};
-        private readonly string excelFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonDocuments), "thecalcify", "thecalcify.xlsx");
-        private Excel.Application excelApp;
-        private Excel.Workbook workbook;
-        private Excel.Worksheet worksheet;
+        public bool isLoadedSymbol = false;
         public bool isEdit = false;
-        private readonly Dictionary<string, decimal> previousAsks = new Dictionary<string, decimal>();
+        public bool isGrid = true, reloadGrid = true;
+        public bool isdeleted = false;
+        private bool isRunning = true;
         private bool _excelInitialized = false;
         private bool isFullScreen = false;
+
+        // ======================
+        // 📌 Runtime State / Data
+        // ======================
+        public int fontSize = 12, RemainingDays;
+
+        private DateTime _lastReconnectAttempt = DateTime.MinValue;
+        private DateTime lastUiUpdate = DateTime.MinValue;
         private System.Drawing.Rectangle _dragBoxFromMouseDown = System.Drawing.Rectangle.Empty, prevBounds;
         private FormWindowState prevState;
         private FormBorderStyle prevStyle;
         public string saveFileName;
+        public string lastOpenMarketWatch = string.Empty;
+
+        // ======================
+        // 📌 Core Data Collections
+        // ======================
+        public List<string> identifiers;
+
+        public List<string> selectedSymbols = new List<string>();
+        public List<MarketDataDTO> pastRateTickDTO = new List<MarketDataDTO>();
+        public List<string> symbolMaster = new List<string>();
+        public List<string> columnPreferences;
+
+        public List<string> columnPreferencesDefault = new List<string>()
+        {
+            "symbol","Name","Bid","Ask","High","Low","Open","Close","LTP","Net Chng",
+            "V","Time","ATP","Bid Size","Total Bid Size","Ask Size","Total Ask Size",
+            "Volume","Open Interest","Last Size"
+        };
+
+        public List<string> FileLists = new List<string>();
+        public List<(string Symbol, string SymbolName)> SymbolName = new List<(string Symbol, string SymbolName)>();
+
+        // ======================
+        // 📌 Dictionaries / Maps
+        // ======================
+        private readonly Dictionary<string, int> symbolRowMap = new Dictionary<string, int>();
+
+        private Dictionary<string, double> previousAskMap = new Dictionary<string, double>();
+        private readonly Dictionary<string, decimal> previousAsks = new Dictionary<string, decimal>();
+
+        // ======================
+        // 📌 Arrays
+        // ======================
+        public string[] numericColumns = new[]
+        {
+            "Bid","Ask","LTP","High","Low","Open","Close","Net Chng","ATP",
+            "Bid Size","Total Bid Size","Ask Size","Total Ask Size","Volume",
+            "Open Interest","Last Size"
+        };
+
+        // ======================
+        // 📌 Services / External Connections
+        // ======================
+        public HubConnection connection;
+
+        public Common commonClass;
+        private ConcurrentQueue<MarketDataDTO> _updateQueue = new ConcurrentQueue<MarketDataDTO>();
+        private readonly object _tableLock = new object();
+        private readonly object _reconnectLock = new object();
+
+        // ======================
+        // 📌 Timers / Threads
+        // ======================
+        private System.Windows.Forms.Timer _updateTimer;
+
+        private System.Windows.Forms.Timer signalRTimer;
         private Thread licenceThread;
-        public bool isGrid = true, reloadGrid = true;
+
+        // ======================
+        // 📌 Excel Interop
+        // ======================
+        private Excel.Application excelApp;
+
+        private Excel.Workbook workbook;
+        private Excel.Worksheet worksheet;
+
+        // ======================
+        // 📌 UI Elements
+        // ======================
         private CheckedListBox checkedListColumns;
+
         private Button btnSelectAllColumns;
         private Button btnConfirmAddColumns;
         private Button btnCancelAddColumns;
-        public bool isdeleted = false;
-        public readonly string AppFolder = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "thecalcify");
+
+        // ======================
+        // 📌 Static & Singleton
+        // ======================
         public static thecalcify CurrentInstance { get; private set; }
-        public List<string> FileLists = new List<string>();
-        public List<string> columnPreferences;
-        public string lastOpenMarketWatch = string.Empty;
+
+        // ======================
+        // 📌 Enums
+        // ======================
         public enum MarketWatchViewMode
         {
             Default,
             New
         }
+
         public MarketWatchViewMode marketWatchViewMode = MarketWatchViewMode.Default;
-        private readonly object _tableLock = new object();
-        private readonly object _reconnectLock = new object();
-        public ConnectionViewMode connectionViewMode = ConnectionViewMode.Connect;
+
         public enum ConnectionViewMode
         {
             Connect,
             Disconnect
         }
-        public List<(string Symbol, string SymbolName)> SymbolName = new List<(string Symbol, string SymbolName)>();
 
+        public ConnectionViewMode connectionViewMode = ConnectionViewMode.Connect;
+
+        // ======================
+        // 📌 API Responses
+        // ======================
+        public MarketApiResponse resultdefault;
+
+        #endregion Declaration and Initialization
 
         public thecalcify()
         {
@@ -221,9 +238,7 @@ namespace thecalcify
                     (columnPreferencesDefault ?? new List<string>()) : currentColumns;
             }));
 
-            //licenceExpire.Text = "Licence Expired On :- " + licenceDate;
             MenuLoad();
-
 
             // --- LOAD INITIAL DATA ASYNCHRONOUSLY ---
             await LoadInitialMarketDataAsync();
@@ -236,8 +251,6 @@ namespace thecalcify
             CurrentInstance = this;
 
             // --- INITIALIZE DATA STRUCTURES ---
-            //marketDataTable = new System.Data.DataTable();
-            //SetupDataTable();
             BeginInvoke((MethodInvoker)(() =>
             {
                 InitializeDataGridView();
@@ -253,8 +266,6 @@ namespace thecalcify
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
 
             KillProcess();
-
-
         }
 
         private void Home_FormClosed(object sender, FormClosedEventArgs e)
@@ -266,7 +277,6 @@ namespace thecalcify
                 KillProcess();
                 // Correct way to call the static method
                 CredentialManager.SaveMarketWatchWithColumns(lastOpenMarketWatch, columnPreferences.Count == 0 ? columnPreferencesDefault : columnPreferences);
-
             }
             catch (Exception ex)
             {
@@ -276,10 +286,6 @@ namespace thecalcify
             System.Windows.Forms.Application.Exit();
         }
 
-
-        /// <summary>
-        /// Method Used to check licence lable update 
-        /// </summary>
         private void CheckLicenceLoop()
         {
             try
@@ -379,8 +385,8 @@ namespace thecalcify
             }
         }
 
-
         #region SignalR Methods
+
         public void SignalRTimer()
         {
             signalRTimer = new System.Windows.Forms.Timer { Interval = 10_000 };
@@ -461,7 +467,6 @@ namespace thecalcify
                     }
                 };
 
-
                 var currentIdentifiers = new List<string>(identifiers); // snapshot copy
 
                 //for (int attempt = 0; attempt < 3; attempt++)
@@ -478,7 +483,6 @@ namespace thecalcify
                 //    }
                 //}
                 await connection.StartAsync();
-
 
                 try
                 {
@@ -598,7 +602,6 @@ namespace thecalcify
             }
         }
 
-
         private void AddMissingRows()
         {
             lock (_tableLock)
@@ -629,7 +632,6 @@ namespace thecalcify
             }
             return false;
         }
-
 
         private bool IsNullOrEmptyOrPlaceholder(object val)
         {
@@ -673,7 +675,6 @@ namespace thecalcify
             symbolRowMap[dto.i] = newRowIdx;
         }
 
-
         private void UpdateTimer_Tick(object sender, EventArgs e)
         {
             if (_updateQueue.IsEmpty) return;
@@ -686,7 +687,6 @@ namespace thecalcify
 
             if (updates.Count == 0) return;
 
-
             // If queue has too many records, keep only the newest 1000
             if (updates.Count > 1000)
             {
@@ -698,13 +698,10 @@ namespace thecalcify
                     .ToList();
             }
 
-
             try
             {
-
                 //updates = updates.Where(x => !string.IsNullOrEmpty(x.t) && x.t != "N/A").OrderByDescending(x => DateTime.ParseExact(x.t, "hh:mm:ss tt", CultureInfo.InvariantCulture)).ToList();
                 updates = updates.Where(x => long.TryParse(x.t, out _)).OrderByDescending(x => DateTimeOffset.FromUnixTimeMilliseconds(long.Parse(x.t)).LocalDateTime).ToList();
-
             }
             catch (Exception)
             {
@@ -731,7 +728,6 @@ namespace thecalcify
                 {
                     foreach (var newData in updates)
                     {
-
                         if (newData == null || string.IsNullOrEmpty(newData.i))
                             continue;
 
@@ -757,8 +753,6 @@ namespace thecalcify
                                 previousValues[colName] = row.Cells[colName].Value?.ToString() ?? "";
                             }
                         }
-
-
 
                         // Update values
                         SetCellValue(row, "Bid", newData.b);
@@ -804,11 +798,8 @@ namespace thecalcify
                             ["Time"] = row.Cells["Time"].Value
                         };
 
-
                         // After Every updates are applied:
                         ExcelNotifier.NotifyExcel(row.Cells["Name"].Value.ToString(), dict);
-
-
 
                         // Set name if still default
                         var nameCell = row.Cells["Name"];
@@ -820,7 +811,6 @@ namespace thecalcify
 
                         if (nameCell.Value.ToString() == "slmini")
                         {
-
                         }
 
                         // Ask price arrow direction
@@ -909,7 +899,6 @@ namespace thecalcify
                 row.Cells[columnName].Value = value ?? "--";
         }
 
-
         private bool IsNumericChange(object oldVal, object newVal, out int direction)
         {
             direction = 0;
@@ -936,7 +925,6 @@ namespace thecalcify
             return false;
         }
 
-
         //private void UpdateRowValue(DataRow row, string columnName, object value)
         //{
         //    if (!row.Table.Columns.Contains(columnName)) return;
@@ -947,7 +935,6 @@ namespace thecalcify
 
         //        // Default: keep original value (e.g., "--", "N/A", "text") unless it's null
         //        var newValue = value ?? "";
-
 
         //        // If it's a numeric column, try to parse the value
         //        if (IsNumericColumn(columnName))
@@ -1089,7 +1076,6 @@ namespace thecalcify
             }
         }
 
-
         private string DecompressGzip(byte[] compressed)
         {
             using (var input = new MemoryStream(compressed))
@@ -1101,9 +1087,10 @@ namespace thecalcify
             }
         }
 
-        #endregion
+        #endregion SignalR Methods
 
         #region SignalR Helper Method
+
         public async Task LoadInitialMarketDataAsync()
         {
             try
@@ -1210,12 +1197,10 @@ namespace thecalcify
                 col.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
                 col.Resizable = DataGridViewTriState.True;
 
-
                 if (col.Name == "symbol" || col.Name == "V")
                 {
                     col.Visible = false; // Always hide symbol column
                 }
-
 
                 switch (col.Name)
                 {
@@ -1231,11 +1216,13 @@ namespace thecalcify
                     case "Close":
                         col.Width = 150;
                         break;
+
                     case "Volume":
                     case "Total Ask Size":
                     case "Total Bid Size":
                         col.Width = 120;
                         break;
+
                     case "Last Size":
                     case "Net Chng":
                     case "Bid Size":
@@ -1247,7 +1234,6 @@ namespace thecalcify
                 }
             }
         }
-
 
         private void InitializeDataGridView()
         {
@@ -1382,7 +1368,7 @@ namespace thecalcify
             }
         }
 
-        #endregion
+        #endregion SignalR Helper Method
 
         #region Excel Export
 
@@ -1427,7 +1413,6 @@ namespace thecalcify
                     startRow++;
                 }
 
-
                 // Optionally save the workbook (uncomment if needed)
                 workbook.Save();
 
@@ -1441,230 +1426,6 @@ namespace thecalcify
             catch (Exception ex)
             {
                 MessageBox.Show("Error exporting to Excel: " + ex.Message);
-            }
-
-        }
-
-        public void ExportExcelOnClick()
-        {
-            Thread excelThread = new Thread(() =>
-            {
-                try
-                {
-                    string folderPath = Path.GetDirectoryName(excelFilePath);
-                    if (!Directory.Exists(folderPath))
-                        Directory.CreateDirectory(folderPath);
-
-                    // Get visible and exportable columns from the grid
-                    var exportableColumns = defaultGrid.Columns
-                        .Cast<DataGridViewColumn>()
-                        .Where(c => c.Visible && c.Name != "symbol" && c.Name != "V")
-                        .OrderBy(c => c.DisplayIndex)
-                        .ToList();
-
-                    if (!File.Exists(excelFilePath))
-                    {
-                        excelApp = new Excel.Application
-                        {
-                            Visible = false,
-                            DisplayAlerts = false
-                        };
-
-                        workbook = excelApp.Workbooks.Add();
-                        worksheet = (Excel.Worksheet)workbook.Sheets[1];
-                        worksheet.Name = "Sheet1";
-
-                        // Write headers
-                        for (int i = 0; i < exportableColumns.Count; i++)
-                        {
-                            worksheet.Cells[1, i + 1] = exportableColumns[i].HeaderText;
-                        }
-
-                        workbook.SaveAs(excelFilePath, Excel.XlFileFormat.xlOpenXMLWorkbook);
-                        workbook.Close(false);
-                        excelApp.Quit();
-
-                        ReleaseExcelObjects(worksheet, workbook, excelApp);
-
-                        worksheet = null;
-                        workbook = null;
-                        excelApp = null;
-
-                        GC.Collect();
-                        GC.WaitForPendingFinalizers();
-                    }
-
-                    EnsureFullFolderAccess(folderPath);
-                    commonClass.CreateShortCut(excelFilePath);
-
-                    excelApp = new Excel.Application
-                    {
-                        Visible = false,
-                        DisplayAlerts = false,
-                        UserControl = true
-                    };
-
-                    workbook = excelApp.Workbooks.Open(excelFilePath);
-                    worksheet = workbook.Sheets[1] as Excel.Worksheet;
-
-                    if (worksheet == null)
-                        worksheet = (Excel.Worksheet)workbook.Sheets[1];
-
-                    // Write headers (overwrite)
-                    for (int i = 0; i < exportableColumns.Count; i++)
-                    {
-                        worksheet.Cells[1, i + 1] = exportableColumns[i].HeaderText;
-                    }
-
-                    int rowCount = defaultGrid.Rows.Count;
-                    int colCount = exportableColumns.Count;
-                    object[,] dataArray = new object[rowCount, colCount];
-
-                    for (int r = 0; r < rowCount; r++)
-                    {
-                        var gridRow = defaultGrid.Rows[r];
-                        for (int c = 0; c < colCount; c++)
-                        {
-                            var col = exportableColumns[c];
-                            dataArray[r, c] = gridRow.Cells[col.Name].Value ?? "--";
-                        }
-                    }
-
-                    Excel.Range startCell = worksheet.Cells[2, 1];
-                    Excel.Range endCell = worksheet.Cells[rowCount + 1, colCount];
-                    Excel.Range writeRange = worksheet.Range[startCell, endCell];
-                    writeRange.Value2 = dataArray;
-
-                    workbook.Save();
-
-                    // Optional: Show Excel
-                    excelApp.Visible = true;
-                    excelApp.WindowState = Excel.XlWindowState.xlMaximized;
-                }
-                catch (Exception ex)
-                {
-                    ApplicationLogger.Log($"Error accessing Excel instance ExportExcelOnClick: {ex.Message}\n{ex.StackTrace}");
-                }
-            });
-
-            excelThread.SetApartmentState(ApartmentState.STA);
-            excelThread.Start();
-        }
-
-
-        private void ReleaseExcelObjects(params object[] comObjects)
-        {
-            foreach (var obj in comObjects)
-            {
-                if (obj != null)
-                {
-                    try
-                    {
-                        while (Marshal.ReleaseComObject(obj) > 0) { }
-                    }
-                    catch (Exception ex)
-                    {
-                        ApplicationLogger.Log($"[COM Release Error] {ex.Message}");
-                    }
-                }
-            }
-
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-        }
-
-        private void EnsureFullFolderAccess(string folderPath)
-        {
-            var dirInfo = new DirectoryInfo(folderPath);
-            var dirSecurity = dirInfo.GetAccessControl();
-
-            var accessRule = new FileSystemAccessRule(
-                new SecurityIdentifier(WellKnownSidType.WorldSid, null),
-                FileSystemRights.FullControl,
-                InheritanceFlags.ContainerInherit | InheritanceFlags.ObjectInherit,
-                PropagationFlags.None,
-                AccessControlType.Allow
-            );
-
-            if (dirSecurity.ModifyAccessRule(AccessControlModification.Add, accessRule, out bool modified) && modified)
-            {
-                dirInfo.SetAccessControl(dirSecurity);
-            }
-        }
-
-        public void UpdateExcelDataEfficiently(DataGridView grid)
-        {
-            if (!_excelInitialized && !TryInitializeExcel())
-                return;
-
-            try
-            {
-                var visibleCols = grid.Columns.Cast<DataGridViewColumn>()
-                    .Where(c => c.Visible)
-                    .OrderBy(c => c.DisplayIndex)
-                    .ToList();
-
-                int rows = grid.Rows.Count;
-                int cols = visibleCols.Count;
-                if (rows == 0 || cols == 0)
-                    return;
-
-
-                // --- Check if A1 is empty ---
-                var cellA1 = RetryComCall(() => worksheet.Cells[1, 1]);
-                var valueA1 = RetryComCall(() => cellA1.Value2);
-                bool isA1Empty = valueA1 == null || string.IsNullOrWhiteSpace(valueA1.ToString());
-                Marshal.ReleaseComObject(cellA1);
-
-                // --- Write headers only if A1 is empty ---
-                if (isA1Empty)
-                {
-                    object[] headers = new object[cols];
-                    for (int c = 0; c < cols; c++)
-                    {
-                        headers[c] = visibleCols[c].HeaderText ?? visibleCols[c].Name;
-                    }
-
-                    var headerRange = RetryComCall(() => worksheet.Range[
-                        worksheet.Cells[1, 1], worksheet.Cells[1, cols]]);
-                    RetryComCall(() => headerRange.Value2 = headers);
-                    Marshal.ReleaseComObject(headerRange);
-                }
-
-
-                object[,] data = new object[rows, cols];
-                int timeColIdx = visibleCols.FindIndex(c => c.Name == "Time");
-
-                for (int r = 0; r < rows; r++)
-                {
-                    for (int c = 0; c < cols; c++)
-                    {
-                        var val = grid.Rows[r].Cells[visibleCols[c].Name].Value;
-                        data[r, c] = (c == timeColIdx && DateTime.TryParse(val?.ToString(), out var dt)) ? dt : val;
-                    }
-                }
-
-                var range = RetryComCall(() => worksheet.Range[worksheet.Cells[2, 1], worksheet.Cells[rows + 1, cols]]);
-                RetryComCall(() => range.Value2 = data);
-                Marshal.ReleaseComObject(range);
-
-                if (timeColIdx >= 0)
-                {
-                    var timeRange = RetryComCall(() => worksheet.Range[
-                        worksheet.Cells[2, timeColIdx + 1], worksheet.Cells[rows + 1, timeColIdx + 1]]);
-                    RetryComCall(() => timeRange.NumberFormat = "dd/MM/yyyy HH:mm:ss");
-                    Marshal.ReleaseComObject(timeRange);
-                }
-            }
-            catch (COMException ex)
-            {
-                ApplicationLogger.Log($"[Excel Update COM Error] {ex.Message}");
-                _excelInitialized = false;
-            }
-            catch (Exception ex)
-            {
-                ApplicationLogger.Log($"[Excel Update Error] {ex.Message}");
-                _excelInitialized = false;
             }
         }
 
@@ -1763,18 +1524,6 @@ namespace thecalcify
                 e.SuppressKeyPress = true; // Prevent default backspace behavior
             }
         }
-
-        //private void SetActiveMenuItem(ToolStripMenuItem activeItem)
-        //{
-        //    foreach (ToolStripMenuItem item in viewToolStripMenuItem.DropDownItems)
-        //    {
-        //        item.Enabled = true;
-        //        item.Checked = false;
-        //    }
-
-        //    activeItem.Enabled = false;
-        //    activeItem.Checked = true;
-        //}
 
         public void MenuLoad()
         {
@@ -1890,6 +1639,26 @@ namespace thecalcify
             }
         }
 
+        private ToolStripMenuItem CreateMenuItem(string text, EventHandler clickHandler)
+        {
+            var menuItem = new ToolStripMenuItem(text);
+            menuItem.Click += clickHandler;
+            return menuItem;
+        }
+
+        private void ResetState(string marketWatchName)
+        {
+            selectedSymbols.Clear();
+            identifiers.Clear();
+            symbolMaster.Clear();
+            saveFileName = marketWatchName == "Default" ? null : marketWatchName;
+            lastOpenMarketWatch = marketWatchName;
+            addEditSymbolsToolStripMenuItem.Enabled = marketWatchName != "Default";
+
+            isGrid = true;
+            reloadGrid = true;
+        }
+
         public async void LoadSymbol(string Filename)
         {
             try
@@ -1906,8 +1675,6 @@ namespace thecalcify
                 isLoadedSymbol = true;
                 marketWatchViewMode = MarketWatchViewMode.Default;
                 titleLabel.Text = Path.GetFileNameWithoutExtension(Filename).ToUpper();
-                //marketDataTable = new System.Data.DataTable(); // Ensure this is created first
-                //SetupDataTable();                  // Set up columns
                 InitializeDataGridView();          // Configure the grid
                 await SignalREvent();
             }
@@ -1920,7 +1687,6 @@ namespace thecalcify
             LiveRateGrid();
 
             MenuLoad();
-
         }
 
         public async Task DefaultToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1940,8 +1706,6 @@ namespace thecalcify
             titleLabel.Text = "DEFAULT";
             isEdit = false;
             identifiers = symbolMaster;
-            //marketDataTable = new System.Data.DataTable(); // Ensure this is created first
-            //SetupDataTable();                  // Set up columns
             InitializeDataGridView();          // Configure the grid
             await SignalREvent();
         }
@@ -1952,7 +1716,6 @@ namespace thecalcify
             {
                 // 6. Clean up current resources before switching
                 CleanupBeforeViewSwitch();
-
 
                 // 1. Set new view mode
                 marketWatchViewMode = MarketWatchViewMode.New;
@@ -1988,7 +1751,6 @@ namespace thecalcify
                 this.Controls.Add(editableGrid);
                 editableGrid.BringToFront();
                 editableGrid.Focus();
-
 
                 // 7. Update UI state
                 UpdateUIStateForNewMarketWatch();
@@ -2027,7 +1789,6 @@ namespace thecalcify
         {
             try
             {
-
                 ClearCollections();
 
                 // Update menu items
@@ -2089,7 +1850,6 @@ namespace thecalcify
 
             // 5. Clean up Excel resources
             CleanupExcel();
-
         }
 
         private void CleanupExcel()
@@ -2188,7 +1948,6 @@ namespace thecalcify
                     Margin = new Padding(10, 10, 10, 5),
                     Font = new System.Drawing.Font("Microsoft Sans Serif", 9),
                     Text = "Search Here..."
-
                 };
 
                 // Modern list view with checkboxes
@@ -2248,7 +2007,6 @@ namespace thecalcify
                     Margin = new Padding(10, 10, 0, 10)
                 };
 
-
                 var deleteButton = new Button
                 {
                     Text = "Delete Selected",
@@ -2281,7 +2039,6 @@ namespace thecalcify
                         item.Checked = true;
                     }
                 };
-
 
                 cancelButton.Click += (s, args) => selectionForm.DialogResult = DialogResult.Cancel;
 
@@ -2411,10 +2168,6 @@ namespace thecalcify
             defaultGrid.Rows.Clear();
             defaultGrid.Columns.Clear();
 
-            //// Dispose cell styles and other resources
-            //dataGridView1.DefaultCellStyle = new DataGridViewCellStyle();
-            //dataGridView1.ColumnHeadersDefaultCellStyle = new DataGridViewCellStyle();
-
             // Dispose cell styles and other resources
             defaultGrid.DefaultCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", fontSize);
             defaultGrid.ColumnHeadersDefaultCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", fontSize + 1.5f, FontStyle.Bold);
@@ -2441,7 +2194,6 @@ namespace thecalcify
                 isFullScreen = true;
 
                 fullScreenF11ToolStripMenuItem.Text = "Exit Full Screen (Esc)";
-
             }
             else
             {
@@ -2493,7 +2245,6 @@ namespace thecalcify
                 {
                     this.Close(); // Close the login form
                     System.Windows.Forms.Application.Exit(); // Terminate the application
-
                 }
             }
 
@@ -2508,7 +2259,6 @@ namespace thecalcify
             //    FullScreenF11ToolStripMenuItem_Click(this, EventArgs.Empty);
             //    e.Handled = true;
             //}
-
 
             if (e.KeyCode == Keys.Escape)
             {
@@ -2570,11 +2320,6 @@ namespace thecalcify
             }
         }
 
-        private void Thecalcify_Layout(object sender, LayoutEventArgs e)
-        {
-            ResizeDataGridToFitWindow();
-        }
-
         private T RetryComCall<T>(Func<T> comFunc, int retries = 5, int delayMs = 200, bool skipOnFailure = false)
         {
             for (int attempt = 1; attempt <= retries; attempt++)
@@ -2616,7 +2361,6 @@ namespace thecalcify
             {
                 if (commonClass.IsFileLocked(excelFilePath))
                 {
-
                     excelApp = GetRunningExcelInstance();
                     if (excelApp == null)
                         return false;
@@ -2639,9 +2383,7 @@ namespace thecalcify
                     {
                         Excel.Range rowsToClear = worksheet.Range["A2", usedRange.Cells[usedRange.Rows.Count, usedRange.Columns.Count]];
                         rowsToClear.ClearContents(); // Clears data but keeps formatting and headers
-
                     }
-
 
                     _excelInitialized = worksheet != null;
                     return _excelInitialized;
@@ -2658,7 +2400,6 @@ namespace thecalcify
 
         private void AddEditColumnsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
             if (panelAddSymbols != null && panelAddSymbols.Visible)
                 panelAddSymbols.Visible = false;
 
@@ -2819,7 +2560,6 @@ namespace thecalcify
                     var currentlyChecked = checkedListColumns.CheckedItems.Cast<string>().ToList();
                     var previouslySelected = columnPreferences.Count > 0 ? columnPreferences : columnPreferencesDefault;
 
-
                     if (!currentlyChecked.Any())
                     {
                         MessageBox.Show("Please select at least one column.");
@@ -2862,7 +2602,6 @@ namespace thecalcify
 
                     DefaultGrid_DataSourceChanged(sender, EventArgs.Empty);
                     //MessageBox.Show("Columns updated successfully!");
-
                 };
 
                 btnCancelAddColumns.Click += (s, e2) =>
@@ -2874,7 +2613,6 @@ namespace thecalcify
             // Refresh items before showing
             checkedListColumns.Items.Clear();
 
-
             // Get the columns to display (use allColumns if no preferences set)
             var columnsToShow = columnPreferences.Count > 0 ? columnPreferences : columnPreferencesDefault;
 
@@ -2884,7 +2622,6 @@ namespace thecalcify
                 if (columnsToShow.Contains(column) && column != "symbol" && column != "V")
                 {
                     checkedListColumns.Items.Add(column, true);
-
                 }
             }
 
@@ -2897,13 +2634,10 @@ namespace thecalcify
                 }
             }
 
-
             // Update Select All button text
             btnSelectAllColumns.Text = checkedListColumns.CheckedItems.Count == checkedListColumns.Items.Count
                 ? "Unselect All"
                 : "Select All";
-
-
 
             // Make sure Symbol column is always visible in the grid
             if (!columnPreferences.Contains("symbol"))
@@ -3042,7 +2776,6 @@ namespace thecalcify
                 checkedListSymbols.Dock = DockStyle.Fill; // So it takes remaining space
                 buttonPanel.Dock = DockStyle.Bottom;
 
-
                 buttonPanel.Controls.Add(btnSelectAllSymbols);
                 buttonPanel.Controls.Add(btnConfirmAddSymbols);
                 buttonPanel.Controls.Add(btnCancelAddSymbols);
@@ -3050,7 +2783,6 @@ namespace thecalcify
                 panelAddSymbols.Controls.Add(buttonPanel);  // bottom first
                 panelAddSymbols.Controls.Add(checkedListSymbols); // middle
                 panelAddSymbols.Controls.Add(titleLabel);   // top last
-
 
                 this.Controls.Add(panelAddSymbols);
 
@@ -3090,14 +2822,12 @@ namespace thecalcify
                     // Get the checked display names (SymbolName)
                     var currentlyCheckedNames = checkedListSymbols.CheckedItems.Cast<string>().ToList();
 
-
                     // If nothing is selected
                     if (!currentlyCheckedNames.Any())
                     {
                         MessageBox.Show("Please select at least one symbol to confirm.", "No Selection", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                         return;
                     }
-
 
                     // Map checked names back to their symbols
                     var currentlyCheckedSymbols = SymbolName
@@ -3116,7 +2846,6 @@ namespace thecalcify
                         MessageBox.Show("No changes made.");
                         return;
                     }
-
 
                     // Save changes
                     EditableMarketWatchGrid editableMarketWatchGrid = EditableMarketWatchGrid.CurrentInstance ?? new EditableMarketWatchGrid();
@@ -3163,10 +2892,8 @@ namespace thecalcify
                 }
             }
 
-
             panelAddSymbols.Visible = true;
             panelAddSymbols.BringToFront();
-
         }
 
         public void KillProcess()
@@ -3206,6 +2933,6 @@ namespace thecalcify
             }
         }
 
-        #endregion
+        #endregion Excel Export
     }
 }
