@@ -1137,6 +1137,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_7C30320909DB40B6A079613B837AD892"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_7CD4B5EC7D4DE8D16E073F8ED1F74CC2"
         "OwnerKey" = "8:_25783BDEA122012EF2C46BF0C6113302"
         "MsmSig" = "8:_UNDEFINED"
@@ -5736,6 +5742,26 @@
             "Register" = "3:1"
             "Exclude" = "11:FALSE"
             "IsDependency" = "11:TRUE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_7C30320909DB40B6A079613B837AD892"
+            {
+            "SourcePath" = "8:C:\\Program Files\\thecalcify\\thecalcify\\thecalcify.xlsx"
+            "TargetName" = "8:thecalcify.xlsx"
+            "Tag" = "8:"
+            "Folder" = "8:_607C2AE9360B433C9A744C635690AB95"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
             "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_7CD4B5EC7D4DE8D16E073F8ED1F74CC2"
