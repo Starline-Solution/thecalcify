@@ -268,7 +268,7 @@ namespace thecalcify
             this.titleLabel.TabIndex = 0;
             this.titleLabel.Text = "DEFAULT";
             this.titleLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            this.titleLabel.TextChanged += new System.EventHandler(this.titleLabel_TextChanged);
+            this.titleLabel.TextChanged += new System.EventHandler(this.TitleLabel_TextChanged);
             // 
             // licenceExpire
             // 
@@ -296,7 +296,7 @@ namespace thecalcify
             // searchTextLabel
             // 
             this.searchTextLabel.AutoSize = true;
-            this.searchTextLabel.Location = new System.Drawing.Point(466, 33);
+            this.searchTextLabel.Location = new System.Drawing.Point(464, 33);
             this.searchTextLabel.Name = "searchTextLabel";
             this.searchTextLabel.Size = new System.Drawing.Size(89, 16);
             this.searchTextLabel.TabIndex = 7;

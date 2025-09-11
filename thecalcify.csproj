@@ -229,6 +229,7 @@
     <Compile Include="Helper\Common.cs" />
     <Compile Include="Helper\CredentialManager.cs" />
     <Compile Include="Helper\Encryption.cs" />
+    <Compile Include="Helper\ExcelNotifier.cs" />
     <Compile Include="Helper\StringOrNumberConverter.cs" />
     <Compile Include="Helper\UpdateAgent.cs" />
     <Compile Include="Home.cs">
