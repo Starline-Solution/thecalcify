@@ -112,6 +112,12 @@
         "Entry"
         {
         "MsmKey" = "8:_0EABA1153D3C8DEB2DCC42F11C180300"
+        "OwnerKey" = "8:_F9ECBA1AAC4B95A30F05B5974FEA2804"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_0EABA1153D3C8DEB2DCC42F11C180300"
         "OwnerKey" = "8:_C644CA98BBD9492C8EF1E64B7ABBCEE9"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -539,6 +545,12 @@
         {
         "MsmKey" = "8:_3B2F650BDE221441DAF6EF34FD06C5D6"
         "OwnerKey" = "8:_77FD59AA73194599A35BC376DD15A868"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_3B31DE332C235075878EB47C2DFFC4C3"
+        "OwnerKey" = "8:_F9ECBA1AAC4B95A30F05B5974FEA2804"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -1137,12 +1149,6 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_7C30320909DB40B6A079613B837AD892"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
         "MsmKey" = "8:_7CD4B5EC7D4DE8D16E073F8ED1F74CC2"
         "OwnerKey" = "8:_25783BDEA122012EF2C46BF0C6113302"
         "MsmSig" = "8:_UNDEFINED"
@@ -1475,6 +1481,12 @@
         {
         "MsmKey" = "8:_9AA805969350DBEE2500057062995130"
         "OwnerKey" = "8:_77FD59AA73194599A35BC376DD15A868"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_9E262DFC1A224A068882429EC4A89CFA"
+        "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -1983,6 +1995,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_F9ECBA1AAC4B95A30F05B5974FEA2804"
+        "OwnerKey" = "8:_77FD59AA73194599A35BC376DD15A868"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_FA070B19891EEABD94FE11EF810CE550"
         "OwnerKey" = "8:_77FD59AA73194599A35BC376DD15A868"
         "MsmSig" = "8:_UNDEFINED"
@@ -1997,6 +2015,12 @@
         {
         "MsmKey" = "8:_UNDEFINED"
         "OwnerKey" = "8:_77FD59AA73194599A35BC376DD15A868"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_F9ECBA1AAC4B95A30F05B5974FEA2804"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -4473,6 +4497,26 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_3B31DE332C235075878EB47C2DFFC4C3"
+            {
+            "SourcePath" = "8:thecalcifyRTD.tlb"
+            "TargetName" = "8:thecalcifyRTD.tlb"
+            "Tag" = "8:"
+            "Folder" = "8:_607C2AE9360B433C9A744C635690AB95"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:2"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:TRUE"
+            "IsolateTo" = "8:"
+            }
             "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_3E7A6C22138C6EA997F8E316B2E787E3"
             {
             "AssemblyRegister" = "3:1"
@@ -5744,26 +5788,6 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_7C30320909DB40B6A079613B837AD892"
-            {
-            "SourcePath" = "8:C:\\Program Files\\thecalcify\\thecalcify\\thecalcify.xlsx"
-            "TargetName" = "8:thecalcify.xlsx"
-            "Tag" = "8:"
-            "Folder" = "8:_607C2AE9360B433C9A744C635690AB95"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
             "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_7CD4B5EC7D4DE8D16E073F8ED1F74CC2"
             {
             "AssemblyRegister" = "3:1"
@@ -6351,6 +6375,26 @@
             "Register" = "3:1"
             "Exclude" = "11:FALSE"
             "IsDependency" = "11:TRUE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_9E262DFC1A224A068882429EC4A89CFA"
+            {
+            "SourcePath" = "8:..\\..\\thecalcify.xlsx"
+            "TargetName" = "8:thecalcify.xlsx"
+            "Tag" = "8:"
+            "Folder" = "8:_607C2AE9360B433C9A744C635690AB95"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
             "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_9E7977BD364C05CFC9019B4E3A860A84"
@@ -7675,6 +7719,37 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_F9ECBA1AAC4B95A30F05B5974FEA2804"
+            {
+            "AssemblyRegister" = "3:1"
+            "AssemblyIsInGAC" = "11:FALSE"
+            "AssemblyAsmDisplayName" = "8:thecalcifyRTD, Version=1.0.0.0, Culture=neutral, PublicKeyToken=2ccf322a1a32c4d9, processorArchitecture=MSIL"
+                "ScatterAssemblies"
+                {
+                    "_F9ECBA1AAC4B95A30F05B5974FEA2804"
+                    {
+                    "Name" = "8:thecalcifyRTD.dll"
+                    "Attributes" = "3:512"
+                    }
+                }
+            "SourcePath" = "8:thecalcifyRTD.dll"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_607C2AE9360B433C9A744C635690AB95"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:TRUE"
+            "IsolateTo" = "8:"
+            }
             "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_FA070B19891EEABD94FE11EF810CE550"
             {
             "AssemblyRegister" = "3:1"
@@ -7794,7 +7869,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:thecalcify"
         "ProductCode" = "8:{45A18102-1652-4AAA-8C62-4306D49EF5AB}"
-        "PackageCode" = "8:{5EA3641E-5578-420A-BD7F-1B5224081F82}"
+        "PackageCode" = "8:{B0359AD5-14D4-4272-9BFB-1E2C47315FFD}"
         "UpgradeCode" = "8:{70860E47-3845-4018-84C7-E2722A27A219}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
