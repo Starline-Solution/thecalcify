@@ -138,6 +138,7 @@ namespace thecalcify
         // ======================
         // 📌 Excel Interop
         // ======================
+
         private Excel.Application excelApp;
 
         private Excel.Workbook workbook;
@@ -1115,6 +1116,9 @@ namespace thecalcify
 
                     if (resultdefault?.data != null)
                     {
+
+                        SaveInitDataToFile(resultdefault.data);
+
                         // Filter out instruments not in the valid list
                         this.Invoke((MethodInvoker)delegate
                         {
@@ -1379,6 +1383,8 @@ namespace thecalcify
 
             try
             {
+                MapRegAsm();
+
                 // Create a new Excel application instance
                 Excel.Application excelApp = new Excel.Application();
 
@@ -1388,20 +1394,36 @@ namespace thecalcify
                     return;
                 }
 
-                // Open an existing workbook
-                string filePath = @"C:\Program Files\thecalcify\thecalcify\thecalcify.xlsx";
-                Excel.Workbook workbook = excelApp.Workbooks.Open(filePath);
+                // Copy the file to Desktop
+                if (File.Exists(excelFilePath))
+                {
+                    if (File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "thecalcify.xlsx")))
+                    {
+                        File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "thecalcify.xlsx")); // Overwrite if exists
+                    }
+
+                    File.Copy(excelFilePath, Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "thecalcify.xlsx"));
+                }
+                else
+                {
+                    MessageBox.Show("Original Excel file not found.");
+                    return;
+                }
+
+             
+                // Open the copied workbook from Desktop
+                Excel.Workbook workbook = excelApp.Workbooks.Open(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "thecalcify.xlsx"));
                 Excel._Worksheet worksheet = workbook.Sheets[1];
 
                 // Load initdata.dat and deserialize
-                string dataFilePath = @"C:\Users\Public\Calcify\initdata.dat";
-                if (!File.Exists(dataFilePath))
+                if (!File.Exists(marketInitDataPath))
                 {
                     MessageBox.Show("initdata.dat not found.");
                     return;
                 }
 
-                string json = File.ReadAllText(dataFilePath);
+                string cipherText = File.ReadAllText(marketInitDataPath);
+                string json = CryptoHelper.Decrypt(cipherText, EditableMarketWatchGrid.passphrase);
                 var dict = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, object>>>(json);
 
                 int startRow = 2; // Assuming headers are on row 1
@@ -1413,19 +1435,389 @@ namespace thecalcify
                     startRow++;
                 }
 
-                // Optionally save the workbook (uncomment if needed)
                 workbook.Save();
+                workbook.Close(false);
+                //excelApp.Quit();
 
-                // Optional: Make Excel visible
-                excelApp.Visible = true;
+                // Release COM objects
+                Marshal.ReleaseComObject(worksheet);
+                Marshal.ReleaseComObject(workbook);
+                Marshal.ReleaseComObject(excelApp);
 
-                // Cleanup (optional, or leave Excel open if needed)
-                // workbook.Close(false);
-                // excelApp.Quit();
+                // Now launch Excel as admin to open the saved file
+                var psi = new ProcessStartInfo
+                {
+                    FileName = "excel.exe",
+                    Arguments = $"\"{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "thecalcify.xlsx")}\"",
+                    Verb = "runas", // Triggers Run as Administrator
+                    UseShellExecute = true
+                };
+
+                Process.Start(psi);
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Error exporting to Excel: " + ex.Message);
+                ApplicationLogger.LogException(ex);
+            }
+        }
+
+        public void MapRegAsm()
+        {
+            try
+            {
+                // Detect if Excel is 32-bit or 64-bit
+                bool isExcel64Bit = IsExcel64Bit(out string officeVersion);
+
+                // Detect regasm paths
+                string regasm64Path = Path.Combine(RuntimeEnvironment.GetRuntimeDirectory(), "RegAsm.exe");
+                string regasm32Path = regasm64Path.Replace("Framework64", "Framework");
+
+                string appPath = AppDomain.CurrentDomain.BaseDirectory;
+                string dllPath = Path.Combine(appPath, "thecalcifyRTD.dll");
+
+                if (!File.Exists(dllPath))
+                {
+                    MessageBox.Show($"DLL not found: {dllPath}");
+                    return;
+                }
+
+                // Unregister both versions just in case
+                RunAsAdmin(GetRegAsmCommand(regasm32Path, dllPath, unregister: true));
+                RunAsAdmin(GetRegAsmCommand(regasm64Path, dllPath, unregister: true));
+
+                // Register based on Excel bitness
+                if (isExcel64Bit)
+                {
+                    RunAsAdmin(GetRegAsmCommand(regasm64Path, dllPath));
+                }
+                else
+                {
+                    RunAsAdmin(GetRegAsmCommand(regasm32Path, dllPath));
+                }
+
+                // Set registry throttle interval based on Office version
+                SetThrottle(officeVersion);
+            }
+            catch (Exception ex)
+            {
+                ApplicationLogger.Log("Failed in MapRegAsm: " + ex.Message);
+            }
+        }
+
+        private string GetRegAsmCommand(string regasmPath, string dllPath, bool unregister = false)
+        {
+            if (unregister)
+                return $"/c \"\"{regasmPath}\" /unregister \"{dllPath}\"\"";
+            else
+                return $"/c \"\"{regasmPath}\" \"{dllPath}\" /codebase /tlb\"";
+        }
+
+        private void RunAsAdmin(string command)
+        {
+            var psi = new ProcessStartInfo
+            {
+                FileName = "cmd.exe",
+                Arguments = command,
+                Verb = "runas",
+                UseShellExecute = true,
+                WindowStyle = ProcessWindowStyle.Hidden
+            };
+
+            Process.Start(psi)?.WaitForExit();
+        }
+
+
+        public void SetThrottle(string officeVersion)
+        {
+            try
+            {
+                string registryPath = $@"Software\Microsoft\Office\{officeVersion}\Excel\Options";
+
+                using (RegistryKey key = Registry.CurrentUser.OpenSubKey(registryPath, writable: true))
+                {
+                    if (key != null)
+                    {
+                        key.SetValue("RTDThrottleInterval", 200, RegistryValueKind.DWord);
+                        key.SetValue("EnableAnimations", 0, RegistryValueKind.DWord);
+                        Console.WriteLine("RTDThrottleInterval set successfully.");
+                    }
+                    else
+                    {
+                        using (RegistryKey newKey = Registry.CurrentUser.CreateSubKey(registryPath))
+                        {
+                            newKey.SetValue("RTDThrottleInterval", 200, RegistryValueKind.DWord);
+                            newKey.SetValue("EnableAnimations", 0, RegistryValueKind.DWord);
+                            Console.WriteLine("Key created and value set successfully.");
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error setting registry value: " + ex.Message);
+            }
+        }
+
+        private bool IsExcel64Bit(out string officeVersion)
+        {
+            officeVersion = "16.0"; // Default fallback
+
+            try
+            {
+                using (RegistryKey key = Registry.ClassesRoot.OpenSubKey(@"Excel.Application\CurVer"))
+                {
+                    string curVer = key?.GetValue(null)?.ToString(); // e.g. "Excel.Application.16"
+                    if (!string.IsNullOrEmpty(curVer))
+                    {
+                        officeVersion = curVer.Split('.').Last(); // "16"
+                        officeVersion += ".0";
+                    }
+                }
+
+                // Determine installed Excel bitness by checking registry
+                string bitness = Registry.GetValue(
+                    @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Office\" + officeVersion + @"\Outlook", "Bitness", null
+                ) as string;
+
+                if (string.IsNullOrEmpty(bitness))
+                {
+                    // Fallback for 32-bit Office on 64-bit Windows
+                    bitness = Registry.GetValue(
+                        @"HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Office\" + officeVersion + @"\Outlook", "Bitness", null
+                    ) as string;
+                }
+
+                return bitness != null && bitness.Equals("x64", StringComparison.OrdinalIgnoreCase);
+            }
+            catch (Exception ex)
+            {
+                ApplicationLogger.Log("Failed to detect Excel bitness/version: " + ex.Message);
+                return Environment.Is64BitOperatingSystem; // Fallback assumption
+            }
+        }
+
+
+        public void ExportExcelOnClick()
+        {
+            Thread excelThread = new Thread(() =>
+            {
+                try
+                {
+                    string folderPath = Path.GetDirectoryName(excelFilePath);
+                    if (!Directory.Exists(folderPath))
+                        Directory.CreateDirectory(folderPath);
+
+                    // Get visible and exportable columns from the grid
+                    var exportableColumns = defaultGrid.Columns
+                        .Cast<DataGridViewColumn>()
+                        .Where(c => c.Visible && c.Name != "symbol" && c.Name != "V")
+                        .OrderBy(c => c.DisplayIndex)
+                        .ToList();
+
+                    if (!File.Exists(excelFilePath))
+                    {
+                        excelApp = new Excel.Application
+                        {
+                            Visible = false,
+                            DisplayAlerts = false
+                        };
+
+                        workbook = excelApp.Workbooks.Add();
+                        worksheet = (Excel.Worksheet)workbook.Sheets[1];
+                        worksheet.Name = "Sheet1";
+
+                        // Write headers
+                        for (int i = 0; i < exportableColumns.Count; i++)
+                        {
+                            worksheet.Cells[1, i + 1] = exportableColumns[i].HeaderText;
+                        }
+
+                        workbook.SaveAs(excelFilePath, Excel.XlFileFormat.xlOpenXMLWorkbook);
+                        workbook.Close(false);
+                        excelApp.Quit();
+
+                        ReleaseExcelObjects(worksheet, workbook, excelApp);
+
+                        worksheet = null;
+                        workbook = null;
+                        excelApp = null;
+
+                        GC.Collect();
+                        GC.WaitForPendingFinalizers();
+                    }
+
+                    EnsureFullFolderAccess(folderPath);
+                    commonClass.CreateShortCut(excelFilePath);
+
+                    excelApp = new Excel.Application
+                    {
+                        Visible = false,
+                        DisplayAlerts = false,
+                        UserControl = true
+                    };
+
+                    workbook = excelApp.Workbooks.Open(excelFilePath);
+                    worksheet = workbook.Sheets[1] as Excel.Worksheet;
+
+                    if (worksheet == null)
+                        worksheet = (Excel.Worksheet)workbook.Sheets[1];
+
+                    // Write headers (overwrite)
+                    for (int i = 0; i < exportableColumns.Count; i++)
+                    {
+                        worksheet.Cells[1, i + 1] = exportableColumns[i].HeaderText;
+                    }
+
+                    int rowCount = defaultGrid.Rows.Count;
+                    int colCount = exportableColumns.Count;
+                    object[,] dataArray = new object[rowCount, colCount];
+
+                    for (int r = 0; r < rowCount; r++)
+                    {
+                        var gridRow = defaultGrid.Rows[r];
+                        for (int c = 0; c < colCount; c++)
+                        {
+                            var col = exportableColumns[c];
+                            dataArray[r, c] = gridRow.Cells[col.Name].Value ?? "--";
+                        }
+                    }
+
+                    Excel.Range startCell = worksheet.Cells[2, 1];
+                    Excel.Range endCell = worksheet.Cells[rowCount + 1, colCount];
+                    Excel.Range writeRange = worksheet.Range[startCell, endCell];
+                    writeRange.Value2 = dataArray;
+
+                    workbook.Save();
+
+                    // Optional: Show Excel
+                    excelApp.Visible = true;
+                    excelApp.WindowState = Excel.XlWindowState.xlMaximized;
+                }
+                catch (Exception ex)
+                {
+                    ApplicationLogger.Log($"Error accessing Excel instance ExportExcelOnClick: {ex.Message}\n{ex.StackTrace}");
+                }
+            });
+
+            excelThread.SetApartmentState(ApartmentState.STA);
+            excelThread.Start();
+        }
+
+
+        private void ReleaseExcelObjects(params object[] comObjects)
+        {
+            foreach (var obj in comObjects)
+            {
+                if (obj != null)
+                {
+                    try
+                    {
+                        while (Marshal.ReleaseComObject(obj) > 0) { }
+                    }
+                    catch (Exception ex)
+                    {
+                        ApplicationLogger.Log($"[COM Release Error] {ex.Message}");
+                    }
+                }
+            }
+
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+        }
+
+        private void EnsureFullFolderAccess(string folderPath)
+        {
+            var dirInfo = new DirectoryInfo(folderPath);
+            var dirSecurity = dirInfo.GetAccessControl();
+
+            var accessRule = new FileSystemAccessRule(
+                new SecurityIdentifier(WellKnownSidType.WorldSid, null),
+                FileSystemRights.FullControl,
+                InheritanceFlags.ContainerInherit | InheritanceFlags.ObjectInherit,
+                PropagationFlags.None,
+                AccessControlType.Allow
+            );
+
+            if (dirSecurity.ModifyAccessRule(AccessControlModification.Add, accessRule, out bool modified) && modified)
+            {
+                dirInfo.SetAccessControl(dirSecurity);
+            }
+        }
+
+        public void UpdateExcelDataEfficiently(DataGridView grid)
+        {
+            if (!_excelInitialized && !TryInitializeExcel())
+                return;
+
+            try
+            {
+                var visibleCols = grid.Columns.Cast<DataGridViewColumn>()
+                    .Where(c => c.Visible)
+                    .OrderBy(c => c.DisplayIndex)
+                    .ToList();
+
+                int rows = grid.Rows.Count;
+                int cols = visibleCols.Count;
+                if (rows == 0 || cols == 0)
+                    return;
+
+
+                // --- Check if A1 is empty ---
+                var cellA1 = RetryComCall(() => worksheet.Cells[1, 1]);
+                var valueA1 = RetryComCall(() => cellA1.Value2);
+                bool isA1Empty = valueA1 == null || string.IsNullOrWhiteSpace(valueA1.ToString());
+                Marshal.ReleaseComObject(cellA1);
+
+                // --- Write headers only if A1 is empty ---
+                if (isA1Empty)
+                {
+                    object[] headers = new object[cols];
+                    for (int c = 0; c < cols; c++)
+                    {
+                        headers[c] = visibleCols[c].HeaderText ?? visibleCols[c].Name;
+                    }
+
+                    var headerRange = RetryComCall(() => worksheet.Range[
+                        worksheet.Cells[1, 1], worksheet.Cells[1, cols]]);
+                    RetryComCall(() => headerRange.Value2 = headers);
+                    Marshal.ReleaseComObject(headerRange);
+                }
+
+
+                object[,] data = new object[rows, cols];
+                int timeColIdx = visibleCols.FindIndex(c => c.Name == "Time");
+
+                for (int r = 0; r < rows; r++)
+                {
+                    for (int c = 0; c < cols; c++)
+                    {
+                        var val = grid.Rows[r].Cells[visibleCols[c].Name].Value;
+                        data[r, c] = (c == timeColIdx && DateTime.TryParse(val?.ToString(), out var dt)) ? dt : val;
+                    }
+                }
+
+                var range = RetryComCall(() => worksheet.Range[worksheet.Cells[2, 1], worksheet.Cells[rows + 1, cols]]);
+                RetryComCall(() => range.Value2 = data);
+                Marshal.ReleaseComObject(range);
+
+                if (timeColIdx >= 0)
+                {
+                    var timeRange = RetryComCall(() => worksheet.Range[
+                        worksheet.Cells[2, timeColIdx + 1], worksheet.Cells[rows + 1, timeColIdx + 1]]);
+                    RetryComCall(() => timeRange.NumberFormat = "dd/MM/yyyy HH:mm:ss");
+                    Marshal.ReleaseComObject(timeRange);
+                }
+            }
+            catch (COMException ex)
+            {
+                ApplicationLogger.Log($"[Excel Update COM Error] {ex.Message}");
+                _excelInitialized = false;
+            }
+            catch (Exception ex)
+            {
+                ApplicationLogger.Log($"[Excel Update Error] {ex.Message}");
+                _excelInitialized = false;
             }
         }
 
@@ -2933,6 +3325,58 @@ namespace thecalcify
             }
         }
 
-        #endregion Excel Export
+        private void SaveInitDataToFile(List<MarketDataDTO> data)
+        {
+            try
+            {
+                var dict = new Dictionary<string, Dictionary<string, object>>(StringComparer.OrdinalIgnoreCase);
+
+                foreach (var d in data)
+                {
+                    dict[d.n] = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        ["Bid"] = d.b,
+                        ["Ask"] = d.a,
+                        ["LTP"] = d.ltp,
+                        ["High"] = d.h,
+                        ["Low"] = d.l,
+                        ["Open"] = d.o,
+                        ["Close"] = d.c,
+                        ["Net Chng"] = d.d,
+                        ["V"] = d.v,
+                        ["ATP"] = d.atp,
+                        ["Bid Size"] = d.bq,
+                        ["Total Bid Size"] = d.tbq,
+                        ["Ask Size"] = d.sq,
+                        ["Total Ask Size"] = d.tsq,
+                        ["Volume"] = d.vt,
+                        ["Open Interest"] = d.oi,
+                        ["Last Size"] = d.ltq,
+                        ["Time"] = commonClass.TimeStampConvert(d.t)
+                    };
+                }
+
+                Directory.CreateDirectory(Path.GetDirectoryName(marketInitDataPath));
+                string json = JsonConvert.SerializeObject(dict);
+                string encryptedJson = CryptoHelper.Encrypt(json, EditableMarketWatchGrid.passphrase);
+                File.WriteAllText(marketInitDataPath, encryptedJson);
+                SaveInitDataPathToRegistry(marketInitDataPath);
+            }
+            catch (Exception ex)
+            {
+                ApplicationLogger.Log($"Error writing initdata.dat: {ex.Message} And {ex.StackTrace}");
+            }
+        }
+
+        private void SaveInitDataPathToRegistry(string path)
+        {
+            using (var baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64))
+            using (var key = baseKey.CreateSubKey(@"SOFTWARE\thecalcify"))
+            {
+                key.SetValue("InitDataPath", marketInitDataPath, RegistryValueKind.String);
+            }
+        }
+
+        #endregion
     }
 }
