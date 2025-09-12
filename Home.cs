@@ -1422,16 +1422,34 @@ namespace thecalcify
                 // Open workbook
                 Excel.Workbook workbook = excelApp.Workbooks.Open(destExcelPath);
                 Excel._Worksheet worksheet = workbook.Sheets[1];
+                worksheet.Unprotect();
 
                 // Create formula map
                 List<ExcelFormulaCell> formulaCells = BuildFormulaCells(dict);
-
 
                 // Write to Excel
                 foreach (var cell in formulaCells)
                 {
                     worksheet.Cells[cell.Row, cell.Column].Formula = cell.Formula;
                 }
+
+                // 🔒 Protect only Sheet1 (all cells locked)
+                worksheet.Cells.Locked = true;
+                worksheet.Protect(
+                    DrawingObjects: true,
+                    Contents: true,
+                    Scenarios: true,
+                    AllowFormattingCells: false,
+                    AllowFormattingColumns: false,
+                    AllowFormattingRows: false,
+                    AllowInsertingColumns: false,
+                    AllowInsertingRows: false,
+                    AllowDeletingColumns: false,
+                    AllowDeletingRows: false,
+                    AllowSorting: false,
+                    AllowFiltering: false,
+                    AllowUsingPivotTables: false
+                );
 
                 workbook.Save();
                 workbook.Close(false);
