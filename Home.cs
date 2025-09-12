@@ -42,10 +42,6 @@ namespace thecalcify
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "thecalcify");
 
-        private readonly string excelFilePath = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.CommonDocuments),
-            "thecalcify", "thecalcify.xlsx");
-
         private readonly TimeSpan _reconnectThrottle = TimeSpan.FromSeconds(10); // prevent spam
 
         // ======================
@@ -143,6 +139,9 @@ namespace thecalcify
 
         private Excel.Workbook workbook;
         private Excel.Worksheet worksheet;
+        private readonly string excelFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "thecalcify.xlsm");
+        private static readonly string marketInitDataPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "initdata.dat");
+
 
         // ======================
         // 📌 UI Elements
@@ -1412,7 +1411,7 @@ namespace thecalcify
 
              
                 // Open the copied workbook from Desktop
-                Excel.Workbook workbook = excelApp.Workbooks.Open(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "thecalcify.xlsx"));
+                Excel.Workbook workbook = excelApp.Workbooks.Open(excelFilePath);
                 Excel._Worksheet worksheet = workbook.Sheets[1];
 
                 // Load initdata.dat and deserialize
