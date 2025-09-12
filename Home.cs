@@ -139,7 +139,7 @@ namespace thecalcify
 
         private Excel.Workbook workbook;
         private Excel.Worksheet worksheet;
-        private readonly string excelFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "thecalcify.xlsx");
+        private readonly string excelFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "thecalcify.xlsm");
         private static readonly string marketInitDataPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "initdata.dat");
 
 
@@ -1409,7 +1409,7 @@ namespace thecalcify
                     return;
                 }
 
-
+             
                 // Open the copied workbook from Desktop
                 Excel.Workbook workbook = excelApp.Workbooks.Open(excelFilePath);
                 Excel._Worksheet worksheet = workbook.Sheets[1];
@@ -1481,19 +1481,17 @@ namespace thecalcify
                     return;
                 }
 
+                // Unregister both versions just in case
+                RunAsAdmin(GetRegAsmCommand(regasm32Path, dllPath, unregister: true));
+                RunAsAdmin(GetRegAsmCommand(regasm64Path, dllPath, unregister: true));
 
+                // Register based on Excel bitness
                 if (isExcel64Bit)
                 {
-                    // Unregister both versions just in case
-                    RunAsAdmin(GetRegAsmCommand(regasm64Path, dllPath, unregister: true));
-                    // Register based on Excel bitness
                     RunAsAdmin(GetRegAsmCommand(regasm64Path, dllPath));
                 }
                 else
                 {
-                    // Unregister both versions just in case
-                    RunAsAdmin(GetRegAsmCommand(regasm32Path, dllPath, unregister: true));
-                    // Register based on Excel bitness
                     RunAsAdmin(GetRegAsmCommand(regasm32Path, dllPath));
                 }
 
@@ -1922,44 +1920,105 @@ namespace thecalcify
         {
             try
             {
+
+                // Final folder path
                 string finalPath = Path.Combine(AppFolder, username);
 
-                // Get all .slt files
-                List<string> fileNames = Directory.Exists(finalPath)
-                    ? Directory.GetFiles(finalPath, "*.slt")
-                              .Select(Path.GetFileNameWithoutExtension)
-                              .ToList()
-                    : new List<string>();
+                // Get all .slt files from the application folder
+                List<string> fileNames = Directory.GetFiles(finalPath, "*.slt")
+                                                 .Select(Path.GetFileNameWithoutExtension)
+                                                 .ToList();
 
                 FileLists = fileNames;
 
                 // Clear existing menu items
                 viewToolStripMenuItem.DropDownItems.Clear();
-
-                // Always add Default menu item
-                viewToolStripMenuItem.DropDownItems.Add(CreateMenuItem("Default", async (sender, e) =>
+                // Add Default menu item with click handler
+                ToolStripMenuItem defaultMenuItem = new ToolStripMenuItem("Default");
+                defaultMenuItem.Click += async (sender, e) =>
                 {
-                    ResetState("Default");
-                    await DefaultToolStripMenuItem_Click(sender, e).ConfigureAwait(false);
-                    addEditSymbolsToolStripMenuItem.Enabled = false;
-                    await LoadInitialMarketDataAsync().ConfigureAwait(false);
-                }));
+                    selectedSymbols.Clear();
+                    identifiers.Clear();
+                    symbolMaster.Clear();
+                    saveFileName = null;
+                    //StopBackgroundTasks();
+                    lastOpenMarketWatch = "Default";
 
-                // Add .slt file items
+
+                    var clickedItem = (ToolStripMenuItem)sender;
+                    await DefaultToolStripMenuItem_Click(sender, e);
+                    addEditSymbolsToolStripMenuItem.Enabled = false;
+                    //SetActiveMenuItem(clickedItem);
+                    //saveMarketWatchHost.Visible = false;
+                    await LoadInitialMarketDataAsync();
+                    isGrid = true;
+                    reloadGrid = true;
+                };
+
+                viewToolStripMenuItem.DropDownItems.Add(defaultMenuItem);
+
+                // Add each file as a menu item with a click handler
                 foreach (string fileName in fileNames)
                 {
-                    viewToolStripMenuItem.DropDownItems.Add(CreateMenuItem(fileName, async (sender, e) =>
+                    ToolStripMenuItem menuItem = new ToolStripMenuItem(fileName);
+                    menuItem.Click += async (sender, e) =>
                     {
-                        ResetState(fileName);
-                        while (_updateQueue.TryDequeue(out _)) { } // clear queue
+                        selectedSymbols.Clear();
+                        identifiers.Clear();
+                        symbolMaster.Clear();
+                        saveFileName = null;
+                        //_updateQueue = new ConcurrentQueue<MarketDataDTO>();
 
-                        LoadSymbol(Path.Combine(fileName + ".slt"));
-                        titleLabel.Text = fileName.ToUpper();
+                        //StopBackgroundTasks();
+
+                        var clickedItem = (ToolStripMenuItem)sender;
+
+                        saveFileName = clickedItem.Text;
+                        addEditSymbolsToolStripMenuItem.Enabled = true;
+                        lastOpenMarketWatch = saveFileName;
+
+                        LoadSymbol(Path.Combine(saveFileName + ".slt"));
+
+                        //SetActiveMenuItem(clickedItem);
+                        titleLabel.Text = saveFileName.ToUpper();
                         isEdit = false;
+                        //saveMarketWatchHost.Visible = false;
+                        await LoadInitialMarketDataAsync();
+                        isGrid = true;
+                        reloadGrid = true;
 
-                        await LoadInitialMarketDataAsync().ConfigureAwait(false);
-                    }));
+                    };
+                    viewToolStripMenuItem.DropDownItems.Add(menuItem);
                 }
+            }
+            catch (DirectoryNotFoundException)
+            {
+                // Clear existing menu items
+                viewToolStripMenuItem.DropDownItems.Clear();
+                // Add Default menu item with click handler
+                ToolStripMenuItem defaultMenuItem = new ToolStripMenuItem("Default");
+                defaultMenuItem.Click += async (sender, e) =>
+                {
+                    selectedSymbols.Clear();
+                    identifiers.Clear();
+                    symbolMaster.Clear();
+                    //StopBackgroundTasks();
+                    lastOpenMarketWatch = "Default";
+
+                    var clickedItem = (ToolStripMenuItem)sender;
+                    await DefaultToolStripMenuItem_Click(sender, e);
+                    MenuLoad();
+                    addEditSymbolsToolStripMenuItem.Enabled = false;
+                    saveFileName = null;
+                    //SetActiveMenuItem(clickedItem);
+                    //saveMarketWatchHost.Visible = false;
+                    titleLabel.Text = "DEFAULT";
+                    await LoadInitialMarketDataAsync();
+                    isGrid = true;
+                    reloadGrid = true;
+                };
+                defaultMenuItem.Enabled = true;
+                viewToolStripMenuItem.DropDownItems.Add(defaultMenuItem);
             }
             catch (Exception ex)
             {
