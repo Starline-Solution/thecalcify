@@ -1433,6 +1433,8 @@ namespace thecalcify
                     worksheet.Cells[cell.Row, cell.Column].Formula = cell.Formula;
                 }
 
+                excelApp.EnableAnimations = false;
+
                 // 🔒 Protect only Sheet1 (all cells locked)
                 worksheet.Cells.Locked = true;
                 worksheet.Protect(
@@ -1644,7 +1646,8 @@ namespace thecalcify
                     if (key != null)
                     {
                         key.SetValue("RTDThrottleInterval", 200, RegistryValueKind.DWord);
-                        key.SetValue("EnableAnimations", 0, RegistryValueKind.DWord);
+                        key.SetValue("EnableAnimations", 1, RegistryValueKind.DWord);
+                        key.SetValue("DisableHardwareAcceleration", 1, RegistryValueKind.DWord);
                         Console.WriteLine("RTDThrottleInterval set successfully.");
                     }
                     else
@@ -1652,7 +1655,8 @@ namespace thecalcify
                         using (RegistryKey newKey = Registry.CurrentUser.CreateSubKey(registryPath))
                         {
                             newKey.SetValue("RTDThrottleInterval", 200, RegistryValueKind.DWord);
-                            newKey.SetValue("EnableAnimations", 0, RegistryValueKind.DWord);
+                            newKey.SetValue("EnableAnimations", 1, RegistryValueKind.DWord);
+                            key.SetValue("DisableHardwareAcceleration", 1, RegistryValueKind.DWord);
                             Console.WriteLine("Key created and value set successfully.");
                         }
                     }
@@ -2168,7 +2172,7 @@ namespace thecalcify
                 string json = CryptoHelper.Decrypt(cipherText, EditableMarketWatchGrid.passphrase);
                 var symbols = System.Text.Json.JsonSerializer.Deserialize<List<string>>(json);
                 selectedSymbols.AddRange(symbols);
-                identifiers = selectedSymbols;
+                identifiers = selectedSymbols.Distinct().ToList();
                 isLoadedSymbol = true;
                 marketWatchViewMode = MarketWatchViewMode.Default;
                 titleLabel.Text = Path.GetFileNameWithoutExtension(Filename).ToUpper();

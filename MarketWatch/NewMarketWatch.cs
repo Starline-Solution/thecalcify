@@ -1672,6 +1672,7 @@ namespace thecalcify.MarketWatch
                     return;
                 }
 
+                SymbolList = SymbolList.Distinct().ToList();
                 if (saveFileName == null)
                 {// Show save file dialog
                     using (var saveDialog = new SaveFileDialog())
