@@ -271,6 +271,14 @@ namespace thecalcify.Helper
 
     }
 
+    class ExcelFormulaCell
+    {
+        public int Row { get; set; }
+        public int Column { get; set; }
+        public string Formula { get; set; }
+    }
+
+
     public class WinApi
     {
         private const int SM_CXSCREEN = 0;

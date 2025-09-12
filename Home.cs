@@ -139,7 +139,7 @@ namespace thecalcify
 
         private Excel.Workbook workbook;
         private Excel.Worksheet worksheet;
-        private readonly string excelFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "thecalcify.xlsm");
+        private readonly string excelFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "thecalcify.xlsx");
         private static readonly string marketInitDataPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "initdata.dat");
 
 
@@ -1377,31 +1377,28 @@ namespace thecalcify
 
         private void ExportToExcelToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            //KillProcess();
-            ////ExportExcelOnClick();
-
             try
             {
                 MapRegAsm();
 
-                // Create a new Excel application instance
-                Excel.Application excelApp = new Excel.Application();
-
+                excelApp = new Excel.Application();
                 if (excelApp == null)
                 {
                     MessageBox.Show("Excel is not installed on your machine.");
                     return;
                 }
 
-                // Copy the file to Desktop
+                string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+                string destExcelPath = Path.Combine(desktopPath, "thecalcify.xlsx");
+
+                // Copy template Excel file
                 if (File.Exists(excelFilePath))
                 {
-                    if (File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "thecalcify.xlsx")))
-                    {
-                        File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "thecalcify.xlsx")); // Overwrite if exists
-                    }
+                    if (File.Exists(destExcelPath))
+                        File.Delete(destExcelPath);
 
-                    File.Copy(excelFilePath, Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "thecalcify.xlsx"));
+                    File.Copy(excelFilePath, destExcelPath);
+                    ClearExcelSheet(destExcelPath);
                 }
                 else
                 {
@@ -1409,57 +1406,148 @@ namespace thecalcify
                     return;
                 }
 
-             
-                // Open the copied workbook from Desktop
-                Excel.Workbook workbook = excelApp.Workbooks.Open(excelFilePath);
-                Excel._Worksheet worksheet = workbook.Sheets[1];
-
-                // Load initdata.dat and deserialize
+                // Load data
                 if (!File.Exists(marketInitDataPath))
                 {
                     MessageBox.Show("initdata.dat not found.");
                     return;
                 }
 
+
                 string cipherText = File.ReadAllText(marketInitDataPath);
                 string json = CryptoHelper.Decrypt(cipherText, EditableMarketWatchGrid.passphrase);
+
                 var dict = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, object>>>(json);
 
-                int startRow = 2; // Assuming headers are on row 1
+                // Open workbook
+                Excel.Workbook workbook = excelApp.Workbooks.Open(destExcelPath);
+                Excel._Worksheet worksheet = workbook.Sheets[1];
 
-                foreach (var entry in dict)
+                // Create formula map
+                List<ExcelFormulaCell> formulaCells = BuildFormulaCells(dict);
+
+
+                // Write to Excel
+                foreach (var cell in formulaCells)
                 {
-                    string name = entry.Key;
-                    worksheet.Cells[startRow, 1] = name; // Column A = 1
-                    startRow++;
+                    worksheet.Cells[cell.Row, cell.Column].Formula = cell.Formula;
                 }
 
                 workbook.Save();
                 workbook.Close(false);
-                //excelApp.Quit();
-
-                // Release COM objects
                 Marshal.ReleaseComObject(worksheet);
                 Marshal.ReleaseComObject(workbook);
                 Marshal.ReleaseComObject(excelApp);
 
-                // Now launch Excel as admin to open the saved file
+                // Open Excel as admin
                 var psi = new ProcessStartInfo
                 {
                     FileName = "excel.exe",
-                    Arguments = $"\"{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "thecalcify.xlsx")}\"",
-                    Verb = "runas", // Triggers Run as Administrator
+                    Arguments = $"\"{destExcelPath}\"",
+                    Verb = "runas",
                     UseShellExecute = true
                 };
-
                 Process.Start(psi);
+            }
+            catch (IOException IOExcetion)
+            {
+                MessageBox.Show("File Is Already Open Please Check Open File and needed Repoen Close Existing one...", "Export File", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                ApplicationLogger.LogException(IOExcetion);
+                KillProcess();
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error exporting to Excel: " + ex.Message);
+                MessageBox.Show("Please Retry to Open file We facing some issue...");
                 ApplicationLogger.LogException(ex);
+                KillProcess();
             }
         }
+
+        private void ClearExcelSheet(string destExcelPath)
+        {
+            try
+            {
+                // Open workbook
+                Excel.Workbook workbook = excelApp.Workbooks.Open(destExcelPath);
+                Excel._Worksheet worksheet = workbook.Sheets[1];
+
+                worksheet.Cells.Clear();
+
+
+                worksheet.Cells[1, 1].Value = "Name"; // A1 = row 1, column 1
+
+                workbook.Save();
+                workbook.Close(false);
+            }
+            catch (Exception ex)
+            {
+                ApplicationLogger.LogException(ex);
+                MessageBox.Show($"[Excel Face Issue] :- {ex.Message}");
+
+            }
+        }
+
+        private List<ExcelFormulaCell> BuildFormulaCells(Dictionary<string, Dictionary<string, object>> dict)
+        {
+            var formulaCells = new List<ExcelFormulaCell>();
+
+            int startRow = 2; // Row 1 = header
+            int startCol = 2; // Column A = symbol name
+
+            // Collect all unique column headers (Bid, Ask, LTP, etc.)
+            var allFields = dict.Values
+                .SelectMany(inner => inner.Keys)
+                .Distinct()
+                .Where(field => field != "V") // 👈 Replace "V" with actual field name
+                .ToList();
+
+            // Add headers (Row 1)
+            for (int i = 0; i < allFields.Count; i++)
+            {
+                formulaCells.Add(new ExcelFormulaCell
+                {
+                    Row = 1,
+                    Column = startCol + i,
+                    Formula = allFields[i] // Not a formula, just static text
+                });
+            }
+
+            // Add symbol name and formulas
+            int currentRow = startRow;
+            foreach (var outer in dict)
+            {
+                string symbol = outer.Key;
+
+                // Add symbol to column A
+                formulaCells.Add(new ExcelFormulaCell
+                {
+                    Row = currentRow,
+                    Column = 1,
+                    Formula = symbol
+                });
+
+                for (int i = 0; i < allFields.Count; i++)
+                {
+                    string field = allFields[i];
+                    int col = startCol + i;
+
+                    string formula = $"=RTD(\"thecalcify\", ,\"{symbol}\",\"{field}\")";
+
+                    formulaCells.Add(new ExcelFormulaCell
+                    {
+                        Row = currentRow,
+                        Column = col,
+                        Formula = formula
+                    });
+                }
+
+                currentRow++;
+            }
+
+            return formulaCells;
+        }
+
+
 
         public void MapRegAsm()
         {
@@ -1482,16 +1570,16 @@ namespace thecalcify
                 }
 
                 // Unregister both versions just in case
-                RunAsAdmin(GetRegAsmCommand(regasm32Path, dllPath, unregister: true));
-                RunAsAdmin(GetRegAsmCommand(regasm64Path, dllPath, unregister: true));
 
                 // Register based on Excel bitness
                 if (isExcel64Bit)
                 {
+                    RunAsAdmin(GetRegAsmCommand(regasm64Path, dllPath, unregister: true));
                     RunAsAdmin(GetRegAsmCommand(regasm64Path, dllPath));
                 }
                 else
                 {
+                    RunAsAdmin(GetRegAsmCommand(regasm32Path, dllPath, unregister: true));
                     RunAsAdmin(GetRegAsmCommand(regasm32Path, dllPath));
                 }
 
@@ -1967,7 +2055,7 @@ namespace thecalcify
                         identifiers.Clear();
                         symbolMaster.Clear();
                         saveFileName = null;
-                        //_updateQueue = new ConcurrentQueue<MarketDataDTO>();
+                        _updateQueue = new ConcurrentQueue<MarketDataDTO>();
 
                         //StopBackgroundTasks();
 
