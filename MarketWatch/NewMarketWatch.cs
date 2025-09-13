@@ -1763,7 +1763,7 @@ namespace thecalcify.MarketWatch
                     live_Rate.LiveRateGrid();
                 if (saveFileName != null)
                 {
-                    live_Rate.titleLabel.Text = $"{saveFileName}";
+                    live_Rate.titleLabel.Text = $"Edit {saveFileName} MarketWatch";
                 }
                 live_Rate.isdeleted = false;
                 live_Rate.MenuLoad();
