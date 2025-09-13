@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http.Connections;
+﻿using ClosedXML.Excel;
+using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Win32;
 using Newtonsoft.Json;
@@ -16,8 +17,6 @@ using System.Net.Http.Headers;
 using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Security.AccessControl;
-using System.Security.Principal;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,7 +24,6 @@ using System.Windows.Forms;
 using thecalcify.Helper;
 using thecalcify.MarketWatch;
 using Button = System.Windows.Forms.Button;
-using Excel = Microsoft.Office.Interop.Excel;
 using Label = System.Windows.Forms.Label;
 using TextBox = System.Windows.Forms.TextBox;
 
@@ -59,7 +57,6 @@ namespace thecalcify
         public bool isGrid = true, reloadGrid = true;
         public bool isdeleted = false;
         private bool isRunning = true;
-        private bool _excelInitialized = false;
         private bool isFullScreen = false;
 
         // ======================
@@ -135,10 +132,6 @@ namespace thecalcify
         // 📌 Excel Interop
         // ======================
 
-        private Excel.Application excelApp;
-
-        private Excel.Workbook workbook;
-        private Excel.Worksheet worksheet;
         private readonly string excelFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "thecalcify.xlsx");
         private static readonly string marketInitDataPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "initdata.dat");
 
@@ -183,6 +176,7 @@ namespace thecalcify
 
         #endregion Declaration and Initialization
 
+        #region Form Method
         public thecalcify()
         {
             InitializeComponent();
@@ -358,7 +352,7 @@ namespace thecalcify
             }
         }
 
-        public void LiveRateGrid()
+        public void thecalcifyGrid()
         {
             if (!isLoadedSymbol)
                 marketWatchViewMode = MarketWatchViewMode.Default;
@@ -384,6 +378,1047 @@ namespace thecalcify
                 MessageBox.Show("A fatal non-UI error occurred:\n" + ex.Message, "Application Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
+        private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using (var aboutForm = new About(username, password, licenceDate))
+            {
+                if (isFullScreen)
+                {
+                    aboutForm.StartPosition = FormStartPosition.CenterParent;
+                    aboutForm.TopMost = true; // Ensures it stays above the full-screen window
+                    aboutForm.ShowDialog(this); // Pass the main form as owner
+                }
+                else
+                {
+                    aboutForm.ShowDialog();
+                }
+            }
+        }
+
+        private void Txtsearch_KeyDown(object sender, KeyEventArgs e)
+        {
+            // Check if Ctrl + Backspace is pressed
+            if (e.Control && e.KeyCode == Keys.Back)
+            {
+                txtsearch.Clear();  // Clear all text
+                e.SuppressKeyPress = true; // Prevent default backspace behavior
+            }
+        }
+        
+        public async Task DefaultToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            fontSizeComboBox.Visible = true;
+
+            savelabel.Visible = false;
+
+
+            EditableMarketWatchGrid editableMarketWatchGrid = EditableMarketWatchGrid.CurrentInstance;
+            if (editableMarketWatchGrid != null && editableMarketWatchGrid.IsCurrentCellInEditMode)
+            {
+                editableMarketWatchGrid.EndEdit();
+            }
+            editableMarketWatchGrid?.Dispose();
+            toolsToolStripMenuItem.Enabled = true;
+            isLoadedSymbol = false;
+            thecalcifyGrid();
+            txtsearch.Text = string.Empty;
+            saveFileName = null;
+            await LoadInitialMarketDataAsync();
+
+            MenuLoad();
+            titleLabel.Text = "DEFAULT";
+            isEdit = false;
+            identifiers = symbolMaster;
+            InitializeDataGridView();          // Configure the grid
+            await SignalREvent();
+        }
+
+        private void NewCTRLNToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // 6. Clean up current resources before switching
+                CleanupBeforeViewSwitch();
+
+                // 1. Set new view mode
+                marketWatchViewMode = MarketWatchViewMode.New;
+
+                // 2. Reset state if not in edit mode
+                if (!isEdit)
+                {
+                    selectedSymbols.Clear();
+                    saveFileName = null;
+                    isLoadedSymbol = false;
+                }
+
+                // 3. Create and configure new editable grid
+                var editableGrid = new EditableMarketWatchGrid
+                {
+                    Name = "editableMarketWatchGridView",
+                    Dock = DockStyle.Fill,
+                    columnPreferences = columnPreferences,
+                    columnPreferencesDefault = columnPreferencesDefault,
+                    fontSize = fontSize,
+                    pastRateTickDTO = pastRateTickDTO,
+                    isEditMarketWatch = true,
+                    SymbolName = SymbolName,
+                };
+
+                // 4. Handle edit mode specific setup
+                if (isEdit && editableGrid.selectedSymbols != null && saveFileName != null)
+                {
+                    editableGrid.saveFileName = saveFileName;
+                }
+
+                // 5. Add to controls and bring to front
+                this.Controls.Add(editableGrid);
+                editableGrid.BringToFront();
+                editableGrid.Focus();
+
+                // 7. Update UI state
+                UpdateUIStateForNewMarketWatch();
+            }
+            catch (Exception ex)
+            {
+                ApplicationLogger.LogException(ex);
+                MessageBox.Show($"Error switching to new market watch: {ex.Message}");
+            }
+        }
+
+        private void DeleteToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (FileLists == null || FileLists.Count == 0)
+            {
+                MessageBox.Show("No Market Watch available to delete.", "Information",
+                              MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            using (var selectionForm = new Form())
+            {
+                selectionForm.Text = "Select Market Watch to Delete";
+                selectionForm.Width = 600;
+                selectionForm.Height = 500;
+                selectionForm.FormBorderStyle = FormBorderStyle.FixedDialog;
+                selectionForm.StartPosition = FormStartPosition.CenterParent;
+                selectionForm.BackColor = Color.White;
+                selectionForm.Font = new System.Drawing.Font("Microsoft Sans Serif", 9);
+                selectionForm.Icon = SystemIcons.WinLogo;
+
+                var headerPanel = new Panel
+                {
+                    Dock = DockStyle.Top,
+                    Height = 50,
+                    BackColor = Color.FromArgb(0, 120, 215)
+                };
+
+                var headerLabel = new Label
+                {
+                    Text = "Select Market Watch to Delete",
+                    Dock = DockStyle.Fill,
+                    ForeColor = Color.White,
+                    TextAlign = ContentAlignment.MiddleLeft,
+                    Font = new System.Drawing.Font("Microsoft Sans Serif", 12, FontStyle.Bold),
+                    Padding = new Padding(15, 0, 0, 0)
+                };
+                headerPanel.Controls.Add(headerLabel);
+
+                // Search box for filtering
+                var searchBox = new TextBox
+                {
+                    Dock = DockStyle.Top,
+                    Height = 30,
+                    Margin = new Padding(10, 10, 10, 5),
+                    Font = new System.Drawing.Font("Microsoft Sans Serif", 9),
+                    Text = "Search Here..."
+                };
+
+                // Modern list view with checkboxes
+                var listView = new ListView
+                {
+                    Dock = DockStyle.Fill,
+                    CheckBoxes = true,
+                    View = View.Details,
+                    FullRowSelect = true,
+                    GridLines = false,
+                    MultiSelect = false,
+                    BorderStyle = BorderStyle.None,
+                    BackColor = SystemColors.Window
+                };
+
+                // Modern column headers
+                listView.Columns.Add("Market Watch Name", 300);
+                listView.Columns.Add("Path", 250);
+
+                // Add files to list view
+                foreach (string filePath in FileLists)
+                {
+                    if (filePath != saveFileName)
+                    {
+                        var item = new ListViewItem(Path.GetFileName(filePath));
+                        item.SubItems.Add(filePath);
+                        item.Tag = filePath; // Store full path in tag
+                        listView.Items.Add(item);
+                    }
+                }
+
+                if (listView.Items.Count == 0)
+                {
+                    MessageBox.Show("There is only one MarketWatch and that Open so can't Delete.", "Information",
+                             MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+                // Selection controls panel
+                var controlsPanel = new Panel
+                {
+                    Dock = DockStyle.Bottom,
+                    Height = 50,
+                    BackColor = Color.FromArgb(240, 240, 240)
+                };
+
+                // Modern flat buttons
+                var selectAllButton = new Button
+                {
+                    Text = "Select All",
+                    FlatStyle = FlatStyle.Flat,
+                    BackColor = Color.White,
+                    ForeColor = Color.FromArgb(0, 120, 215),
+                    Height = 30,
+                    Width = 120,
+                    Anchor = AnchorStyles.Left | AnchorStyles.Bottom,
+                    Margin = new Padding(10, 10, 0, 10)
+                };
+
+                var deleteButton = new Button
+                {
+                    Text = "Delete Selected",
+                    FlatStyle = FlatStyle.Flat,
+                    BackColor = Color.FromArgb(0, 120, 215),
+                    ForeColor = Color.White,
+                    Height = 30,
+                    Width = 120,
+                    Anchor = AnchorStyles.Right | AnchorStyles.Bottom,
+                    Margin = new Padding(0, 10, 90, 10)
+                };
+
+                var cancelButton = new Button
+                {
+                    Text = "Cancel",
+                    FlatStyle = FlatStyle.Flat,
+                    BackColor = Color.White,
+                    ForeColor = Color.FromArgb(0, 120, 215),
+                    Height = 30,
+                    Width = 80,
+                    Anchor = AnchorStyles.Right | AnchorStyles.Bottom,
+                    Margin = new Padding(0, 10, 10, 10)
+                };
+
+                // Button event handlers
+                selectAllButton.Click += (s, args) =>
+                {
+                    foreach (ListViewItem item in listView.Items)
+                    {
+                        item.Checked = true;
+                    }
+                };
+
+                cancelButton.Click += (s, args) => selectionForm.DialogResult = DialogResult.Cancel;
+
+                deleteButton.Click += (s, args) =>
+                {
+                    var selectedFiles = listView.CheckedItems.Cast<ListViewItem>()
+                                             .Select(item => item.Tag.ToString())
+                                             .ToList();
+
+                    if (selectedFiles.Count == 0)
+                    {
+                        MessageBox.Show("Please select at least one Market Watch to delete.",
+                                        "No Selection",
+                                        MessageBoxButtons.OK,
+                                        MessageBoxIcon.Information);
+                        return;
+                    }
+
+                    // Modern confirmation dialog
+                    var confirmResult = MessageBox.Show($"Are you sure you want to delete {selectedFiles.Count} Market Watch(s)?",
+                                                     "Confirm Deletion",
+                                                     MessageBoxButtons.YesNo,
+                                                     MessageBoxIcon.Warning,
+                                                     MessageBoxDefaultButton.Button2);
+
+                    if (confirmResult == DialogResult.Yes)
+                    {
+                        int successCount = 0;
+                        var failedDeletions = new List<string>();
+
+                        foreach (string filePath in selectedFiles)
+                        {
+                            if (saveFileName == filePath)
+                            {
+                                MessageBox.Show("Can't Delete Open MarketWatch", "Delete Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                return;
+                            }
+                            string fullpath = Path.Combine(AppFolder, username, $"{filePath}.slt");
+                            try
+                            {
+                                File.Delete(fullpath);
+                                successCount++;
+                                isdeleted = true;
+                            }
+                            catch (Exception ex)
+                            {
+                                failedDeletions.Add($"{Path.GetFileName(filePath)}: {ex.Message}");
+                                ApplicationLogger.LogException(ex);
+                            }
+                        }
+
+                        // Modern result display
+                        var resultMessage = new StringBuilder();
+                        resultMessage.AppendLine($"Successfully deleted {successCount} Market Watch(s).");
+
+                        if (failedDeletions.Count > 0)
+                        {
+                            resultMessage.AppendLine();
+                            resultMessage.AppendLine("The following files couldn't be deleted:");
+                            resultMessage.AppendLine(string.Join(Environment.NewLine, failedDeletions));
+                        }
+
+                        MessageBox.Show(resultMessage.ToString(),
+                                      "Deletion Results",
+                                      MessageBoxButtons.OK,
+                                      failedDeletions.Count > 0 ? MessageBoxIcon.Warning : MessageBoxIcon.Information);
+
+                        if (successCount > 0)
+                        {
+                            selectionForm.DialogResult = DialogResult.OK;
+                        }
+
+                        MenuLoad();
+                    }
+                };
+
+                // Search functionality
+                searchBox.TextChanged += (s, args) =>
+                {
+                    listView.BeginUpdate();
+                    listView.Items.Clear();
+
+                    foreach (string filePath in FileLists.Where(f =>
+                        Path.GetFileName(f).IndexOf(searchBox.Text, StringComparison.OrdinalIgnoreCase) >= 0))
+                    {
+                        var item = new ListViewItem(Path.GetFileName(filePath));
+                        item.SubItems.Add(filePath);
+                        item.Tag = filePath;
+                        listView.Items.Add(item);
+                    }
+
+                    listView.EndUpdate();
+                };
+
+                // Add controls to panels
+                controlsPanel.Controls.Add(selectAllButton);
+                controlsPanel.Controls.Add(deleteButton);
+                controlsPanel.Controls.Add(cancelButton);
+
+                // Add controls to form
+                selectionForm.Controls.Add(listView);
+                selectionForm.Controls.Add(searchBox);
+                selectionForm.Controls.Add(headerPanel);
+                selectionForm.Controls.Add(controlsPanel);
+
+                // Set form buttons
+                selectionForm.AcceptButton = deleteButton;
+                selectionForm.CancelButton = cancelButton;
+
+                // Show dialog
+                if (selectionForm.ShowDialog() == DialogResult.OK)
+                {
+                    saveFileName = null;
+                }
+            }
+        }
+
+        private void FullScreenF11ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (!isFullScreen)
+            {
+                // Store previous state
+                prevState = this.WindowState;
+                prevStyle = this.FormBorderStyle;
+                prevBounds = this.Bounds;
+
+                // Set up full screen
+                this.FormBorderStyle = FormBorderStyle.None;
+                this.TopMost = true;
+                System.Drawing.Rectangle full = Screen.GetBounds(this);
+                this.Bounds = full;
+                WinApi.SetFullScreen(this.Handle);
+
+                isFullScreen = true;
+
+                fullScreenF11ToolStripMenuItem.Text = "Exit Full Screen (Esc)";
+            }
+            else
+            {
+                // Restore previous layout
+                this.WindowState = prevState;
+                this.FormBorderStyle = prevStyle;
+                this.Bounds = prevBounds;
+                this.TopMost = false;
+
+                isFullScreen = false;
+
+                fullScreenF11ToolStripMenuItem.Text = "Full Screen (ESC)";
+            }
+        }
+
+        private void DefaultGrid_CellMouseDown(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Right && e.RowIndex >= 0 && e.ColumnIndex >= 0)
+            {
+                defaultGrid.ClearSelection();
+            }
+        }
+
+        private void DefaultGrid_CellMouseEnter(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex >= 0)
+            {
+                defaultGrid.Rows[e.RowIndex].DefaultCellStyle.BackColor = Color.FromArgb(245, 245, 245);
+            }
+        }
+
+        private void DefaultGrid_CellMouseLeave(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex >= 0)
+            {
+                if (e.RowIndex % 2 == 0)
+                    defaultGrid.Rows[e.RowIndex].DefaultCellStyle.BackColor = Color.White;
+                else
+                    defaultGrid.Rows[e.RowIndex].DefaultCellStyle.BackColor = Color.FromArgb(248, 248, 248);
+            }
+        }
+
+        private void Thecalcify_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Shift && e.KeyCode == Keys.Escape)
+            {
+                var result = MessageBox.Show("Do you want to Exit Application?", "Exit Application", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                if (result == DialogResult.Yes)
+                {
+                    this.Close(); // Close the login form
+                    System.Windows.Forms.Application.Exit(); // Terminate the application
+                }
+            }
+
+            if (e.Control && e.KeyCode == Keys.N && marketWatchViewMode != MarketWatchViewMode.New)
+            {
+                NewCTRLNToolStripMenuItem1_Click(this, EventArgs.Empty);
+                e.Handled = true;
+            }
+
+            //if (e.KeyCode == Keys.F11)
+            //{
+            //    FullScreenF11ToolStripMenuItem_Click(this, EventArgs.Empty);
+            //    e.Handled = true;
+            //}
+
+            if (e.KeyCode == Keys.Escape)
+            {
+                FullScreenF11ToolStripMenuItem_Click(this, EventArgs.Empty);
+                e.Handled = true;
+            }
+
+            if (e.KeyCode == Keys.U && e.Control)
+            {
+                aboutToolStripMenuItem_Click(this, EventArgs.Empty);
+                e.Handled = true;
+            }
+        }
+
+        private void TitleLabel_TextChanged(object sender, EventArgs e)
+        {
+            if (titleLabel != null)
+            {
+                if (titleLabel.Text.ToLower() == "new marketwatch")
+                {
+                    saveMarketWatchHost.Visible = true;
+                    saveMarketWatchHost.Text = "Save MarketWatch";
+                }
+                else
+                {
+                    saveMarketWatchHost.Visible = false;
+                }
+
+                txtsearch.Text = null;
+            }
+        }
+
+        private void DefaultGrid_DataSourceChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                //if (!_excelInitialized && !TryInitializeExcel())
+                //    return;
+
+                //// Clear entire sheet (Sheet1)
+                ////worksheet.Cells.Clear();
+
+                //// Get visible and exportable columns from the grid
+                //var exportableColumns = defaultGrid.Columns
+                //    .Cast<DataGridViewColumn>()
+                //    .Where(c => c.Visible && c.Name != "symbol" && c.Name != "V")
+                //    .OrderBy(c => c.DisplayIndex)
+                //    .ToList();
+
+                //// Write headers
+                //for (int i = 0; i < exportableColumns.Count; i++)
+                //{
+                //    worksheet.Cells[1, i + 1] = exportableColumns[i].HeaderText;
+                //}
+            }
+            catch (Exception ex)
+            {
+                ApplicationLogger.Log($"[DefaultGrid_DataSourceChanged] Stuck On : {ex.Message}");
+            }
+        }
+
+        private void AddEditColumnsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (panelAddSymbols != null && panelAddSymbols.Visible)
+                panelAddSymbols.Visible = false;
+
+            // Create panel if it hasn't been initialized yet
+            if (panelAddColumns == null)
+            {
+                // Initialize panel
+                panelAddColumns = new Panel
+                {
+                    Size = new System.Drawing.Size(500, 500),
+                    BackColor = Color.White,
+                    BorderStyle = BorderStyle.None,
+                    Visible = false,
+                    Padding = new Padding(20),
+                };
+
+                panelAddColumns.Paint += (s2, e2) =>
+                {
+                    ControlPaint.DrawBorder(e2.Graphics, panelAddColumns.ClientRectangle,
+                        Color.LightGray, 2, ButtonBorderStyle.Solid,
+                        Color.LightGray, 2, ButtonBorderStyle.Solid,
+                        Color.LightGray, 2, ButtonBorderStyle.Solid,
+                        Color.LightGray, 2, ButtonBorderStyle.Solid);
+                };
+
+                panelAddColumns.Location = new System.Drawing.Point(
+                    (this.Width - panelAddColumns.Width) / 2,
+                    (this.Height - panelAddColumns.Height) / 2
+                );
+
+                // Title label
+                Label titleLabel = new Label
+                {
+                    Text = "📊 Add / Edit Columns",
+                    Font = new System.Drawing.Font("Microsoft Sans Serif Semibold", 16, FontStyle.Bold),
+                    ForeColor = Color.FromArgb(50, 50, 50),
+                    Dock = DockStyle.Top,
+                    Height = 50,
+                    TextAlign = ContentAlignment.MiddleCenter,
+                    Padding = new Padding(0, 10, 0, 10)
+                };
+
+                // CheckedListBox
+                checkedListColumns = new CheckedListBox
+                {
+                    Height = 320,
+                    Dock = DockStyle.Top,
+                    Font = new System.Drawing.Font("Microsoft Sans Serif", 10),
+                    BorderStyle = BorderStyle.FixedSingle,
+                    CheckOnClick = true,
+                    BackColor = Color.White
+                };
+
+                // Add Spacer Panel for spacing
+                Panel spacerPanel = new Panel
+                {
+                    Height = 10, // Adjust height as needed
+                    Dock = DockStyle.Top
+                };
+
+                // Button container
+                Panel buttonPanel = new Panel
+                {
+                    Height = 80,
+                    Dock = DockStyle.Bottom,
+                    Padding = new Padding(10),
+                    BackColor = Color.White
+                };
+
+                // Buttons
+                btnSelectAllColumns = new Button
+                {
+                    Text = "Select All",
+                    Height = 40,
+                    Width = 120,
+                    BackColor = Color.FromArgb(0, 122, 204),
+                    ForeColor = Color.White,
+                    FlatStyle = FlatStyle.Flat,
+                    Font = new System.Drawing.Font("Microsoft Sans Serif", 10, FontStyle.Bold),
+                    Cursor = Cursors.Hand
+                };
+                btnSelectAllColumns.FlatAppearance.BorderSize = 0;
+
+                btnConfirmAddColumns = new Button
+                {
+                    Text = "✔ Save",
+                    Height = 40,
+                    Width = 120,
+                    BackColor = Color.FromArgb(0, 122, 204),
+                    ForeColor = Color.White,
+                    FlatStyle = FlatStyle.Flat,
+                    Font = new System.Drawing.Font("Microsoft Sans Serif", 10, FontStyle.Bold),
+                    Cursor = Cursors.Hand
+                };
+                btnConfirmAddColumns.FlatAppearance.BorderSize = 0;
+
+                btnCancelAddColumns = new Button
+                {
+                    Text = "✖ Cancel",
+                    Height = 40,
+                    Width = 120,
+                    BackColor = Color.LightGray,
+                    ForeColor = Color.Black,
+                    FlatStyle = FlatStyle.Flat,
+                    Font = new System.Drawing.Font("Microsoft Sans Serif", 10, FontStyle.Bold),
+                    Cursor = Cursors.Hand
+                };
+                btnCancelAddColumns.FlatAppearance.BorderSize = 0;
+
+                // Layout
+                btnSelectAllColumns.Location = new System.Drawing.Point(30, 22);
+                btnConfirmAddColumns.Location = new System.Drawing.Point(170, 22);
+                btnCancelAddColumns.Location = new System.Drawing.Point(310, 22);
+
+                buttonPanel.Controls.Add(btnSelectAllColumns);
+                buttonPanel.Controls.Add(btnConfirmAddColumns);
+                buttonPanel.Controls.Add(btnCancelAddColumns);
+
+                panelAddColumns.Controls.Add(checkedListColumns);
+                panelAddColumns.Controls.Add(spacerPanel);
+                panelAddColumns.Controls.Add(buttonPanel);
+                panelAddColumns.Controls.Add(titleLabel);
+
+                this.Controls.Add(panelAddColumns);
+
+                this.Resize += (s3, e3) =>
+                {
+                    panelAddColumns.Location = new System.Drawing.Point(
+                        (this.Width - panelAddColumns.Width) / 2,
+                        (this.Height - panelAddColumns.Height) / 2
+                    );
+                };
+
+                // Hook up events
+                btnSelectAllColumns.Click += (s, e2) =>
+                {
+                    bool allChecked = true;
+                    for (int i = 0; i < checkedListColumns.Items.Count; i++)
+                    {
+                        if (!checkedListColumns.GetItemChecked(i))
+                        {
+                            allChecked = false;
+                            break;
+                        }
+                    }
+
+                    bool check = !allChecked;
+                    btnSelectAllColumns.Text = check ? "Unselect All" : "Select All";
+
+                    for (int i = 0; i < checkedListColumns.Items.Count; i++)
+                    {
+                        checkedListColumns.SetItemChecked(i, check);
+                    }
+                };
+
+                btnConfirmAddColumns.Click += (s, e2) =>
+                {
+                    var currentlyChecked = checkedListColumns.CheckedItems.Cast<string>().ToList();
+                    var previouslySelected = columnPreferences.Count > 0 ? columnPreferences : columnPreferencesDefault;
+
+                    if (!currentlyChecked.Any())
+                    {
+                        MessageBox.Show("Please select at least one column.");
+                        return;
+                    }
+
+                    if (currentlyChecked.SequenceEqual(previouslySelected))
+                    {
+                        MessageBox.Show("No changes made.");
+                        panelAddColumns.Visible = false;
+                        return;
+                    }
+
+                    // Save the new column preferences
+                    columnPreferences = currentlyChecked;
+
+                    // Make sure Symbol column is always visible in the grid
+                    if (!columnPreferences.Contains("symbol"))
+                    {
+                        columnPreferences.Add("symbol");
+                        columnPreferences.Add("V");
+                    }
+
+                    InitializeDataGridView();
+
+                    // Update DataGridView column visibility
+                    foreach (DataGridViewColumn column in defaultGrid.Columns)
+                    {
+                        if (column.Name.ToLower() == "symbol" || column.Name.ToLower() == "v")
+                        {
+                            column.Visible = false;
+                        }
+                        else
+                        {
+                            column.Visible = columnPreferences.Contains(column.Name);
+                        }
+                    }
+
+                    panelAddColumns.Visible = false;
+
+                    DefaultGrid_DataSourceChanged(sender, EventArgs.Empty);
+                    //MessageBox.Show("Columns updated successfully!");
+                };
+
+                btnCancelAddColumns.Click += (s, e2) =>
+                {
+                    panelAddColumns.Visible = false;
+                };
+            }
+
+            // Refresh items before showing
+            checkedListColumns.Items.Clear();
+
+            // Get the columns to display (use allColumns if no preferences set)
+            var columnsToShow = columnPreferences.Count > 0 ? columnPreferences : columnPreferencesDefault;
+
+            // Add selected columns first (preserving order)
+            foreach (string column in columnPreferencesDefault)
+            {
+                if (columnsToShow.Contains(column) && column != "symbol" && column != "V")
+                {
+                    checkedListColumns.Items.Add(column, true);
+                }
+            }
+
+            // Then add unselected columns
+            foreach (string column in columnPreferencesDefault)
+            {
+                if (!columnsToShow.Contains(column) && column != "symbol" && column != "V")
+                {
+                    checkedListColumns.Items.Add(column, false);
+                }
+            }
+
+            // Update Select All button text
+            btnSelectAllColumns.Text = checkedListColumns.CheckedItems.Count == checkedListColumns.Items.Count
+                ? "Unselect All"
+                : "Select All";
+
+            // Make sure Symbol column is always visible in the grid
+            if (!columnPreferences.Contains("symbol"))
+            {
+                columnPreferences.Add("symbol");
+                columnPreferences.Add("V");
+            }
+
+            // Update DataGridView column visibility to ensure Symbol & V are always visible
+            foreach (DataGridViewColumn column in defaultGrid.Columns)
+            {
+                if (column.Name == "symbol" || column.Name == "V")
+                {
+                    column.Visible = false;
+                }
+                //else
+                //{
+                //    column.Visible = columnPreferences.Contains(column.Name) ? true : false;
+                //}
+            }
+
+            panelAddColumns.Visible = true;
+            panelAddColumns.BringToFront();
+        }
+
+        private void AddEditSymbolsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (panelAddColumns != null && panelAddColumns.Visible)
+                panelAddColumns.Visible = false;
+
+            // Create panel if it hasn't been initialized yet
+            if (panelAddSymbols == null)
+            {
+                // Initialize panel
+                panelAddSymbols = new Panel
+                {
+                    Size = new System.Drawing.Size(500, 500),
+                    BackColor = Color.White,
+                    BorderStyle = BorderStyle.None,
+                    Visible = false,
+                    Padding = new Padding(20),
+                };
+
+                panelAddSymbols.Paint += (s2, e2) =>
+                {
+                    ControlPaint.DrawBorder(e2.Graphics, panelAddSymbols.ClientRectangle,
+                        Color.LightGray, 2, ButtonBorderStyle.Solid,
+                        Color.LightGray, 2, ButtonBorderStyle.Solid,
+                        Color.LightGray, 2, ButtonBorderStyle.Solid,
+                        Color.LightGray, 2, ButtonBorderStyle.Solid);
+                };
+
+                panelAddSymbols.Location = new System.Drawing.Point(
+                    (this.Width - panelAddSymbols.Width) / 2,
+                    (this.Height - panelAddSymbols.Height) / 2
+                );
+
+                // Title label
+                Label titleLabel = new Label
+                {
+                    Text = "🔄 Add / Edit Symbols",
+                    Font = new System.Drawing.Font("Microsoft Sans Serif Semibold", 16, FontStyle.Bold),
+                    ForeColor = Color.FromArgb(50, 50, 50),
+                    Dock = DockStyle.Top,
+                    Height = 50,
+                    TextAlign = ContentAlignment.MiddleCenter,
+                    Padding = new Padding(0, 10, 0, 10)
+                };
+
+                // CheckedListBox
+                checkedListSymbols = new CheckedListBox
+                {
+                    Height = 320,
+                    Dock = DockStyle.Top,
+                    Font = new System.Drawing.Font("Microsoft Sans Serif", 10),
+                    BorderStyle = BorderStyle.FixedSingle,
+                    CheckOnClick = true,
+                    BackColor = Color.White
+                };
+
+                // Button container
+                Panel buttonPanel = new Panel
+                {
+                    Height = 80,
+                    Dock = DockStyle.Bottom,
+                    Padding = new Padding(10),
+                    BackColor = Color.White
+                };
+
+                // Buttons
+                btnSelectAllSymbols = new Button
+                {
+                    Text = "Select All",
+                    Height = 40,
+                    Width = 120,
+                    BackColor = Color.FromArgb(0, 122, 204),
+                    ForeColor = Color.White,
+                    FlatStyle = FlatStyle.Flat,
+                    Font = new System.Drawing.Font("Microsoft Sans Serif", 10, FontStyle.Bold),
+                    Cursor = Cursors.Hand
+                };
+                btnSelectAllSymbols.FlatAppearance.BorderSize = 0;
+
+                btnConfirmAddSymbols = new Button
+                {
+                    Text = "✔ Save",
+                    Height = 40,
+                    Width = 120,
+                    BackColor = Color.FromArgb(0, 122, 204),
+                    ForeColor = Color.White,
+                    FlatStyle = FlatStyle.Flat,
+                    Font = new System.Drawing.Font("Microsoft Sans Serif", 10, FontStyle.Bold),
+                    Cursor = Cursors.Hand
+                };
+                btnConfirmAddSymbols.FlatAppearance.BorderSize = 0;
+
+                btnCancelAddSymbols = new Button
+                {
+                    Text = "✖ Cancel",
+                    Height = 40,
+                    Width = 120,
+                    BackColor = Color.LightGray,
+                    ForeColor = Color.Black,
+                    FlatStyle = FlatStyle.Flat,
+                    Font = new System.Drawing.Font("Microsoft Sans Serif", 10, FontStyle.Bold),
+                    Cursor = Cursors.Hand
+                };
+                btnCancelAddSymbols.FlatAppearance.BorderSize = 0;
+
+                // Layout
+                btnSelectAllSymbols.Location = new System.Drawing.Point(30, 35);
+                btnConfirmAddSymbols.Location = new System.Drawing.Point(170, 35);
+                btnCancelAddSymbols.Location = new System.Drawing.Point(310, 35);
+
+                titleLabel.Dock = DockStyle.Top;
+                checkedListSymbols.Dock = DockStyle.Fill; // So it takes remaining space
+                buttonPanel.Dock = DockStyle.Bottom;
+
+                buttonPanel.Controls.Add(btnSelectAllSymbols);
+                buttonPanel.Controls.Add(btnConfirmAddSymbols);
+                buttonPanel.Controls.Add(btnCancelAddSymbols);
+
+                panelAddSymbols.Controls.Add(buttonPanel);  // bottom first
+                panelAddSymbols.Controls.Add(checkedListSymbols); // middle
+                panelAddSymbols.Controls.Add(titleLabel);   // top last
+
+                this.Controls.Add(panelAddSymbols);
+
+                this.Resize += (s3, e3) =>
+                {
+                    panelAddSymbols.Location = new System.Drawing.Point(
+                        (this.Width - panelAddSymbols.Width) / 2,
+                        (this.Height - panelAddSymbols.Height) / 2
+                    );
+                };
+
+                // Hook up events
+
+                btnSelectAllSymbols.Click += (s, e2) =>
+                {
+                    bool allChecked = true;
+                    for (int i = 0; i < checkedListSymbols.Items.Count; i++)
+                    {
+                        if (!checkedListSymbols.GetItemChecked(i))
+                        {
+                            allChecked = false;
+                            break;
+                        }
+                    }
+
+                    bool check = !allChecked;
+                    btnSelectAllSymbols.Text = check ? "Unselect All" : "Select All";
+
+                    for (int i = 0; i < checkedListSymbols.Items.Count; i++)
+                    {
+                        checkedListSymbols.SetItemChecked(i, check);
+                    }
+                };
+
+                btnConfirmAddSymbols.Click += async (s, e2) =>
+                {
+                    // Get the checked display names (SymbolName)
+                    var currentlyCheckedNames = checkedListSymbols.CheckedItems.Cast<string>().ToList();
+
+                    // If nothing is selected
+                    if (!currentlyCheckedNames.Any())
+                    {
+                        MessageBox.Show("Please select at least one symbol to confirm.", "No Selection", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        return;
+                    }
+
+                    // Map checked names back to their symbols
+                    var currentlyCheckedSymbols = SymbolName
+                        .Where(x => currentlyCheckedNames.Contains(x.SymbolName))
+                        .Select(x => x.Symbol)
+                        .ToList();
+
+                    // Compare with previous selection
+                    var previouslySelected = selectedSymbols;
+
+                    var addedSymbols = currentlyCheckedSymbols.Except(previouslySelected).ToList();
+                    var removedSymbols = previouslySelected.Except(currentlyCheckedSymbols).ToList();
+
+                    if (!addedSymbols.Any() && !removedSymbols.Any())
+                    {
+                        MessageBox.Show("No changes made.");
+                        return;
+                    }
+
+                    // Save changes
+                    EditableMarketWatchGrid editableMarketWatchGrid = EditableMarketWatchGrid.CurrentInstance ?? new EditableMarketWatchGrid();
+                    editableMarketWatchGrid.isGrid = false;
+                    editableMarketWatchGrid.saveFileName = saveFileName;
+                    editableMarketWatchGrid.username = username;
+                    selectedSymbols = currentlyCheckedSymbols;
+                    editableMarketWatchGrid.SaveSymbols(selectedSymbols);
+                    identifiers = selectedSymbols;
+                    BeginInvoke((MethodInvoker)(() =>
+                    {
+                        InitializeDataGridView();
+                    }));
+                    await LoadInitialMarketDataAsync();
+                    await SignalREvent();
+
+                    panelAddSymbols.Visible = false;
+                };
+
+                btnCancelAddSymbols.Click += (s, e2) =>
+                {
+                    panelAddSymbols.Visible = false;
+                };
+            }
+
+            // Refresh items before showing
+            checkedListSymbols.Items.Clear();
+
+            // Add selected symbols first
+            foreach (var item in SymbolName)
+            {
+                if (identifiers.Contains(item.Symbol))
+                {
+                    checkedListSymbols.Items.Add(item.SymbolName, true); // Display symbol name
+                }
+            }
+
+            // Then unselected symbols
+            foreach (var item in SymbolName)
+            {
+                if (!identifiers.Contains(item.Symbol))
+                {
+                    checkedListSymbols.Items.Add(item.SymbolName, false);
+                }
+            }
+
+            panelAddSymbols.Visible = true;
+            panelAddSymbols.BringToFront();
+        }
+
+
+
+        private void DefaultGrid_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
+        {
+            // Force-hide specific columns
+            if (defaultGrid.Columns.Contains("symbol"))
+                defaultGrid.Columns["symbol"].Visible = false;
+            if (defaultGrid.Columns.Contains("V"))
+                defaultGrid.Columns["V"].Visible = false;
+        }
+
+        private void DefaultGrid_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        {
+            if (e.Value?.ToString() == "N/A")
+                e.CellStyle.ForeColor = Color.Gray;
+        }
+
+        private void OnNetworkAvailabilityChanged(object sender, NetworkAvailabilityEventArgs e)
+        {
+            if (e.IsAvailable)
+                _ = AttemptReconnectAsync("Network availability restored.");
+            else
+                ApplicationLogger.Log("Network unavailable.");
+        }
+
+        private void OnNetworkAddressChanged(object sender, EventArgs e)
+        {
+            _ = AttemptReconnectAsync("Network address changed.");
+        }
+
+        private void OnPowerModeChanged(object sender, PowerModeChangedEventArgs e)
+        {
+            if (e.Mode == PowerModes.Resume)
+                _ = AttemptReconnectAsync("System resumed from sleep/hibernate.");
+        }
+        #endregion
 
         #region SignalR Methods
 
@@ -925,70 +1960,6 @@ namespace thecalcify
             return false;
         }
 
-        //private void UpdateRowValue(DataRow row, string columnName, object value)
-        //{
-        //    if (!row.Table.Columns.Contains(columnName)) return;
-
-        //    try
-        //    {
-        //        var currentValue = row[columnName];
-
-        //        // Default: keep original value (e.g., "--", "N/A", "text") unless it's null
-        //        var newValue = value ?? "";
-
-        //        // If it's a numeric column, try to parse the value
-        //        if (IsNumericColumn(columnName))
-        //        {
-        //            try
-        //            {
-        //                // Only parse if it's not "--" or empty
-        //                if (value is string s &&
-        //                s != "--" &&
-        //                !string.IsNullOrWhiteSpace(s) &&
-        //                decimal.TryParse(s, NumberStyles.Any, CultureInfo.InvariantCulture, out decimal decimalValue))
-        //                {
-        //                    newValue = decimalValue;
-        //                }
-        //            }
-        //            catch (Exception ex)
-        //            {
-        //                Console.WriteLine("Error parsing rate value at UpdateRowValue: " + ex.Message);
-        //            }
-        //        }
-
-        //        // Update only if changed
-        //        if (!object.Equals(currentValue, newValue))
-        //        {
-        //            row[columnName] = newValue;
-        //        }
-        //    }
-        //    catch
-        //    {
-        //        // Fallback: set raw value
-        //        row[columnName] = value ?? "";
-        //    }
-        //}
-
-        //private bool IsNumericColumn(string columnName)
-        //{
-        //    return columnName == "Bid" ||
-        //           columnName == "Ask" ||
-        //           columnName == "LTP" ||
-        //           columnName == "High" ||
-        //           columnName == "Low" ||
-        //           columnName == "Open" ||
-        //           columnName == "Close" ||
-        //           columnName == "Net Chng" ||
-        //           columnName == "ATP" ||
-        //           columnName == "Bid Size" ||
-        //           columnName == "Total Bid Size" ||
-        //           columnName == "Ask Size" ||
-        //           columnName == "Total Ask Size" ||
-        //           columnName == "Volume" ||
-        //           columnName == "Open Interest" ||
-        //           columnName == "Last Size";
-        //}
-
         private void DisconnectESCToolStripMenuItem_Click(object sender, EventArgs e)
         {
             try
@@ -1052,7 +2023,7 @@ namespace thecalcify
                     signalRTimer = null;
                 }
             }
-            catch (ObjectDisposedException ex)
+            catch (ObjectDisposedException)
             {
                 // Already disposed, safe to ignore or log once
                 Console.WriteLine("SignalR connection was already disposed.");
@@ -1116,8 +2087,6 @@ namespace thecalcify
                     if (resultdefault?.data != null)
                     {
 
-                        SaveInitDataToFile(resultdefault.data);
-
                         // Filter out instruments not in the valid list
                         this.Invoke((MethodInvoker)delegate
                         {
@@ -1142,6 +2111,8 @@ namespace thecalcify
                             resultdefault.data = resultdefault.data
                                 .Where(x => identifiers.Contains(x.i))
                                 .ToList();
+
+                            SaveInitDataToFile(resultdefault.data);
 
                             ApplyBatchUpdates(resultdefault.data);
                         });
@@ -1281,40 +2252,6 @@ namespace thecalcify
             defaultGrid.ResumeLayout();
         }
 
-        private void DefaultGrid_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
-        {
-            // Force-hide specific columns
-            if (defaultGrid.Columns.Contains("symbol"))
-                defaultGrid.Columns["symbol"].Visible = false;
-            if (defaultGrid.Columns.Contains("V"))
-                defaultGrid.Columns["V"].Visible = false;
-        }
-
-        private void DefaultGrid_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
-        {
-            if (e.Value?.ToString() == "N/A")
-                e.CellStyle.ForeColor = Color.Gray;
-        }
-
-        private void OnNetworkAvailabilityChanged(object sender, NetworkAvailabilityEventArgs e)
-        {
-            if (e.IsAvailable)
-                _ = AttemptReconnectAsync("Network availability restored.");
-            else
-                ApplicationLogger.Log("Network unavailable.");
-        }
-
-        private void OnNetworkAddressChanged(object sender, EventArgs e)
-        {
-            _ = AttemptReconnectAsync("Network address changed.");
-        }
-
-        private void OnPowerModeChanged(object sender, PowerModeChangedEventArgs e)
-        {
-            if (e.Mode == PowerModes.Resume)
-                _ = AttemptReconnectAsync("System resumed from sleep/hibernate.");
-        }
-
         private async Task AttemptReconnectAsync(string reason)
         {
             lock (_reconnectLock)
@@ -1335,7 +2272,7 @@ namespace thecalcify
                     connection.On<string>("excelRate", OnExcelRateReceived);
                 }
 
-                if (connection.State != HubConnectionState.Connected)
+                if (connection.State == HubConnectionState.Disconnected)
                 {
                     await connection.StartAsync();
                     await connection.InvokeAsync("SubscribeSymbols", identifiers);
@@ -1345,29 +2282,6 @@ namespace thecalcify
             catch (Exception ex)
             {
                 ApplicationLogger.Log($"Reconnect failed: {ex.Message}");
-            }
-        }
-
-        private void ResizeDataGridToFitWindow()
-        {
-            if (_isResizing) return;
-
-            try
-            {
-                _isResizing = true;
-
-                int availableHeight = this.ClientSize.Height;
-                int availableWidth = this.ClientSize.Width;
-
-                if (menuStrip1 != null)
-                    availableHeight -= menuStrip1.Height;
-
-                defaultGrid.Location = new System.Drawing.Point(0, menuStrip1?.Height ?? 0);
-                defaultGrid.Size = new Size(availableWidth, availableHeight);
-            }
-            finally
-            {
-                _isResizing = false;
             }
         }
 
@@ -1381,100 +2295,83 @@ namespace thecalcify
             {
                 ExportToExcelToolStripMenuItem.Enabled = false;
 
-                MapRegAsm();
-
-                excelApp = new Excel.Application();
-                if (excelApp == null)
-                {
-                    MessageBox.Show("Excel is not installed on your machine.");
-                    return;
-                }
+                MapRegAsm(); // Still needed for RTD
+                KillProcess();
 
                 string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
                 string destExcelPath = Path.Combine(desktopPath, "thecalcify.xlsx");
 
-                // Copy template Excel file
-                if (File.Exists(excelFilePath))
+                // Copy template if not exists
+                if (File.Exists(excelFilePath) && !File.Exists(destExcelPath))
                 {
-                    if (!File.Exists(destExcelPath))
-                        File.Copy(excelFilePath, destExcelPath);
-
+                    File.Copy(excelFilePath, destExcelPath);
                 }
 
-                // Load data
+                // Load encrypted data
                 if (!File.Exists(marketInitDataPath))
                 {
                     MessageBox.Show("initdata.dat not found.");
                     return;
                 }
 
-                //ClearExcelSheet(destExcelPath);
-
                 string cipherText = File.ReadAllText(marketInitDataPath);
                 string json = CryptoHelper.Decrypt(cipherText, EditableMarketWatchGrid.passphrase);
-
                 var dict = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, object>>>(json);
 
-                // Open workbook
-                Excel.Workbook workbook = excelApp.Workbooks.Open(destExcelPath);
-                Excel._Worksheet worksheet = workbook.Sheets[1];
-                worksheet.Unprotect("thecalcify");
-
-                // Create formula map
+                // Build formula list
                 List<ExcelFormulaCell> formulaCells = BuildFormulaCells(dict);
 
-                // Write to Excel
-                foreach (var cell in formulaCells)
+                // ✅ Use ClosedXML to update Excel
+                using (var workbook = new XLWorkbook(destExcelPath))
                 {
-                    worksheet.Cells[cell.Row, cell.Column].Formula = cell.Formula;
+                    var worksheet = workbook.Worksheet("Sheet1");
+
+                    // Unprotect if already protected
+                    if (worksheet.Protection.IsProtected)
+                    {
+                        worksheet.Unprotect("thecalcify");
+                    }
+
+                    // Clear all existing content on Sheet1
+                    worksheet.Clear();
+
+                    // Build formula data
+
+                    foreach (var cell in formulaCells)
+                    {
+                        var xlCell = worksheet.Cell(cell.Row, cell.Column);
+                        //xlCell.Style.Protection.SetLocked(true); // Lock the cell
+
+                        if (cell.Row == 1 || cell.Column == 1)
+                        {
+                            xlCell.Value = cell.Formula; // Value
+                        }
+                        else
+                        {
+                            xlCell.FormulaA1 = cell.Formula; // RTD Formula
+                        }
+                    }
+
+
+                    // Finally, protect the sheet
+                    //worksheet.Protect("thecalcify");
+
+                    workbook.Save();
                 }
 
-                excelApp.EnableAnimations = true;
-
-                // 🔒 Protect only Sheet1 (all cells locked)
-                worksheet.Cells.Locked = true;
-                worksheet.Protect(
-                    DrawingObjects: true,
-                    Contents: true,
-                    Password: "thecalcify",
-                    Scenarios: true,
-                    AllowFormattingCells: false,
-                    AllowFormattingColumns: false,
-                    AllowFormattingRows: false,
-                    AllowInsertingColumns: false,
-                    AllowInsertingRows: false,
-                    AllowDeletingColumns: false,
-                    AllowDeletingRows: false,
-                    AllowSorting: false,
-                    AllowFiltering: false,
-                    AllowUsingPivotTables: false
-                );
-
-                workbook.Save();
-                workbook.Close(false);
-                Marshal.ReleaseComObject(worksheet);
-                Marshal.ReleaseComObject(workbook);
-                Marshal.ReleaseComObject(excelApp);
-
-                // Open Excel as admin
-                var psi = new ProcessStartInfo
-                {
-                    FileName = "excel.exe",
-                    Arguments = $"\"{destExcelPath}\"",
-                    Verb = "runas",
-                    UseShellExecute = true
-                };
-                Process.Start(psi);
+                var excelApp = new Microsoft.Office.Interop.Excel.Application();
+                excelApp.Visible = true;
+                excelApp.Workbooks.Open(destExcelPath);
             }
-            catch (IOException IOExcetion)
+            catch (IOException ioEx)
             {
-                MessageBox.Show("File Is Already Open Please Check Open File and needed Repoen Close Existing one...", "Export File", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                ApplicationLogger.LogException(IOExcetion);
+                MessageBox.Show("File is already open. Please close it and retry.", "Export File", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                ApplicationLogger.LogException(ioEx);
                 KillProcess();
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Please Retry to Open file We facing some issue...");
+                MessageBox.Show("An error occurred while exporting. Please retry.");
                 ApplicationLogger.LogException(ex);
                 KillProcess();
             }
@@ -1484,103 +2381,16 @@ namespace thecalcify
             }
         }
 
-        private void ClearExcelToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-            string destExcelPath = Path.Combine(desktopPath, "thecalcify.xlsx");
-
-            ClearExcelSheet(destExcelPath);
-        }
-
-        private void ClearExcelSheet(string destExcelPath)
-        {
-            Excel.Workbook workbook = null;
-            Excel.Worksheet worksheet = null;
-
-            try
-            {
-
-                if (excelApp == null)
-                    MessageBox.Show("Can't Clear Excel");
-
-                workbook = excelApp.Workbooks.Open(destExcelPath);
-
-                if (workbook.Sheets.Count < 1)
-                    throw new Exception("Workbook has no sheets.");
-
-                worksheet = workbook.Sheets[1] as Excel.Worksheet;
-
-                if (worksheet == null)
-                    throw new Exception("Could not access worksheet.");
-
-                // Unprotect first
-                worksheet.Unprotect("thecalcify");
-
-                string a1Value = worksheet.Cells[1, 1].Value2?.ToString();
-
-                // Clear the entire worksheet
-                worksheet.Cells.ClearContents();
-
-                // Restore A1
-                worksheet.Cells[1, 1].Value2 = a1Value;
-
-
-                // Lock all cells
-                worksheet.Cells.Locked = true;
-
-                // Protect sheet with specific options
-                worksheet.Protect(
-                    Password: "thecalcify",
-                    DrawingObjects: true,
-                    Contents: true,
-                    Scenarios: true,
-                    AllowFormattingCells: false,
-                    AllowFormattingColumns: false,
-                    AllowFormattingRows: false,
-                    AllowInsertingColumns: false,
-                    AllowInsertingRows: false,
-                    AllowDeletingColumns: false,
-                    AllowDeletingRows: false,
-                    AllowSorting: false,
-                    AllowFiltering: false,
-                    AllowUsingPivotTables: false
-                );
-
-                // Save and close
-                workbook.Save();
-            }
-            catch (Exception ex)
-            {
-                ApplicationLogger.LogException(ex);
-                MessageBox.Show($"[Excel Face Issue] :- {ex.Message}");
-            }
-            finally
-            {
-
-                // Cleanup COM objects to avoid memory leaks
-                if (worksheet != null)
-                {
-                    Marshal.ReleaseComObject(worksheet);
-                    worksheet = null;
-                }
-
-                if (workbook != null)
-                {
-                    workbook.Close(false);
-                    Marshal.ReleaseComObject(workbook);
-                    workbook = null;
-                }
-
-                // Optional GC to force cleanup
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-            }
-        }
-
-
         private List<ExcelFormulaCell> BuildFormulaCells(Dictionary<string, Dictionary<string, object>> dict)
         {
             var formulaCells = new List<ExcelFormulaCell>();
+
+            formulaCells.Add(new ExcelFormulaCell
+            {
+                Row = 1,
+                Column = 1,
+                Formula = "Name"
+            });
 
             int startRow = 2; // Row 1 = header
             int startCol = 2; // Column A = symbol name
@@ -1740,7 +2550,7 @@ namespace thecalcify
 
         private bool IsExcel64Bit(out string officeVersion)
         {
-            officeVersion = "16.0"; // Default fallback
+            officeVersion = "16.0"; // Default to Office 2016/2019/365
 
             try
             {
@@ -1754,10 +2564,19 @@ namespace thecalcify
                     }
                 }
 
-                // Determine installed Excel bitness by checking registry
+                // Swtich to another method if not found
                 string bitness = Registry.GetValue(
-                    @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Office\" + officeVersion + @"\Outlook", "Bitness", null
+                   @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Office\ClickToRun\Configuration", "Platform", null
                 ) as string;
+
+                if (string.IsNullOrEmpty(bitness))
+                {
+                    // Determine installed Excel 64 bitness by checking registry
+                    bitness = Registry.GetValue(
+                        @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Office\" + officeVersion + @"\Outlook", "Bitness", null
+                    ) as string;
+                }
+                
 
                 if (string.IsNullOrEmpty(bitness))
                 {
@@ -1776,324 +2595,9 @@ namespace thecalcify
             }
         }
 
-        public void ExportExcelOnClick()
-        {
-            Thread excelThread = new Thread(() =>
-            {
-                try
-                {
-                    string folderPath = Path.GetDirectoryName(excelFilePath);
-                    if (!Directory.Exists(folderPath))
-                        Directory.CreateDirectory(folderPath);
+        #endregion
 
-                    // Get visible and exportable columns from the grid
-                    var exportableColumns = defaultGrid.Columns
-                        .Cast<DataGridViewColumn>()
-                        .Where(c => c.Visible && c.Name != "symbol" && c.Name != "V")
-                        .OrderBy(c => c.DisplayIndex)
-                        .ToList();
-
-                    if (!File.Exists(excelFilePath))
-                    {
-                        excelApp = new Excel.Application
-                        {
-                            Visible = false,
-                            DisplayAlerts = false
-                        };
-
-                        workbook = excelApp.Workbooks.Add();
-                        worksheet = (Excel.Worksheet)workbook.Sheets[1];
-                        worksheet.Name = "Sheet1";
-
-                        // Write headers
-                        for (int i = 0; i < exportableColumns.Count; i++)
-                        {
-                            worksheet.Cells[1, i + 1] = exportableColumns[i].HeaderText;
-                        }
-
-                        workbook.SaveAs(excelFilePath, Excel.XlFileFormat.xlOpenXMLWorkbook);
-                        workbook.Close(false);
-                        excelApp.Quit();
-
-                        ReleaseExcelObjects(worksheet, workbook, excelApp);
-
-                        worksheet = null;
-                        workbook = null;
-                        excelApp = null;
-
-                        GC.Collect();
-                        GC.WaitForPendingFinalizers();
-                    }
-
-                    EnsureFullFolderAccess(folderPath);
-                    commonClass.CreateShortCut(excelFilePath);
-
-                    excelApp = new Excel.Application
-                    {
-                        Visible = false,
-                        DisplayAlerts = false,
-                        UserControl = true
-                    };
-
-                    workbook = excelApp.Workbooks.Open(excelFilePath);
-                    worksheet = workbook.Sheets[1] as Excel.Worksheet;
-
-                    if (worksheet == null)
-                        worksheet = (Excel.Worksheet)workbook.Sheets[1];
-
-                    // Write headers (overwrite)
-                    for (int i = 0; i < exportableColumns.Count; i++)
-                    {
-                        worksheet.Cells[1, i + 1] = exportableColumns[i].HeaderText;
-                    }
-
-                    int rowCount = defaultGrid.Rows.Count;
-                    int colCount = exportableColumns.Count;
-                    object[,] dataArray = new object[rowCount, colCount];
-
-                    for (int r = 0; r < rowCount; r++)
-                    {
-                        var gridRow = defaultGrid.Rows[r];
-                        for (int c = 0; c < colCount; c++)
-                        {
-                            var col = exportableColumns[c];
-                            dataArray[r, c] = gridRow.Cells[col.Name].Value ?? "--";
-                        }
-                    }
-
-                    Excel.Range startCell = worksheet.Cells[2, 1];
-                    Excel.Range endCell = worksheet.Cells[rowCount + 1, colCount];
-                    Excel.Range writeRange = worksheet.Range[startCell, endCell];
-                    writeRange.Value2 = dataArray;
-
-                    workbook.Save();
-
-                    // Optional: Show Excel
-                    excelApp.Visible = true;
-                    excelApp.WindowState = Excel.XlWindowState.xlMaximized;
-                }
-                catch (Exception ex)
-                {
-                    ApplicationLogger.Log($"Error accessing Excel instance ExportExcelOnClick: {ex.Message}\n{ex.StackTrace}");
-                }
-            });
-
-            excelThread.SetApartmentState(ApartmentState.STA);
-            excelThread.Start();
-        }
-
-        private void ReleaseExcelObjects(params object[] comObjects)
-        {
-            foreach (var obj in comObjects)
-            {
-                if (obj != null)
-                {
-                    try
-                    {
-                        while (Marshal.ReleaseComObject(obj) > 0) { }
-                    }
-                    catch (Exception ex)
-                    {
-                        ApplicationLogger.Log($"[COM Release Error] {ex.Message}");
-                    }
-                }
-            }
-
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-        }
-
-        private void EnsureFullFolderAccess(string folderPath)
-        {
-            var dirInfo = new DirectoryInfo(folderPath);
-            var dirSecurity = dirInfo.GetAccessControl();
-
-            var accessRule = new FileSystemAccessRule(
-                new SecurityIdentifier(WellKnownSidType.WorldSid, null),
-                FileSystemRights.FullControl,
-                InheritanceFlags.ContainerInherit | InheritanceFlags.ObjectInherit,
-                PropagationFlags.None,
-                AccessControlType.Allow
-            );
-
-            if (dirSecurity.ModifyAccessRule(AccessControlModification.Add, accessRule, out bool modified) && modified)
-            {
-                dirInfo.SetAccessControl(dirSecurity);
-            }
-        }
-
-        public void UpdateExcelDataEfficiently(DataGridView grid)
-        {
-            if (!_excelInitialized && !TryInitializeExcel())
-                return;
-
-            try
-            {
-                var visibleCols = grid.Columns.Cast<DataGridViewColumn>()
-                    .Where(c => c.Visible)
-                    .OrderBy(c => c.DisplayIndex)
-                    .ToList();
-
-                int rows = grid.Rows.Count;
-                int cols = visibleCols.Count;
-                if (rows == 0 || cols == 0)
-                    return;
-
-
-                // --- Check if A1 is empty ---
-                var cellA1 = RetryComCall(() => worksheet.Cells[1, 1]);
-                var valueA1 = RetryComCall(() => cellA1.Value2);
-                bool isA1Empty = valueA1 == null || string.IsNullOrWhiteSpace(valueA1.ToString());
-                Marshal.ReleaseComObject(cellA1);
-
-                // --- Write headers only if A1 is empty ---
-                if (isA1Empty)
-                {
-                    object[] headers = new object[cols];
-                    for (int c = 0; c < cols; c++)
-                    {
-                        headers[c] = visibleCols[c].HeaderText ?? visibleCols[c].Name;
-                    }
-
-                    var headerRange = RetryComCall(() => worksheet.Range[
-                        worksheet.Cells[1, 1], worksheet.Cells[1, cols]]);
-                    RetryComCall(() => headerRange.Value2 = headers);
-                    Marshal.ReleaseComObject(headerRange);
-                }
-
-
-                object[,] data = new object[rows, cols];
-                int timeColIdx = visibleCols.FindIndex(c => c.Name == "Time");
-
-                for (int r = 0; r < rows; r++)
-                {
-                    for (int c = 0; c < cols; c++)
-                    {
-                        var val = grid.Rows[r].Cells[visibleCols[c].Name].Value;
-                        data[r, c] = (c == timeColIdx && DateTime.TryParse(val?.ToString(), out var dt)) ? dt : val;
-                    }
-                }
-
-                var range = RetryComCall(() => worksheet.Range[worksheet.Cells[2, 1], worksheet.Cells[rows + 1, cols]]);
-                RetryComCall(() => range.Value2 = data);
-                Marshal.ReleaseComObject(range);
-
-                if (timeColIdx >= 0)
-                {
-                    var timeRange = RetryComCall(() => worksheet.Range[
-                        worksheet.Cells[2, timeColIdx + 1], worksheet.Cells[rows + 1, timeColIdx + 1]]);
-                    RetryComCall(() => timeRange.NumberFormat = "dd/MM/yyyy HH:mm:ss");
-                    Marshal.ReleaseComObject(timeRange);
-                }
-            }
-            catch (COMException ex)
-            {
-                ApplicationLogger.Log($"[Excel Update COM Error] {ex.Message}");
-                _excelInitialized = false;
-            }
-            catch (Exception ex)
-            {
-                ApplicationLogger.Log($"[Excel Update Error] {ex.Message}");
-                _excelInitialized = false;
-            }
-        }
-
-        private Excel.Application GetRunningExcelInstance()
-        {
-            try
-            {
-                dynamic tempWorkbook = Marshal.BindToMoniker(excelFilePath);
-                Excel.Application tempExcelApp = tempWorkbook.Application;
-
-                ((Excel.AppEvents_Event)tempExcelApp).NewWorkbook += ExcelApp_NewWorkbook;
-
-                try
-                {
-                    if (tempExcelApp.Ready)
-                        tempExcelApp.IgnoreRemoteRequests = true;
-                }
-                catch (COMException ex)
-                {
-                    Console.WriteLine($"IgnoreRemoteRequests failed: {ex.Message}");
-                }
-
-                return tempExcelApp;
-            }
-            catch { }
-
-            foreach (var process in Process.GetProcessesByName("EXCEL"))
-            {
-                try
-                {
-                    var obj = Marshal.GetActiveObject("Excel.Application");
-                    if (obj is Excel.Application app)
-                    {
-                        foreach (Excel.Workbook wb in app.Workbooks)
-                        {
-                            if (wb.Name.Equals("thecalcify.xlsx", StringComparison.OrdinalIgnoreCase))
-                            {
-                                ((Excel.AppEvents_Event)app).NewWorkbook += ExcelApp_NewWorkbook;
-
-                                try
-                                {
-                                    if (app.Ready)
-                                        app.IgnoreRemoteRequests = true;
-                                }
-                                catch (COMException ex)
-                                {
-                                    Console.WriteLine($"IgnoreRemoteRequests failed: {ex.Message}");
-                                }
-
-                                return app;
-                            }
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error accessing Excel instance: {ex.Message}");
-                    ApplicationLogger.Log($"Error accessing Excel instance: {ex.Message} And {ex.StackTrace}");
-                }
-            }
-
-            Console.WriteLine("No instance found with the workbook 'thecalcify.xlsx'");
-            return null;
-        }
-
-        private void ExcelApp_NewWorkbook(Excel.Workbook wb)
-        {
-            wb.Close(false);
-            excelApp.StatusBar = "New workbook creation is disabled";
-            Console.WriteLine("New workbook creation is disabled.");
-        }
-
-        private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            using (var aboutForm = new About(username, password, licenceDate))
-            {
-                if (isFullScreen)
-                {
-                    aboutForm.StartPosition = FormStartPosition.CenterParent;
-                    aboutForm.TopMost = true; // Ensures it stays above the full-screen window
-                    aboutForm.ShowDialog(this); // Pass the main form as owner
-                }
-                else
-                {
-                    aboutForm.ShowDialog();
-                }
-            }
-        }
-
-        private void Txtsearch_KeyDown(object sender, KeyEventArgs e)
-        {
-            // Check if Ctrl + Backspace is pressed
-            if (e.Control && e.KeyCode == Keys.Back)
-            {
-                txtsearch.Clear();  // Clear all text
-                e.SuppressKeyPress = true; // Prevent default backspace behavior
-            }
-        }
-
+        #region Other Methods
         public void MenuLoad()
         {
             try
@@ -2211,26 +2715,6 @@ namespace thecalcify
             }
         }
 
-        private ToolStripMenuItem CreateMenuItem(string text, EventHandler clickHandler)
-        {
-            var menuItem = new ToolStripMenuItem(text);
-            menuItem.Click += clickHandler;
-            return menuItem;
-        }
-
-        private void ResetState(string marketWatchName)
-        {
-            selectedSymbols.Clear();
-            identifiers.Clear();
-            symbolMaster.Clear();
-            saveFileName = marketWatchName == "Default" ? null : marketWatchName;
-            lastOpenMarketWatch = marketWatchName;
-            addEditSymbolsToolStripMenuItem.Enabled = marketWatchName != "Default";
-
-            isGrid = true;
-            reloadGrid = true;
-        }
-
         public async void LoadSymbol(string Filename)
         {
             try
@@ -2257,90 +2741,9 @@ namespace thecalcify
                 ApplicationLogger.LogException(ex);
             }
 
-            LiveRateGrid();
+            thecalcifyGrid();
 
             MenuLoad();
-        }
-
-        public async Task DefaultToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            fontSizeComboBox.Visible = true;
-
-            savelabel.Visible = false;
-
-
-            EditableMarketWatchGrid editableMarketWatchGrid = EditableMarketWatchGrid.CurrentInstance;
-            if (editableMarketWatchGrid != null && editableMarketWatchGrid.IsCurrentCellInEditMode)
-            {
-                editableMarketWatchGrid.EndEdit();
-            }
-            editableMarketWatchGrid?.Dispose();
-            saveMarketWatchHost.Visible = false;
-            toolsToolStripMenuItem.Enabled = true;
-            isLoadedSymbol = false;
-            LiveRateGrid();
-            txtsearch.Text = string.Empty;
-            saveFileName = null;
-            await LoadInitialMarketDataAsync();
-
-            MenuLoad();
-            titleLabel.Text = "DEFAULT";
-            isEdit = false;
-            identifiers = symbolMaster;
-            InitializeDataGridView();          // Configure the grid
-            await SignalREvent();
-        }
-
-        private void NewCTRLNToolStripMenuItem1_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                // 6. Clean up current resources before switching
-                CleanupBeforeViewSwitch();
-
-                // 1. Set new view mode
-                marketWatchViewMode = MarketWatchViewMode.New;
-
-                // 2. Reset state if not in edit mode
-                if (!isEdit)
-                {
-                    selectedSymbols.Clear();
-                    saveFileName = null;
-                    isLoadedSymbol = false;
-                }
-
-                // 3. Create and configure new editable grid
-                var editableGrid = new EditableMarketWatchGrid
-                {
-                    Name = "editableMarketWatchGridView",
-                    Dock = DockStyle.Fill,
-                    columnPreferences = columnPreferences,
-                    columnPreferencesDefault = columnPreferencesDefault,
-                    fontSize = fontSize,
-                    pastRateTickDTO = pastRateTickDTO,
-                    isEditMarketWatch = true,
-                    SymbolName = SymbolName,
-                };
-
-                // 4. Handle edit mode specific setup
-                if (isEdit && editableGrid.selectedSymbols != null && saveFileName != null)
-                {
-                    editableGrid.saveFileName = saveFileName;
-                }
-
-                // 5. Add to controls and bring to front
-                this.Controls.Add(editableGrid);
-                editableGrid.BringToFront();
-                editableGrid.Focus();
-
-                // 7. Update UI state
-                UpdateUIStateForNewMarketWatch();
-            }
-            catch (Exception ex)
-            {
-                ApplicationLogger.LogException(ex);
-                MessageBox.Show($"Error switching to new market watch: {ex.Message}");
-            }
         }
 
         private void ClearCollections()
@@ -2432,37 +2835,7 @@ namespace thecalcify
             }
 
             // 5. Clean up Excel resources
-            CleanupExcel();
-        }
-
-        private void CleanupExcel()
-        {
-            try
-            {
-                if (worksheet != null)
-                {
-                    Marshal.ReleaseComObject(worksheet);
-                    worksheet = null;
-                }
-                if (workbook != null)
-                {
-                    workbook.Close(false);
-                    Marshal.ReleaseComObject(workbook);
-                    workbook = null;
-                }
-                if (excelApp != null)
-                {
-                    excelApp.Quit();
-                    Marshal.ReleaseComObject(excelApp);
-                    excelApp = null;
-                }
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-            }
-            catch (Exception ex)
-            {
-                ApplicationLogger.LogException(ex);
-            }
+            //CleanupExcel();
         }
 
         private void DisposeSignalRConnection()
@@ -2481,260 +2854,6 @@ namespace thecalcify
                 finally
                 {
                     connection = null; // ✅ CRUCIAL
-                }
-            }
-        }
-
-        private void DeleteToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (FileLists == null || FileLists.Count == 0)
-            {
-                MessageBox.Show("No Market Watch available to delete.", "Information",
-                              MessageBoxButtons.OK, MessageBoxIcon.Information);
-                return;
-            }
-
-            using (var selectionForm = new Form())
-            {
-                selectionForm.Text = "Select Market Watch to Delete";
-                selectionForm.Width = 600;
-                selectionForm.Height = 500;
-                selectionForm.FormBorderStyle = FormBorderStyle.FixedDialog;
-                selectionForm.StartPosition = FormStartPosition.CenterParent;
-                selectionForm.BackColor = Color.White;
-                selectionForm.Font = new System.Drawing.Font("Microsoft Sans Serif", 9);
-                selectionForm.Icon = SystemIcons.WinLogo;
-
-                var headerPanel = new Panel
-                {
-                    Dock = DockStyle.Top,
-                    Height = 50,
-                    BackColor = Color.FromArgb(0, 120, 215)
-                };
-
-                var headerLabel = new Label
-                {
-                    Text = "Select Market Watch to Delete",
-                    Dock = DockStyle.Fill,
-                    ForeColor = Color.White,
-                    TextAlign = ContentAlignment.MiddleLeft,
-                    Font = new System.Drawing.Font("Microsoft Sans Serif", 12, FontStyle.Bold),
-                    Padding = new Padding(15, 0, 0, 0)
-                };
-                headerPanel.Controls.Add(headerLabel);
-
-                // Search box for filtering
-                var searchBox = new TextBox
-                {
-                    Dock = DockStyle.Top,
-                    Height = 30,
-                    Margin = new Padding(10, 10, 10, 5),
-                    Font = new System.Drawing.Font("Microsoft Sans Serif", 9),
-                    Text = "Search Here..."
-                };
-
-                // Modern list view with checkboxes
-                var listView = new ListView
-                {
-                    Dock = DockStyle.Fill,
-                    CheckBoxes = true,
-                    View = View.Details,
-                    FullRowSelect = true,
-                    GridLines = false,
-                    MultiSelect = false,
-                    BorderStyle = BorderStyle.None,
-                    BackColor = SystemColors.Window
-                };
-
-                // Modern column headers
-                listView.Columns.Add("Market Watch Name", 300);
-                listView.Columns.Add("Path", 250);
-
-                // Add files to list view
-                foreach (string filePath in FileLists)
-                {
-                    if (filePath != saveFileName)
-                    {
-                        var item = new ListViewItem(Path.GetFileName(filePath));
-                        item.SubItems.Add(filePath);
-                        item.Tag = filePath; // Store full path in tag
-                        listView.Items.Add(item);
-                    }
-                }
-
-                if (listView.Items.Count == 0)
-                {
-                    MessageBox.Show("There is only one MarketWatch and that Open so can't Delete.", "Information",
-                             MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    return;
-                }
-
-                // Selection controls panel
-                var controlsPanel = new Panel
-                {
-                    Dock = DockStyle.Bottom,
-                    Height = 50,
-                    BackColor = Color.FromArgb(240, 240, 240)
-                };
-
-                // Modern flat buttons
-                var selectAllButton = new Button
-                {
-                    Text = "Select All",
-                    FlatStyle = FlatStyle.Flat,
-                    BackColor = Color.White,
-                    ForeColor = Color.FromArgb(0, 120, 215),
-                    Height = 30,
-                    Width = 120,
-                    Anchor = AnchorStyles.Left | AnchorStyles.Bottom,
-                    Margin = new Padding(10, 10, 0, 10)
-                };
-
-                var deleteButton = new Button
-                {
-                    Text = "Delete Selected",
-                    FlatStyle = FlatStyle.Flat,
-                    BackColor = Color.FromArgb(0, 120, 215),
-                    ForeColor = Color.White,
-                    Height = 30,
-                    Width = 120,
-                    Anchor = AnchorStyles.Right | AnchorStyles.Bottom,
-                    Margin = new Padding(0, 10, 90, 10)
-                };
-
-                var cancelButton = new Button
-                {
-                    Text = "Cancel",
-                    FlatStyle = FlatStyle.Flat,
-                    BackColor = Color.White,
-                    ForeColor = Color.FromArgb(0, 120, 215),
-                    Height = 30,
-                    Width = 80,
-                    Anchor = AnchorStyles.Right | AnchorStyles.Bottom,
-                    Margin = new Padding(0, 10, 10, 10)
-                };
-
-                // Button event handlers
-                selectAllButton.Click += (s, args) =>
-                {
-                    foreach (ListViewItem item in listView.Items)
-                    {
-                        item.Checked = true;
-                    }
-                };
-
-                cancelButton.Click += (s, args) => selectionForm.DialogResult = DialogResult.Cancel;
-
-                deleteButton.Click += (s, args) =>
-                {
-                    var selectedFiles = listView.CheckedItems.Cast<ListViewItem>()
-                                             .Select(item => item.Tag.ToString())
-                                             .ToList();
-
-                    if (selectedFiles.Count == 0)
-                    {
-                        MessageBox.Show("Please select at least one Market Watch to delete.",
-                                        "No Selection",
-                                        MessageBoxButtons.OK,
-                                        MessageBoxIcon.Information);
-                        return;
-                    }
-
-                    // Modern confirmation dialog
-                    var confirmResult = MessageBox.Show($"Are you sure you want to delete {selectedFiles.Count} Market Watch(s)?",
-                                                     "Confirm Deletion",
-                                                     MessageBoxButtons.YesNo,
-                                                     MessageBoxIcon.Warning,
-                                                     MessageBoxDefaultButton.Button2);
-
-                    if (confirmResult == DialogResult.Yes)
-                    {
-                        int successCount = 0;
-                        var failedDeletions = new List<string>();
-
-                        foreach (string filePath in selectedFiles)
-                        {
-                            if (saveFileName == filePath)
-                            {
-                                MessageBox.Show("Can't Delete Open MarketWatch", "Delete Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                                return;
-                            }
-                            string fullpath = Path.Combine(AppFolder, username, $"{filePath}.slt");
-                            try
-                            {
-                                File.Delete(fullpath);
-                                successCount++;
-                                isdeleted = true;
-                            }
-                            catch (Exception ex)
-                            {
-                                failedDeletions.Add($"{Path.GetFileName(filePath)}: {ex.Message}");
-                                ApplicationLogger.LogException(ex);
-                            }
-                        }
-
-                        // Modern result display
-                        var resultMessage = new StringBuilder();
-                        resultMessage.AppendLine($"Successfully deleted {successCount} Market Watch(s).");
-
-                        if (failedDeletions.Count > 0)
-                        {
-                            resultMessage.AppendLine();
-                            resultMessage.AppendLine("The following files couldn't be deleted:");
-                            resultMessage.AppendLine(string.Join(Environment.NewLine, failedDeletions));
-                        }
-
-                        MessageBox.Show(resultMessage.ToString(),
-                                      "Deletion Results",
-                                      MessageBoxButtons.OK,
-                                      failedDeletions.Count > 0 ? MessageBoxIcon.Warning : MessageBoxIcon.Information);
-
-                        if (successCount > 0)
-                        {
-                            selectionForm.DialogResult = DialogResult.OK;
-                        }
-
-                        MenuLoad();
-                    }
-                };
-
-                // Search functionality
-                searchBox.TextChanged += (s, args) =>
-                {
-                    listView.BeginUpdate();
-                    listView.Items.Clear();
-
-                    foreach (string filePath in FileLists.Where(f =>
-                        Path.GetFileName(f).IndexOf(searchBox.Text, StringComparison.OrdinalIgnoreCase) >= 0))
-                    {
-                        var item = new ListViewItem(Path.GetFileName(filePath));
-                        item.SubItems.Add(filePath);
-                        item.Tag = filePath;
-                        listView.Items.Add(item);
-                    }
-
-                    listView.EndUpdate();
-                };
-
-                // Add controls to panels
-                controlsPanel.Controls.Add(selectAllButton);
-                controlsPanel.Controls.Add(deleteButton);
-                controlsPanel.Controls.Add(cancelButton);
-
-                // Add controls to form
-                selectionForm.Controls.Add(listView);
-                selectionForm.Controls.Add(searchBox);
-                selectionForm.Controls.Add(headerPanel);
-                selectionForm.Controls.Add(controlsPanel);
-
-                // Set form buttons
-                selectionForm.AcceptButton = deleteButton;
-                selectionForm.CancelButton = cancelButton;
-
-                // Show dialog
-                if (selectionForm.ShowDialog() == DialogResult.OK)
-                {
-                    saveFileName = null;
                 }
             }
         }
@@ -2758,707 +2877,16 @@ namespace thecalcify
             defaultGrid.ResumeLayout();
         }
 
-        private void FullScreenF11ToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (!isFullScreen)
-            {
-                // Store previous state
-                prevState = this.WindowState;
-                prevStyle = this.FormBorderStyle;
-                prevBounds = this.Bounds;
-
-                // Set up full screen
-                this.FormBorderStyle = FormBorderStyle.None;
-                this.TopMost = true;
-                System.Drawing.Rectangle full = Screen.GetBounds(this);
-                this.Bounds = full;
-                WinApi.SetFullScreen(this.Handle);
-
-                isFullScreen = true;
-
-                fullScreenF11ToolStripMenuItem.Text = "Exit Full Screen (Esc)";
-            }
-            else
-            {
-                // Restore previous layout
-                this.WindowState = prevState;
-                this.FormBorderStyle = prevStyle;
-                this.Bounds = prevBounds;
-                this.TopMost = false;
-
-                isFullScreen = false;
-
-                fullScreenF11ToolStripMenuItem.Text = "Full Screen (ESC)";
-            }
-        }
-
-        private void DefaultGrid_CellMouseDown(object sender, DataGridViewCellMouseEventArgs e)
-        {
-            if (e.Button == MouseButtons.Right && e.RowIndex >= 0 && e.ColumnIndex >= 0)
-            {
-                defaultGrid.ClearSelection();
-            }
-        }
-
-        private void DefaultGrid_CellMouseEnter(object sender, DataGridViewCellEventArgs e)
-        {
-            if (e.RowIndex >= 0)
-            {
-                defaultGrid.Rows[e.RowIndex].DefaultCellStyle.BackColor = Color.FromArgb(245, 245, 245);
-            }
-        }
-
-        private void DefaultGrid_CellMouseLeave(object sender, DataGridViewCellEventArgs e)
-        {
-            if (e.RowIndex >= 0)
-            {
-                if (e.RowIndex % 2 == 0)
-                    defaultGrid.Rows[e.RowIndex].DefaultCellStyle.BackColor = Color.White;
-                else
-                    defaultGrid.Rows[e.RowIndex].DefaultCellStyle.BackColor = Color.FromArgb(248, 248, 248);
-            }
-        }
-
-        private void Thecalcify_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Shift && e.KeyCode == Keys.Escape)
-            {
-                var result = MessageBox.Show("Do you want to Exit Application?", "Exit Application", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-                if (result == DialogResult.Yes)
+                if (!identifiers.Contains(item.Symbol))
                 {
-                    this.Close(); // Close the login form
-                    System.Windows.Forms.Application.Exit(); // Terminate the application
+                    checkedListSymbols.Items.Add(item.SymbolName, false);
                 }
             }
 
-            if (e.Control && e.KeyCode == Keys.N && marketWatchViewMode != MarketWatchViewMode.New)
-            {
-                NewCTRLNToolStripMenuItem1_Click(this, EventArgs.Empty);
-                e.Handled = true;
-            }
-
-            //if (e.KeyCode == Keys.F11)
-            //{
-            //    FullScreenF11ToolStripMenuItem_Click(this, EventArgs.Empty);
-            //    e.Handled = true;
-            //}
-
-            if (e.KeyCode == Keys.Escape)
-            {
-                FullScreenF11ToolStripMenuItem_Click(this, EventArgs.Empty);
-                e.Handled = true;
-            }
-
-            if (e.KeyCode == Keys.U && e.Control)
-            {
-                aboutToolStripMenuItem_Click(this, EventArgs.Empty);
-                e.Handled = true;
-            }
+            panelAddSymbols.Visible = true;
+            panelAddSymbols.BringToFront();
         }
 
-        private void TitleLabel_TextChanged(object sender, EventArgs e)
-        {
-            if (titleLabel != null)
-            {
-                txtsearch.Text = null;
-            }
-        }
-
-        private void DefaultGrid_DataSourceChanged(object sender, EventArgs e)
-        {
-            try
-            {
-                if (!_excelInitialized && !TryInitializeExcel())
-                    return;
-
-                // Clear entire sheet (Sheet1)
-                worksheet.Cells.Clear();
-
-                // Get visible and exportable columns from the grid
-                var exportableColumns = defaultGrid.Columns
-                    .Cast<DataGridViewColumn>()
-                    .Where(c => c.Visible && c.Name != "symbol" && c.Name != "V")
-                    .OrderBy(c => c.DisplayIndex)
-                    .ToList();
-
-                // Write headers
-                for (int i = 0; i < exportableColumns.Count; i++)
-                {
-                    worksheet.Cells[1, i + 1] = exportableColumns[i].HeaderText;
-                }
-            }
-            catch (Exception ex)
-            {
-                ApplicationLogger.Log($"[DefaultGrid_DataSourceChanged] Stuck On : {ex.Message}");
-            }
-        }
-
-        private T RetryComCall<T>(Func<T> comFunc, int retries = 5, int delayMs = 200, bool skipOnFailure = false)
-        {
-            for (int attempt = 1; attempt <= retries; attempt++)
-            {
-                try
-                {
-                    return comFunc();
-                }
-                catch (COMException ex) when (
-                    (uint)ex.HResult == 0x800AC472 || // Excel busy
-                    (uint)ex.HResult == 0x80010001 || // Call rejected
-                    (uint)ex.HResult == 0x800706BE || // RPC failed
-                    (uint)ex.HResult == 0x800706BA || // RPC unavailable
-                    (uint)ex.HResult == 0x800A01A8 || // RPC unavailable
-                    (uint)ex.HResult == 0x800401E3)    // MK_E_UNAVAILABLE
-                {
-                    if (attempt == retries)
-                    {
-                        if (skipOnFailure)
-                        {
-                            ApplicationLogger.LogException(ex);
-                            return default;
-                        }
-
-                        throw;
-                    }
-
-                    System.Windows.Forms.Application.DoEvents();
-                    Thread.Sleep(delayMs);
-                }
-            }
-
-            return default;
-        }
-
-        public bool TryInitializeExcel()
-        {
-            try
-            {
-                if (commonClass.IsFileLocked(excelFilePath))
-                {
-                    excelApp = GetRunningExcelInstance();
-                    if (excelApp == null)
-                        return false;
-
-                    workbook = RetryComCall(() => excelApp.Workbooks
-                        .Cast<Excel.Workbook>()
-                        .FirstOrDefault(w => w.Name.Equals("thecalcify.xlsx", StringComparison.OrdinalIgnoreCase)));
-
-                    if (workbook == null)
-                        return false;
-
-                    worksheet = RetryComCall(() => (Excel.Worksheet)workbook.Sheets["Sheet1"]);
-
-                    if (worksheet == null)
-                        return false;
-
-                    // ✅ Clear data except header
-                    Excel.Range usedRange = worksheet.UsedRange;
-                    if (usedRange.Rows.Count > 1)
-                    {
-                        Excel.Range rowsToClear = worksheet.Range["A2", usedRange.Cells[usedRange.Rows.Count, usedRange.Columns.Count]];
-                        rowsToClear.ClearContents(); // Clears data but keeps formatting and headers
-                    }
-
-                    _excelInitialized = worksheet != null;
-                    return _excelInitialized;
-                }
-                else
-                    return false;
-            }
-            catch (Exception ex)
-            {
-                ApplicationLogger.Log($"[Excel Init Error] {ex.Message}");
-                return false;
-            }
-        }
-
-        private void AddEditColumnsToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (panelAddSymbols != null && panelAddSymbols.Visible)
-                panelAddSymbols.Visible = false;
-
-            // Create panel if it hasn't been initialized yet
-            if (panelAddColumns == null)
-            {
-                // Initialize panel
-                panelAddColumns = new Panel
-                {
-                    Size = new System.Drawing.Size(500, 500),
-                    BackColor = Color.White,
-                    BorderStyle = BorderStyle.None,
-                    Visible = false,
-                    Padding = new Padding(20),
-                };
-
-                panelAddColumns.Paint += (s2, e2) =>
-                {
-                    ControlPaint.DrawBorder(e2.Graphics, panelAddColumns.ClientRectangle,
-                        Color.LightGray, 2, ButtonBorderStyle.Solid,
-                        Color.LightGray, 2, ButtonBorderStyle.Solid,
-                        Color.LightGray, 2, ButtonBorderStyle.Solid,
-                        Color.LightGray, 2, ButtonBorderStyle.Solid);
-                };
-
-                panelAddColumns.Location = new System.Drawing.Point(
-                    (this.Width - panelAddColumns.Width) / 2,
-                    (this.Height - panelAddColumns.Height) / 2
-                );
-
-                // Title label
-                Label titleLabel = new Label
-                {
-                    Text = "📊 Add / Edit Columns",
-                    Font = new System.Drawing.Font("Microsoft Sans Serif Semibold", 16, FontStyle.Bold),
-                    ForeColor = Color.FromArgb(50, 50, 50),
-                    Dock = DockStyle.Top,
-                    Height = 50,
-                    TextAlign = ContentAlignment.MiddleCenter,
-                    Padding = new Padding(0, 10, 0, 10)
-                };
-
-                // CheckedListBox
-                checkedListColumns = new CheckedListBox
-                {
-                    Height = 320,
-                    Dock = DockStyle.Top,
-                    Font = new System.Drawing.Font("Microsoft Sans Serif", 10),
-                    BorderStyle = BorderStyle.FixedSingle,
-                    CheckOnClick = true,
-                    BackColor = Color.White
-                };
-
-                // Add Spacer Panel for spacing
-                Panel spacerPanel = new Panel
-                {
-                    Height = 10, // Adjust height as needed
-                    Dock = DockStyle.Top
-                };
-
-                // Button container
-                Panel buttonPanel = new Panel
-                {
-                    Height = 80,
-                    Dock = DockStyle.Bottom,
-                    Padding = new Padding(10),
-                    BackColor = Color.White
-                };
-
-                // Buttons
-                btnSelectAllColumns = new Button
-                {
-                    Text = "Select All",
-                    Height = 40,
-                    Width = 120,
-                    BackColor = Color.FromArgb(0, 122, 204),
-                    ForeColor = Color.White,
-                    FlatStyle = FlatStyle.Flat,
-                    Font = new System.Drawing.Font("Microsoft Sans Serif", 10, FontStyle.Bold),
-                    Cursor = Cursors.Hand
-                };
-                btnSelectAllColumns.FlatAppearance.BorderSize = 0;
-
-                btnConfirmAddColumns = new Button
-                {
-                    Text = "✔ Save",
-                    Height = 40,
-                    Width = 120,
-                    BackColor = Color.FromArgb(0, 122, 204),
-                    ForeColor = Color.White,
-                    FlatStyle = FlatStyle.Flat,
-                    Font = new System.Drawing.Font("Microsoft Sans Serif", 10, FontStyle.Bold),
-                    Cursor = Cursors.Hand
-                };
-                btnConfirmAddColumns.FlatAppearance.BorderSize = 0;
-
-                btnCancelAddColumns = new Button
-                {
-                    Text = "✖ Cancel",
-                    Height = 40,
-                    Width = 120,
-                    BackColor = Color.LightGray,
-                    ForeColor = Color.Black,
-                    FlatStyle = FlatStyle.Flat,
-                    Font = new System.Drawing.Font("Microsoft Sans Serif", 10, FontStyle.Bold),
-                    Cursor = Cursors.Hand
-                };
-                btnCancelAddColumns.FlatAppearance.BorderSize = 0;
-
-                // Layout
-                btnSelectAllColumns.Location = new System.Drawing.Point(30, 22);
-                btnConfirmAddColumns.Location = new System.Drawing.Point(170, 22);
-                btnCancelAddColumns.Location = new System.Drawing.Point(310, 22);
-
-                buttonPanel.Controls.Add(btnSelectAllColumns);
-                buttonPanel.Controls.Add(btnConfirmAddColumns);
-                buttonPanel.Controls.Add(btnCancelAddColumns);
-
-                panelAddColumns.Controls.Add(checkedListColumns);
-                panelAddColumns.Controls.Add(spacerPanel);
-                panelAddColumns.Controls.Add(buttonPanel);
-                panelAddColumns.Controls.Add(titleLabel);
-
-                this.Controls.Add(panelAddColumns);
-
-                this.Resize += (s3, e3) =>
-                {
-                    panelAddColumns.Location = new System.Drawing.Point(
-                        (this.Width - panelAddColumns.Width) / 2,
-                        (this.Height - panelAddColumns.Height) / 2
-                    );
-                };
-
-                // Hook up events
-                btnSelectAllColumns.Click += (s, e2) =>
-                {
-                    bool allChecked = true;
-                    for (int i = 0; i < checkedListColumns.Items.Count; i++)
-                    {
-                        if (!checkedListColumns.GetItemChecked(i))
-                        {
-                            allChecked = false;
-                            break;
-                        }
-                    }
-
-                    bool check = !allChecked;
-                    btnSelectAllColumns.Text = check ? "Unselect All" : "Select All";
-
-                    for (int i = 0; i < checkedListColumns.Items.Count; i++)
-                    {
-                        checkedListColumns.SetItemChecked(i, check);
-                    }
-                };
-
-                btnConfirmAddColumns.Click += (s, e2) =>
-                {
-                    var currentlyChecked = checkedListColumns.CheckedItems.Cast<string>().ToList();
-                    var previouslySelected = columnPreferences.Count > 0 ? columnPreferences : columnPreferencesDefault;
-
-                    if (!currentlyChecked.Any())
-                    {
-                        MessageBox.Show("Please select at least one column.");
-                        return;
-                    }
-
-                    if (currentlyChecked.SequenceEqual(previouslySelected))
-                    {
-                        MessageBox.Show("No changes made.");
-                        panelAddColumns.Visible = false;
-                        return;
-                    }
-
-                    // Save the new column preferences
-                    columnPreferences = currentlyChecked;
-
-                    // Make sure Symbol column is always visible in the grid
-                    if (!columnPreferences.Contains("symbol"))
-                    {
-                        columnPreferences.Add("symbol");
-                        columnPreferences.Add("V");
-                    }
-
-                    InitializeDataGridView();
-
-                    // Update DataGridView column visibility
-                    foreach (DataGridViewColumn column in defaultGrid.Columns)
-                    {
-                        if (column.Name.ToLower() == "symbol" || column.Name.ToLower() == "v")
-                        {
-                            column.Visible = false;
-                        }
-                        else
-                        {
-                            column.Visible = columnPreferences.Contains(column.Name);
-                        }
-                    }
-
-                    panelAddColumns.Visible = false;
-
-                    DefaultGrid_DataSourceChanged(sender, EventArgs.Empty);
-                    //MessageBox.Show("Columns updated successfully!");
-                };
-
-                btnCancelAddColumns.Click += (s, e2) =>
-                {
-                    panelAddColumns.Visible = false;
-                };
-            }
-
-            // Refresh items before showing
-            checkedListColumns.Items.Clear();
-
-            // Get the columns to display (use allColumns if no preferences set)
-            var columnsToShow = columnPreferences.Count > 0 ? columnPreferences : columnPreferencesDefault;
-
-            // Add selected columns first (preserving order)
-            foreach (string column in columnPreferencesDefault)
-            {
-                if (columnsToShow.Contains(column) && column != "symbol" && column != "V")
-                {
-                    checkedListColumns.Items.Add(column, true);
-                }
-            }
-
-            // Then add unselected columns
-            foreach (string column in columnPreferencesDefault)
-            {
-                if (!columnsToShow.Contains(column) && column != "symbol" && column != "V")
-                {
-                    checkedListColumns.Items.Add(column, false);
-                }
-            }
-
-            // Update Select All button text
-            btnSelectAllColumns.Text = checkedListColumns.CheckedItems.Count == checkedListColumns.Items.Count
-                ? "Unselect All"
-                : "Select All";
-
-            // Make sure Symbol column is always visible in the grid
-            if (!columnPreferences.Contains("symbol"))
-            {
-                columnPreferences.Add("symbol");
-                columnPreferences.Add("V");
-            }
-
-            // Update DataGridView column visibility to ensure Symbol & V are always visible
-            foreach (DataGridViewColumn column in defaultGrid.Columns)
-            {
-                if (column.Name == "symbol" || column.Name == "V")
-                {
-                    column.Visible = false;
-                }
-                //else
-                //{
-                //    column.Visible = columnPreferences.Contains(column.Name) ? true : false;
-                //}
-            }
-
-            panelAddColumns.Visible = true;
-            panelAddColumns.BringToFront();
-        }
-
-        private void AddEditSymbolsToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (panelAddColumns != null && panelAddColumns.Visible)
-                panelAddColumns.Visible = false;
-
-            // Create panel if it hasn't been initialized yet
-            if (panelAddSymbols == null)
-            {
-                // Initialize panel
-                panelAddSymbols = new Panel
-                {
-                    Size = new System.Drawing.Size(500, 500),
-                    BackColor = Color.White,
-                    BorderStyle = BorderStyle.None,
-                    Visible = false,
-                    Padding = new Padding(20),
-                };
-
-                panelAddSymbols.Paint += (s2, e2) =>
-                {
-                    ControlPaint.DrawBorder(e2.Graphics, panelAddSymbols.ClientRectangle,
-                        Color.LightGray, 2, ButtonBorderStyle.Solid,
-                        Color.LightGray, 2, ButtonBorderStyle.Solid,
-                        Color.LightGray, 2, ButtonBorderStyle.Solid,
-                        Color.LightGray, 2, ButtonBorderStyle.Solid);
-                };
-
-                panelAddSymbols.Location = new System.Drawing.Point(
-                    (this.Width - panelAddSymbols.Width) / 2,
-                    (this.Height - panelAddSymbols.Height) / 2
-                );
-
-                // Title label
-                Label titleLabel = new Label
-                {
-                    Text = "🔄 Add / Edit Symbols",
-                    Font = new System.Drawing.Font("Microsoft Sans Serif Semibold", 16, FontStyle.Bold),
-                    ForeColor = Color.FromArgb(50, 50, 50),
-                    Dock = DockStyle.Top,
-                    Height = 50,
-                    TextAlign = ContentAlignment.MiddleCenter,
-                    Padding = new Padding(0, 10, 0, 10)
-                };
-
-                // CheckedListBox
-                checkedListSymbols = new CheckedListBox
-                {
-                    Height = 320,
-                    Dock = DockStyle.Top,
-                    Font = new System.Drawing.Font("Microsoft Sans Serif", 10),
-                    BorderStyle = BorderStyle.FixedSingle,
-                    CheckOnClick = true,
-                    BackColor = Color.White
-                };
-
-                // Button container
-                Panel buttonPanel = new Panel
-                {
-                    Height = 80,
-                    Dock = DockStyle.Bottom,
-                    Padding = new Padding(10),
-                    BackColor = Color.White
-                };
-
-                // Buttons
-                btnSelectAllSymbols = new Button
-                {
-                    Text = "Select All",
-                    Height = 40,
-                    Width = 120,
-                    BackColor = Color.FromArgb(0, 122, 204),
-                    ForeColor = Color.White,
-                    FlatStyle = FlatStyle.Flat,
-                    Font = new System.Drawing.Font("Microsoft Sans Serif", 10, FontStyle.Bold),
-                    Cursor = Cursors.Hand
-                };
-                btnSelectAllSymbols.FlatAppearance.BorderSize = 0;
-
-                btnConfirmAddSymbols = new Button
-                {
-                    Text = "✔ Save",
-                    Height = 40,
-                    Width = 120,
-                    BackColor = Color.FromArgb(0, 122, 204),
-                    ForeColor = Color.White,
-                    FlatStyle = FlatStyle.Flat,
-                    Font = new System.Drawing.Font("Microsoft Sans Serif", 10, FontStyle.Bold),
-                    Cursor = Cursors.Hand
-                };
-                btnConfirmAddSymbols.FlatAppearance.BorderSize = 0;
-
-                btnCancelAddSymbols = new Button
-                {
-                    Text = "✖ Cancel",
-                    Height = 40,
-                    Width = 120,
-                    BackColor = Color.LightGray,
-                    ForeColor = Color.Black,
-                    FlatStyle = FlatStyle.Flat,
-                    Font = new System.Drawing.Font("Microsoft Sans Serif", 10, FontStyle.Bold),
-                    Cursor = Cursors.Hand
-                };
-                btnCancelAddSymbols.FlatAppearance.BorderSize = 0;
-
-                // Layout
-                btnSelectAllSymbols.Location = new System.Drawing.Point(30, 35);
-                btnConfirmAddSymbols.Location = new System.Drawing.Point(170, 35);
-                btnCancelAddSymbols.Location = new System.Drawing.Point(310, 35);
-
-                titleLabel.Dock = DockStyle.Top;
-                checkedListSymbols.Dock = DockStyle.Fill; // So it takes remaining space
-                buttonPanel.Dock = DockStyle.Bottom;
-
-                buttonPanel.Controls.Add(btnSelectAllSymbols);
-                buttonPanel.Controls.Add(btnConfirmAddSymbols);
-                buttonPanel.Controls.Add(btnCancelAddSymbols);
-
-                panelAddSymbols.Controls.Add(buttonPanel);  // bottom first
-                panelAddSymbols.Controls.Add(checkedListSymbols); // middle
-                panelAddSymbols.Controls.Add(titleLabel);   // top last
-
-                this.Controls.Add(panelAddSymbols);
-
-                this.Resize += (s3, e3) =>
-                {
-                    panelAddSymbols.Location = new System.Drawing.Point(
-                        (this.Width - panelAddSymbols.Width) / 2,
-                        (this.Height - panelAddSymbols.Height) / 2
-                    );
-                };
-
-                // Hook up events
-
-                btnSelectAllSymbols.Click += (s, e2) =>
-                {
-                    bool allChecked = true;
-                    for (int i = 0; i < checkedListSymbols.Items.Count; i++)
-                    {
-                        if (!checkedListSymbols.GetItemChecked(i))
-                        {
-                            allChecked = false;
-                            break;
-                        }
-                    }
-
-                    bool check = !allChecked;
-                    btnSelectAllSymbols.Text = check ? "Unselect All" : "Select All";
-
-                    for (int i = 0; i < checkedListSymbols.Items.Count; i++)
-                    {
-                        checkedListSymbols.SetItemChecked(i, check);
-                    }
-                };
-
-                btnConfirmAddSymbols.Click += async (s, e2) =>
-                {
-                    // Get the checked display names (SymbolName)
-                    var currentlyCheckedNames = checkedListSymbols.CheckedItems.Cast<string>().ToList();
-
-                    // If nothing is selected
-                    if (!currentlyCheckedNames.Any())
-                    {
-                        MessageBox.Show("Please select at least one symbol to confirm.", "No Selection", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                        return;
-                    }
-
-                    // Map checked names back to their symbols
-                    var currentlyCheckedSymbols = SymbolName
-                        .Where(x => currentlyCheckedNames.Contains(x.SymbolName))
-                        .Select(x => x.Symbol)
-                        .ToList();
-
-                    // Compare with previous selection
-                    var previouslySelected = selectedSymbols;
-
-                    var addedSymbols = currentlyCheckedSymbols.Except(previouslySelected).ToList();
-                    var removedSymbols = previouslySelected.Except(currentlyCheckedSymbols).ToList();
-
-                    if (!addedSymbols.Any() && !removedSymbols.Any())
-                    {
-                        MessageBox.Show("No changes made.");
-                        return;
-                    }
-
-                    // Save changes
-                    EditableMarketWatchGrid editableMarketWatchGrid = EditableMarketWatchGrid.CurrentInstance ?? new EditableMarketWatchGrid();
-                    editableMarketWatchGrid.isGrid = false;
-                    editableMarketWatchGrid.saveFileName = saveFileName;
-                    editableMarketWatchGrid.username = username;
-                    selectedSymbols = currentlyCheckedSymbols;
-                    editableMarketWatchGrid.SaveSymbols(selectedSymbols);
-                    identifiers = selectedSymbols;
-                    BeginInvoke((MethodInvoker)(() =>
-                    {
-                        InitializeDataGridView();
-                    }));
-                    await LoadInitialMarketDataAsync();
-                    await SignalREvent();
-
-                    panelAddSymbols.Visible = false;
-                };
-
-                btnCancelAddSymbols.Click += (s, e2) =>
-                {
-                    panelAddSymbols.Visible = false;
-                };
-            }
-
-            // Refresh items before showing
-            checkedListSymbols.Items.Clear();
-
-            // Add selected symbols first
-            foreach (var item in SymbolName)
-            {
-                if (identifiers.Contains(item.Symbol))
-                {
-                    checkedListSymbols.Items.Add(item.SymbolName, true); // Display symbol name
-                }
-            }
-
-            // Then unselected symbols
-            foreach (var item in SymbolName)
-            {
                 if (!identifiers.Contains(item.Symbol))
                 {
                     checkedListSymbols.Items.Add(item.SymbolName, false);

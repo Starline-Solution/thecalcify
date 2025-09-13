@@ -1760,7 +1760,7 @@ namespace thecalcify.MarketWatch
                 selectedSymbols = SymbolList;
                 thecalcify live_Rate = thecalcify.CurrentInstance;
                 if (live_Rate == null)
-                    live_Rate.LiveRateGrid();
+                    live_Rate.thecalcifyGrid();
                 if (saveFileName != null)
                 {
                     live_Rate.titleLabel.Text = $"Edit {saveFileName} MarketWatch";

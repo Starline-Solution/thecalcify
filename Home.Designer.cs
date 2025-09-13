@@ -164,7 +164,6 @@ namespace thecalcify
             this.clearExcelToolStripMenuItem.Size = new System.Drawing.Size(199, 24);
             this.clearExcelToolStripMenuItem.Text = "Clear Excel";
             this.clearExcelToolStripMenuItem.Visible = false;
-            this.clearExcelToolStripMenuItem.Click += new System.EventHandler(this.ClearExcelToolStripMenuItem_Click);
             // 
             // menuStrip1
             // 
