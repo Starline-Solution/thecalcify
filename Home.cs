@@ -2875,26 +2875,8 @@ namespace thecalcify
             defaultGrid.ColumnHeadersDefaultCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", fontSize + 1.5f, FontStyle.Bold);
 
             defaultGrid.ResumeLayout();
-        }
 
-                if (!identifiers.Contains(item.Symbol))
-                {
-                    checkedListSymbols.Items.Add(item.SymbolName, false);
-                }
-            }
 
-            panelAddSymbols.Visible = true;
-            panelAddSymbols.BringToFront();
-        }
-
-                if (!identifiers.Contains(item.Symbol))
-                {
-                    checkedListSymbols.Items.Add(item.SymbolName, false);
-                }
-            }
-
-            panelAddSymbols.Visible = true;
-            panelAddSymbols.BringToFront();
         }
 
         public void KillProcess()
