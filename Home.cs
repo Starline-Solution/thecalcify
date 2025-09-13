@@ -1379,6 +1379,8 @@ namespace thecalcify
         {
             try
             {
+                ExportToExcelToolStripMenuItem.Enabled = false;
+
                 MapRegAsm();
 
                 excelApp = new Excel.Application();
@@ -1394,16 +1396,9 @@ namespace thecalcify
                 // Copy template Excel file
                 if (File.Exists(excelFilePath))
                 {
-                    if (File.Exists(destExcelPath))
-                        File.Delete(destExcelPath);
+                    if (!File.Exists(destExcelPath))
+                        File.Copy(excelFilePath, destExcelPath);
 
-                    File.Copy(excelFilePath, destExcelPath);
-                    ClearExcelSheet(destExcelPath);
-                }
-                else
-                {
-                    MessageBox.Show("Original Excel file not found.");
-                    return;
                 }
 
                 // Load data
@@ -1413,6 +1408,7 @@ namespace thecalcify
                     return;
                 }
 
+                //ClearExcelSheet(destExcelPath);
 
                 string cipherText = File.ReadAllText(marketInitDataPath);
                 string json = CryptoHelper.Decrypt(cipherText, EditableMarketWatchGrid.passphrase);
@@ -1422,7 +1418,7 @@ namespace thecalcify
                 // Open workbook
                 Excel.Workbook workbook = excelApp.Workbooks.Open(destExcelPath);
                 Excel._Worksheet worksheet = workbook.Sheets[1];
-                worksheet.Unprotect();
+                worksheet.Unprotect("thecalcify");
 
                 // Create formula map
                 List<ExcelFormulaCell> formulaCells = BuildFormulaCells(dict);
@@ -1433,13 +1429,14 @@ namespace thecalcify
                     worksheet.Cells[cell.Row, cell.Column].Formula = cell.Formula;
                 }
 
-                excelApp.EnableAnimations = false;
+                excelApp.EnableAnimations = true;
 
                 // 🔒 Protect only Sheet1 (all cells locked)
                 worksheet.Cells.Locked = true;
                 worksheet.Protect(
                     DrawingObjects: true,
                     Contents: true,
+                    Password: "thecalcify",
                     Scenarios: true,
                     AllowFormattingCells: false,
                     AllowFormattingColumns: false,
@@ -1481,31 +1478,105 @@ namespace thecalcify
                 ApplicationLogger.LogException(ex);
                 KillProcess();
             }
+            finally
+            {
+                ExportToExcelToolStripMenuItem.Enabled = true;
+            }
+        }
+
+        private void ClearExcelToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            string destExcelPath = Path.Combine(desktopPath, "thecalcify.xlsx");
+
+            ClearExcelSheet(destExcelPath);
         }
 
         private void ClearExcelSheet(string destExcelPath)
         {
+            Excel.Workbook workbook = null;
+            Excel.Worksheet worksheet = null;
+
             try
             {
-                // Open workbook
-                Excel.Workbook workbook = excelApp.Workbooks.Open(destExcelPath);
-                Excel._Worksheet worksheet = workbook.Sheets[1];
 
-                worksheet.Cells.Clear();
+                if (excelApp == null)
+                    MessageBox.Show("Can't Clear Excel");
+
+                workbook = excelApp.Workbooks.Open(destExcelPath);
+
+                if (workbook.Sheets.Count < 1)
+                    throw new Exception("Workbook has no sheets.");
+
+                worksheet = workbook.Sheets[1] as Excel.Worksheet;
+
+                if (worksheet == null)
+                    throw new Exception("Could not access worksheet.");
+
+                // Unprotect first
+                worksheet.Unprotect("thecalcify");
+
+                string a1Value = worksheet.Cells[1, 1].Value2?.ToString();
+
+                // Clear the entire worksheet
+                worksheet.Cells.ClearContents();
+
+                // Restore A1
+                worksheet.Cells[1, 1].Value2 = a1Value;
 
 
-                worksheet.Cells[1, 1].Value = "Name"; // A1 = row 1, column 1
+                // Lock all cells
+                worksheet.Cells.Locked = true;
 
+                // Protect sheet with specific options
+                worksheet.Protect(
+                    Password: "thecalcify",
+                    DrawingObjects: true,
+                    Contents: true,
+                    Scenarios: true,
+                    AllowFormattingCells: false,
+                    AllowFormattingColumns: false,
+                    AllowFormattingRows: false,
+                    AllowInsertingColumns: false,
+                    AllowInsertingRows: false,
+                    AllowDeletingColumns: false,
+                    AllowDeletingRows: false,
+                    AllowSorting: false,
+                    AllowFiltering: false,
+                    AllowUsingPivotTables: false
+                );
+
+                // Save and close
                 workbook.Save();
-                workbook.Close(false);
             }
             catch (Exception ex)
             {
                 ApplicationLogger.LogException(ex);
                 MessageBox.Show($"[Excel Face Issue] :- {ex.Message}");
+            }
+            finally
+            {
 
+                // Cleanup COM objects to avoid memory leaks
+                if (worksheet != null)
+                {
+                    Marshal.ReleaseComObject(worksheet);
+                    worksheet = null;
+                }
+
+                if (workbook != null)
+                {
+                    workbook.Close(false);
+                    Marshal.ReleaseComObject(workbook);
+                    workbook = null;
+                }
+
+                // Optional GC to force cleanup
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
             }
         }
+
 
         private List<ExcelFormulaCell> BuildFormulaCells(Dictionary<string, Dictionary<string, object>> dict)
         {
@@ -1566,8 +1637,6 @@ namespace thecalcify
 
             return formulaCells;
         }
-
-
 
         public void MapRegAsm()
         {
@@ -1632,8 +1701,9 @@ namespace thecalcify
             };
 
             Process.Start(psi)?.WaitForExit();
-        }
 
+            ApplicationLogger.Log(command);
+        }
 
         public void SetThrottle(string officeVersion)
         {
@@ -1646,8 +1716,8 @@ namespace thecalcify
                     if (key != null)
                     {
                         key.SetValue("RTDThrottleInterval", 200, RegistryValueKind.DWord);
-                        key.SetValue("EnableAnimations", 1, RegistryValueKind.DWord);
-                        key.SetValue("DisableHardwareAcceleration", 1, RegistryValueKind.DWord);
+                        //key.SetValue("EnableAnimations", 0, RegistryValueKind.DWord);
+                        //key.SetValue("DisableHardwareAcceleration", 0, RegistryValueKind.DWord);
                         Console.WriteLine("RTDThrottleInterval set successfully.");
                     }
                     else
@@ -1655,8 +1725,8 @@ namespace thecalcify
                         using (RegistryKey newKey = Registry.CurrentUser.CreateSubKey(registryPath))
                         {
                             newKey.SetValue("RTDThrottleInterval", 200, RegistryValueKind.DWord);
-                            newKey.SetValue("EnableAnimations", 1, RegistryValueKind.DWord);
-                            key.SetValue("DisableHardwareAcceleration", 1, RegistryValueKind.DWord);
+                            //newKey.SetValue("EnableAnimations", 0, RegistryValueKind.DWord);
+                            //key.SetValue("DisableHardwareAcceleration", 0, RegistryValueKind.DWord);
                             Console.WriteLine("Key created and value set successfully.");
                         }
                     }
@@ -1705,7 +1775,6 @@ namespace thecalcify
                 return Environment.Is64BitOperatingSystem; // Fallback assumption
             }
         }
-
 
         public void ExportExcelOnClick()
         {
@@ -1812,7 +1881,6 @@ namespace thecalcify
             excelThread.SetApartmentState(ApartmentState.STA);
             excelThread.Start();
         }
-
 
         private void ReleaseExcelObjects(params object[] comObjects)
         {
@@ -2164,6 +2232,7 @@ namespace thecalcify
         {
             try
             {
+                savelabel.Visible = false;
                 fontSizeComboBox.Visible = true;
                 string finalPath = Path.Combine(AppFolder, username);
                 selectedSymbols.Clear();
@@ -2194,7 +2263,14 @@ namespace thecalcify
         {
             fontSizeComboBox.Visible = true;
 
+            savelabel.Visible = false;
+
+
             EditableMarketWatchGrid editableMarketWatchGrid = EditableMarketWatchGrid.CurrentInstance;
+            if (editableMarketWatchGrid != null && editableMarketWatchGrid.IsCurrentCellInEditMode)
+            {
+                editableMarketWatchGrid.EndEdit();
+            }
             editableMarketWatchGrid?.Dispose();
             toolsToolStripMenuItem.Enabled = true;
             isLoadedSymbol = false;
@@ -2310,6 +2386,8 @@ namespace thecalcify
 
                 // Reset save file name
                 saveFileName = null;
+
+                savelabel.Visible = true;
 
                 // Enable all items in the Open menu
                 foreach (ToolStripMenuItem item in viewToolStripMenuItem.DropDownItems)

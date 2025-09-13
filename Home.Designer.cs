@@ -47,6 +47,7 @@ namespace thecalcify
             this.ExportToExcelToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.addEditSymbolsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.addEditColumnsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.clearExcelToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.toolsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.disconnectESCToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -65,6 +66,7 @@ namespace thecalcify
             this.fontSizeComboBox = new System.Windows.Forms.ComboBox();
             this.newMarketWatchMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.txtsearch = new System.Windows.Forms.TextBox();
+            this.savelabel = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.defaultGrid)).BeginInit();
             this.Tools.SuspendLayout();
             this.menuStrip1.SuspendLayout();
@@ -129,9 +131,10 @@ namespace thecalcify
             this.Tools.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.ExportToExcelToolStripMenuItem,
             this.addEditSymbolsToolStripMenuItem,
-            this.addEditColumnsToolStripMenuItem});
+            this.addEditColumnsToolStripMenuItem,
+            this.clearExcelToolStripMenuItem});
             this.Tools.Name = "ClickMenuStrip";
-            this.Tools.Size = new System.Drawing.Size(200, 76);
+            this.Tools.Size = new System.Drawing.Size(200, 100);
             // 
             // ExportToExcelToolStripMenuItem
             // 
@@ -154,6 +157,14 @@ namespace thecalcify
             this.addEditColumnsToolStripMenuItem.Size = new System.Drawing.Size(199, 24);
             this.addEditColumnsToolStripMenuItem.Text = "Add/Edit Columns";
             this.addEditColumnsToolStripMenuItem.Click += new System.EventHandler(this.AddEditColumnsToolStripMenuItem_Click);
+            // 
+            // clearExcelToolStripMenuItem
+            // 
+            this.clearExcelToolStripMenuItem.Name = "clearExcelToolStripMenuItem";
+            this.clearExcelToolStripMenuItem.Size = new System.Drawing.Size(199, 24);
+            this.clearExcelToolStripMenuItem.Text = "Clear Excel";
+            this.clearExcelToolStripMenuItem.Visible = false;
+            this.clearExcelToolStripMenuItem.Click += new System.EventHandler(this.ClearExcelToolStripMenuItem_Click);
             // 
             // menuStrip1
             // 
@@ -285,6 +296,7 @@ namespace thecalcify
             // 
             // bottomPanel
             // 
+            this.bottomPanel.Controls.Add(this.savelabel);
             this.bottomPanel.Controls.Add(this.licenceExpire);
             this.bottomPanel.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.bottomPanel.Location = new System.Drawing.Point(0, 682);
@@ -341,6 +353,16 @@ namespace thecalcify
             this.txtsearch.TabIndex = 6;
             this.txtsearch.TextChanged += new System.EventHandler(this.Txtsearch_TextChanged);
             this.txtsearch.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Txtsearch_KeyDown);
+            // 
+            // savelabel
+            // 
+            this.savelabel.AutoSize = true;
+            this.savelabel.Location = new System.Drawing.Point(7, 5);
+            this.savelabel.Name = "savelabel";
+            this.savelabel.Size = new System.Drawing.Size(189, 16);
+            this.savelabel.TabIndex = 1;
+            this.savelabel.Text = "Save MarketWatch (CTRL + S)";
+            this.savelabel.Visible = false;
             // 
             // thecalcify
             // 
@@ -551,5 +573,7 @@ namespace thecalcify
         private ToolStripMenuItem newCTRLNToolStripMenuItem1;
         private ToolStripMenuItem viewToolStripMenuItem;
         private ToolStripMenuItem deleteToolStripMenuItem;
+        private ToolStripMenuItem clearExcelToolStripMenuItem;
+        private Label savelabel;
     }
 }
