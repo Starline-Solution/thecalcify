@@ -2155,6 +2155,9 @@ namespace thecalcify
                         addEditSymbolsToolStripMenuItem.Enabled = true;
                         lastOpenMarketWatch = saveFileName;
 
+                        EditableMarketWatchGrid editableMarketWatchGrid = EditableMarketWatchGrid.CurrentInstance;
+                        editableMarketWatchGrid?.Dispose();
+                        saveMarketWatchHost.Visible = false;
                         LoadSymbol(Path.Combine(saveFileName + ".slt"));
 
                         //SetActiveMenuItem(clickedItem);
@@ -2272,6 +2275,7 @@ namespace thecalcify
                 editableMarketWatchGrid.EndEdit();
             }
             editableMarketWatchGrid?.Dispose();
+            saveMarketWatchHost.Visible = false;
             toolsToolStripMenuItem.Enabled = true;
             isLoadedSymbol = false;
             LiveRateGrid();
@@ -2373,8 +2377,8 @@ namespace thecalcify
                 newCTRLNToolStripMenuItem1.Enabled = false;
 
                 // Update save button visibility
-                //saveMarketWatchHost.Visible = true;
-                //saveMarketWatchHost.Text = "Save MarketWatch";
+                saveMarketWatchHost.Visible = true;
+                saveMarketWatchHost.Text = "Save MarketWatch";
 
                 fontSizeComboBox.Visible = false;
                 // Update status label
@@ -2856,16 +2860,6 @@ namespace thecalcify
         {
             if (titleLabel != null)
             {
-                if (titleLabel.Text.ToLower() == "new marketwatch")
-                {
-                    saveMarketWatchHost.Visible = true;
-                    saveMarketWatchHost.Text = "Save MarketWatch";
-                }
-                else
-                {
-                    saveMarketWatchHost.Visible = false;
-                }
-
                 txtsearch.Text = null;
             }
         }
