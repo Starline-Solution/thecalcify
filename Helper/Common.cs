@@ -90,6 +90,33 @@ namespace thecalcify.Helper
             }
         }
 
+        public static DateTime ParseToDate(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+                throw new ArgumentException("Input date string is null or empty.");
+
+            string[] formats =
+            {
+        "dd/MM/yyyy", "d/M/yyyy",
+        "MM/dd/yyyy", "M/d/yyyy",
+        "yyyy-MM-dd", "yyyy/MM/dd",
+        "dd-MM-yyyy", "d-M-yyyy",
+        "dd.MM.yyyy", "d.M.yyyy"
+    };
+
+            if (DateTime.TryParseExact(
+                    input,
+                    formats,
+                    CultureInfo.InvariantCulture,
+                    DateTimeStyles.None,
+                    out DateTime parsedDate))
+            {
+                return parsedDate.Date; // ✅ return DateTime (no string conversion)
+            }
+
+            throw new FormatException($"Invalid date format: {input}");
+        }
+
         public void StartInternetMonitor()
         {
             internetCheckTimer = new System.Windows.Forms.Timer
