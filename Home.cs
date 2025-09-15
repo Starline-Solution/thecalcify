@@ -209,7 +209,7 @@ namespace thecalcify
             username = login?.username ?? string.Empty;
             password = login?.userpassword ?? string.Empty;
 
-            DateTime txtlicenceDate = DateTime.Parse(licenceDate);
+            DateTime txtlicenceDate = Common.ParseToDate(licenceDate);
             DateTime currentDate = DateTime.Now.Date;
             TimeSpan diff = txtlicenceDate - currentDate;
             RemainingDays = diff.Days;
@@ -2299,7 +2299,6 @@ namespace thecalcify
             {
                 ExportToExcelToolStripMenuItem.Enabled = false;
 
-                MapRegAsm(); // Still needed for RTD
                 KillProcess();
 
                 string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
@@ -2440,201 +2439,6 @@ namespace thecalcify
             }
 
             return formulaCells;
-        }
-
-        public void MapRegAsm()
-        {
-            try
-            {
-                // Detect if Excel is 32-bit or 64-bit
-                bool isExcel64Bit = IsExcel64Bit(out string officeVersion);
-
-
-
-                // Detect regasm paths
-                string regasm64Path = Path.Combine(RuntimeEnvironment.GetRuntimeDirectory(), "RegAsm.exe");
-                string regasm32Path = regasm64Path.Replace("Framework64", "Framework");
-
-                string appPath = AppDomain.CurrentDomain.BaseDirectory;
-                string dllPath = Path.Combine(appPath, "thecalcifyRTD.dll");
-
-                if (!File.Exists(dllPath))
-                {
-                    MessageBox.Show($"DLL not found: {dllPath}");
-                    return;
-                }
-
-                // Unregister both versions just in case
-
-                // Register based on Excel bitness
-                if (isExcel64Bit)
-                {
-                    regasm32Path = regasm32Path.Replace("Framework", "Framework64");
-                    RunAsAdmin(GetRegAsmCommand(regasm32Path, dllPath, unregister: true));
-                    RunAsAdmin(GetRegAsmCommand(regasm32Path, dllPath));
-                }
-                else
-                {
-                    RunAsAdmin(GetRegAsmCommand(regasm32Path, dllPath, unregister: true));
-                    RunAsAdmin(GetRegAsmCommand(regasm32Path, dllPath));
-                }
-
-                // Set registry throttle interval based on Office version
-                SetThrottle(officeVersion);
-            }
-            catch (Exception ex)
-            {
-                ApplicationLogger.Log("Failed in MapRegAsm: " + ex.Message);
-            }
-        }
-
-        private string GetRegAsmCommand(string regasmPath, string dllPath, bool unregister = false)
-        {
-            if (unregister)
-                return $"/c \"\"{regasmPath}\" /unregister \"{dllPath}\"\"";
-            else
-                return $"/c \"\"{regasmPath}\" \"{dllPath}\" /codebase /tlb\"";
-        }
-
-        private void RunAsAdmin(string command)
-        {
-            var psi = new ProcessStartInfo
-            {
-                FileName = "cmd.exe",
-                Arguments = command,
-                Verb = "runas",
-                UseShellExecute = true,
-                WindowStyle = ProcessWindowStyle.Hidden
-            };
-
-            Process.Start(psi)?.WaitForExit();
-
-            ApplicationLogger.Log(command);
-        }
-
-        public void SetThrottle(string officeVersion)
-        {
-            try
-            {
-                string registryPath = $@"Software\Microsoft\Office\{officeVersion}\Excel\Options";
-
-                using (RegistryKey key = Registry.CurrentUser.OpenSubKey(registryPath, writable: true))
-                {
-                    if (key != null)
-                    {
-                        key.SetValue("RTDThrottleInterval", 200, RegistryValueKind.DWord);
-                        //key.SetValue("EnableAnimations", 0, RegistryValueKind.DWord);
-                        //key.SetValue("DisableHardwareAcceleration", 0, RegistryValueKind.DWord);
-                        Console.WriteLine("RTDThrottleInterval set successfully.");
-                    }
-                    else
-                    {
-                        using (RegistryKey newKey = Registry.CurrentUser.CreateSubKey(registryPath))
-                        {
-                            newKey.SetValue("RTDThrottleInterval", 200, RegistryValueKind.DWord);
-                            //newKey.SetValue("EnableAnimations", 0, RegistryValueKind.DWord);
-                            //key.SetValue("DisableHardwareAcceleration", 0, RegistryValueKind.DWord);
-                            Console.WriteLine("Key created and value set successfully.");
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error setting registry value: " + ex.Message);
-            }
-        }
-
-        private bool IsExcel64Bit(out string officeVersion)
-        {
-            officeVersion = "16.0"; // Default to Office 2016/2019/365
-
-            try
-            {
-                using (RegistryKey key = Registry.ClassesRoot.OpenSubKey(@"Excel.Application\CurVer"))
-                {
-                    string curVer = key?.GetValue(null)?.ToString(); // e.g. "Excel.Application.16"
-                    if (!string.IsNullOrEmpty(curVer))
-                    {
-                        officeVersion = curVer.Split('.').Last(); // "16"
-                        officeVersion += ".0";
-                    }
-                }
-
-                // Swtich to another method if not found
-                string bitness = Registry.GetValue(
-                   @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Office\ClickToRun\Configuration", "Platform", null
-                ) as string;
-
-                ApplicationLogger.Log($"Detected Office Version: {officeVersion}, Bitness: {bitness}");
-
-                if (string.IsNullOrEmpty(bitness))
-                {
-                    // Determine installed Excel 64 bitness by checking registry
-                    bitness = Registry.GetValue(
-                        @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Office\" + officeVersion + @"\Outlook", "Bitness", null
-                    ) as string;
-                }
-                
-
-                if (string.IsNullOrEmpty(bitness))
-                {
-                    // Fallback for 32-bit Office on 64-bit Windows
-                    bitness = Registry.GetValue(
-                        @"HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Office\" + officeVersion + @"\Outlook", "Bitness", null
-                    ) as string;
-                }
-
-                if (string.IsNullOrEmpty(bitness)) {
-                    // 🟡 Fallback: Launch Excel and inspect window title
-                    var excelApp = new Microsoft.Office.Interop.Excel.Application();
-                    excelApp.Visible = false;
-
-                    try
-                    {
-                        int pid = 0;
-
-                        // Get Excel process via window handle
-                        IntPtr hwnd = new IntPtr(excelApp.Hwnd);
-                        GetWindowThreadProcessId(hwnd, out pid);
-
-                        var process = Process.GetProcessById(pid);
-                        string title = process.MainWindowTitle;
-
-                        ApplicationLogger.Log($"Fallback: Excel process title = '{title}'");
-
-                        // Check if title contains "32-bit"
-                        if (!string.IsNullOrEmpty(title) && title.Contains("32-bit"))
-                        {
-                            return false;
-                        }
-                        else
-                        {
-                            return true; // Default to 64-bit if unclear
-                        }
-                    }
-                    catch (Exception ex2)
-                    {
-                        ApplicationLogger.Log("Fallback detection failed: " + ex2.Message);
-                        return Environment.Is64BitOperatingSystem;
-                    }
-                    finally
-                    {
-                        // Always quit Excel instance
-                        excelApp.Quit();
-                        Marshal.ReleaseComObject(excelApp);
-                    }
-                }
-
-                ApplicationLogger.Log($"Final detected bitness: {bitness}");
-
-                return bitness != null && bitness.Equals("x64", StringComparison.OrdinalIgnoreCase);
-            }
-            catch (Exception ex)
-            {
-                ApplicationLogger.Log("Failed to detect Excel bitness/version: " + ex.Message);
-                return Environment.Is64BitOperatingSystem; // Fallback assumption
-            }
         }
 
         #endregion
