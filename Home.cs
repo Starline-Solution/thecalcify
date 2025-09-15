@@ -33,6 +33,10 @@ namespace thecalcify
     {
         #region Declaration and Initialization
 
+        [DllImport("user32.dll")]
+        private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out int lpdwProcessId);
+
+
         // ======================
         // 📌 Config / Constants
         // ======================
@@ -2326,12 +2330,6 @@ namespace thecalcify
                 {
                     var worksheet = workbook.Worksheet("Sheet1");
 
-                    // Unprotect if already protected
-                    if (worksheet.Protection.IsProtected)
-                    {
-                        worksheet.Unprotect("thecalcify");
-                    }
-
                     // Clear all existing content on Sheet1
                     worksheet.Clear();
 
@@ -2340,7 +2338,6 @@ namespace thecalcify
                     foreach (var cell in formulaCells)
                     {
                         var xlCell = worksheet.Cell(cell.Row, cell.Column);
-                        //xlCell.Style.Protection.SetLocked(true); // Lock the cell
 
                         if (cell.Row == 1 || cell.Column == 1)
                         {
@@ -2353,15 +2350,12 @@ namespace thecalcify
                     }
 
 
-                    // Finally, protect the sheet
-                    //worksheet.Protect("thecalcify");
-
                     workbook.Save();
                 }
 
                 var excelApp = new Microsoft.Office.Interop.Excel.Application();
                 excelApp.Visible = true;
-                excelApp.Workbooks.Open(destExcelPath);
+                excelApp.Workbooks.Open(destExcelPath,Password: "thecalcify");
             }
             catch (IOException ioEx)
             {
@@ -2455,6 +2449,8 @@ namespace thecalcify
                 // Detect if Excel is 32-bit or 64-bit
                 bool isExcel64Bit = IsExcel64Bit(out string officeVersion);
 
+
+
                 // Detect regasm paths
                 string regasm64Path = Path.Combine(RuntimeEnvironment.GetRuntimeDirectory(), "RegAsm.exe");
                 string regasm32Path = regasm64Path.Replace("Framework64", "Framework");
@@ -2473,8 +2469,9 @@ namespace thecalcify
                 // Register based on Excel bitness
                 if (isExcel64Bit)
                 {
-                    RunAsAdmin(GetRegAsmCommand(regasm64Path, dllPath, unregister: true));
-                    RunAsAdmin(GetRegAsmCommand(regasm64Path, dllPath));
+                    regasm32Path = regasm32Path.Replace("Framework", "Framework64");
+                    RunAsAdmin(GetRegAsmCommand(regasm32Path, dllPath, unregister: true));
+                    RunAsAdmin(GetRegAsmCommand(regasm32Path, dllPath));
                 }
                 else
                 {
@@ -2569,6 +2566,8 @@ namespace thecalcify
                    @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Office\ClickToRun\Configuration", "Platform", null
                 ) as string;
 
+                ApplicationLogger.Log($"Detected Office Version: {officeVersion}, Bitness: {bitness}");
+
                 if (string.IsNullOrEmpty(bitness))
                 {
                     // Determine installed Excel 64 bitness by checking registry
@@ -2585,6 +2584,49 @@ namespace thecalcify
                         @"HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Office\" + officeVersion + @"\Outlook", "Bitness", null
                     ) as string;
                 }
+
+                if (string.IsNullOrEmpty(bitness)) {
+                    // 🟡 Fallback: Launch Excel and inspect window title
+                    var excelApp = new Microsoft.Office.Interop.Excel.Application();
+                    excelApp.Visible = false;
+
+                    try
+                    {
+                        int pid = 0;
+
+                        // Get Excel process via window handle
+                        IntPtr hwnd = new IntPtr(excelApp.Hwnd);
+                        GetWindowThreadProcessId(hwnd, out pid);
+
+                        var process = Process.GetProcessById(pid);
+                        string title = process.MainWindowTitle;
+
+                        ApplicationLogger.Log($"Fallback: Excel process title = '{title}'");
+
+                        // Check if title contains "32-bit"
+                        if (!string.IsNullOrEmpty(title) && title.Contains("32-bit"))
+                        {
+                            return false;
+                        }
+                        else
+                        {
+                            return true; // Default to 64-bit if unclear
+                        }
+                    }
+                    catch (Exception ex2)
+                    {
+                        ApplicationLogger.Log("Fallback detection failed: " + ex2.Message);
+                        return Environment.Is64BitOperatingSystem;
+                    }
+                    finally
+                    {
+                        // Always quit Excel instance
+                        excelApp.Quit();
+                        Marshal.ReleaseComObject(excelApp);
+                    }
+                }
+
+                ApplicationLogger.Log($"Final detected bitness: {bitness}");
 
                 return bitness != null && bitness.Equals("x64", StringComparison.OrdinalIgnoreCase);
             }
