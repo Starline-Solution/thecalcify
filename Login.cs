@@ -168,7 +168,6 @@ namespace thecalcify
                                     {
                                         Console.WriteLine("Error parsing rate value at Login_Click: " + ex.Message);
                                     }
-                                    //licenceDate = Convert.ToDateTime(dataElement.GetProperty("expireTime").GetString()).ToString("dd/MM/yyyy");
                                     // Decode JWT token
                                     var payload = DecodeJwtPayload(token);
 
