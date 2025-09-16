@@ -327,4 +327,29 @@ namespace thecalcify.Helper
             SetWindowPos(handle, HWND_TOP, 0, 0, width, height, SWP_SHOWWINDOW);
         }
     }
+
+    public class CategoriesResponse
+    {
+        public CategoriesData Data { get; set; }
+    }
+
+    public class CategoriesData
+    {
+        public FilterOptions FilterOptions { get; set; }
+    }
+
+    public class FilterOptions
+    {
+        public List<Category> Categories { get; set; }
+    }
+
+    public class Category
+    {
+        public string Code { get; set; }
+        public string Literal { get; set; }
+        public string Uri { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("children")]
+        public List<Category> SubCategories { get; set; } = new List<Category>();
+    }
 }

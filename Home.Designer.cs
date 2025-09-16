@@ -57,16 +57,17 @@ namespace thecalcify
             this.newCTRLNToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.viewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.newsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.headerPanel = new System.Windows.Forms.Panel();
             this.titleLabel = new System.Windows.Forms.Label();
             this.licenceExpire = new System.Windows.Forms.Label();
             this.bottomPanel = new System.Windows.Forms.Panel();
+            this.savelabel = new System.Windows.Forms.Label();
             this.searchTextLabel = new System.Windows.Forms.Label();
             this.fontSizeComboBox = new System.Windows.Forms.ComboBox();
             this.newMarketWatchMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.txtsearch = new System.Windows.Forms.TextBox();
-            this.savelabel = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.defaultGrid)).BeginInit();
             this.Tools.SuspendLayout();
             this.menuStrip1.SuspendLayout();
@@ -175,6 +176,7 @@ namespace thecalcify
             this.toolsToolStripMenuItem,
             this.saveMarketWatchHost,
             this.newCTRLNToolStripMenuItem,
+            this.newsToolStripMenuItem,
             this.aboutToolStripMenuItem});
             this.menuStrip1.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.HorizontalStackWithOverflow;
             this.menuStrip1.Location = new System.Drawing.Point(0, 30);
@@ -248,6 +250,13 @@ namespace thecalcify
             this.deleteToolStripMenuItem.Text = "Delete";
             this.deleteToolStripMenuItem.Click += new System.EventHandler(this.DeleteToolStripMenuItem_Click);
             // 
+            // newsToolStripMenuItem
+            // 
+            this.newsToolStripMenuItem.Name = "newsToolStripMenuItem";
+            this.newsToolStripMenuItem.Size = new System.Drawing.Size(65, 24);
+            this.newsToolStripMenuItem.Text = "News";
+            this.newsToolStripMenuItem.Click += new System.EventHandler(this.newsToolStripMenuItem_Click);
+            // 
             // aboutToolStripMenuItem
             // 
             this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
@@ -304,6 +313,16 @@ namespace thecalcify
             this.bottomPanel.Size = new System.Drawing.Size(1115, 26);
             this.bottomPanel.TabIndex = 4;
             // 
+            // savelabel
+            // 
+            this.savelabel.AutoSize = true;
+            this.savelabel.Location = new System.Drawing.Point(7, 5);
+            this.savelabel.Name = "savelabel";
+            this.savelabel.Size = new System.Drawing.Size(189, 16);
+            this.savelabel.TabIndex = 1;
+            this.savelabel.Text = "Save MarketWatch (CTRL + S)";
+            this.savelabel.Visible = false;
+            // 
             // searchTextLabel
             // 
             this.searchTextLabel.AutoSize = true;
@@ -352,16 +371,6 @@ namespace thecalcify
             this.txtsearch.TabIndex = 6;
             this.txtsearch.TextChanged += new System.EventHandler(this.Txtsearch_TextChanged);
             this.txtsearch.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Txtsearch_KeyDown);
-            // 
-            // savelabel
-            // 
-            this.savelabel.AutoSize = true;
-            this.savelabel.Location = new System.Drawing.Point(7, 5);
-            this.savelabel.Name = "savelabel";
-            this.savelabel.Size = new System.Drawing.Size(189, 16);
-            this.savelabel.TabIndex = 1;
-            this.savelabel.Text = "Save MarketWatch (CTRL + S)";
-            this.savelabel.Visible = false;
             // 
             // thecalcify
             // 
@@ -574,5 +583,6 @@ namespace thecalcify
         private ToolStripMenuItem deleteToolStripMenuItem;
         private ToolStripMenuItem clearExcelToolStripMenuItem;
         private Label savelabel;
+        private ToolStripMenuItem newsToolStripMenuItem;
     }
 }
