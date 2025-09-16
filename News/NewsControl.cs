@@ -3,11 +3,15 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
+using System.Diagnostics;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Windows.Input;
 using thecalcify.Helper;
 
 namespace thecalcify.News
@@ -15,8 +19,12 @@ namespace thecalcify.News
     public partial class NewsControl : UserControl
     {
         private readonly string _username, _password;
-
+        private static readonly string apiUrl = ConfigurationManager.AppSettings["ReutersApiBaseUrl"];
+        private static readonly HttpClient client = new HttpClient();
         public string _token;
+        private CancellationTokenSource _cts;
+
+
         public NewsControl(string username, string password, string token)
         {
             InitializeComponent();
@@ -24,8 +32,30 @@ namespace thecalcify.News
             _password = password;
             _token = token;
             LoadCategoriesAsync();
+
+
+            // Configure HttpClient once
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
             cmbCategory.SelectedIndexChanged += CmbCategory_SelectedIndexChanged;
             btnSearchNews.Click += BtnSearchNews_Click;
+
+            _cts = new CancellationTokenSource();
+
+            try
+            {
+                _ = PeriodicFetchAsync(_cts.Token);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error: {ex.Message}");
+            }
+            finally
+            {
+                //_cts.Cancel();
+                //_cts.Dispose();
+            }
         }
 
         private async Task LoadCategoriesAsync()
@@ -80,7 +110,6 @@ namespace thecalcify.News
             }
         }
 
-
         private void CmbCategory_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (cmbCategory != null)
@@ -119,7 +148,8 @@ namespace thecalcify.News
                 cmbSubCategory.SelectedIndex = 0;
             }
         }
-        private void BtnSearchNews_Click(object sender, EventArgs e)
+
+        private async void BtnSearchNews_Click(object sender, EventArgs e)
         {
             // Clear old rows
             dgvNews.Rows.Clear();
@@ -129,6 +159,130 @@ namespace thecalcify.News
             string subCategory = cmbSubCategory.SelectedItem?.ToString() ?? "All";
 
             dgvNews.Rows.Add($"Showing {category} - {subCategory} news here...");
+
+
+            // Fetch news data and get the new cursor
+            await FetchNewsDataAndUpdateGrid(category, subCategory, 20, string.Empty);
+
+        }
+
+        private async Task PeriodicFetchAsync(CancellationToken cancellationToken)
+        {
+            string cursor = string.Empty;
+
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                try
+                {
+                    // Fetch news data and get the new cursor
+                    cursor = await FetchNewsDataAndUpdateGrid(string.Empty, string.Empty, 20, cursor);
+                }
+                catch (Exception ex)
+                {
+                    //Invoke((Action)(() => lblStatus.Text = $"Error: {ex.Message}"));
+                }
+
+                try
+                {
+                    await Task.Delay(3000, cancellationToken);
+                }
+                catch (TaskCanceledException)
+                {
+                    break;
+                }
+            }
+        }
+
+        private async Task<string> FetchNewsDataAndUpdateGrid(string category, string subcategory, int pageSize, string cursor)
+        {
+            var totalStopwatch = Stopwatch.StartNew();
+
+            string baseUrl = BuildReutersApiUrl($"{apiUrl}/Items", pageSize, category, subcategory, cursor);
+
+            var requestStopwatch = Stopwatch.StartNew();
+            HttpResponseMessage response = await client.GetAsync(baseUrl);
+            requestStopwatch.Stop();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                //Invoke((Action)(() => lblStatus.Text = $"Failed to fetch data. Status: {response.StatusCode}"));
+                return cursor;
+            }
+
+            string json = await response.Content.ReadAsStringAsync();
+
+            ReutersResponse result = null;
+            try
+            {
+                // Handle double-encoded JSON
+                string innerJson = System.Text.Json.JsonSerializer.Deserialize<string>(json);
+                result = System.Text.Json.JsonSerializer.Deserialize<ReutersResponse>(innerJson);
+            }
+            catch (Exception ex)
+            {
+                //Invoke((Action)(() => lblStatus.Text = $"Deserialization error: {ex.Message}"));
+                return cursor;
+            }
+
+            if (result?.Data?.Search?.Items == null || result.Data.Search.Items.Count == 0)
+            {
+                //Invoke((Action)(() => lblStatus.Text = "No items found."));
+                return cursor;
+            }
+
+            var newsItems = result.Data.Search.Items;
+
+            // Update DataGridView on UI thread
+            _ = Invoke((Action)(() =>
+            {
+                dgvNews.Rows.Clear();
+                foreach (var item in newsItems)
+                {
+                    DateTimeOffset dto = DateTimeOffset.Parse(item.FirstCreated);
+                    DateTimeOffset istTime = dto.ToOffset(TimeSpan.FromHours(5.5));
+                    string formattedTime = istTime.ToString("dd/MM/yyyy HH:mm:ss");
+
+                    var selectedCategory = cmbCategory.SelectedItem as Category;
+                    string categoryName = selectedCategory?.Literal ?? "N/A";
+
+                    var selectedSubCategory = cmbSubCategory.SelectedItem as Category;
+                    string subcategoryName = selectedSubCategory?.Literal ?? "N/A";
+
+
+                    dgvNews.Rows.Insert(0,
+                        formattedTime,     // Time
+                        item.HeadLine,     // Title
+                        categoryName,          // Category
+                        subcategoryName        // SubCategory
+                    );
+                }
+
+            }));
+
+
+
+            totalStopwatch.Stop();
+
+            // Return the updated cursor for pagination
+            return result.Data.Search.PageInfo?.EndCursor;
+        }
+
+        public static string BuildReutersApiUrl(string baseUrl, int pageSize, string category = null, string subCategory = null, string cursorToken = null)
+        {
+            var queryParams = new List<string>();
+
+            if (!string.IsNullOrWhiteSpace(category))
+                queryParams.Add($"category={Uri.EscapeDataString(category)}");
+
+            if (!string.IsNullOrWhiteSpace(subCategory))
+                queryParams.Add($"subCategory={Uri.EscapeDataString(subCategory)}");
+
+            queryParams.Add($"pageSize={(pageSize > 0 ? pageSize : 20)}");
+
+            if (!string.IsNullOrWhiteSpace(cursorToken))
+                queryParams.Add($"cursor={Uri.EscapeDataString(cursorToken)}");
+
+            return $"{baseUrl}?{string.Join("&", queryParams)}";
         }
     }
 }

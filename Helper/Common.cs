@@ -258,4 +258,138 @@ namespace thecalcify.Helper
         [Newtonsoft.Json.JsonProperty("children")]
         public List<Category> SubCategories { get; set; } = new List<Category>();
     }
+
+    public class ReutersResponse
+    {
+        [JsonPropertyName("data")]
+        public Data Data { get; set; }
+    }
+
+    public class Data
+    {
+        [JsonPropertyName("search")]
+        public Search Search { get; set; }
+    }
+
+    public class Search
+    {
+        [JsonPropertyName("totalHits")]
+        public int TotalHits { get; set; }
+
+        [JsonPropertyName("items")]
+        public List<NewsItem> Items { get; set; }
+
+        [JsonPropertyName("pageInfo")]
+        public PageInfo PageInfo { get; set; }
+    }
+
+    public class NewsItem
+    {
+        [JsonPropertyName("headLine")]
+        public string HeadLine { get; set; }
+
+        [JsonPropertyName("versionedGuid")]
+        public string VersionedGuid { get; set; }
+
+        [JsonPropertyName("uri")]
+        public string Uri { get; set; }
+
+        [JsonPropertyName("language")]
+        public string Language { get; set; }
+
+        [JsonPropertyName("type")]
+        public string Type { get; set; }
+
+        [JsonPropertyName("profile")]
+        public string Profile { get; set; }
+
+        [JsonPropertyName("slug")]
+        public string Slug { get; set; }
+
+        [JsonPropertyName("version")]
+        public string Version { get; set; }
+
+        [JsonPropertyName("credit")]
+        public string Credit { get; set; }
+
+        [JsonPropertyName("firstCreated")]
+        public string FirstCreated { get; set; }
+
+        [JsonPropertyName("sortTimestamp")]
+        public string SortTimestamp { get; set; }
+
+        [JsonPropertyName("contentTimestamp")]
+        public string ContentTimestamp { get; set; }
+
+        [JsonPropertyName("productLabel")]
+        public string ProductLabel { get; set; }
+
+        [JsonPropertyName("urgency")]
+        public int Urgency { get; set; }
+    }
+
+    public class PageInfo
+    {
+        [JsonPropertyName("endCursor")]
+        public string EndCursor { get; set; }
+
+        [JsonPropertyName("hasNextPage")]
+        public bool HasNextPage { get; set; }
+    }
+
+    public class RootDto
+    {
+        public DataDto data { get; set; }
+    }
+
+    public class DataDto
+    {
+        public ItemDto item { get; set; }
+    }
+
+    public class ItemDto
+    {
+        public string byLine { get; set; }
+        public string copyrightNotice { get; set; }
+        public DateTime versionCreated { get; set; }
+        public string fragment { get; set; }
+        public string headLine { get; set; }
+        public string versionedGuid { get; set; }
+        public string uri { get; set; }
+        public string language { get; set; }
+        public string type { get; set; }
+        public string profile { get; set; }
+        public string slug { get; set; }
+        public string usageTerms { get; set; }
+        public string usageTermsRole { get; set; }
+        public string version { get; set; }
+        public string credit { get; set; }
+        public DateTime firstCreated { get; set; }
+        public string productLabel { get; set; }
+        public string pubStatus { get; set; }
+        public int urgency { get; set; }
+        public string usn { get; set; }
+        public string intro { get; set; }
+        public string caption { get; set; }
+        public string keyword { get; set; }
+        public List<string> channels { get; set; }
+        public List<SubjectLocationDto> subjectLocation { get; set; }
+        public List<RenditionDto> renditions { get; set; }
+    }
+
+    public class SubjectLocationDto
+    {
+        public string city { get; set; }
+        public string countryCode { get; set; }
+        public string countryName { get; set; }
+    }
+
+    public class RenditionDto
+    {
+        public string mimeType { get; set; }
+        public string uri { get; set; }
+        public string type { get; set; }
+        public string version { get; set; }
+        public string code { get; set; }
+    }
 }
