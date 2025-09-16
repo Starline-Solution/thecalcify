@@ -235,6 +235,10 @@ namespace thecalcify
                     (columnPreferencesDefault ?? new List<string>()) : currentColumns;
             }));
 
+            // At app startup, spin up Excel hidden, then close it. This warms up the COM server so the real export is fast:
+            var app = new Microsoft.Office.Interop.Excel.Application();
+            app.Quit();
+
             MenuLoad();
 
             // --- LOAD INITIAL DATA ASYNCHRONOUSLY ---
@@ -2137,9 +2141,14 @@ namespace thecalcify
             {
                 col.Visible = columnPreferencesDefault.Contains(col.Name);
                 col.ReadOnly = true;
-                col.SortMode = DataGridViewColumnSortMode.Automatic;
+                //col.SortMode = DataGridViewColumnSortMode.Automatic;
                 col.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
                 col.Resizable = DataGridViewTriState.True;
+
+                if (col.Name == "Name")
+                    col.SortMode = DataGridViewColumnSortMode.Automatic;  // allow sort
+                else
+                    col.SortMode = DataGridViewColumnSortMode.NotSortable; // disable sort
 
                 if (col.Name == "symbol" || col.Name == "V")
                 {
@@ -2265,7 +2274,11 @@ namespace thecalcify
             {
                 ExportToExcelToolStripMenuItem.Enabled = false;
 
-                RegisterRtdDll("thecalcifyRTD.dll");
+                if (Type.GetTypeFromProgID("thecalcify", false) == null)
+                    RegisterRtdDll("thecalcifyRTD.dll");
+
+                // Set registry throttle interval based on Office version
+                SetThrottle();
                 KillProcess();
 
                 string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
@@ -2320,7 +2333,6 @@ namespace thecalcify
 
                 var excelApp = new Microsoft.Office.Interop.Excel.Application();
                 excelApp.Visible = true;
-                //excelApp.EnableAnimations = true;
                 excelApp.Workbooks.Open(destExcelPath, Password: "thecalcify");
             }
             catch (IOException ioEx)
@@ -2397,9 +2409,6 @@ namespace thecalcify
                 }
 
                 ApplicationLogger.Log($"RTD DLL registered successfully: {dllPath}");
-
-                // Set registry throttle interval based on Office version
-                SetThrottle();
             }
             catch (Exception ex)
             {
@@ -2412,32 +2421,50 @@ namespace thecalcify
             try
             {
                 string officeVersion = GetOfficeVersion();
-                string registryPath = $@"Software\Microsoft\Office\{officeVersion}\Excel\Options";
+                string excelOptionsPath = $@"Software\Microsoft\Office\{officeVersion}\Excel\Options";
+                string graphicsPath = $@"Software\Microsoft\Office\{officeVersion}\Common\Graphics";
 
-                using (RegistryKey key = Registry.CurrentUser.OpenSubKey(registryPath, writable: true))
+                // --- Excel Options (RTD + EnableAnimations) ---
+                using (RegistryKey key = Registry.CurrentUser.OpenSubKey(excelOptionsPath, writable: true))
                 {
                     if (key != null)
                     {
                         key.SetValue("RTDThrottleInterval", 200, RegistryValueKind.DWord);
                         key.SetValue("EnableAnimations", 0, RegistryValueKind.DWord);
-                        //key.SetValue("DisableHardwareAcceleration", 0, RegistryValueKind.DWord);
-                        Console.WriteLine("RTDThrottleInterval set successfully.");
+                        Console.WriteLine("RTDThrottleInterval & EnableAnimations updated.");
                     }
                     else
                     {
-                        using (RegistryKey newKey = Registry.CurrentUser.CreateSubKey(registryPath))
+                        using (RegistryKey newKey = Registry.CurrentUser.CreateSubKey(excelOptionsPath))
                         {
                             newKey.SetValue("RTDThrottleInterval", 200, RegistryValueKind.DWord);
                             newKey.SetValue("EnableAnimations", 0, RegistryValueKind.DWord);
-                            //key.SetValue("DisableHardwareAcceleration", 0, RegistryValueKind.DWord);
-                            Console.WriteLine("Key created and value set successfully.");
+                            Console.WriteLine("Excel Options key created & values set.");
+                        }
+                    }
+                }
+
+                // --- Common Graphics (DisableAnimations for Excel 2013+) ---
+                using (RegistryKey key = Registry.CurrentUser.OpenSubKey(graphicsPath, writable: true))
+                {
+                    if (key != null)
+                    {
+                        key.SetValue("DisableAnimations", 1, RegistryValueKind.DWord);
+                        Console.WriteLine("DisableAnimations updated.");
+                    }
+                    else
+                    {
+                        using (RegistryKey newKey = Registry.CurrentUser.CreateSubKey(graphicsPath))
+                        {
+                            newKey.SetValue("DisableAnimations", 1, RegistryValueKind.DWord);
+                            Console.WriteLine("Graphics key created & DisableAnimations set.");
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error setting registry value: " + ex.Message);
+                Console.WriteLine("Error setting registry values: " + ex.Message);
             }
         }
 
