@@ -2144,11 +2144,7 @@ namespace thecalcify
                 //col.SortMode = DataGridViewColumnSortMode.Automatic;
                 col.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
                 col.Resizable = DataGridViewTriState.True;
-
-                if (col.Name == "Name")
-                    col.SortMode = DataGridViewColumnSortMode.Automatic;  // allow sort
-                else
-                    col.SortMode = DataGridViewColumnSortMode.NotSortable; // disable sort
+                col.SortMode = DataGridViewColumnSortMode.NotSortable; // disable sort
 
                 if (col.Name == "symbol" || col.Name == "V")
                 {
