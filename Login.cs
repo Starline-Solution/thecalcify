@@ -92,7 +92,7 @@ namespace thecalcify
 
             loginbutton.Enabled = false;
 
-            if (CommonClass.InternetAvilable())
+            if (Common.InternetAvilable())
             {
 
                 string uname = unameTextBox.Text.Trim();

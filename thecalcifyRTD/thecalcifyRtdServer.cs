@@ -12,9 +12,6 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
-using static System.Net.Mime.MediaTypeNames;
-using Application = Microsoft.Office.Interop.Excel.Application;
 
 
 namespace thecalcifyRTD

@@ -31,41 +31,7 @@ namespace thecalcify.Helper
             
         }
 
-        public bool IsFileLocked(string filePath)
-        {
-            FileStream stream = null;
-
-            if(!Directory.Exists(Path.GetDirectoryName(filePath)))
-            {
-                return false; // It's a directory, not a file
-            }
-
-            if(!System.IO.File.Exists(filePath))
-            {
-                return false; // File does not exist, so it's not locked
-            }
-
-            try
-            {
-                // Try to open the file with exclusive access
-                stream = new FileStream(filePath, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
-            }
-            catch (IOException)
-            {
-                // The file is unavailable because it is still being written to
-                // or being processed by another thread or process
-                return true;
-            }
-            finally
-            {
-                stream?.Close();
-            }
-
-            // File is not locked
-            return false;
-        }
-
-        public bool InternetAvilable()
+        public static bool InternetAvilable()
         {
             try
             {
@@ -97,12 +63,12 @@ namespace thecalcify.Helper
 
             string[] formats =
             {
-        "dd/MM/yyyy", "d/M/yyyy",
-        "MM/dd/yyyy", "M/d/yyyy",
-        "yyyy-MM-dd", "yyyy/MM/dd",
-        "dd-MM-yyyy", "d-M-yyyy",
-        "dd.MM.yyyy", "d.M.yyyy"
-    };
+                "dd/MM/yyyy", "d/M/yyyy",
+                "MM/dd/yyyy", "M/d/yyyy",
+                "yyyy-MM-dd", "yyyy/MM/dd",
+                "dd-MM-yyyy", "d-M-yyyy",
+                "dd.MM.yyyy", "d.M.yyyy"
+            };
 
             if (DateTime.TryParseExact(
                     input,
@@ -142,7 +108,7 @@ namespace thecalcify.Helper
             }
         }
 
-        private void ResumeAppLogic()
+        private static void ResumeAppLogic()
         {
             try
             {
@@ -164,32 +130,7 @@ namespace thecalcify.Helper
             }
         }
 
-
-        // Helper method for safe decimal conversion
-        public decimal SafeConvertToDecimal(string value)
-        {
-            if (string.IsNullOrWhiteSpace(value) ||
-                value.Equals("NaN", StringComparison.OrdinalIgnoreCase))
-            {
-                return 0m;
-            }
-
-            try
-            {
-                if (decimal.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out decimal result))
-                {
-                    return result;
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error parsing rate value at SafeConvertToDecimal: " + ex.Message);
-            }
-
-            return 0m; // Default fallback value
-        }
-
-        public string TimeStampConvert(string value)
+        public static string TimeStampConvert(string value)
         {
             try
             {
@@ -223,41 +164,6 @@ namespace thecalcify.Helper
             }
         }
 
-        public void CreateShortCut(string filepath)
-        {
-            // Path to the file you want to create a shortcut for
-            //string targetPath = filepath; // Change this
-            string shortcutName = "thecalcify Excel";
-            string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
-            string shortcutPath = Path.Combine(desktopPath, shortcutName + ".lnk");
-
-            // Create WSH Shell
-            WshShell shell = new WshShell();
-            IWshShortcut shortcut = (IWshShortcut)shell.CreateShortcut(shortcutPath);
-
-            shortcut.TargetPath = filepath;
-            shortcut.WorkingDirectory = Path.GetDirectoryName(filepath);
-            shortcut.WindowStyle = 1;
-            shortcut.Description = "Runs thecalcify Excel as Administrator";
-            shortcut.IconLocation = filepath;
-
-            // This causes the program to request elevation when run
-            shortcut.Arguments = ""; // Optional: add arguments if needed
-            shortcut.Save();
-
-            // Now we need to mark the shortcut to always run as admin
-            // Unfortunately, IWshShortcut doesn't support setting "RunAsAdministrator" directly
-            // Instead, we must manually modify the shortcut file
-
-            byte[] bytes = System.IO.File.ReadAllBytes(shortcutPath);
-            // Set the 21st byte (index 0x15) to 0x22 (original value | 0x20)
-            // This sets the "RunAs" flag
-            if (bytes.Length > 0x15)
-            {
-                bytes[0x15] |= 0x20;
-                System.IO.File.WriteAllBytes(shortcutPath, bytes);
-            }
-        }
 
     }
 
@@ -266,12 +172,12 @@ namespace thecalcify.Helper
     {
         public bool isSuccess { get; set; }
         public string message { get; set; }
-        public List<MarketDataDTO> data { get; set; }
+        public List<MarketDataDto> data { get; set; }
     }
 
 
     // DTO to map JSON data
-    public class MarketDataDTO
+    public class MarketDataDto
     {
         public string i { get; set; }
         public string n { get; set; }

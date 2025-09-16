@@ -39,7 +39,7 @@ namespace thecalcify.MarketWatch
         public List<(string Symbol, string SymbolName)> SymbolName = new List<(string Symbol, string SymbolName)>();
         private bool isSymbolMasterInitialized = false;
         public List<string> selectedSymbols = new List<string>();
-        public List<MarketDataDTO> pastRateTickDTO = new List<MarketDataDTO>();
+        public List<MarketDataDto> pastRateTickDTO = new List<MarketDataDto>();
         public List<string> identifiers;
 
         // ======================
@@ -388,7 +388,7 @@ namespace thecalcify.MarketWatch
                         var json = DecompressGzip(Convert.FromBase64String(base64));
                         //Console.WriteLine($"Decompressed JSON: {json}");
 
-                        var data = JsonSerializer.Deserialize<MarketDataDTO>(json);
+                        var data = JsonSerializer.Deserialize<MarketDataDto>(json);
 
                         if (data != null)
                         {
@@ -435,7 +435,7 @@ namespace thecalcify.MarketWatch
                                     row["Open Interest"] = data.oi ?? "--";
                                     row["Last Size"] = data.ltq ?? "--";
                                     row["V"] = data.v ?? "--";
-                                    row["Time"] = CommonClass.TimeStampConvert(data.t);
+                                    row["Time"] = Common.TimeStampConvert(data.t);
 
                                     if (!isSymbolMasterInitialized)
                                     {
@@ -615,7 +615,7 @@ namespace thecalcify.MarketWatch
                                     row["Open Interest"] = dto.oi;
                                     row["Last Size"] = dto.ltq;
                                     row["V"] = dto.v;
-                                    row["Time"] = CommonClass.TimeStampConvert(dto.t);
+                                    row["Time"] = Common.TimeStampConvert(dto.t);
                                     return row;
                                 }).ToArray();
                             }
@@ -1329,7 +1329,7 @@ namespace thecalcify.MarketWatch
                         gridRow.Cells["Open Interest"].Value = dto.oi;
                         gridRow.Cells["Last Size"].Value = dto.ltq;
                         gridRow.Cells["V"].Value = dto.v;
-                        gridRow.Cells["Time"].Value = CommonClass.TimeStampConvert(dto.t);
+                        gridRow.Cells["Time"].Value = Common.TimeStampConvert(dto.t);
 
                         //isFirstSet = true;
                     }
@@ -1791,7 +1791,7 @@ namespace thecalcify.MarketWatch
                 return Encoding.UTF8.GetString(output.ToArray());
             }
         }
-        private bool IsRowDataDifferent(DataGridViewRow gridRow, MarketDataDTO dto)
+        private bool IsRowDataDifferent(DataGridViewRow gridRow, MarketDataDto dto)
         {
             // Replace YourDtoType with the actual DTO type and compare relevant fields
             bool differs = false;
@@ -1814,7 +1814,7 @@ namespace thecalcify.MarketWatch
             differs |= !Equals(gridRow.Cells["Open Interest"].Value ?? "--", dto.oi);
             differs |= !Equals(gridRow.Cells["Last Size"].Value ?? "--", dto.ltq);
             differs |= !Equals(gridRow.Cells["V"].Value?.ToString() ?? "--", dto.v);
-            differs |= !Equals(gridRow.Cells["Time"].Value?.ToString() ?? "--", CommonClass.TimeStampConvert(dto.t));
+            differs |= !Equals(gridRow.Cells["Time"].Value?.ToString() ?? "--", Common.TimeStampConvert(dto.t));
 
             return differs;
         }
