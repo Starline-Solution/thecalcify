@@ -1741,6 +1741,8 @@ namespace thecalcify
                         if (newData == null || string.IsNullOrEmpty(newData.i))
                             continue;
 
+
+
                         // Add missing row if not present
                         if (!symbolRowMap.TryGetValue(newData.i, out int rowIndex))
                         {
@@ -1809,7 +1811,7 @@ namespace thecalcify
                         };
 
                         // After Every updates are applied:
-                        ExcelNotifier.NotifyExcel(row.Cells["Name"].Value.ToString(), dict);
+                        ExcelNotifier.NotifyExcel(newData.i, dict);
 
                         // Set name if still default
                         var nameCell = row.Cells["Name"];
@@ -1819,9 +1821,6 @@ namespace thecalcify
                             nameCell.Value = name;
                         }
 
-                        if (nameCell.Value.ToString() == "slmini")
-                        {
-                        }
 
                         // Ask price arrow direction
                         bool hasAskChange = false;
@@ -2061,6 +2060,7 @@ namespace thecalcify
 
                     if (resultdefault?.data != null)
                     {
+
                         // Filter out instruments not in the valid list
                         this.Invoke((MethodInvoker)delegate
                         {
@@ -2300,48 +2300,95 @@ namespace thecalcify
                 // Build formula list
                 List<ExcelFormulaCell> formulaCells = BuildFormulaCells(dict);
 
-                // ✅ Use ClosedXML to update Excel
-                using (var workbook = new XLWorkbook(destExcelPath))
+                Microsoft.Office.Interop.Excel.Application excelApp = null;
+
+                try
                 {
-                    var worksheet = workbook.Worksheet("Sheet1");
+                    // ✅ Try attach existing Excel
+                    excelApp = (Microsoft.Office.Interop.Excel.Application)Marshal.GetActiveObject("Excel.Application");
+                }
+                catch
+                {
+                    // ✅ If not running, create new
+                    excelApp = new Microsoft.Office.Interop.Excel.Application();
+                    excelApp.Visible = true;
+                }
 
-                    // Clear all existing content on Sheet1
-                    worksheet.Clear();
+                Microsoft.Office.Interop.Excel.Workbook wb = null;
 
-                    // Build formula data
-
-                    foreach (var cell in formulaCells)
+                // ✅ Check if thecalcify.xlsx already open
+                foreach (Microsoft.Office.Interop.Excel.Workbook openWb in excelApp.Workbooks)
+                {
+                    if (string.Equals(openWb.Name, "thecalcify.xlsx", StringComparison.OrdinalIgnoreCase))
                     {
-                        var xlCell = worksheet.Cell(cell.Row, cell.Column);
+                        wb = openWb;
+                        break;
+                    }
+                }
 
-                        if (cell.Row == 1 || cell.Column == 1)
+                if (wb == null)
+                {
+                    if (!File.Exists(destExcelPath))
+                    {
+                        if (File.Exists(excelFilePath))
                         {
-                            xlCell.Value = cell.Formula; // Value
+                            File.Copy(excelFilePath, destExcelPath);
                         }
                         else
                         {
-                            xlCell.FormulaA1 = cell.Formula; // RTD Formula
+                            MessageBox.Show("thecalcify Excel file not found.");
+                            return;
                         }
                     }
 
-                    workbook.Save();
+                    wb = excelApp.Workbooks.Open(destExcelPath, Password: "thecalcify");
                 }
 
-                var excelApp = new Microsoft.Office.Interop.Excel.Application();
-                excelApp.Visible = true;
-                excelApp.Workbooks.Open(destExcelPath, Password: "thecalcify");
-            }
-            catch (IOException ioEx)
-            {
-                MessageBox.Show("File is already open. Please close it and retry.", "Export File", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                ApplicationLogger.LogException(ioEx);
-                KillProcess();
+                Microsoft.Office.Interop.Excel.Worksheet ws;
+
+                if (string.IsNullOrEmpty(saveFileName) || saveFileName == "Default")
+                {
+                    try
+                    {
+                        ws = wb.Sheets["Sheet1"];
+                        ws.Cells.Clear();
+                    }
+                    catch
+                    {
+                        ws = wb.Sheets.Add();
+                        ws.Name = "Sheet1";
+                    }
+                }
+                else
+                {
+                    try
+                    {
+                        ws = wb.Sheets[saveFileName];
+                        ws.Cells.Clear();
+                    }
+                    catch
+                    {
+                        ws = wb.Sheets.Add();
+                        ws.Name = saveFileName;
+                    }
+                }
+
+                foreach (var cell in formulaCells)
+                {
+                    var xlCell = ws.Cells[cell.Row, cell.Column];
+                    if (cell.Row == 1 || cell.Column == 1)
+                        xlCell.Value = cell.Formula;
+                    else
+                        xlCell.Formula = cell.Formula;
+                }
+
+                ws.Activate();
+                excelApp.Visible = true; // ensure visible
             }
             catch (Exception ex)
             {
                 MessageBox.Show("An error occurred while exporting. Please retry.");
                 ApplicationLogger.LogException(ex);
-                KillProcess();
             }
             finally
             {
@@ -2381,10 +2428,26 @@ namespace thecalcify
                 }
                 catch { excel32 = true; }
 
+
+
+                string officeVersion = GetOfficeVersion(); // e.g., "16.0", "14.0"
+                int versionMajor = 16; // default to 16
+
+                if (int.TryParse(officeVersion.Split('.')[0], out int parsed))
+                {
+                    versionMajor = parsed;
+                }
+
+                // Decide RegAsm framework version based on Office version
+                string regasmFrameworkVersion = versionMajor >= 15 ? "v4.0.30319" : "v2.0.50727";
+
+                // Determine RegAsm path based on Excel bitness and version compatibility
                 string regasm = Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.Windows),
-                    excel32 ? @"Microsoft.NET\Framework\v4.0.30319\RegAsm.exe"
-                            : @"Microsoft.NET\Framework64\v4.0.30319\RegAsm.exe");
+                    excel32 ? $@"Microsoft.NET\Framework\{regasmFrameworkVersion}\RegAsm.exe"
+                            : $@"Microsoft.NET\Framework64\{regasmFrameworkVersion}\RegAsm.exe");
+
+
 
                 // 🔹 Run unregister + register
                 foreach (var args in new[] { $"/unregister \"{dllPath}\"", $"\"{dllPath}\" /codebase /tlb" })
@@ -2464,35 +2527,66 @@ namespace thecalcify
             }
         }
 
-        private static string GetOfficeVersion()
+        public static string GetOfficeVersion()
         {
-            string officeVersion = "16.0"; // Default to Office 2016/2019/365
+            string defaultComVersion = "16.0"; // Default fallback
+            string detectedComVersion = "";
+            string[] installedVersions = new string[0];
 
             try
             {
+                // 🔹 Detect the default registered COM version of Excel
                 using (RegistryKey key = Registry.ClassesRoot.OpenSubKey(@"Excel.Application\CurVer"))
                 {
                     string curVer = key?.GetValue(null)?.ToString(); // e.g. "Excel.Application.16"
                     if (!string.IsNullOrEmpty(curVer))
                     {
-                        officeVersion = curVer.Split('.').Last(); // "16"
-                        officeVersion += ".0";
+                        detectedComVersion = curVer.Split('.').Last(); // Get "16"
+                        defaultComVersion = detectedComVersion + ".0";
                     }
                 }
 
-                return officeVersion;
+                // 🔹 Detect all installed Excel versions (from registry)
+                string[] possibleVersions = { "16.0", "15.0", "14.0", "12.0", "11.0" };
+                string[] registryBases = {
+                @"SOFTWARE\Microsoft\Office\",
+                @"SOFTWARE\WOW6432Node\Microsoft\Office\"
+            };
+
+                var foundVersions = possibleVersions
+                    .SelectMany(version =>
+                        registryBases.Select(basePath =>
+                            Registry.LocalMachine.OpenSubKey($"{basePath}{version}\\Excel") != null ? version : null
+                        )
+                    )
+                    .Where(v => v != null)
+                    .Distinct()
+                    .ToArray();
+
+                installedVersions = foundVersions;
             }
             catch (Exception ex)
             {
-                ApplicationLogger.Log("Failed to detect Excel bitness/version: " + ex.Message);
-                return officeVersion; // Fallback assumption
+                ApplicationLogger.Log("Failed to detect Excel version(s): " + ex.Message);
             }
+
+            // 🧾 Log both
+            string installedList = installedVersions.Length > 0
+                ? string.Join(", ", installedVersions)
+                : "None Found";
+
+            ApplicationLogger.Log($"Default COM Excel Version: {defaultComVersion}");
+            ApplicationLogger.Log($"Installed Excel Versions Detected: {installedList}");
+
+            // 🔁 Optionally return just the default (for RegAsm decisions)
+            return defaultComVersion;
         }
 
         private List<ExcelFormulaCell> BuildFormulaCells(Dictionary<string, Dictionary<string, object>> dict)
         {
             var formulaCells = new List<ExcelFormulaCell>();
 
+            // Header row
             formulaCells.Add(new ExcelFormulaCell
             {
                 Row = 1,
@@ -2500,45 +2594,56 @@ namespace thecalcify
                 Formula = "Name"
             });
 
-            int startRow = 2; // Row 1 = header
-            int startCol = 2; // Column A = symbol name
+            int startRow = 2;
+            int startCol = 1;
 
-            // Collect all unique column headers (Bid, Ask, LTP, etc.)
+            // Collect all unique fields (excluding "V")
             var allFields = dict.Values
                 .SelectMany(inner => inner.Keys)
                 .Distinct()
-                .Where(field => field != "V") // 👈 Replace "V" with actual field name
+                .Where(field => field != "V")
                 .ToList();
 
-            // Add headers (Row 1)
+            // Add field headers
             for (int i = 0; i < allFields.Count; i++)
             {
+                if (allFields[i] == "Name")
+                  continue;
+
                 formulaCells.Add(new ExcelFormulaCell
                 {
                     Row = 1,
                     Column = startCol + i,
-                    Formula = allFields[i] // Not a formula, just static text
+                    Formula = allFields[i]
                 });
             }
 
-            // Add symbol name and formulas
             int currentRow = startRow;
+
             foreach (var outer in dict)
             {
                 string symbol = outer.Key;
+                var valueDict = outer.Value;
 
-                // Add symbol to column A
+                // Safely get Name from inner dictionary
+                string name = valueDict.ContainsKey("Name") ? valueDict["Name"]?.ToString() ?? symbol : symbol;
+
+                // Add Name (from valueDict) to column A
                 formulaCells.Add(new ExcelFormulaCell
                 {
                     Row = currentRow,
                     Column = 1,
-                    Formula = symbol
+                    Formula = name
                 });
 
+                // Add RTD formulas
                 for (int i = 0; i < allFields.Count; i++)
                 {
                     string field = allFields[i];
                     int col = startCol + i;
+
+                    if (field == "Name")
+                        continue;
 
                     string formula = $"=RTD(\"thecalcify\", ,\"{symbol}\",\"{field}\")";
 
@@ -2715,7 +2820,7 @@ namespace thecalcify
                 }
 
                 // 2. Create new NewsControl
-                var newsControl = new NewsControl(username , password , token)
+                var newsControl = new NewsControl(username, password, token)
                 {
                     Name = "newsControlView",
                     Dock = DockStyle.Fill
@@ -2908,7 +3013,7 @@ namespace thecalcify
             }
         }
 
-        private void SaveInitDataToFile(List<MarketDataDto> data)
+        private static void SaveInitDataToFile(List<MarketDataDto> data)
         {
             try
             {
@@ -2916,8 +3021,9 @@ namespace thecalcify
 
                 foreach (var d in data)
                 {
-                    dict[d.n] = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
+                    dict[d.i] = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
                     {
+                        ["Name"] = d.n,
                         ["Bid"] = d.b,
                         ["Ask"] = d.a,
                         ["LTP"] = d.ltp,
