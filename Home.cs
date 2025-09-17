@@ -2060,6 +2060,7 @@ namespace thecalcify
 
                     if (resultdefault?.data != null)
                     {
+                        SaveInitDataToFile(resultdefault.data);
 
                         // Filter out instruments not in the valid list
                         this.Invoke((MethodInvoker)delegate
@@ -2085,8 +2086,6 @@ namespace thecalcify
                             resultdefault.data = resultdefault.data
                                 .Where(x => identifiers.Contains(x.i))
                                 .ToList();
-
-                            SaveInitDataToFile(resultdefault.data);
 
                             ApplyBatchUpdates(resultdefault.data);
                         });
@@ -2273,53 +2272,74 @@ namespace thecalcify
                 if (Type.GetTypeFromProgID("thecalcify", false) == null)
                     RegisterRtdDll("thecalcifyRTD.dll");
 
-                // Set registry throttle interval based on Office version
                 SetThrottle();
                 KillProcess();
 
                 string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
                 string destExcelPath = Path.Combine(desktopPath, "thecalcify.xlsx");
 
-                // Copy template if not exists
                 if (File.Exists(excelFilePath) && !File.Exists(destExcelPath))
                 {
                     File.Copy(excelFilePath, destExcelPath);
                 }
 
-                // Load encrypted data
                 if (!File.Exists(marketInitDataPath))
                 {
                     MessageBox.Show("initdata.dat not found.");
                     return;
                 }
 
-                string cipherText = File.ReadAllText(marketInitDataPath);
-                string json = CryptoHelper.Decrypt(cipherText, EditableMarketWatchGrid.passphrase);
-                var dict = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, object>>>(json);
+                //string cipherText = File.ReadAllText(marketInitDataPath);
+                //string json = CryptoHelper.Decrypt(cipherText, EditableMarketWatchGrid.passphrase);
+                //var dict = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, object>>>(json);
 
-                // Build formula list
+                var dict = new Dictionary<string, Dictionary<string, object>>(StringComparer.OrdinalIgnoreCase);
+
+                foreach (var d in resultdefault.data)
+                {
+                    dict[d.i] = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        ["Name"] = d.n,
+                        ["Bid"] = d.b,
+                        ["Ask"] = d.a,
+                        ["LTP"] = d.ltp,
+                        ["High"] = d.h,
+                        ["Low"] = d.l,
+                        ["Open"] = d.o,
+                        ["Close"] = d.c,
+                        ["Net Chng"] = d.d,
+                        ["V"] = d.v,
+                        ["ATP"] = d.atp,
+                        ["Bid Size"] = d.bq,
+                        ["Total Bid Size"] = d.tbq,
+                        ["Ask Size"] = d.sq,
+                        ["Total Ask Size"] = d.tsq,
+                        ["Volume"] = d.vt,
+                        ["Open Interest"] = d.oi,
+                        ["Last Size"] = d.ltq,
+                        ["Time"] = Common.TimeStampConvert(d.t)
+                    };
+                }
+
                 List<ExcelFormulaCell> formulaCells = BuildFormulaCells(dict);
 
+                // ✅ Excel attach/create
                 Microsoft.Office.Interop.Excel.Application excelApp = null;
-
                 try
                 {
-                    // ✅ Try attach existing Excel
                     excelApp = (Microsoft.Office.Interop.Excel.Application)Marshal.GetActiveObject("Excel.Application");
                 }
                 catch
                 {
-                    // ✅ If not running, create new
                     excelApp = new Microsoft.Office.Interop.Excel.Application();
                     excelApp.Visible = true;
                 }
 
+                // ✅ Workbook open or attach
                 Microsoft.Office.Interop.Excel.Workbook wb = null;
-
-                // ✅ Check if thecalcify.xlsx already open
                 foreach (Microsoft.Office.Interop.Excel.Workbook openWb in excelApp.Workbooks)
                 {
-                    if (string.Equals(openWb.Name, "thecalcify.xlsx", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(openWb.FullName, destExcelPath, StringComparison.OrdinalIgnoreCase))
                     {
                         wb = openWb;
                         break;
@@ -2331,9 +2351,7 @@ namespace thecalcify
                     if (!File.Exists(destExcelPath))
                     {
                         if (File.Exists(excelFilePath))
-                        {
                             File.Copy(excelFilePath, destExcelPath);
-                        }
                         else
                         {
                             MessageBox.Show("thecalcify Excel file not found.");
@@ -2341,11 +2359,11 @@ namespace thecalcify
                         }
                     }
 
-                    wb = excelApp.Workbooks.Open(destExcelPath, Password: "thecalcify");
+                    wb = excelApp.Workbooks.Open(destExcelPath);
                 }
 
+                // ✅ Worksheet select/create
                 Microsoft.Office.Interop.Excel.Worksheet ws;
-
                 if (string.IsNullOrEmpty(saveFileName) || saveFileName == "Default")
                 {
                     try
@@ -2373,17 +2391,37 @@ namespace thecalcify
                     }
                 }
 
+                // ✅ Make bulk 2D array
+                int maxRow = formulaCells.Max(c => c.Row);
+                int maxCol = formulaCells.Max(c => c.Column);
+                object[,] bulkData = new object[maxRow, maxCol];
+
                 foreach (var cell in formulaCells)
                 {
-                    var xlCell = ws.Cells[cell.Row, cell.Column];
                     if (cell.Row == 1 || cell.Column == 1)
-                        xlCell.Value = cell.Formula;
+                    {
+                        // Plain text
+                        bulkData[cell.Row - 1, cell.Column - 1] = cell.Formula;
+                    }
                     else
-                        xlCell.Formula = cell.Formula;
+                    {
+                        // Ensure formula has "="
+                        string f = cell.Formula.Trim();
+                        if (!f.StartsWith("="))
+                            f = "=" + f;
+
+                        bulkData[cell.Row - 1, cell.Column - 1] = f;
+                    }
                 }
 
+                // ✅ Dump in one shot to Excel Range
+                Microsoft.Office.Interop.Excel.Range startCell = ws.Cells[1, 1];
+                Microsoft.Office.Interop.Excel.Range endCell = ws.Cells[maxRow, maxCol];
+                Microsoft.Office.Interop.Excel.Range writeRange = ws.Range[startCell, endCell];
+                writeRange.Value2 = bulkData;
+
                 ws.Activate();
-                excelApp.Visible = true; // ensure visible
+                excelApp.Visible = true;
             }
             catch (Exception ex)
             {
