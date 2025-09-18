@@ -371,7 +371,7 @@ namespace thecalcify.Helper
         public string usn { get; set; }
         public string intro { get; set; }
         public string caption { get; set; }
-        public string keyword { get; set; }
+        public List<string> keyword { get; set; }
         public List<string> channels { get; set; }
         public List<SubjectLocationDto> subjectLocation { get; set; }
         public List<RenditionDto> renditions { get; set; }

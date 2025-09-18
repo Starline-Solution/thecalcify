@@ -13,6 +13,10 @@ namespace thecalcify.News
         private System.Windows.Forms.Label lblCategory;
         private System.Windows.Forms.Label lblSubCategory;
         private System.Windows.Forms.Panel pnlTop;
+        private System.Windows.Forms.Panel pnlBottom;
+        private System.Windows.Forms.Label lblPageInfo;
+        private System.Windows.Forms.Button btnNextPage;
+        private System.Windows.Forms.Button btnPrevPage;
 
         protected override void Dispose(bool disposing)
         {
@@ -38,8 +42,13 @@ namespace thecalcify.News
             this.lblCategory = new System.Windows.Forms.Label();
             this.lblSubCategory = new System.Windows.Forms.Label();
             this.pnlTop = new System.Windows.Forms.Panel();
+            this.pnlBottom = new System.Windows.Forms.Panel();
+            this.lblPageInfo = new System.Windows.Forms.Label();
+            this.btnNextPage = new System.Windows.Forms.Button();
+            this.btnPrevPage = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dgvNews)).BeginInit();
             this.pnlTop.SuspendLayout();
+            this.pnlBottom.SuspendLayout();
             this.SuspendLayout();
             // 
             // dgvNews
@@ -69,6 +78,7 @@ namespace thecalcify.News
             this.DGVTitle,
             this.DVGCategory,
             this.DVGSubCategory});
+            this.dgvNews.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
             dataGridViewCellStyle3.BackColor = System.Drawing.Color.White;
             dataGridViewCellStyle3.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F);
@@ -86,8 +96,9 @@ namespace thecalcify.News
             this.dgvNews.RowHeadersVisible = false;
             this.dgvNews.RowHeadersWidth = 51;
             this.dgvNews.RowTemplate.Height = 36;
-            this.dgvNews.Size = new System.Drawing.Size(800, 422);
+            this.dgvNews.Size = new System.Drawing.Size(800, 372);
             this.dgvNews.TabIndex = 0;
+            this.dgvNews.CellDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvNews_CellDoubleClick);
             // 
             // dataGridViewTextBoxColumn1
             // 
@@ -184,15 +195,64 @@ namespace thecalcify.News
             this.pnlTop.Size = new System.Drawing.Size(800, 78);
             this.pnlTop.TabIndex = 1;
             // 
+            // pnlBottom
+            // 
+            this.pnlBottom.BackColor = System.Drawing.Color.White;
+            this.pnlBottom.Controls.Add(this.btnPrevPage);
+            this.pnlBottom.Controls.Add(this.lblPageInfo);
+            this.pnlBottom.Controls.Add(this.btnNextPage);
+            this.pnlBottom.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.pnlBottom.Location = new System.Drawing.Point(0, 450);
+            this.pnlBottom.Name = "pnlBottom";
+            this.pnlBottom.Padding = new System.Windows.Forms.Padding(10, 5, 10, 5);
+            this.pnlBottom.Size = new System.Drawing.Size(800, 50);
+            this.pnlBottom.TabIndex = 2;
+            // 
+            // lblPageInfo
+            // 
+            this.lblPageInfo.Anchor = System.Windows.Forms.AnchorStyles.None;
+            this.lblPageInfo.AutoSize = true;
+            this.lblPageInfo.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblPageInfo.Location = new System.Drawing.Point(365, 15);
+            this.lblPageInfo.Name = "lblPageInfo";
+            this.lblPageInfo.Size = new System.Drawing.Size(91, 20);
+            this.lblPageInfo.TabIndex = 0;
+            this.lblPageInfo.Text = "Page 1 of 1";
+            this.lblPageInfo.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // btnNextPage
+            // 
+            this.btnNextPage.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnNextPage.Location = new System.Drawing.Point(682, 10);
+            this.btnNextPage.Name = "btnNextPage";
+            this.btnNextPage.Size = new System.Drawing.Size(105, 30);
+            this.btnNextPage.TabIndex = 1;
+            this.btnNextPage.Text = "Next >";
+            this.btnNextPage.UseVisualStyleBackColor = true;
+            this.btnNextPage.Click += new System.EventHandler(this.btnNextPage_Click);
+            // 
+            // btnPrevPage
+            // 
+            this.btnPrevPage.Location = new System.Drawing.Point(13, 10);
+            this.btnPrevPage.Name = "btnPrevPage";
+            this.btnPrevPage.Size = new System.Drawing.Size(105, 30);
+            this.btnPrevPage.TabIndex = 2;
+            this.btnPrevPage.Text = "< Home";
+            this.btnPrevPage.UseVisualStyleBackColor = true;
+            this.btnPrevPage.Click += new System.EventHandler(this.btnPrevPage_Click);
+            // 
             // NewsControl
             // 
             this.Controls.Add(this.dgvNews);
+            this.Controls.Add(this.pnlBottom);
             this.Controls.Add(this.pnlTop);
             this.Name = "NewsControl";
             this.Size = new System.Drawing.Size(800, 500);
             ((System.ComponentModel.ISupportInitialize)(this.dgvNews)).EndInit();
             this.pnlTop.ResumeLayout(false);
             this.pnlTop.PerformLayout();
+            this.pnlBottom.ResumeLayout(false);
+            this.pnlBottom.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 

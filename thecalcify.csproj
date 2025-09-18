@@ -286,6 +286,12 @@
     <Compile Include="MarketWatch\NewMarketWatch.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="News\NewsDescription.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="News\NewsDescription.Designer.cs">
+      <DependentUpon>NewsDescription.cs</DependentUpon>
+    </Compile>
     <Compile Include="News\NewsControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -308,6 +314,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="News\NewsControl.resx">
       <DependentUpon>NewsControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="News\NewsDescription.resx">
+      <DependentUpon>NewsDescription.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
