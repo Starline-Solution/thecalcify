@@ -1615,7 +1615,7 @@ namespace thecalcify
                             identifiers = currentIdentifiers;
 
                         var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-                        await connection.InvokeAsync("SubscribeSymbols", identifiers, cts.Token);
+                        await connection.InvokeAsync("SubscribeSymbols", symbolMaster, cts.Token);
                         SetupUpdateTimer();
                     }
                 }
@@ -1677,7 +1677,7 @@ namespace thecalcify
 
                 var json = DecompressGzip(Convert.FromBase64String(base64));
                 var data = JsonConvert.DeserializeObject<MarketDataDto>(json);
-                if (data == null || !(identifiers?.Contains(data.i) ?? false)) return;
+                if (data == null) return;
 
                 _updateQueue.Enqueue(data);
             }
@@ -1884,125 +1884,128 @@ namespace thecalcify
                         // After Every updates are applied:
                         ExcelNotifier.NotifyExcel(newData.i, dict);
 
-                        // Add missing row if not present
-                        if (!symbolRowMap.TryGetValue(newData.i, out int rowIndex))
+                        if (identifiers.Contains(newData.i))
                         {
-                            var dto = pastRateTickDTO?.FirstOrDefault(x => x.i == newData.i);
-                            if (dto != null)
-                                AddRowFromDTO(dto);
-
-                            if (!symbolRowMap.TryGetValue(newData.i, out rowIndex))
-                                continue; // Skip if still not added
-                        }
-
-                        var row = defaultGrid.Rows[rowIndex];
-
-                        // Store previous values for color comparison
-                        var previousValues = new Dictionary<string, string>();
-                        foreach (string colName in numericColumns)
-                        {
-                            if (defaultGrid.Columns.Contains(colName))
+                            // Add missing row if not present
+                            if (!symbolRowMap.TryGetValue(newData.i, out int rowIndex))
                             {
-                                previousValues[colName] = row.Cells[colName].Value?.ToString() ?? "";
+                                var dto = pastRateTickDTO?.FirstOrDefault(x => x.i == newData.i);
+                                if (dto != null)
+                                    AddRowFromDTO(dto);
+
+                                if (!symbolRowMap.TryGetValue(newData.i, out rowIndex))
+                                    continue; // Skip if still not added
                             }
-                        }
 
-                        // Update values
-                        SetCellValue(row, "Bid", newData.b);
-                        SetCellValue(row, "Ask", newData.a);
-                        SetCellValue(row, "LTP", newData.ltp);
-                        SetCellValue(row, "High", newData.h);
-                        SetCellValue(row, "Low", newData.l);
-                        SetCellValue(row, "Open", newData.o);
-                        SetCellValue(row, "Close", newData.c);
-                        SetCellValue(row, "Net Chng", newData.d);
-                        SetCellValue(row, "V", newData.v);
-                        SetCellValue(row, "ATP", newData.atp);
-                        SetCellValue(row, "Bid Size", newData.bq);
-                        SetCellValue(row, "Total Bid Size", newData.tbq);
-                        SetCellValue(row, "Ask Size", newData.sq);
-                        SetCellValue(row, "Total Ask Size", newData.tsq);
-                        SetCellValue(row, "Volume", newData.vt);
-                        SetCellValue(row, "Open Interest", newData.oi);
-                        SetCellValue(row, "Last Size", newData.ltq);
-                        SetCellValue(row, "Time", Common.TimeStampConvert(newData.t));
+                            var row = defaultGrid.Rows[rowIndex];
 
-                        // Set name if still default
-                        var nameCell = row.Cells["Name"];
-                        if ((nameCell.Value?.ToString() ?? "N/A") == "N/A")
-                        {
-                            var name = pastRateTickDTO?.FirstOrDefault(x => x.i == newData.i)?.n ?? "--";
-                            nameCell.Value = name;
-                        }
-
-
-                        // Ask price arrow direction
-                        bool hasAskChange = false;
-                        int askDirection = 0;
-                        string askStr = newData.a;
-
-                        if (!string.IsNullOrEmpty(askStr) && double.TryParse(askStr, out double newAsk))
-                        {
-                            if (previousAskMap.TryGetValue(newData.i, out double previousAsk))
+                            // Store previous values for color comparison
+                            var previousValues = new Dictionary<string, string>();
+                            foreach (string colName in numericColumns)
                             {
-                                if (newAsk > previousAsk)
+                                if (defaultGrid.Columns.Contains(colName))
                                 {
-                                    askDirection = 1;
-                                    hasAskChange = true;
-                                }
-                                else if (newAsk < previousAsk)
-                                {
-                                    askDirection = -1;
-                                    hasAskChange = true;
+                                    previousValues[colName] = row.Cells[colName].Value?.ToString() ?? "";
                                 }
                             }
 
-                            previousAskMap[newData.i] = newAsk;
+                            // Update values
+                            SetCellValue(row, "Bid", newData.b);
+                            SetCellValue(row, "Ask", newData.a);
+                            SetCellValue(row, "LTP", newData.ltp);
+                            SetCellValue(row, "High", newData.h);
+                            SetCellValue(row, "Low", newData.l);
+                            SetCellValue(row, "Open", newData.o);
+                            SetCellValue(row, "Close", newData.c);
+                            SetCellValue(row, "Net Chng", newData.d);
+                            SetCellValue(row, "V", newData.v);
+                            SetCellValue(row, "ATP", newData.atp);
+                            SetCellValue(row, "Bid Size", newData.bq);
+                            SetCellValue(row, "Total Bid Size", newData.tbq);
+                            SetCellValue(row, "Ask Size", newData.sq);
+                            SetCellValue(row, "Total Ask Size", newData.tsq);
+                            SetCellValue(row, "Volume", newData.vt);
+                            SetCellValue(row, "Open Interest", newData.oi);
+                            SetCellValue(row, "Last Size", newData.ltq);
+                            SetCellValue(row, "Time", Common.TimeStampConvert(newData.t));
+
+                            // Set name if still default
+                            var nameCell = row.Cells["Name"];
+                            if ((nameCell.Value?.ToString() ?? "N/A") == "N/A")
+                            {
+                                var name = pastRateTickDTO?.FirstOrDefault(x => x.i == newData.i)?.n ?? "--";
+                                nameCell.Value = name;
+                            }
+
+
+                            // Ask price arrow direction
+                            bool hasAskChange = false;
+                            int askDirection = 0;
+                            string askStr = newData.a;
+
+                            if (!string.IsNullOrEmpty(askStr) && double.TryParse(askStr, out double newAsk))
+                            {
+                                if (previousAskMap.TryGetValue(newData.i, out double previousAsk))
+                                {
+                                    if (newAsk > previousAsk)
+                                    {
+                                        askDirection = 1;
+                                        hasAskChange = true;
+                                    }
+                                    else if (newAsk < previousAsk)
+                                    {
+                                        askDirection = -1;
+                                        hasAskChange = true;
+                                    }
+                                }
+
+                                previousAskMap[newData.i] = newAsk;
+                            }
+
+                            // Highlight changed numeric values
+                            foreach (string colName in numericColumns)
+                            {
+                                if (!defaultGrid.Columns.Contains(colName)) continue;
+
+                                var cell = row.Cells[colName];
+                                var prev = previousValues.TryGetValue(colName, out string prevVal) ? prevVal : "";
+                                var curr = cell.Value?.ToString() ?? "";
+
+                                if (IsNumericChange(prev, curr, out int direction))
+                                {
+                                    if (direction == 1)
+                                        cell.Style.ForeColor = Color.Green;
+                                    else if (direction == -1)
+                                        cell.Style.ForeColor = Color.Red;
+                                }
+                            }
+
+                            // Update "Name" column with arrows
+                            if (hasAskChange)
+                            {
+                                string baseName = (nameCell.Value?.ToString() ?? "").Replace(" ▲", "").Replace(" ▼", "").Trim();
+                                if (askDirection == 1)
+                                {
+                                    nameCell.Value = baseName + " ▲";
+                                    nameCell.Style.ForeColor = Color.Green;
+                                }
+                                else if (askDirection == -1)
+                                {
+                                    nameCell.Value = baseName + " ▼";
+                                    nameCell.Style.ForeColor = Color.Red;
+                                }
+                            }
                         }
 
-                        // Highlight changed numeric values
-                        foreach (string colName in numericColumns)
+                        //UpdateExcelDataEfficiently(defaultGrid);
+
+                        // Throttle font refresh
+                        if ((DateTime.Now - lastUiUpdate).TotalMilliseconds > 120)
                         {
-                            if (!defaultGrid.Columns.Contains(colName)) continue;
-
-                            var cell = row.Cells[colName];
-                            var prev = previousValues.TryGetValue(colName, out string prevVal) ? prevVal : "";
-                            var curr = cell.Value?.ToString() ?? "";
-
-                            if (IsNumericChange(prev, curr, out int direction))
-                            {
-                                if (direction == 1)
-                                    cell.Style.ForeColor = Color.Green;
-                                else if (direction == -1)
-                                    cell.Style.ForeColor = Color.Red;
-                            }
+                            defaultGrid.DefaultCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", fontSize);
+                            defaultGrid.RowHeadersDefaultCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", fontSize + 1.5f, FontStyle.Bold);
+                            lastUiUpdate = DateTime.Now;
                         }
-
-                        // Update "Name" column with arrows
-                        if (hasAskChange)
-                        {
-                            string baseName = (nameCell.Value?.ToString() ?? "").Replace(" ▲", "").Replace(" ▼", "").Trim();
-                            if (askDirection == 1)
-                            {
-                                nameCell.Value = baseName + " ▲";
-                                nameCell.Style.ForeColor = Color.Green;
-                            }
-                            else if (askDirection == -1)
-                            {
-                                nameCell.Value = baseName + " ▼";
-                                nameCell.Style.ForeColor = Color.Red;
-                            }
-                        }
-                    }
-
-                    //UpdateExcelDataEfficiently(defaultGrid);
-
-                    // Throttle font refresh
-                    if ((DateTime.Now - lastUiUpdate).TotalMilliseconds > 120)
-                    {
-                        defaultGrid.DefaultCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", fontSize);
-                        defaultGrid.RowHeadersDefaultCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", fontSize + 1.5f, FontStyle.Bold);
-                        lastUiUpdate = DateTime.Now;
                     }
                 }
             }
@@ -2178,7 +2181,14 @@ namespace thecalcify
                                          .Where(x => !string.IsNullOrEmpty(x.i) && !string.IsNullOrEmpty(x.n))
                                          .Select(x => (Symbol: x.i, SymbolName: x.n)).ToList();
 
-                                    symbolMaster = identifiers;
+                                }
+
+                                if (symbolMaster != null && symbolMaster.Count == 0)
+                                {
+                                    symbolMaster = resultdefault.data
+                                            .Where(x => !string.IsNullOrEmpty(x.i))
+                                            .Select(x => x.i)
+                                            .ToList();
                                 }
 
                                 resultdefault.data = resultdefault.data
@@ -2349,7 +2359,7 @@ namespace thecalcify
                 if (connection.State == HubConnectionState.Disconnected)
                 {
                     await connection.StartAsync();
-                    await connection.InvokeAsync("SubscribeSymbols", identifiers);
+                    await connection.InvokeAsync("SubscribeSymbols", symbolMaster);
                     ApplicationLogger.Log("Reconnected and resubscribed.");
                 }
             }
@@ -2825,9 +2835,7 @@ namespace thecalcify
                 {
                     selectedSymbols.Clear();
                     identifiers.Clear();
-                    symbolMaster.Clear();
                     saveFileName = null;
-                    //StopBackgroundTasks();
                     lastOpenMarketWatch = "Default";
 
                     var clickedItem = (ToolStripMenuItem)sender;
@@ -2850,10 +2858,8 @@ namespace thecalcify
                     {
                         selectedSymbols.Clear();
                         identifiers.Clear();
-                        symbolMaster.Clear();
                         saveFileName = null;
                         _updateQueue = new ConcurrentQueue<MarketDataDto>();
-
 
                         var clickedItem = (ToolStripMenuItem)sender;
 
@@ -2885,8 +2891,6 @@ namespace thecalcify
                 {
                     selectedSymbols.Clear();
                     identifiers.Clear();
-                    symbolMaster.Clear();
-                    //StopBackgroundTasks();
                     lastOpenMarketWatch = "Default";
 
                     var clickedItem = (ToolStripMenuItem)sender;
