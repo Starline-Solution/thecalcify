@@ -1,4 +1,5 @@
 ﻿using DocumentFormat.OpenXml.Drawing;
+using DocumentFormat.OpenXml.Spreadsheet;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -13,6 +14,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Input;
 using thecalcify.Helper;
+using thecalcify.MarketWatch;
 
 namespace thecalcify.News
 {
@@ -23,6 +25,7 @@ namespace thecalcify.News
         private static readonly HttpClient client = new HttpClient();
         public string _token;
         private CancellationTokenSource _cts;
+        public int pageSize = 5;
 
 
         public NewsControl(string username, string password, string token)
@@ -40,7 +43,7 @@ namespace thecalcify.News
 
             cmbCategory.SelectedIndexChanged += CmbCategory_SelectedIndexChanged;
             btnSearchNews.Click += BtnSearchNews_Click;
-
+            UpdatePageInfo(1, pageSize);
             _cts = new CancellationTokenSource();
 
             try
@@ -162,7 +165,7 @@ namespace thecalcify.News
 
 
             // Fetch news data and get the new cursor
-            await FetchNewsDataAndUpdateGrid(category, subCategory, 20, string.Empty);
+            await FetchNewsDataAndUpdateGrid(category, subCategory, pageSize, string.Empty);
 
         }
 
@@ -175,7 +178,7 @@ namespace thecalcify.News
                 try
                 {
                     // Fetch news data and get the new cursor
-                    cursor = await FetchNewsDataAndUpdateGrid(string.Empty, string.Empty, 20, cursor);
+                    cursor = await FetchNewsDataAndUpdateGrid(string.Empty, string.Empty, pageSize, cursor);
                 }
                 catch (Exception ex)
                 {
@@ -184,7 +187,7 @@ namespace thecalcify.News
 
                 try
                 {
-                    await Task.Delay(3000, cancellationToken);
+                    await Task.Delay(10000, cancellationToken);
                 }
                 catch (TaskCanceledException)
                 {
@@ -255,6 +258,8 @@ namespace thecalcify.News
                         categoryName,          // Category
                         subcategoryName        // SubCategory
                     );
+
+                    dgvNews.Rows[0].Tag = item;
                 }
 
             }));
@@ -265,6 +270,74 @@ namespace thecalcify.News
 
             // Return the updated cursor for pagination
             return result.Data.Search.PageInfo?.EndCursor;
+        }
+
+        private async void dgvNews_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex < 0) return;
+
+            var row = dgvNews.Rows[e.RowIndex];
+            var selected = row.Tag as NewsItem;
+            if (selected == null) return;
+
+            ItemDto fullNews = await GetNewsByVersionGuidAsync(selected.VersionedGuid);
+
+            if (fullNews != null)
+            {
+                using (var frm = new NewsDescription(fullNews))
+                {
+                    frm.ShowDialog();
+                }
+            }
+        }
+
+
+        private async Task<ItemDto> GetNewsByVersionGuidAsync(string versionGuid)
+        {
+            ItemDto result = null;
+
+            using (var client = new HttpClient())
+            {
+                var request = new HttpRequestMessage(
+                    HttpMethod.Get,
+                    $"http://api.thecalcify.com/Client/Reuters/ItemDescription?id={versionGuid}"
+                );
+                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _token);
+
+                HttpResponseMessage response = await client.SendAsync(request);
+                response.EnsureSuccessStatusCode();
+
+                string jsonString = await response.Content.ReadAsStringAsync();
+                string innerJson = JsonConvert.DeserializeObject<string>(jsonString);
+
+                var root = JsonConvert.DeserializeObject<RootDto>(innerJson);
+
+                ItemDto item = root?.data?.item;
+
+                return item;
+            }
+        }
+
+        // Event handlers for pagination
+        private void btnNextPage_Click(object sender, System.EventArgs e)
+        {
+            // Implement next page logic here
+        }
+
+        private void btnPrevPage_Click(object sender, System.EventArgs e)
+        {
+            // Implement previous page logic here
+        }
+
+        // Method to update page information
+        public void UpdatePageInfo(int currentPage, int totalPages)
+        {
+            lblPageInfo.Text = $"Page {currentPage} of {totalPages}";
+
+            //// Enable/disable buttons based on page position
+            //btnPrevPage.Enabled = currentPage > 1;
+            //btnNextPage.Enabled = currentPage < totalPages;
         }
 
         public static string BuildReutersApiUrl(string baseUrl, int pageSize, string category = null, string subCategory = null, string cursorToken = null)
