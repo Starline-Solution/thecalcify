@@ -21,6 +21,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using thecalcify.Alert;
 using thecalcify.Helper;
 using thecalcify.MarketWatch;
 using thecalcify.News;
@@ -54,7 +55,7 @@ namespace thecalcify
         // ======================
         // 📌 Flags / States
         // ======================
-        public bool isDisconnecting = false, isConnectionDisposed = false;
+        private bool isDisconnecting = false, isConnectionDisposed = false;
 
         public bool isLoadedSymbol = false;
         public bool isEdit = false;
@@ -200,7 +201,7 @@ namespace thecalcify
             RemainingDays = diff.Days;
             if (RemainingDays <= 7)
             {
-                licenceThread = new Thread(new ThreadStart(CheckLicenceLoop));
+                licenceThread = new Thread(new ThreadStart(() => CheckLicenceLoop().GetAwaiter().GetResult()));
                 licenceThread.IsBackground = true; // Thread will close when app closes
                 licenceThread.Start();
             }
@@ -292,7 +293,7 @@ namespace thecalcify
             System.Windows.Forms.Application.Exit();
         }
 
-        private void CheckLicenceLoop()
+        private async Task CheckLicenceLoop()
         {
             try
             {
@@ -312,16 +313,16 @@ namespace thecalcify
                         {
                             if (this.InvokeRequired)
                             {
-                                this.Invoke((MethodInvoker)(() =>
+                                this.Invoke((MethodInvoker)(async () =>
                                 {
                                     if (!this.IsDisposed)
-                                        UpdateLicenceLabel(licenceRemainingDays);
+                                        await UpdateLicenceLabel(licenceRemainingDays);
                                 }));
                             }
                             else
                             {
                                 if (!this.IsDisposed)
-                                    UpdateLicenceLabel(licenceRemainingDays);
+                                    await UpdateLicenceLabel(licenceRemainingDays);
                             } 
                         }
                     }
@@ -384,7 +385,6 @@ namespace thecalcify
                 MessageBox.Show("Error during disconnect: " + ex.Message);
             }
         }
-
 
         public void thecalcifyGrid()
         {
@@ -3073,6 +3073,23 @@ namespace thecalcify
 
             // 5. Clean up Excel resources
             //CleanupExcel();
+        }
+
+        private void AlertToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using (var alertForm = new AlertCreationPanel(token))
+            {
+                if (isFullScreen)
+                {
+                    alertForm.StartPosition = FormStartPosition.CenterParent;
+                    alertForm.TopMost = true; // Ensures it stays above the full-screen window
+                    alertForm.ShowDialog(this); // Pass the main form as owner
+                }
+                else
+                {
+                    alertForm.ShowDialog();
+                }
+            }
         }
 
         private void DisposeSignalRConnection()

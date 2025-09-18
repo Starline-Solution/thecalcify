@@ -239,6 +239,18 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Alert\AlertCreationPanel.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Alert\AlertCreationPanel.Designer.cs">
+      <DependentUpon>AlertCreationPanel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Alert\AlertPopup.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Alert\AlertPopup.Designer.cs">
+      <DependentUpon>AlertPopup.cs</DependentUpon>
+    </Compile>
     <Compile Include="Helper\About.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -282,6 +294,9 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="Alert\AlertCreationPanel.resx">
+      <DependentUpon>AlertCreationPanel.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Helper\About.resx">
       <DependentUpon>About.cs</DependentUpon>
     </EmbeddedResource>

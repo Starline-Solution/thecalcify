@@ -68,6 +68,7 @@ namespace thecalcify
             this.fontSizeComboBox = new System.Windows.Forms.ComboBox();
             this.newMarketWatchMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.txtsearch = new System.Windows.Forms.TextBox();
+            this.alertToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.defaultGrid)).BeginInit();
             this.Tools.SuspendLayout();
             this.menuStrip1.SuspendLayout();
@@ -108,7 +109,7 @@ namespace thecalcify
             this.defaultGrid.Dock = System.Windows.Forms.DockStyle.Fill;
             this.defaultGrid.EnableHeadersVisualStyles = false;
             this.defaultGrid.GridColor = System.Drawing.Color.Gainsboro;
-            this.defaultGrid.Location = new System.Drawing.Point(0, 71);
+            this.defaultGrid.Location = new System.Drawing.Point(0, 58);
             this.defaultGrid.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.defaultGrid.MultiSelect = false;
             this.defaultGrid.Name = "defaultGrid";
@@ -117,7 +118,7 @@ namespace thecalcify
             this.defaultGrid.RowHeadersWidth = 51;
             this.defaultGrid.RowTemplate.Height = 36;
             this.defaultGrid.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.CellSelect;
-            this.defaultGrid.Size = new System.Drawing.Size(1254, 782);
+            this.defaultGrid.Size = new System.Drawing.Size(1115, 624);
             this.defaultGrid.TabIndex = 1;
             this.defaultGrid.DataSourceChanged += new System.EventHandler(this.DefaultGrid_DataSourceChanged);
             this.defaultGrid.CellFormatting += new System.Windows.Forms.DataGridViewCellFormattingEventHandler(this.DefaultGrid_CellFormatting);
@@ -135,12 +136,12 @@ namespace thecalcify
             this.addEditColumnsToolStripMenuItem,
             this.clearExcelToolStripMenuItem});
             this.Tools.Name = "ClickMenuStrip";
-            this.Tools.Size = new System.Drawing.Size(231, 132);
+            this.Tools.Size = new System.Drawing.Size(200, 100);
             // 
             // ExportToExcelToolStripMenuItem
             // 
             this.ExportToExcelToolStripMenuItem.Name = "ExportToExcelToolStripMenuItem";
-            this.ExportToExcelToolStripMenuItem.Size = new System.Drawing.Size(230, 32);
+            this.ExportToExcelToolStripMenuItem.Size = new System.Drawing.Size(199, 24);
             this.ExportToExcelToolStripMenuItem.Text = "Export To Excel";
             this.ExportToExcelToolStripMenuItem.Click += new System.EventHandler(this.ExportToExcelToolStripMenuItem_Click);
             // 
@@ -148,21 +149,21 @@ namespace thecalcify
             // 
             this.addEditSymbolsToolStripMenuItem.Enabled = false;
             this.addEditSymbolsToolStripMenuItem.Name = "addEditSymbolsToolStripMenuItem";
-            this.addEditSymbolsToolStripMenuItem.Size = new System.Drawing.Size(230, 32);
+            this.addEditSymbolsToolStripMenuItem.Size = new System.Drawing.Size(199, 24);
             this.addEditSymbolsToolStripMenuItem.Text = "Add/Edit Symbols";
             this.addEditSymbolsToolStripMenuItem.Click += new System.EventHandler(this.AddEditSymbolsToolStripMenuItem_Click);
             // 
             // addEditColumnsToolStripMenuItem
             // 
             this.addEditColumnsToolStripMenuItem.Name = "addEditColumnsToolStripMenuItem";
-            this.addEditColumnsToolStripMenuItem.Size = new System.Drawing.Size(230, 32);
+            this.addEditColumnsToolStripMenuItem.Size = new System.Drawing.Size(199, 24);
             this.addEditColumnsToolStripMenuItem.Text = "Add/Edit Columns";
             this.addEditColumnsToolStripMenuItem.Click += new System.EventHandler(this.AddEditColumnsToolStripMenuItem_Click);
             // 
             // clearExcelToolStripMenuItem
             // 
             this.clearExcelToolStripMenuItem.Name = "clearExcelToolStripMenuItem";
-            this.clearExcelToolStripMenuItem.Size = new System.Drawing.Size(230, 32);
+            this.clearExcelToolStripMenuItem.Size = new System.Drawing.Size(199, 24);
             this.clearExcelToolStripMenuItem.Text = "Clear Excel";
             this.clearExcelToolStripMenuItem.Visible = false;
             // 
@@ -177,12 +178,13 @@ namespace thecalcify
             this.saveMarketWatchHost,
             this.newCTRLNToolStripMenuItem,
             this.newsToolStripMenuItem,
+            this.alertToolStripMenuItem,
             this.aboutToolStripMenuItem});
             this.menuStrip1.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.HorizontalStackWithOverflow;
-            this.menuStrip1.Location = new System.Drawing.Point(0, 38);
+            this.menuStrip1.Location = new System.Drawing.Point(0, 30);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Padding = new System.Windows.Forms.Padding(7, 2, 0, 2);
-            this.menuStrip1.Size = new System.Drawing.Size(1254, 33);
+            this.menuStrip1.Padding = new System.Windows.Forms.Padding(6, 2, 0, 2);
+            this.menuStrip1.Size = new System.Drawing.Size(1115, 28);
             this.menuStrip1.TabIndex = 1;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -191,21 +193,22 @@ namespace thecalcify
             this.toolsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.disconnectESCToolStripMenuItem,
             this.fullScreenF11ToolStripMenuItem});
+            this.toolsToolStripMenuItem.Enabled = false;
             this.toolsToolStripMenuItem.Name = "toolsToolStripMenuItem";
-            this.toolsToolStripMenuItem.Size = new System.Drawing.Size(77, 29);
+            this.toolsToolStripMenuItem.Size = new System.Drawing.Size(64, 24);
             this.toolsToolStripMenuItem.Text = "Tools";
             // 
             // disconnectESCToolStripMenuItem
             // 
             this.disconnectESCToolStripMenuItem.Name = "disconnectESCToolStripMenuItem";
-            this.disconnectESCToolStripMenuItem.Size = new System.Drawing.Size(338, 34);
+            this.disconnectESCToolStripMenuItem.Size = new System.Drawing.Size(287, 26);
             this.disconnectESCToolStripMenuItem.Text = "Disconnect  (Shift + ESC)";
             this.disconnectESCToolStripMenuItem.Click += new System.EventHandler(this.DisconnectESCToolStripMenuItem_Click);
             // 
             // fullScreenF11ToolStripMenuItem
             // 
             this.fullScreenF11ToolStripMenuItem.Name = "fullScreenF11ToolStripMenuItem";
-            this.fullScreenF11ToolStripMenuItem.Size = new System.Drawing.Size(338, 34);
+            this.fullScreenF11ToolStripMenuItem.Size = new System.Drawing.Size(287, 26);
             this.fullScreenF11ToolStripMenuItem.Text = "Full Screen (ESC)";
             this.fullScreenF11ToolStripMenuItem.Click += new System.EventHandler(this.FullScreenF11ToolStripMenuItem_Click);
             // 
@@ -216,7 +219,7 @@ namespace thecalcify
             this.saveMarketWatchHost.ForeColor = System.Drawing.Color.Black;
             this.saveMarketWatchHost.Margin = new System.Windows.Forms.Padding(5, 0, 10, 0);
             this.saveMarketWatchHost.Name = "saveMarketWatchHost";
-            this.saveMarketWatchHost.Size = new System.Drawing.Size(196, 29);
+            this.saveMarketWatchHost.Size = new System.Drawing.Size(164, 24);
             this.saveMarketWatchHost.Text = "Save MarketWatch";
             this.saveMarketWatchHost.Visible = false;
             this.saveMarketWatchHost.Click += new System.EventHandler(this.SaveMarketWatchHost_Click);
@@ -228,40 +231,40 @@ namespace thecalcify
             this.viewToolStripMenuItem,
             this.deleteToolStripMenuItem});
             this.newCTRLNToolStripMenuItem.Name = "newCTRLNToolStripMenuItem";
-            this.newCTRLNToolStripMenuItem.Size = new System.Drawing.Size(150, 29);
+            this.newCTRLNToolStripMenuItem.Size = new System.Drawing.Size(127, 24);
             this.newCTRLNToolStripMenuItem.Text = "Market Watch";
             // 
             // newCTRLNToolStripMenuItem1
             // 
             this.newCTRLNToolStripMenuItem1.Name = "newCTRLNToolStripMenuItem1";
-            this.newCTRLNToolStripMenuItem1.Size = new System.Drawing.Size(275, 34);
+            this.newCTRLNToolStripMenuItem1.Size = new System.Drawing.Size(233, 26);
             this.newCTRLNToolStripMenuItem1.Text = "New      (CTRL+N)";
             this.newCTRLNToolStripMenuItem1.Click += new System.EventHandler(this.NewCTRLNToolStripMenuItem1_Click);
             // 
             // viewToolStripMenuItem
             // 
             this.viewToolStripMenuItem.Name = "viewToolStripMenuItem";
-            this.viewToolStripMenuItem.Size = new System.Drawing.Size(275, 34);
+            this.viewToolStripMenuItem.Size = new System.Drawing.Size(233, 26);
             this.viewToolStripMenuItem.Text = "View";
             // 
             // deleteToolStripMenuItem
             // 
             this.deleteToolStripMenuItem.Name = "deleteToolStripMenuItem";
-            this.deleteToolStripMenuItem.Size = new System.Drawing.Size(275, 34);
+            this.deleteToolStripMenuItem.Size = new System.Drawing.Size(233, 26);
             this.deleteToolStripMenuItem.Text = "Delete";
             this.deleteToolStripMenuItem.Click += new System.EventHandler(this.DeleteToolStripMenuItem_Click);
             // 
             // newsToolStripMenuItem
             // 
             this.newsToolStripMenuItem.Name = "newsToolStripMenuItem";
-            this.newsToolStripMenuItem.Size = new System.Drawing.Size(77, 29);
+            this.newsToolStripMenuItem.Size = new System.Drawing.Size(65, 24);
             this.newsToolStripMenuItem.Text = "News";
             this.newsToolStripMenuItem.Click += new System.EventHandler(this.newsToolStripMenuItem_Click);
             // 
             // aboutToolStripMenuItem
             // 
             this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
-            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(80, 29);
+            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(66, 24);
             this.aboutToolStripMenuItem.Text = "About";
             this.aboutToolStripMenuItem.ToolTipText = "Click CTRL + U";
             this.aboutToolStripMenuItem.Click += new System.EventHandler(this.AboutToolStripMenuItem_Click);
@@ -272,9 +275,8 @@ namespace thecalcify
             this.headerPanel.Controls.Add(this.titleLabel);
             this.headerPanel.Dock = System.Windows.Forms.DockStyle.Top;
             this.headerPanel.Location = new System.Drawing.Point(0, 0);
-            this.headerPanel.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.headerPanel.Name = "headerPanel";
-            this.headerPanel.Size = new System.Drawing.Size(1254, 38);
+            this.headerPanel.Size = new System.Drawing.Size(1115, 30);
             this.headerPanel.TabIndex = 3;
             // 
             // titleLabel
@@ -285,7 +287,7 @@ namespace thecalcify
             this.titleLabel.ForeColor = System.Drawing.Color.Black;
             this.titleLabel.Location = new System.Drawing.Point(0, 0);
             this.titleLabel.Name = "titleLabel";
-            this.titleLabel.Size = new System.Drawing.Size(1254, 38);
+            this.titleLabel.Size = new System.Drawing.Size(1115, 30);
             this.titleLabel.TabIndex = 0;
             this.titleLabel.Text = "DEFAULT";
             this.titleLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -296,10 +298,10 @@ namespace thecalcify
             this.licenceExpire.AutoSize = true;
             this.licenceExpire.Dock = System.Windows.Forms.DockStyle.Right;
             this.licenceExpire.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold);
-            this.licenceExpire.Location = new System.Drawing.Point(1050, 0);
+            this.licenceExpire.Location = new System.Drawing.Point(936, 0);
             this.licenceExpire.Name = "licenceExpire";
-            this.licenceExpire.Padding = new System.Windows.Forms.Padding(0, 5, 11, 0);
-            this.licenceExpire.Size = new System.Drawing.Size(204, 30);
+            this.licenceExpire.Padding = new System.Windows.Forms.Padding(0, 4, 10, 0);
+            this.licenceExpire.Size = new System.Drawing.Size(179, 24);
             this.licenceExpire.TabIndex = 0;
             this.licenceExpire.Text = "Licence Expired :- ";
             this.licenceExpire.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -309,18 +311,18 @@ namespace thecalcify
             this.bottomPanel.Controls.Add(this.savelabel);
             this.bottomPanel.Controls.Add(this.licenceExpire);
             this.bottomPanel.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.bottomPanel.Location = new System.Drawing.Point(0, 853);
+            this.bottomPanel.Location = new System.Drawing.Point(0, 682);
             this.bottomPanel.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.bottomPanel.Name = "bottomPanel";
-            this.bottomPanel.Size = new System.Drawing.Size(1254, 32);
+            this.bottomPanel.Size = new System.Drawing.Size(1115, 26);
             this.bottomPanel.TabIndex = 4;
             // 
             // savelabel
             // 
             this.savelabel.AutoSize = true;
-            this.savelabel.Location = new System.Drawing.Point(8, 6);
+            this.savelabel.Location = new System.Drawing.Point(7, 5);
             this.savelabel.Name = "savelabel";
-            this.savelabel.Size = new System.Drawing.Size(227, 20);
+            this.savelabel.Size = new System.Drawing.Size(189, 16);
             this.savelabel.TabIndex = 1;
             this.savelabel.Text = "Save MarketWatch (CTRL + S)";
             this.savelabel.Visible = false;
@@ -328,9 +330,9 @@ namespace thecalcify
             // searchTextLabel
             // 
             this.searchTextLabel.AutoSize = true;
-            this.searchTextLabel.Location = new System.Drawing.Point(522, 41);
+            this.searchTextLabel.Location = new System.Drawing.Point(464, 33);
             this.searchTextLabel.Name = "searchTextLabel";
-            this.searchTextLabel.Size = new System.Drawing.Size(107, 20);
+            this.searchTextLabel.Size = new System.Drawing.Size(89, 16);
             this.searchTextLabel.TabIndex = 7;
             this.searchTextLabel.Text = "Search Text :-";
             // 
@@ -350,10 +352,10 @@ namespace thecalcify
             "26",
             "28",
             "30"});
-            this.fontSizeComboBox.Location = new System.Drawing.Point(852, 36);
-            this.fontSizeComboBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.fontSizeComboBox.Location = new System.Drawing.Point(757, 29);
+            this.fontSizeComboBox.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.fontSizeComboBox.Name = "fontSizeComboBox";
-            this.fontSizeComboBox.Size = new System.Drawing.Size(180, 28);
+            this.fontSizeComboBox.Size = new System.Drawing.Size(160, 24);
             this.fontSizeComboBox.TabIndex = 5;
             this.fontSizeComboBox.Text = "Font Size";
             this.fontSizeComboBox.SelectedIndexChanged += new System.EventHandler(this.FontSizeComboBox_SelectedIndexChanged);
@@ -367,20 +369,26 @@ namespace thecalcify
             // txtsearch
             // 
             this.txtsearch.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtsearch.Location = new System.Drawing.Point(631, 34);
-            this.txtsearch.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.txtsearch.Location = new System.Drawing.Point(561, 27);
             this.txtsearch.Name = "txtsearch";
-            this.txtsearch.Size = new System.Drawing.Size(198, 31);
+            this.txtsearch.Size = new System.Drawing.Size(176, 27);
             this.txtsearch.TabIndex = 6;
             this.txtsearch.TextChanged += new System.EventHandler(this.Txtsearch_TextChanged);
             this.txtsearch.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Txtsearch_KeyDown);
             // 
+            // alertToolStripMenuItem
+            // 
+            this.alertToolStripMenuItem.Name = "alertToolStripMenuItem";
+            this.alertToolStripMenuItem.Size = new System.Drawing.Size(58, 24);
+            this.alertToolStripMenuItem.Text = "Alert";
+            this.alertToolStripMenuItem.Click += new System.EventHandler(this.AlertToolStripMenuItem_Click);
+            // 
             // thecalcify
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoScroll = true;
-            this.ClientSize = new System.Drawing.Size(1254, 885);
+            this.ClientSize = new System.Drawing.Size(1115, 708);
             this.Controls.Add(this.searchTextLabel);
             this.Controls.Add(this.txtsearch);
             this.Controls.Add(this.fontSizeComboBox);
@@ -390,7 +398,6 @@ namespace thecalcify
             this.Controls.Add(this.headerPanel);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip1;
-            this.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.Name = "thecalcify";
             this.Text = "thecalcify";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Home_FormClosed);
@@ -588,5 +595,6 @@ namespace thecalcify
         private ToolStripMenuItem clearExcelToolStripMenuItem;
         private Label savelabel;
         private ToolStripMenuItem newsToolStripMenuItem;
+        private ToolStripMenuItem alertToolStripMenuItem;
     }
 }

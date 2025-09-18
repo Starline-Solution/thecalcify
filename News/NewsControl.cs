@@ -31,7 +31,7 @@ namespace thecalcify.News
             _username = username;
             _password = password;
             _token = token;
-            LoadCategoriesAsync();
+            LoadCategoriesAsync().GetAwaiter().GetResult();
 
 
             // Configure HttpClient once
@@ -177,7 +177,7 @@ namespace thecalcify.News
                     // Fetch news data and get the new cursor
                     cursor = await FetchNewsDataAndUpdateGrid(string.Empty, string.Empty, 20, cursor);
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     //Invoke((Action)(() => lblStatus.Text = $"Error: {ex.Message}"));
                 }
@@ -218,7 +218,7 @@ namespace thecalcify.News
                 string innerJson = System.Text.Json.JsonSerializer.Deserialize<string>(json);
                 result = System.Text.Json.JsonSerializer.Deserialize<ReutersResponse>(innerJson);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 //Invoke((Action)(() => lblStatus.Text = $"Deserialization error: {ex.Message}"));
                 return cursor;
