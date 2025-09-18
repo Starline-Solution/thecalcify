@@ -669,6 +669,7 @@ namespace thecalcify
                             string fullpath = Path.Combine(AppFolder, username, $"{filePath}.slt");
                             try
                             {
+                                DeleteExcelSheet(filePath);
                                 File.Delete(fullpath);
                                 successCount++;
                                 isdeleted = true;
@@ -746,6 +747,83 @@ namespace thecalcify
             }
         }
 
+        public static void DeleteExcelSheet(string filename) {
+            try
+            {
+                // Attempt to connect to Excel (if running)
+                var excelApp = (Microsoft.Office.Interop.Excel.Application)Marshal.GetActiveObject("Excel.Application");
+
+                if (excelApp != null)
+                {
+                    string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+                    string destExcelPath = Path.Combine(desktopPath, "thecalcify.xlsx");
+
+                    // Loop through all open workbooks
+                    foreach (Microsoft.Office.Interop.Excel.Workbook wb in excelApp.Workbooks)
+                    {
+                        if (string.Equals(wb.FullName, destExcelPath, StringComparison.OrdinalIgnoreCase))
+                        {
+                            // Try to find the worksheet by name
+                            Microsoft.Office.Interop.Excel.Worksheet sheetToDelete = null;
+
+                            foreach (Microsoft.Office.Interop.Excel.Worksheet ws in wb.Sheets)
+                            {
+                                if (string.Equals(ws.Name, filename, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    sheetToDelete = ws;
+                                    break;
+                                }
+                            }
+
+                            if (sheetToDelete != null)
+                            {
+                                // If the sheet is active, switch to "Sheet1" before deleting
+                                try
+                                {
+                                    if (sheetToDelete == wb.ActiveSheet)
+                                    {
+                                        Microsoft.Office.Interop.Excel.Worksheet fallbackSheet = null;
+                                        foreach (Microsoft.Office.Interop.Excel.Worksheet ws in wb.Sheets)
+                                        {
+                                            if (string.Equals(ws.Name, "Sheet1", StringComparison.OrdinalIgnoreCase))
+                                            {
+                                                fallbackSheet = ws;
+                                                break;
+                                            }
+                                        }
+
+                                        if (fallbackSheet != null)
+                                        {
+                                            fallbackSheet.Activate();
+                                        }
+                                    }
+
+                                    // Delete the sheet (suppress confirmation)
+                                    excelApp.DisplayAlerts = false;
+                                    sheetToDelete.Delete();
+                                    excelApp.DisplayAlerts = true;
+                                }
+                                catch (Exception sheetEx)
+                                {
+                                    ApplicationLogger.LogException(sheetEx); // Optional log
+                                }
+                            }
+
+                            break; // Exit loop once workbook is found
+                        }
+                    }
+                }
+            }
+            catch (COMException)
+            {
+                // Excel is not running; skip silently
+            }
+            catch (Exception ex)
+            {
+                ApplicationLogger.LogException(ex); // Log unexpected issues
+            }
+
+        }
         private void FullScreenF11ToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (!isFullScreen)
@@ -1467,7 +1545,7 @@ namespace thecalcify
                             if (selectedSymbols.Count != 0)
                                 identifiers = new List<string>(selectedSymbols);
 
-                            await connection.InvokeAsync("SubscribeSymbols", identifiers);
+                            await connection.InvokeAsync("SubscribeSymbols", symbolMaster);
                             Console.WriteLine("Resubscribed after reconnect.");
                         }
                         catch (Exception ex)
@@ -1741,7 +1819,33 @@ namespace thecalcify
                         if (newData == null || string.IsNullOrEmpty(newData.i))
                             continue;
 
+                        // Prepare dictionary of field values for this symbol
+                        // Assuming 'row' is a DataGridViewRow (not DataRow)
+                        var dict = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
+                        {
+                            ["Name"] = newData.i,
+                            ["Bid"] = newData.b,
+                            ["Ask"] = newData.a,
+                            ["LTP"] = newData.ltp,
+                            ["High"] = newData.h,
+                            ["Low"] = newData.l,
+                            ["Open"] = newData.o,
+                            ["Close"] = newData.c,
+                            ["Net Chng"] = newData.d,
+                            ["V"] = newData.v,
+                            ["ATP"] = newData.atp,
+                            ["Bid Size"] = newData.bq,
+                            ["Total Bid Size"] = newData.tbq,
+                            ["Ask Size"] = newData.sq,
+                            ["Total Ask Size"] = newData.tsq,
+                            ["Volume"] = newData.vt,
+                            ["Open Interest"] = newData.oi,
+                            ["Last Size"] = newData.ltq,
+                            ["Time"] = Common.TimeStampConvert(newData.t)
+                        };
 
+                        // After Every updates are applied:
+                        ExcelNotifier.NotifyExcel(newData.i, dict);
 
                         // Add missing row if not present
                         if (!symbolRowMap.TryGetValue(newData.i, out int rowIndex))
@@ -1785,33 +1889,6 @@ namespace thecalcify
                         SetCellValue(row, "Open Interest", newData.oi);
                         SetCellValue(row, "Last Size", newData.ltq);
                         SetCellValue(row, "Time", Common.TimeStampConvert(newData.t));
-
-                        // Prepare dictionary of field values for this symbol
-                        // Assuming 'row' is a DataGridViewRow (not DataRow)
-                        var dict = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
-                        {
-                            ["Bid"] = row.Cells["Bid"].Value,
-                            ["Ask"] = row.Cells["Ask"].Value,
-                            ["LTP"] = row.Cells["LTP"].Value,
-                            ["High"] = row.Cells["High"].Value,
-                            ["Low"] = row.Cells["Low"].Value,
-                            ["Open"] = row.Cells["Open"].Value,
-                            ["Close"] = row.Cells["Close"].Value,
-                            ["Net Chng"] = row.Cells["Net Chng"].Value,
-                            ["V"] = row.Cells["V"].Value,
-                            ["ATP"] = row.Cells["ATP"].Value,
-                            ["Bid Size"] = row.Cells["Bid Size"].Value,
-                            ["Total Bid Size"] = row.Cells["Total Bid Size"].Value,
-                            ["Ask Size"] = row.Cells["Ask Size"].Value,
-                            ["Total Ask Size"] = row.Cells["Total Ask Size"].Value,
-                            ["Volume"] = row.Cells["Volume"].Value,
-                            ["Open Interest"] = row.Cells["Open Interest"].Value,
-                            ["Last Size"] = row.Cells["Last Size"].Value,
-                            ["Time"] = row.Cells["Time"].Value
-                        };
-
-                        // After Every updates are applied:
-                        ExcelNotifier.NotifyExcel(newData.i, dict);
 
                         // Set name if still default
                         var nameCell = row.Cells["Name"];
