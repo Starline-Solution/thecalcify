@@ -120,7 +120,6 @@ namespace thecalcify
             this.defaultGrid.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.CellSelect;
             this.defaultGrid.Size = new System.Drawing.Size(1115, 624);
             this.defaultGrid.TabIndex = 1;
-            this.defaultGrid.DataSourceChanged += new System.EventHandler(this.DefaultGrid_DataSourceChanged);
             this.defaultGrid.CellFormatting += new System.Windows.Forms.DataGridViewCellFormattingEventHandler(this.DefaultGrid_CellFormatting);
             this.defaultGrid.CellMouseDown += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.DefaultGrid_CellMouseDown);
             this.defaultGrid.CellMouseEnter += new System.Windows.Forms.DataGridViewCellEventHandler(this.DefaultGrid_CellMouseEnter);
@@ -193,6 +192,7 @@ namespace thecalcify
             this.toolsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.disconnectESCToolStripMenuItem,
             this.fullScreenF11ToolStripMenuItem});
+            this.toolsToolStripMenuItem.Enabled = false;
             this.toolsToolStripMenuItem.Name = "toolsToolStripMenuItem";
             this.toolsToolStripMenuItem.Size = new System.Drawing.Size(64, 24);
             this.toolsToolStripMenuItem.Text = "Tools";
@@ -258,8 +258,7 @@ namespace thecalcify
             this.newsToolStripMenuItem.Name = "newsToolStripMenuItem";
             this.newsToolStripMenuItem.Size = new System.Drawing.Size(65, 24);
             this.newsToolStripMenuItem.Text = "News";
-            this.newsToolStripMenuItem.Visible = false;
-            this.newsToolStripMenuItem.Click += new System.EventHandler(this.NewsToolStripMenuItem_Click);
+            this.newsToolStripMenuItem.Click += new System.EventHandler(this.newsToolStripMenuItem_Click);
             // 
             // aboutToolStripMenuItem
             // 
