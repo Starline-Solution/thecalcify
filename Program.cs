@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using thecalcify.Helper;
 
 namespace thecalcify
 {
@@ -14,6 +16,16 @@ namespace thecalcify
         [STAThread]
         static void Main()
         {
+            try
+            {
+                // Set current process priority to RealTime
+                Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.RealTime;
+            }
+            catch (Exception ex)
+            {
+                ApplicationLogger.Log($"Unable to set process priority: {ex.Message}");
+            }
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new Login());
