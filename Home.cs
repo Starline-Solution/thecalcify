@@ -56,9 +56,9 @@ namespace thecalcify
         // ======================
         private bool isDisconnecting = false, isConnectionDisposed = false;
 
-        public bool isLoadedSymbol = false;
-        public bool isEdit = false;
-        public bool isGrid = true, reloadGrid = true;
+        private bool isLoadedSymbol = false, isManualDisconnect = false;
+        private bool isEdit = false;
+        //private bool isGrid = true, reloadGrid = true;
         public bool isdeleted = false;
         private bool isRunning = true;
         private bool isFullScreen = false;
@@ -267,6 +267,7 @@ namespace thecalcify
                 await LoadInitialMarketDataAsync();
                 SignalRTimer();
                 await SignalREvent();
+                ApplicationLogger.Log("SignalR Load From Load");
 
                 NetworkChange.NetworkAvailabilityChanged += OnNetworkAvailabilityChanged;
                 NetworkChange.NetworkAddressChanged += OnNetworkAddressChanged;
@@ -469,7 +470,6 @@ namespace thecalcify
             try
             {
                 fontSizeComboBox.Visible = true;
-                savelabel.Visible = false;
 
                 EditableMarketWatchGrid editableMarketWatchGrid = EditableMarketWatchGrid.CurrentInstance;
                 if (editableMarketWatchGrid != null && editableMarketWatchGrid.IsCurrentCellInEditMode)
@@ -490,6 +490,8 @@ namespace thecalcify
                 identifiers = symbolMaster;
                 InitializeDataGridView();          // Configure the grid
                 await SignalREvent();
+                ApplicationLogger.Log("SignalR Load From Default");
+
             }
             catch (Exception ex)
             {
@@ -1467,6 +1469,7 @@ namespace thecalcify
                         }
                         await LoadInitialMarketDataAsync();
                         await SignalREvent();
+                        ApplicationLogger.Log("SignalR Load From AddEditSymbolsToolStripMenuItem_Click");
 
                         panelAddSymbols.Visible = false;
                     };
@@ -1522,10 +1525,10 @@ namespace thecalcify
                 e.CellStyle.ForeColor = Color.Gray;
         }
 
-        private void OnNetworkAvailabilityChanged(object sender, NetworkAvailabilityEventArgs e)
+        private async void OnNetworkAvailabilityChanged(object sender, NetworkAvailabilityEventArgs e)
         {
             if (e.IsAvailable)
-                _ = AttemptReconnectAsync("Network availability restored.");
+                await SignalREvent();
             else
                 ApplicationLogger.Log("Network unavailable.");
         }
@@ -1535,10 +1538,10 @@ namespace thecalcify
             _ = AttemptReconnectAsync("Network address changed.");
         }
 
-        private void OnPowerModeChanged(object sender, PowerModeChangedEventArgs e)
+        private async void OnPowerModeChanged(object sender, PowerModeChangedEventArgs e)
         {
             if (e.Mode == PowerModes.Resume)
-                _ = AttemptReconnectAsync("System resumed from sleep/hibernate.");
+                await SignalREvent();
         }
 
         #endregion Form Method
@@ -1549,9 +1552,10 @@ namespace thecalcify
         {
             try
             {
-                signalRTimer = new System.Windows.Forms.Timer { Interval = 10_000 };
+                signalRTimer = new System.Windows.Forms.Timer { Interval = 60_000 };
                 signalRTimer.Tick += async (s, e) => await TryReconnectAsync();
                 signalRTimer.Start();
+                ApplicationLogger.Log("SignalR timer started.","Info");
             }
             catch (Exception ex)
             {
@@ -1561,11 +1565,12 @@ namespace thecalcify
 
         private async Task TryReconnectAsync()
         {
-            if (connection?.State == HubConnectionState.Disconnected)
+            if (connection != null && connection?.State == HubConnectionState.Disconnected)
             {
                 try
                 {
                     await SignalREvent();
+                    ApplicationLogger.Log("SignalR reconnection attempt successful.", "Info");
                 }
                 catch (Exception ex) when (
                     ex is OperationCanceledException ||
@@ -1576,15 +1581,17 @@ namespace thecalcify
                     Console.WriteLine("SignalR reconnection attempt failed, retrying...");
                     ApplicationLogger.LogException(ex);
                     await SignalREvent();
+                    ApplicationLogger.Log("SignalR Load From TryReconnectAsync");
+
                 }
             }
-        }
+                }
 
         private HubConnection BuildConnection()
         {
             return new HubConnectionBuilder()
                 .WithUrl($"http://api.thecalcify.com/excel?user={username}&auth=Starline@1008&type=desktop", options =>
-                {
+        {
                     options.Headers.Add("Origin", "http://api.thecalcify.com/");
                     options.Transports = HttpTransportType.LongPolling | HttpTransportType.ServerSentEvents | HttpTransportType.WebSockets | HttpTransportType.None; // try fallback
                 })
@@ -1596,69 +1603,79 @@ namespace thecalcify
         {
             try
             {
-                connection = BuildConnection();
+               connection = BuildConnection();
 
                 connection.On<string>("excelRate", OnExcelRateReceived);
 
-                connection.Closed += async (error) =>
+                connection.Reconnecting += error =>
                 {
-                    Console.WriteLine("Connection closed");
-                    if (!isDisconnecting)
+                    savelabel.Visible = true;
+                    savelabel.Text = "Client is Offline (Reconnecting...)";
+                    ApplicationLogger.Log("Reconnecting to hub...");
+                    return Task.CompletedTask;
+                };
+
+                connection.Reconnected += async connectionId =>
+                {
+                    savelabel.Visible = false;
+                    savelabel.Text = "";
+                    ApplicationLogger.Log("✅ Reconnected. ConnectionId=" + connectionId);
+
+                    try
                     {
-                        await Task.Delay(new Random().Next(0, 5) * 1000);
-                        // Possibly try reconnect manually if needed
+                        if (selectedSymbols.Count > 0)
+                            identifiers = new List<string>(selectedSymbols);
+
+                        await connection.InvokeAsync("SubscribeSymbols", symbolMaster);
+                        ApplicationLogger.Log("Resubscribed successfully after reconnect.");
+                    }
+                    catch (Exception ex)
+                    {
+                        ApplicationLogger.LogException(ex);
                     }
                 };
 
-                connection.Reconnected += async (connectionId) =>
+                connection.Closed += async error =>
                 {
-                    if (!isDisconnecting)
-                    {
-                        Console.WriteLine("Reconnected to SignalR hub");
+                    ApplicationLogger.Log("Connection closed. Manual: " + isManualDisconnect);
 
+                    if (isManualDisconnect)
+                    {
+                        ApplicationLogger.Log("Manual disconnect — skipping reconnect.");
+                        return;
+                    }
+
+                    // Unexpected close — reconnect manually
+                    while (connection.State == HubConnectionState.Disconnected)
+                    {
                         try
                         {
-                            if (selectedSymbols.Count != 0)
-                                identifiers = new List<string>(selectedSymbols);
-
+                            ApplicationLogger.Log("Attempting manual reconnect...");
+                            await Task.Delay(5000);
+                            await connection.StartAsync();
+                            ApplicationLogger.Log("✅ Manual reconnection successful.");
                             await connection.InvokeAsync("SubscribeSymbols", symbolMaster);
-                            Console.WriteLine("Resubscribed after reconnect.");
+                            SetupUpdateTimer();
                         }
                         catch (Exception ex)
                         {
-                            Console.WriteLine("Failed to resubscribe after reconnect.");
-                            ApplicationLogger.LogException(ex);
+                            ApplicationLogger.Log("Reconnect failed: " + ex.Message);
                         }
                     }
                 };
 
-                var currentIdentifiers = new List<string>(identifiers); // snapshot copy
+
                 await connection.StartAsync();
 
-                try
+                if (connection.State == HubConnectionState.Connected)
                 {
-                    if (connection != null && connection.State == HubConnectionState.Connected)
-                    {
-                        if (selectedSymbols.Count != 0)
-                            identifiers = new List<string>(selectedSymbols);
+                    if (selectedSymbols.Count > 0)
+                        identifiers = new List<string>(selectedSymbols);
 
-                        if (currentIdentifiers.Count() != identifiers.Count())
-                            identifiers = currentIdentifiers;
-
-                        var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-                        await connection.InvokeAsync("SubscribeSymbols", symbolMaster, cts.Token);
-                        SetupUpdateTimer();
-                    }
-                }
-                catch (TaskCanceledException ex)
-                {
-                    Console.WriteLine("SignalR task canceled: likely due to timeout or connection issue.");
-                    ApplicationLogger.LogException(ex);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("Error during SubscribeSymbols call.");
-                    ApplicationLogger.LogException(ex);
+                    var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                    await connection.InvokeAsync("SubscribeSymbols", symbolMaster, cts.Token);
+                    SetupUpdateTimer();
+                    ApplicationLogger.Log("Connected to SignalR hub and subscribed to symbols.", "Info");
                 }
             }
             catch (Exception ex)
@@ -1666,6 +1683,7 @@ namespace thecalcify
                 ApplicationLogger.LogException(ex);
             }
         }
+
 
         private void SetupUpdateTimer()
         {
@@ -1712,6 +1730,8 @@ namespace thecalcify
                         }
                     }
                 }
+
+                //ApplicationLogger.Log("Received data from SignalR.", "Debug");
 
                 var json = DecompressGzip(Convert.FromBase64String(base64));
                 var data = JsonConvert.DeserializeObject<MarketDataDto>(json);
@@ -1813,12 +1833,22 @@ namespace thecalcify
                 ApplicationLogger.LogException(ex);
             }
 
+            ApplicationLogger.Log($"Symbol {symbol} not present in grid.", "Debug");
+
             return false;
         }
 
         private static bool IsNullOrEmptyOrPlaceholder(object val)
         {
-            return val == null || val == DBNull.Value || string.IsNullOrWhiteSpace(val.ToString()) || val.ToString() == "--";
+            try
+            {
+                return val == null || val == DBNull.Value || string.IsNullOrWhiteSpace(val.ToString()) || val.ToString() == "--";
+            }
+            catch (Exception ex)
+            {
+                ApplicationLogger.LogException(ex);
+                return true;
+            }
         }
 
         private void AddRowFromDTO(MarketDataDto dto)
@@ -1887,21 +1917,17 @@ namespace thecalcify
                 {
                     updates = updates.Where(x => long.TryParse(x.t, out _)).OrderByDescending(x => DateTimeOffset.FromUnixTimeMilliseconds(long.Parse(x.t)).LocalDateTime).ToList();
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    ApplicationLogger.LogException(ex);
                 }
 
-                if (updates != null)
+                if (updates != null && (!this.IsDisposed && this.IsHandleCreated))
                 {
-                    if (!this.IsDisposed && this.IsHandleCreated)
-                    {
-                        if (defaultGrid.InvokeRequired)
-                        {
-                            defaultGrid.BeginInvoke((MethodInvoker)(() => ApplyBatchUpdates(updates)));
-                        }
-                        else
-                            ApplyBatchUpdates(updates);
-                    }
+                    if (defaultGrid.InvokeRequired)
+                        defaultGrid.BeginInvoke((MethodInvoker)(() => ApplyBatchUpdates(updates)));
+                    else
+                        ApplyBatchUpdates(updates);
                 }
             }
             catch (Exception ex)
@@ -1947,7 +1973,7 @@ namespace thecalcify
                             ["Time"] = Common.TimeStampConvert(newData.t)
                         };
 
-                        // After Every updates are applied:
+                        // Instead of NotifyExcel(), call QueueUpdate():
                         ExcelNotifier.NotifyExcel(newData.i, dict);
 
                         if (identifiers.Contains(newData.i))
@@ -2136,6 +2162,8 @@ namespace thecalcify
                 // 5️⃣ Kill extra processes if needed (use with caution)
                 KillProcess();    // Only if you're absolutely sure it's safe to kill processes
                 //await DisconnectESCToolStripMenuItem_ClickAsync();
+
+                ApplicationLogger.Log("Disconnected and returned to login.", "Info");
             }
             catch (Exception ex)
             {
@@ -2147,13 +2175,15 @@ namespace thecalcify
             }
         }
 
-        private void UnsubscribeAllEvents()
+        private static void UnsubscribeAllEvents()
         {
-            NetworkChange.NetworkAvailabilityChanged -= OnNetworkAvailabilityChanged;
-            NetworkChange.NetworkAddressChanged -= OnNetworkAddressChanged;
-            SystemEvents.PowerModeChanged -= OnPowerModeChanged;
+            //NetworkChange.NetworkAvailabilityChanged -= OnNetworkAvailabilityChanged;
+            //NetworkChange.NetworkAddressChanged -= OnNetworkAddressChanged;
+            //SystemEvents.PowerModeChanged -= OnPowerModeChanged;
             System.Windows.Forms.Application.ThreadException -= Application_ThreadException;
             AppDomain.CurrentDomain.UnhandledException -= CurrentDomain_UnhandledException;
+
+            ApplicationLogger.Log("Unsubscribed from all events.", "Info");
         }
 
         private async Task StopBackgroundTasks()
@@ -2164,7 +2194,9 @@ namespace thecalcify
                 {
                     if (connection.State != HubConnectionState.Disconnected)
                     {
-                        await connection.StopAsync(); // ✅ Only stop if not already disconnected
+                        var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+                        await connection.StopAsync(cts.Token); // ✅ Only stop if not already disconnected
                     }
 
                     await connection.DisposeAsync(); // ✅ Dispose safely
@@ -2177,6 +2209,9 @@ namespace thecalcify
                     signalRTimer.Dispose();
                     signalRTimer = null;
                 }
+
+
+                ApplicationLogger.Log("Background tasks stopped and cleaned up.", "Info");
             }
             catch (ObjectDisposedException)
             {
@@ -2280,6 +2315,8 @@ namespace thecalcify
                         }
 
                     }
+
+                    ApplicationLogger.Log("Initial market data loaded.", "Info");
                 }
             }
             catch (Exception ex)
@@ -2294,8 +2331,8 @@ namespace thecalcify
             defaultGrid.Columns.Clear();
 
             string[] columns = {
-        "symbol", "Name", "Bid", "Ask", "LTP", "High", "Low", "Open", "Close", "Net Chng", "ATP",
-        "Bid Size", "Total Bid Size", "Ask Size", "Total Ask Size", "Volume", "Open Interest", "Last Size", "V", "Time"
+                "symbol", "Name", "Bid", "Ask", "LTP", "High", "Low", "Open", "Close", "Net Chng", "ATP",
+                "Bid Size", "Total Bid Size", "Ask Size", "Total Ask Size", "Volume", "Open Interest", "Last Size", "V", "Time"
             };
 
             foreach (string colName in columns)
@@ -2318,8 +2355,8 @@ namespace thecalcify
             {
                 defaultGrid.Rows.Add(new object[]
                 {
-            symbol, "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A",
-            "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A"
+                    symbol, "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A",
+                    "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A"
                 });
             }
         }
@@ -2435,6 +2472,7 @@ namespace thecalcify
                     {
                         connection = BuildConnection();
                         connection.On<string>("excelRate", OnExcelRateReceived);
+                        ApplicationLogger.Log($"App connection null due to {reason}");
                     }
 
                     if (connection.State == HubConnectionState.Disconnected)
@@ -2442,6 +2480,11 @@ namespace thecalcify
                         await connection.StartAsync();
                         await connection.InvokeAsync("SubscribeSymbols", symbolMaster);
                         ApplicationLogger.Log("Reconnected and resubscribed.");
+                    }
+
+                    if (connection.State == HubConnectionState.Connecting || connection.State == HubConnectionState.Reconnecting)
+                    { 
+                        ApplicationLogger.Log($"Connecting {connection.State}");
                     }
                 }
                 catch (Exception ex)
@@ -2925,8 +2968,8 @@ namespace thecalcify
                     await DefaultToolStripMenuItem_Click(sender, e);
                     addEditSymbolsToolStripMenuItem.Enabled = false;
                     await LoadInitialMarketDataAsync();
-                    isGrid = true;
-                    reloadGrid = true;
+                    //isGrid = true;
+                    //reloadGrid = true;
                 };
 
                 viewToolStripMenuItem.DropDownItems.Add(defaultMenuItem);
@@ -2956,8 +2999,8 @@ namespace thecalcify
                         titleLabel.Text = saveFileName.ToUpper();
                         isEdit = false;
                         await LoadInitialMarketDataAsync();
-                        isGrid = true;
-                        reloadGrid = true;
+                        //isGrid = true;
+                        //reloadGrid = true;
                     };
                     viewToolStripMenuItem.DropDownItems.Add(menuItem);
                 }
@@ -2981,8 +3024,8 @@ namespace thecalcify
                     saveFileName = null;
                     titleLabel.Text = "DEFAULT";
                     await LoadInitialMarketDataAsync();
-                    isGrid = true;
-                    reloadGrid = true;
+                    //isGrid = true;
+                    //reloadGrid = true;
                 };
                 defaultMenuItem.Enabled = true;
                 viewToolStripMenuItem.DropDownItems.Add(defaultMenuItem);
@@ -2997,7 +3040,6 @@ namespace thecalcify
         {
             try
             {
-                savelabel.Visible = false;
                 fontSizeComboBox.Visible = true;
                 string finalPath = Path.Combine(AppFolder, username);
                 selectedSymbols.Clear();
@@ -3012,6 +3054,8 @@ namespace thecalcify
                 titleLabel.Text = Path.GetFileNameWithoutExtension(Filename).ToUpper();
                 InitializeDataGridView();          // Configure the grid
                 await SignalREvent();
+                ApplicationLogger.Log("SignalR Load From LoadSymbol");
+
             }
             catch (Exception ex)
             {
@@ -3023,7 +3067,7 @@ namespace thecalcify
             MenuLoad();
         }
 
-        private void newsToolStripMenuItem_Click(object sender, EventArgs e)
+        private void NewsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             try
             {
@@ -3108,6 +3152,7 @@ namespace thecalcify
                 saveFileName = null;
 
                 savelabel.Visible = true;
+                savelabel.Text = "Save MarketWatch (CTRL + S)";
 
                 // Enable all items in the Open menu
                 foreach (ToolStripMenuItem item in viewToolStripMenuItem.DropDownItems)
@@ -3180,7 +3225,9 @@ namespace thecalcify
                 {
                     try
                     {
-                        connection.StopAsync().Wait();
+                        var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+                        connection.StopAsync(cts.Token).Wait();
                         connection.DisposeAsync().AsTask().Wait();
                     }
                     catch (Exception ex)
