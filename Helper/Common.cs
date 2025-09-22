@@ -20,10 +20,15 @@ namespace thecalcify.Helper
 
         public Common(Control control)
         {
+            //uiContext = control;
+            //SystemEvents.PowerModeChanged += OnPowerChange;
+            //NetworkChange.NetworkAvailabilityChanged += OnNetworkAvailabilityChanged;
+            //NetworkChange.NetworkAddressChanged += OnNetworkAddressChanged;
         }
 
         public Common()
         {
+            
         }
 
         public static bool InternetAvilable()
@@ -108,9 +113,20 @@ namespace thecalcify.Helper
             try
             {
                 ApplicationLogger.Log($"Internet Is Down {DateTime.Now:dd/MM/yyyy HH:mm:ss:ff}");
+
+                //if (live_Rate != null && live_Rate.socket.Disconnected == true)
+                //{
+                //    await live_Rate.SafeConnectAsync();
+                //    if (live_Rate.socket.Disconnected == true)
+                //    {
+                //        MessageBox.Show("Real time Data stop due to unexpected Network change!", "Alert", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                //    }
+                //}
             }
             catch (TargetInvocationException)
             {
+                //Live_Rate live_Rate = new Live_Rate();
+                //await live_Rate.socket.DisconnectAsync();
             }
         }
 
@@ -147,7 +163,10 @@ namespace thecalcify.Helper
                 return null;
             }
         }
+
+
     }
+
 
     public class MarketApiResponse
     {
@@ -155,6 +174,7 @@ namespace thecalcify.Helper
         public string message { get; set; }
         public List<MarketDataDto> data { get; set; }
     }
+
 
     // DTO to map JSON data
     public class MarketDataDto
@@ -190,6 +210,7 @@ namespace thecalcify.Helper
         public int Column { get; set; }
         public string Formula { get; set; }
     }
+
 
     public class WinApi
     {

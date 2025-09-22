@@ -47,9 +47,8 @@ namespace thecalcify.Helper
                     }
                 }
             }
-            catch(Exception ex)
+            catch
             {
-                ApplicationLogger.LogException(ex);
             }
         }
     }

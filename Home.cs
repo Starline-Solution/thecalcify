@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http.Connections;
+﻿using ClosedXML.Excel;
+using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Win32;
 using Newtonsoft.Json;
@@ -62,7 +63,6 @@ namespace thecalcify
         public bool isdeleted = false;
         private bool isRunning = true;
         private bool isFullScreen = false;
-
 
         // ======================
         // 📌 Runtime State / Data
@@ -188,99 +188,91 @@ namespace thecalcify
 
         private async void Home_Load(object sender, EventArgs e)
         {
-            try
+            // Get login info (if not already available)
+            Login login = Login.CurrentInstance;
+            token = login?.token ?? string.Empty;
+            licenceDate = login?.licenceDate ?? string.Empty;
+            username = login?.username ?? string.Empty;
+            password = login?.userpassword ?? string.Empty;
+
+            DateTime txtlicenceDate = Common.ParseToDate(licenceDate);
+            DateTime currentDate = DateTime.Now.Date;
+            TimeSpan diff = txtlicenceDate - currentDate;
+            RemainingDays = diff.Days;
+            if (RemainingDays <= 7)
             {
-                // Get login info (if not already available)
-                Login login = Login.CurrentInstance;
-                token = login?.token ?? string.Empty;
-                licenceDate = login?.licenceDate ?? string.Empty;
-                username = login?.username ?? string.Empty;
-                password = login?.userpassword ?? string.Empty;
-
-                DateTime txtlicenceDate = Common.ParseToDate(licenceDate);
-                DateTime currentDate = DateTime.Now.Date;
-                TimeSpan diff = txtlicenceDate - currentDate;
-                RemainingDays = diff.Days;
-                if (RemainingDays <= 7)
-                {
-                    licenceThread = new Thread(new ThreadStart(() => CheckLicenceLoop().GetAwaiter().GetResult()));
-                    licenceThread.IsBackground = true; // Thread will close when app closes
-                    licenceThread.Start();
-                }
-                else
-                {
-                    licenceExpire.Text = licenceExpire.Text + licenceDate;
-                }
-
-                commonClass = new Common();
-
-                // --- UI SETUP (non-data related) ---
-                this.AutoScaleMode = AutoScaleMode.Dpi;
-
-                this.KeyPreview = true;
-                this.DoubleBuffered = true;
-                SetStyle(ControlStyles.OptimizedDoubleBuffer |
-                         ControlStyles.AllPaintingInWmPaint |
-                         ControlStyles.UserPaint, true);
-
-                // --- PARALLEL INITIALIZATION ---
-                var initializationTasks = new List<Task>();
-
-
-                initializationTasks.Add(Task.Run(() =>
-                {
-                    // --- COMMON CLASS ---
-                    commonClass = new Common(this);
-                    commonClass.StartInternetMonitor();
-
-                    // --- MARKET WATCH + COLUMNS ---
-                    var (currentWatch, currentColumns) = CredentialManager.GetCurrentMarketWatchWithColumns();
-                    lastOpenMarketWatch = currentWatch ?? "Default";
-                    columnPreferences = (currentColumns?.Count == 0 || currentColumns == null) ?
-                        (columnPreferencesDefault ?? new List<string>()) : currentColumns;
-                }));
-
-                // At app startup, spin up Excel hidden, then close it. This warms up the COM server so the real export is fast:
-                var app = new Microsoft.Office.Interop.Excel.Application();
-                app.Quit();
-
-                MenuLoad();
-
-                // --- LOAD INITIAL DATA ASYNCHRONOUSLY ---
-                await LoadInitialMarketDataAsync();
-                HandleLastOpenedMarketWatch();
-
-                // --- FORM PROPERTIES ---
-                this.WindowState = FormWindowState.Maximized;
-                defaultGrid.Size = new Size(this.ClientSize.Width, this.ClientSize.Height);
-
-                CurrentInstance = this;
-
-                if (!this.IsDisposed && this.IsHandleCreated)
-                {
-                    // --- INITIALIZE DATA STRUCTURES ---
-                    BeginInvoke((MethodInvoker)(() =>
-                    {
-                        InitializeDataGridView();
-                    }));
-                }
-                await LoadInitialMarketDataAsync();
-                SignalRTimer();
-                await SignalREvent();
-                ApplicationLogger.Log("SignalR Load From Load");
-
-                NetworkChange.NetworkAvailabilityChanged += OnNetworkAvailabilityChanged;
-                NetworkChange.NetworkAddressChanged += OnNetworkAddressChanged;
-                SystemEvents.PowerModeChanged += OnPowerModeChanged;
-                System.Windows.Forms.Application.ThreadException += Application_ThreadException;
-                AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
-
-                KillProcess();
+                licenceThread = new Thread(new ThreadStart(() => CheckLicenceLoop().GetAwaiter().GetResult()));
+                licenceThread.IsBackground = true; // Thread will close when app closes
+                licenceThread.Start();
             }
-            catch (Exception ex)
+            else
             {
-                ApplicationLogger.LogException(ex);
+                licenceExpire.Text = licenceExpire.Text + licenceDate;
             }
+
+            commonClass = new Common();
+
+            // --- UI SETUP (non-data related) ---
+            this.AutoScaleMode = AutoScaleMode.Dpi;
+
+            this.KeyPreview = true;
+            this.DoubleBuffered = true;
+            SetStyle(ControlStyles.OptimizedDoubleBuffer |
+                     ControlStyles.AllPaintingInWmPaint |
+                     ControlStyles.UserPaint, true);
+
+            // --- PARALLEL INITIALIZATION ---
+            var initializationTasks = new List<Task>();
+
+            
+            initializationTasks.Add(Task.Run(() =>
+            {
+                // --- COMMON CLASS ---
+                commonClass = new Common(this);
+                commonClass.StartInternetMonitor();
+
+                // --- MARKET WATCH + COLUMNS ---
+                var (currentWatch, currentColumns) = CredentialManager.GetCurrentMarketWatchWithColumns();
+                lastOpenMarketWatch = currentWatch ?? "Default";
+                columnPreferences = (currentColumns?.Count == 0 || currentColumns == null) ?
+                    (columnPreferencesDefault ?? new List<string>()) : currentColumns;
+            }));
+
+            // At app startup, spin up Excel hidden, then close it. This warms up the COM server so the real export is fast:
+            var app = new Microsoft.Office.Interop.Excel.Application();
+            app.Quit();
+
+            MenuLoad();
+
+            // --- LOAD INITIAL DATA ASYNCHRONOUSLY ---
+            await LoadInitialMarketDataAsync();
+            HandleLastOpenedMarketWatch();
+
+            // --- FORM PROPERTIES ---
+            this.WindowState = FormWindowState.Maximized;
+            defaultGrid.Size = new Size(this.ClientSize.Width, this.ClientSize.Height);
+
+            CurrentInstance = this;
+
+            if (!this.IsDisposed && this.IsHandleCreated)
+            {
+                // --- INITIALIZE DATA STRUCTURES ---
+                BeginInvoke((MethodInvoker)(() =>
+                {
+                    InitializeDataGridView();
+                })); 
+            }
+            await LoadInitialMarketDataAsync();
+            SignalRTimer();
+            await SignalREvent();
+
+            NetworkChange.NetworkAvailabilityChanged += OnNetworkAvailabilityChanged;
+            NetworkChange.NetworkAddressChanged += OnNetworkAddressChanged;
+            SystemEvents.PowerModeChanged += OnPowerModeChanged;
+            System.Windows.Forms.Application.ThreadException += Application_ThreadException;
+            AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+
+            KillProcess();
         }
 
         private void Home_FormClosed(object sender, FormClosedEventArgs e)
@@ -331,7 +323,7 @@ namespace thecalcify
                             {
                                 if (!this.IsDisposed)
                                     await UpdateLicenceLabel(licenceRemainingDays);
-                            }
+                            } 
                         }
                     }
                     catch (ObjectDisposedException)
@@ -351,56 +343,46 @@ namespace thecalcify
 
         private async Task UpdateLicenceLabel(int licenceRemainingDays)
         {
+            if (licenceRemainingDays < 0)
+            {
+                await DisconnectESCToolStripMenuItem_ClickAsync();
+            }
+            else if (licenceRemainingDays <= 7)
+            {
+                licenceExpire.Text = $"⚠ Licence expires in {licenceRemainingDays} days!";
+                licenceExpire.ForeColor = Color.Red;
+                licenceExpire.Visible = !licenceExpire.Visible; // blink
+            }
+            else
+            {
+                licenceExpire.Text = $"Licence valid for {licenceRemainingDays} days.";
+                licenceExpire.ForeColor = Color.Green;
+            }
+        }
+
+        private async Task DisconnectESCToolStripMenuItem_ClickAsync()
+        {
             try
             {
-                if (licenceRemainingDays < 0)
-                {
+                // 1️⃣ Stop background processes
+                await StopBackgroundTasks(); // Make sure this method exists
 
-                    try
-                    {
-                        // 1️⃣ Stop background processes
-                        await StopBackgroundTasks(); // You define this method
+                // 2️⃣ Unsubscribe event handlers
+                UnsubscribeAllEvents(); // Optional
 
-                        // 2️⃣ Unsubscribe event handlers
-                        UnsubscribeAllEvents(); // Optional, but recommended if you manually subscribed
+                // 3️⃣ Show Login Form
+                Login loginForm = new Login();
+                loginForm.Show();
 
+                // 4️⃣ Close current form
+                this.Close(); // Or this.Hide() if you want to reopen later
 
-                        Login loginForm = new Login();
-                        loginForm.Show();
-
-                        // 4️⃣ Dispose current form
-                        this.Hide();      // optional: avoid flicker before dispose
-                        this.Dispose();   // frees unmanaged resources
-                        this.Close();   // frees unmanaged resources
-
-                        // 5️⃣ Kill extra processes if needed (use with caution)
-                        KillProcess();    // Only if you're absolutely sure it's safe to kill processes
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show("Error during disconnect: " + ex.Message);
-                    }
-                    finally
-                    {
-                        await StopBackgroundTasks();
-                    }
-
-                }
-                else if (licenceRemainingDays <= 7)
-                {
-                    licenceExpire.Text = $"⚠ Licence expires in {licenceRemainingDays} days!";
-                    licenceExpire.ForeColor = Color.Red;
-                    licenceExpire.Visible = !licenceExpire.Visible; // blink
-                }
-                else
-                {
-                    licenceExpire.Text = $"Licence valid for {licenceRemainingDays} days.";
-                    licenceExpire.ForeColor = Color.Green;
-                }
+                // 5️⃣ Kill background processes (optional)
+                KillProcess(); // Use only if safe
             }
             catch (Exception ex)
             {
-                ApplicationLogger.LogException(ex);
+                MessageBox.Show("Error during disconnect: " + ex.Message);
             }
         }
 
@@ -433,25 +415,18 @@ namespace thecalcify
 
         private void AboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            try
+            using (var aboutForm = new About(username, password, licenceDate))
             {
-                using (var aboutForm = new About(username, password, licenceDate))
+                if (isFullScreen)
                 {
-                    if (isFullScreen)
-                    {
-                        aboutForm.StartPosition = FormStartPosition.CenterParent;
-                        aboutForm.TopMost = true; // Ensures it stays above the full-screen window
-                        aboutForm.ShowDialog(this); // Pass the main form as owner
-                    }
-                    else
-                    {
-                        aboutForm.ShowDialog();
-                    }
+                    aboutForm.StartPosition = FormStartPosition.CenterParent;
+                    aboutForm.TopMost = true; // Ensures it stays above the full-screen window
+                    aboutForm.ShowDialog(this); // Pass the main form as owner
                 }
-            }
-            catch (Exception ex)
-            {
-                ApplicationLogger.LogException(ex);
+                else
+                {
+                    aboutForm.ShowDialog();
+                }
             }
         }
 
@@ -467,36 +442,29 @@ namespace thecalcify
 
         public async Task DefaultToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            try
+            fontSizeComboBox.Visible = true;
+
+            savelabel.Visible = false;
+
+            EditableMarketWatchGrid editableMarketWatchGrid = EditableMarketWatchGrid.CurrentInstance;
+            if (editableMarketWatchGrid != null && editableMarketWatchGrid.IsCurrentCellInEditMode)
             {
-                fontSizeComboBox.Visible = true;
-
-                EditableMarketWatchGrid editableMarketWatchGrid = EditableMarketWatchGrid.CurrentInstance;
-                if (editableMarketWatchGrid != null && editableMarketWatchGrid.IsCurrentCellInEditMode)
-                {
-                    editableMarketWatchGrid.EndEdit();
-                }
-                editableMarketWatchGrid?.Dispose();
-                toolsToolStripMenuItem.Enabled = true;
-                isLoadedSymbol = false;
-                thecalcifyGrid();
-                txtsearch.Text = string.Empty;
-                saveFileName = null;
-                await LoadInitialMarketDataAsync();
-
-                MenuLoad();
-                titleLabel.Text = "DEFAULT";
-                isEdit = false;
-                identifiers = symbolMaster;
-                InitializeDataGridView();          // Configure the grid
-                await SignalREvent();
-                ApplicationLogger.Log("SignalR Load From Default");
-
+                editableMarketWatchGrid.EndEdit();
             }
-            catch (Exception ex)
-            {
-                ApplicationLogger.LogException(ex);
-            }
+            editableMarketWatchGrid?.Dispose();
+            toolsToolStripMenuItem.Enabled = true;
+            isLoadedSymbol = false;
+            thecalcifyGrid();
+            txtsearch.Text = string.Empty;
+            saveFileName = null;
+            await LoadInitialMarketDataAsync();
+
+            MenuLoad();
+            titleLabel.Text = "DEFAULT";
+            isEdit = false;
+            identifiers = symbolMaster;
+            InitializeDataGridView();          // Configure the grid
+            await SignalREvent();
         }
 
         private void NewCTRLNToolStripMenuItem1_Click(object sender, EventArgs e)
@@ -553,268 +521,260 @@ namespace thecalcify
 
         private void DeleteToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            try
+            if (FileLists == null || FileLists.Count == 0)
             {
-                if (FileLists == null || FileLists.Count == 0)
+                MessageBox.Show("No Market Watch available to delete.", "Information",
+                              MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            using (var selectionForm = new Form())
+            {
+                selectionForm.Text = "Select Market Watch to Delete";
+                selectionForm.Width = 600;
+                selectionForm.Height = 500;
+                selectionForm.FormBorderStyle = FormBorderStyle.FixedDialog;
+                selectionForm.StartPosition = FormStartPosition.CenterParent;
+                selectionForm.BackColor = Color.White;
+                selectionForm.Font = new System.Drawing.Font("Microsoft Sans Serif", 9);
+                selectionForm.Icon = SystemIcons.WinLogo;
+
+                var headerPanel = new Panel
                 {
-                    MessageBox.Show("No Market Watch available to delete.", "Information",
-                                  MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    Dock = DockStyle.Top,
+                    Height = 50,
+                    BackColor = Color.FromArgb(0, 120, 215)
+                };
+
+                var headerLabel = new Label
+                {
+                    Text = "Select Market Watch to Delete",
+                    Dock = DockStyle.Fill,
+                    ForeColor = Color.White,
+                    TextAlign = ContentAlignment.MiddleLeft,
+                    Font = new System.Drawing.Font("Microsoft Sans Serif", 12, FontStyle.Bold),
+                    Padding = new Padding(15, 0, 0, 0)
+                };
+                headerPanel.Controls.Add(headerLabel);
+
+                // Search box for filtering
+                var searchBox = new TextBox
+                {
+                    Dock = DockStyle.Top,
+                    Height = 30,
+                    Margin = new Padding(10, 10, 10, 5),
+                    Font = new System.Drawing.Font("Microsoft Sans Serif", 9),
+                    Text = "Search Here..."
+                };
+
+                // Modern list view with checkboxes
+                var listView = new ListView
+                {
+                    Dock = DockStyle.Fill,
+                    CheckBoxes = true,
+                    View = View.Details,
+                    FullRowSelect = true,
+                    GridLines = false,
+                    MultiSelect = false,
+                    BorderStyle = BorderStyle.None,
+                    BackColor = SystemColors.Window
+                };
+
+                // Modern column headers
+                listView.Columns.Add("Market Watch Name", 300);
+                listView.Columns.Add("Path", 250);
+
+                // Add files to list view
+                foreach (string filePath in FileLists)
+                {
+                    if (filePath != saveFileName)
+                    {
+                        var item = new ListViewItem(Path.GetFileName(filePath));
+                        item.SubItems.Add(filePath);
+                        item.Tag = filePath; // Store full path in tag
+                        listView.Items.Add(item);
+                    }
+                }
+
+                if (listView.Items.Count == 0)
+                {
+                    MessageBox.Show("There is only one MarketWatch and that Open so can't Delete.", "Information",
+                             MessageBoxButtons.OK, MessageBoxIcon.Information);
                     return;
                 }
 
-                using (var selectionForm = new Form())
+                // Selection controls panel
+                var controlsPanel = new Panel
                 {
-                    selectionForm.Text = "Select Market Watch to Delete";
-                    selectionForm.Width = 600;
-                    selectionForm.Height = 500;
-                    selectionForm.FormBorderStyle = FormBorderStyle.FixedDialog;
-                    selectionForm.StartPosition = FormStartPosition.CenterParent;
-                    selectionForm.BackColor = Color.White;
-                    selectionForm.Font = new System.Drawing.Font("Microsoft Sans Serif", 9);
-                    selectionForm.Icon = SystemIcons.WinLogo;
+                    Dock = DockStyle.Bottom,
+                    Height = 50,
+                    BackColor = Color.FromArgb(240, 240, 240)
+                };
 
-                    var headerPanel = new Panel
+                // Modern flat buttons
+                var selectAllButton = new Button
+                {
+                    Text = "Select All",
+                    FlatStyle = FlatStyle.Flat,
+                    BackColor = Color.White,
+                    ForeColor = Color.FromArgb(0, 120, 215),
+                    Height = 30,
+                    Width = 120,
+                    Anchor = AnchorStyles.Left | AnchorStyles.Bottom,
+                    Margin = new Padding(10, 10, 0, 10)
+                };
+
+                var deleteButton = new Button
+                {
+                    Text = "Delete Selected",
+                    FlatStyle = FlatStyle.Flat,
+                    BackColor = Color.FromArgb(0, 120, 215),
+                    ForeColor = Color.White,
+                    Height = 30,
+                    Width = 120,
+                    Anchor = AnchorStyles.Right | AnchorStyles.Bottom,
+                    Margin = new Padding(0, 10, 90, 10)
+                };
+
+                var cancelButton = new Button
+                {
+                    Text = "Cancel",
+                    FlatStyle = FlatStyle.Flat,
+                    BackColor = Color.White,
+                    ForeColor = Color.FromArgb(0, 120, 215),
+                    Height = 30,
+                    Width = 80,
+                    Anchor = AnchorStyles.Right | AnchorStyles.Bottom,
+                    Margin = new Padding(0, 10, 10, 10)
+                };
+
+                // Button event handlers
+                selectAllButton.Click += (s, args) =>
+                {
+                    foreach (ListViewItem item in listView.Items)
                     {
-                        Dock = DockStyle.Top,
-                        Height = 50,
-                        BackColor = Color.FromArgb(0, 120, 215)
-                    };
-
-                    var headerLabel = new Label
-                    {
-                        Text = "Select Market Watch to Delete",
-                        Dock = DockStyle.Fill,
-                        ForeColor = Color.White,
-                        TextAlign = ContentAlignment.MiddleLeft,
-                        Font = new System.Drawing.Font("Microsoft Sans Serif", 12, FontStyle.Bold),
-                        Padding = new Padding(15, 0, 0, 0)
-                    };
-                    headerPanel.Controls.Add(headerLabel);
-
-                    // Search box for filtering
-                    var searchBox = new TextBox
-                    {
-                        Dock = DockStyle.Top,
-                        Height = 30,
-                        Margin = new Padding(10, 10, 10, 5),
-                        Font = new System.Drawing.Font("Microsoft Sans Serif", 9),
-                        Text = "Search Here..."
-                    };
-
-                    // Modern list view with checkboxes
-                    var listView = new ListView
-                    {
-                        Dock = DockStyle.Fill,
-                        CheckBoxes = true,
-                        View = View.Details,
-                        FullRowSelect = true,
-                        GridLines = false,
-                        MultiSelect = false,
-                        BorderStyle = BorderStyle.None,
-                        BackColor = SystemColors.Window
-                    };
-
-                    // Modern column headers
-                    listView.Columns.Add("Market Watch Name", 300);
-                    listView.Columns.Add("Path", 250);
-
-                    // Add files to list view
-                    foreach (string filePath in FileLists)
-                    {
-                        if (filePath != saveFileName)
-                        {
-                            var item = new ListViewItem(Path.GetFileName(filePath));
-                            item.SubItems.Add(filePath);
-                            item.Tag = filePath; // Store full path in tag
-                            listView.Items.Add(item);
-                        }
+                        item.Checked = true;
                     }
+                };
 
-                    if (listView.Items.Count == 0)
+                cancelButton.Click += (s, args) => selectionForm.DialogResult = DialogResult.Cancel;
+
+                deleteButton.Click += (s, args) =>
+                {
+                    var selectedFiles = listView.CheckedItems.Cast<ListViewItem>()
+                                             .Select(item => item.Tag.ToString())
+                                             .ToList();
+
+                    if (selectedFiles.Count == 0)
                     {
-                        MessageBox.Show("There is only one MarketWatch and that Open so can't Delete.", "Information",
-                                 MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        MessageBox.Show("Please select at least one Market Watch to delete.",
+                                        "No Selection",
+                                        MessageBoxButtons.OK,
+                                        MessageBoxIcon.Information);
                         return;
                     }
 
-                    // Selection controls panel
-                    var controlsPanel = new Panel
-                    {
-                        Dock = DockStyle.Bottom,
-                        Height = 50,
-                        BackColor = Color.FromArgb(240, 240, 240)
-                    };
+                    // Modern confirmation dialog
+                    var confirmResult = MessageBox.Show($"Are you sure you want to delete {selectedFiles.Count} Market Watch(s)?",
+                                                     "Confirm Deletion",
+                                                     MessageBoxButtons.YesNo,
+                                                     MessageBoxIcon.Warning,
+                                                     MessageBoxDefaultButton.Button2);
 
-                    // Modern flat buttons
-                    var selectAllButton = new Button
+                    if (confirmResult == DialogResult.Yes)
                     {
-                        Text = "Select All",
-                        FlatStyle = FlatStyle.Flat,
-                        BackColor = Color.White,
-                        ForeColor = Color.FromArgb(0, 120, 215),
-                        Height = 30,
-                        Width = 120,
-                        Anchor = AnchorStyles.Left | AnchorStyles.Bottom,
-                        Margin = new Padding(10, 10, 0, 10)
-                    };
+                        int successCount = 0;
+                        var failedDeletions = new List<string>();
 
-                    var deleteButton = new Button
-                    {
-                        Text = "Delete Selected",
-                        FlatStyle = FlatStyle.Flat,
-                        BackColor = Color.FromArgb(0, 120, 215),
-                        ForeColor = Color.White,
-                        Height = 30,
-                        Width = 120,
-                        Anchor = AnchorStyles.Right | AnchorStyles.Bottom,
-                        Margin = new Padding(0, 10, 90, 10)
-                    };
-
-                    var cancelButton = new Button
-                    {
-                        Text = "Cancel",
-                        FlatStyle = FlatStyle.Flat,
-                        BackColor = Color.White,
-                        ForeColor = Color.FromArgb(0, 120, 215),
-                        Height = 30,
-                        Width = 80,
-                        Anchor = AnchorStyles.Right | AnchorStyles.Bottom,
-                        Margin = new Padding(0, 10, 10, 10)
-                    };
-
-                    // Button event handlers
-                    selectAllButton.Click += (s, args) =>
-                    {
-                        foreach (ListViewItem item in listView.Items)
+                        foreach (string filePath in selectedFiles)
                         {
-                            item.Checked = true;
-                        }
-                    };
-
-                    cancelButton.Click += (s, args) => selectionForm.DialogResult = DialogResult.Cancel;
-
-                    deleteButton.Click += (s, args) =>
-                    {
-                        var selectedFiles = listView.CheckedItems.Cast<ListViewItem>()
-                                                 .Select(item => item.Tag.ToString())
-                                                 .ToList();
-
-                        if (selectedFiles.Count == 0)
-                        {
-                            MessageBox.Show("Please select at least one Market Watch to delete.",
-                                            "No Selection",
-                                            MessageBoxButtons.OK,
-                                            MessageBoxIcon.Information);
-                            return;
-                        }
-
-                        // Modern confirmation dialog
-                        var confirmResult = MessageBox.Show($"Are you sure you want to delete {selectedFiles.Count} Market Watch(s)?",
-                                                         "Confirm Deletion",
-                                                         MessageBoxButtons.YesNo,
-                                                         MessageBoxIcon.Warning,
-                                                         MessageBoxDefaultButton.Button2);
-
-                        if (confirmResult == DialogResult.Yes)
-                        {
-                            int successCount = 0;
-                            var failedDeletions = new List<string>();
-
-                            foreach (string filePath in selectedFiles)
+                            if (saveFileName == filePath)
                             {
-                                if (saveFileName == filePath)
-                                {
-                                    MessageBox.Show("Can't Delete Open MarketWatch", "Delete Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                                    return;
-                                }
-                                string fullpath = Path.Combine(AppFolder, username, $"{filePath}.slt");
-                                try
-                                {
-                                    DeleteExcelSheet(filePath);
-                                    File.Delete(fullpath);
-                                    successCount++;
-                                    isdeleted = true;
-                                }
-                                catch (Exception ex)
-                                {
-                                    failedDeletions.Add($"{Path.GetFileName(filePath)}: {ex.Message}");
-                                    ApplicationLogger.LogException(ex);
-                                }
+                                MessageBox.Show("Can't Delete Open MarketWatch", "Delete Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                return;
                             }
-
-                            // Modern result display
-                            var resultMessage = new StringBuilder();
-                            resultMessage.AppendLine($"Successfully deleted {successCount} Market Watch(s).");
-
-                            if (failedDeletions.Count > 0)
+                            string fullpath = Path.Combine(AppFolder, username, $"{filePath}.slt");
+                            try
                             {
-                                resultMessage.AppendLine();
-                                resultMessage.AppendLine("The following files couldn't be deleted:");
-                                resultMessage.AppendLine(string.Join(Environment.NewLine, failedDeletions));
+                                DeleteExcelSheet(filePath);
+                                File.Delete(fullpath);
+                                successCount++;
+                                isdeleted = true;
                             }
-
-                            MessageBox.Show(resultMessage.ToString(),
-                                          "Deletion Results",
-                                          MessageBoxButtons.OK,
-                                          failedDeletions.Count > 0 ? MessageBoxIcon.Warning : MessageBoxIcon.Information);
-
-                            if (successCount > 0)
+                            catch (Exception ex)
                             {
-                                selectionForm.DialogResult = DialogResult.OK;
+                                failedDeletions.Add($"{Path.GetFileName(filePath)}: {ex.Message}");
+                                ApplicationLogger.LogException(ex);
                             }
-
-                            MenuLoad();
                         }
-                    };
 
-                    // Search functionality
-                    searchBox.TextChanged += (s, args) =>
-                    {
-                        listView.BeginUpdate();
-                        listView.Items.Clear();
+                        // Modern result display
+                        var resultMessage = new StringBuilder();
+                        resultMessage.AppendLine($"Successfully deleted {successCount} Market Watch(s).");
 
-                        foreach (string filePath in FileLists.Where(f =>
-                            Path.GetFileName(f).IndexOf(searchBox.Text, StringComparison.OrdinalIgnoreCase) >= 0))
+                        if (failedDeletions.Count > 0)
                         {
-                            var item = new ListViewItem(Path.GetFileName(filePath));
-                            item.SubItems.Add(filePath);
-                            item.Tag = filePath;
-                            listView.Items.Add(item);
+                            resultMessage.AppendLine();
+                            resultMessage.AppendLine("The following files couldn't be deleted:");
+                            resultMessage.AppendLine(string.Join(Environment.NewLine, failedDeletions));
                         }
 
-                        listView.EndUpdate();
-                    };
+                        MessageBox.Show(resultMessage.ToString(),
+                                      "Deletion Results",
+                                      MessageBoxButtons.OK,
+                                      failedDeletions.Count > 0 ? MessageBoxIcon.Warning : MessageBoxIcon.Information);
 
-                    // Add controls to panels
-                    controlsPanel.Controls.Add(selectAllButton);
-                    controlsPanel.Controls.Add(deleteButton);
-                    controlsPanel.Controls.Add(cancelButton);
+                        if (successCount > 0)
+                        {
+                            selectionForm.DialogResult = DialogResult.OK;
+                        }
 
-                    // Add controls to form
-                    selectionForm.Controls.Add(listView);
-                    selectionForm.Controls.Add(searchBox);
-                    selectionForm.Controls.Add(headerPanel);
-                    selectionForm.Controls.Add(controlsPanel);
-
-                    // Set form buttons
-                    selectionForm.AcceptButton = deleteButton;
-                    selectionForm.CancelButton = cancelButton;
-
-                    // Show dialog
-                    if (selectionForm.ShowDialog() == DialogResult.OK)
-                    {
-                        saveFileName = null;
+                        MenuLoad();
                     }
+                };
+
+                // Search functionality
+                searchBox.TextChanged += (s, args) =>
+                {
+                    listView.BeginUpdate();
+                    listView.Items.Clear();
+
+                    foreach (string filePath in FileLists.Where(f =>
+                        Path.GetFileName(f).IndexOf(searchBox.Text, StringComparison.OrdinalIgnoreCase) >= 0))
+                    {
+                        var item = new ListViewItem(Path.GetFileName(filePath));
+                        item.SubItems.Add(filePath);
+                        item.Tag = filePath;
+                        listView.Items.Add(item);
+                    }
+
+                    listView.EndUpdate();
+                };
+
+                // Add controls to panels
+                controlsPanel.Controls.Add(selectAllButton);
+                controlsPanel.Controls.Add(deleteButton);
+                controlsPanel.Controls.Add(cancelButton);
+
+                // Add controls to form
+                selectionForm.Controls.Add(listView);
+                selectionForm.Controls.Add(searchBox);
+                selectionForm.Controls.Add(headerPanel);
+                selectionForm.Controls.Add(controlsPanel);
+
+                // Set form buttons
+                selectionForm.AcceptButton = deleteButton;
+                selectionForm.CancelButton = cancelButton;
+
+                // Show dialog
+                if (selectionForm.ShowDialog() == DialogResult.OK)
+                {
+                    saveFileName = null;
                 }
-            }
-            catch (Exception ex)
-            {
-                ApplicationLogger.LogException(ex);
             }
         }
 
-        public static void DeleteExcelSheet(string filename)
-        {
+        public static void DeleteExcelSheet(string filename) {
             try
             {
                 // Attempt to connect to Excel (if running)
@@ -894,42 +854,35 @@ namespace thecalcify
 
         private void FullScreenF11ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            try
+            if (!isFullScreen)
             {
-                if (!isFullScreen)
-                {
-                    // Store previous state
-                    prevState = this.WindowState;
-                    prevStyle = this.FormBorderStyle;
-                    prevBounds = this.Bounds;
+                // Store previous state
+                prevState = this.WindowState;
+                prevStyle = this.FormBorderStyle;
+                prevBounds = this.Bounds;
 
-                    // Set up full screen
-                    this.FormBorderStyle = FormBorderStyle.None;
-                    this.TopMost = true;
-                    System.Drawing.Rectangle full = Screen.GetBounds(this);
-                    this.Bounds = full;
-                    WinApi.SetFullScreen(this.Handle);
+                // Set up full screen
+                this.FormBorderStyle = FormBorderStyle.None;
+                this.TopMost = true;
+                System.Drawing.Rectangle full = Screen.GetBounds(this);
+                this.Bounds = full;
+                WinApi.SetFullScreen(this.Handle);
 
-                    isFullScreen = true;
+                isFullScreen = true;
 
-                    fullScreenF11ToolStripMenuItem.Text = "Exit Full Screen (Esc)";
-                }
-                else
-                {
-                    // Restore previous layout
-                    this.WindowState = prevState;
-                    this.FormBorderStyle = prevStyle;
-                    this.Bounds = prevBounds;
-                    this.TopMost = false;
-
-                    isFullScreen = false;
-
-                    fullScreenF11ToolStripMenuItem.Text = "Full Screen (ESC)";
-                }
+                fullScreenF11ToolStripMenuItem.Text = "Exit Full Screen (Esc)";
             }
-            catch (Exception ex)
+            else
             {
-                ApplicationLogger.LogException(ex);
+                // Restore previous layout
+                this.WindowState = prevState;
+                this.FormBorderStyle = prevStyle;
+                this.Bounds = prevBounds;
+                this.TopMost = false;
+
+                isFullScreen = false;
+
+                fullScreenF11ToolStripMenuItem.Text = "Full Screen (ESC)";
             }
         }
 
@@ -1006,6 +959,16 @@ namespace thecalcify
                 }
 
                 txtsearch.Text = null;
+            }
+        }
+
+        private void DefaultGrid_DataSourceChanged(object sender, EventArgs e)
+        {
+            try
+            { }
+            catch (Exception ex)
+            {
+                ApplicationLogger.Log($"[DefaultGrid_DataSourceChanged] Stuck On : {ex.Message}");
             }
         }
 
@@ -1210,6 +1173,9 @@ namespace thecalcify
                     }
 
                     panelAddColumns.Visible = false;
+
+                    DefaultGrid_DataSourceChanged(sender, EventArgs.Empty);
+                    //MessageBox.Show("Columns updated successfully!");
                 };
 
                 btnCancelAddColumns.Click += (s, e2) =>
@@ -1269,245 +1235,238 @@ namespace thecalcify
 
         private void AddEditSymbolsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            try
+            if (panelAddColumns != null && panelAddColumns.Visible)
+                panelAddColumns.Visible = false;
+
+            // Create panel if it hasn't been initialized yet
+            if (panelAddSymbols == null)
             {
-                if (panelAddColumns != null && panelAddColumns.Visible)
-                    panelAddColumns.Visible = false;
-
-                // Create panel if it hasn't been initialized yet
-                if (panelAddSymbols == null)
+                // Initialize panel
+                panelAddSymbols = new Panel
                 {
-                    // Initialize panel
-                    panelAddSymbols = new Panel
-                    {
-                        Size = new System.Drawing.Size(500, 500),
-                        BackColor = Color.White,
-                        BorderStyle = BorderStyle.None,
-                        Visible = false,
-                        Padding = new Padding(20),
-                    };
+                    Size = new System.Drawing.Size(500, 500),
+                    BackColor = Color.White,
+                    BorderStyle = BorderStyle.None,
+                    Visible = false,
+                    Padding = new Padding(20),
+                };
 
-                    panelAddSymbols.Paint += (s2, e2) =>
-                    {
-                        ControlPaint.DrawBorder(e2.Graphics, panelAddSymbols.ClientRectangle,
-                            Color.LightGray, 2, ButtonBorderStyle.Solid,
-                            Color.LightGray, 2, ButtonBorderStyle.Solid,
-                            Color.LightGray, 2, ButtonBorderStyle.Solid,
-                            Color.LightGray, 2, ButtonBorderStyle.Solid);
-                    };
+                panelAddSymbols.Paint += (s2, e2) =>
+                {
+                    ControlPaint.DrawBorder(e2.Graphics, panelAddSymbols.ClientRectangle,
+                        Color.LightGray, 2, ButtonBorderStyle.Solid,
+                        Color.LightGray, 2, ButtonBorderStyle.Solid,
+                        Color.LightGray, 2, ButtonBorderStyle.Solid,
+                        Color.LightGray, 2, ButtonBorderStyle.Solid);
+                };
 
+                panelAddSymbols.Location = new System.Drawing.Point(
+                    (this.Width - panelAddSymbols.Width) / 2,
+                    (this.Height - panelAddSymbols.Height) / 2
+                );
+
+                // Title label
+                Label titleLabel = new Label
+                {
+                    Text = "🔄 Add / Edit Symbols",
+                    Font = new System.Drawing.Font("Microsoft Sans Serif Semibold", 16, FontStyle.Bold),
+                    ForeColor = Color.FromArgb(50, 50, 50),
+                    Dock = DockStyle.Top,
+                    Height = 50,
+                    TextAlign = ContentAlignment.MiddleCenter,
+                    Padding = new Padding(0, 10, 0, 10)
+                };
+
+                // CheckedListBox
+                checkedListSymbols = new CheckedListBox
+                {
+                    Height = 320,
+                    Dock = DockStyle.Top,
+                    Font = new System.Drawing.Font("Microsoft Sans Serif", 10),
+                    BorderStyle = BorderStyle.FixedSingle,
+                    CheckOnClick = true,
+                    BackColor = Color.White
+                };
+
+                // Button container
+                Panel buttonPanel = new Panel
+                {
+                    Height = 80,
+                    Dock = DockStyle.Bottom,
+                    Padding = new Padding(10),
+                    BackColor = Color.White
+                };
+
+                // Buttons
+                btnSelectAllSymbols = new Button
+                {
+                    Text = "Select All",
+                    Height = 40,
+                    Width = 120,
+                    BackColor = Color.FromArgb(0, 122, 204),
+                    ForeColor = Color.White,
+                    FlatStyle = FlatStyle.Flat,
+                    Font = new System.Drawing.Font("Microsoft Sans Serif", 10, FontStyle.Bold),
+                    Cursor = Cursors.Hand
+                };
+                btnSelectAllSymbols.FlatAppearance.BorderSize = 0;
+
+                btnConfirmAddSymbols = new Button
+                {
+                    Text = "✔ Save",
+                    Height = 40,
+                    Width = 120,
+                    BackColor = Color.FromArgb(0, 122, 204),
+                    ForeColor = Color.White,
+                    FlatStyle = FlatStyle.Flat,
+                    Font = new System.Drawing.Font("Microsoft Sans Serif", 10, FontStyle.Bold),
+                    Cursor = Cursors.Hand
+                };
+                btnConfirmAddSymbols.FlatAppearance.BorderSize = 0;
+
+                btnCancelAddSymbols = new Button
+                {
+                    Text = "✖ Cancel",
+                    Height = 40,
+                    Width = 120,
+                    BackColor = Color.LightGray,
+                    ForeColor = Color.Black,
+                    FlatStyle = FlatStyle.Flat,
+                    Font = new System.Drawing.Font("Microsoft Sans Serif", 10, FontStyle.Bold),
+                    Cursor = Cursors.Hand
+                };
+                btnCancelAddSymbols.FlatAppearance.BorderSize = 0;
+
+                // Layout
+                btnSelectAllSymbols.Location = new System.Drawing.Point(30, 35);
+                btnConfirmAddSymbols.Location = new System.Drawing.Point(170, 35);
+                btnCancelAddSymbols.Location = new System.Drawing.Point(310, 35);
+
+                titleLabel.Dock = DockStyle.Top;
+                checkedListSymbols.Dock = DockStyle.Fill; // So it takes remaining space
+                buttonPanel.Dock = DockStyle.Bottom;
+
+                buttonPanel.Controls.Add(btnSelectAllSymbols);
+                buttonPanel.Controls.Add(btnConfirmAddSymbols);
+                buttonPanel.Controls.Add(btnCancelAddSymbols);
+
+                panelAddSymbols.Controls.Add(buttonPanel);  // bottom first
+                panelAddSymbols.Controls.Add(checkedListSymbols); // middle
+                panelAddSymbols.Controls.Add(titleLabel);   // top last
+
+                this.Controls.Add(panelAddSymbols);
+
+                this.Resize += (s3, e3) =>
+                {
                     panelAddSymbols.Location = new System.Drawing.Point(
                         (this.Width - panelAddSymbols.Width) / 2,
                         (this.Height - panelAddSymbols.Height) / 2
                     );
+                };
 
-                    // Title label
-                    Label titleLabel = new Label
-                    {
-                        Text = "🔄 Add / Edit Symbols",
-                        Font = new System.Drawing.Font("Microsoft Sans Serif Semibold", 16, FontStyle.Bold),
-                        ForeColor = Color.FromArgb(50, 50, 50),
-                        Dock = DockStyle.Top,
-                        Height = 50,
-                        TextAlign = ContentAlignment.MiddleCenter,
-                        Padding = new Padding(0, 10, 0, 10)
-                    };
+                // Hook up events
 
-                    // CheckedListBox
-                    checkedListSymbols = new CheckedListBox
-                    {
-                        Height = 320,
-                        Dock = DockStyle.Top,
-                        Font = new System.Drawing.Font("Microsoft Sans Serif", 10),
-                        BorderStyle = BorderStyle.FixedSingle,
-                        CheckOnClick = true,
-                        BackColor = Color.White
-                    };
-
-                    // Button container
-                    Panel buttonPanel = new Panel
-                    {
-                        Height = 80,
-                        Dock = DockStyle.Bottom,
-                        Padding = new Padding(10),
-                        BackColor = Color.White
-                    };
-
-                    // Buttons
-                    btnSelectAllSymbols = new Button
-                    {
-                        Text = "Select All",
-                        Height = 40,
-                        Width = 120,
-                        BackColor = Color.FromArgb(0, 122, 204),
-                        ForeColor = Color.White,
-                        FlatStyle = FlatStyle.Flat,
-                        Font = new System.Drawing.Font("Microsoft Sans Serif", 10, FontStyle.Bold),
-                        Cursor = Cursors.Hand
-                    };
-                    btnSelectAllSymbols.FlatAppearance.BorderSize = 0;
-
-                    btnConfirmAddSymbols = new Button
-                    {
-                        Text = "✔ Save",
-                        Height = 40,
-                        Width = 120,
-                        BackColor = Color.FromArgb(0, 122, 204),
-                        ForeColor = Color.White,
-                        FlatStyle = FlatStyle.Flat,
-                        Font = new System.Drawing.Font("Microsoft Sans Serif", 10, FontStyle.Bold),
-                        Cursor = Cursors.Hand
-                    };
-                    btnConfirmAddSymbols.FlatAppearance.BorderSize = 0;
-
-                    btnCancelAddSymbols = new Button
-                    {
-                        Text = "✖ Cancel",
-                        Height = 40,
-                        Width = 120,
-                        BackColor = Color.LightGray,
-                        ForeColor = Color.Black,
-                        FlatStyle = FlatStyle.Flat,
-                        Font = new System.Drawing.Font("Microsoft Sans Serif", 10, FontStyle.Bold),
-                        Cursor = Cursors.Hand
-                    };
-                    btnCancelAddSymbols.FlatAppearance.BorderSize = 0;
-
-                    // Layout
-                    btnSelectAllSymbols.Location = new System.Drawing.Point(30, 35);
-                    btnConfirmAddSymbols.Location = new System.Drawing.Point(170, 35);
-                    btnCancelAddSymbols.Location = new System.Drawing.Point(310, 35);
-
-                    titleLabel.Dock = DockStyle.Top;
-                    checkedListSymbols.Dock = DockStyle.Fill; // So it takes remaining space
-                    buttonPanel.Dock = DockStyle.Bottom;
-
-                    buttonPanel.Controls.Add(btnSelectAllSymbols);
-                    buttonPanel.Controls.Add(btnConfirmAddSymbols);
-                    buttonPanel.Controls.Add(btnCancelAddSymbols);
-
-                    panelAddSymbols.Controls.Add(buttonPanel);  // bottom first
-                    panelAddSymbols.Controls.Add(checkedListSymbols); // middle
-                    panelAddSymbols.Controls.Add(titleLabel);   // top last
-
-                    this.Controls.Add(panelAddSymbols);
-
-                    this.Resize += (s3, e3) =>
-                    {
-                        panelAddSymbols.Location = new System.Drawing.Point(
-                            (this.Width - panelAddSymbols.Width) / 2,
-                            (this.Height - panelAddSymbols.Height) / 2
-                        );
-                    };
-
-                    // Hook up events
-                    btnSelectAllSymbols.Click += (s, e2) =>
-                    {
-                        bool allChecked = true;
-                        for (int i = 0; i < checkedListSymbols.Items.Count; i++)
-                        {
-                            if (!checkedListSymbols.GetItemChecked(i))
-                            {
-                                allChecked = false;
-                                break;
-                            }
-                        }
-
-                        bool check = !allChecked;
-                        btnSelectAllSymbols.Text = check ? "Unselect All" : "Select All";
-
-                        for (int i = 0; i < checkedListSymbols.Items.Count; i++)
-                        {
-                            checkedListSymbols.SetItemChecked(i, check);
-                        }
-                    };
-
-                    btnConfirmAddSymbols.Click += async (s, e2) =>
-                    {
-                        // Get the checked display names (SymbolName)
-                        var currentlyCheckedNames = checkedListSymbols.CheckedItems.Cast<string>().ToList();
-
-                        // If nothing is selected
-                        if (!currentlyCheckedNames.Any())
-                        {
-                            MessageBox.Show("Please select at least one symbol to confirm.", "No Selection", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                            return;
-                        }
-
-                        // Map checked names back to their symbols
-                        var currentlyCheckedSymbols = SymbolName
-                            .Where(x => currentlyCheckedNames.Contains(x.SymbolName))
-                            .Select(x => x.Symbol)
-                            .ToList();
-
-                        // Compare with previous selection
-                        var previouslySelected = selectedSymbols;
-
-                        var addedSymbols = currentlyCheckedSymbols.Except(previouslySelected).ToList();
-                        var removedSymbols = previouslySelected.Except(currentlyCheckedSymbols).ToList();
-
-                        if (!addedSymbols.Any() && !removedSymbols.Any())
-                        {
-                            MessageBox.Show("No changes made.");
-                            return;
-                        }
-
-                        // Save changes
-                        EditableMarketWatchGrid editableMarketWatchGrid = EditableMarketWatchGrid.CurrentInstance ?? new EditableMarketWatchGrid();
-                        editableMarketWatchGrid.isGrid = false;
-                        editableMarketWatchGrid.saveFileName = saveFileName;
-                        editableMarketWatchGrid.username = username;
-                        selectedSymbols = currentlyCheckedSymbols;
-                        editableMarketWatchGrid.SaveSymbols(selectedSymbols);
-                        identifiers = selectedSymbols;
-                        if (!this.IsDisposed && this.IsHandleCreated)
-                        {
-                            BeginInvoke((MethodInvoker)(() =>
-                                        {
-                                            InitializeDataGridView();
-                                        }));
-                        }
-                        await LoadInitialMarketDataAsync();
-                        await SignalREvent();
-                        ApplicationLogger.Log("SignalR Load From AddEditSymbolsToolStripMenuItem_Click");
-
-                        panelAddSymbols.Visible = false;
-                    };
-
-                    btnCancelAddSymbols.Click += (s, e2) =>
-                    {
-                        panelAddSymbols.Visible = false;
-                    };
-                }
-
-                // Refresh items before showing
-                checkedListSymbols.Items.Clear();
-
-                // Add selected symbols first
-                foreach (var item in SymbolName)
+                btnSelectAllSymbols.Click += (s, e2) =>
                 {
-                    if (identifiers.Contains(item.Symbol))
+                    bool allChecked = true;
+                    for (int i = 0; i < checkedListSymbols.Items.Count; i++)
                     {
-                        checkedListSymbols.Items.Add(item.SymbolName, true); // Display symbol name
+                        if (!checkedListSymbols.GetItemChecked(i))
+                        {
+                            allChecked = false;
+                            break;
+                        }
                     }
-                }
 
-                // Then unselected symbols
-                foreach (var item in SymbolName)
+                    bool check = !allChecked;
+                    btnSelectAllSymbols.Text = check ? "Unselect All" : "Select All";
+
+                    for (int i = 0; i < checkedListSymbols.Items.Count; i++)
+                    {
+                        checkedListSymbols.SetItemChecked(i, check);
+                    }
+                };
+
+                btnConfirmAddSymbols.Click += async (s, e2) =>
                 {
-                    if (!identifiers.Contains(item.Symbol))
-                    {
-                        checkedListSymbols.Items.Add(item.SymbolName, false);
-                    }
-                }
+                    // Get the checked display names (SymbolName)
+                    var currentlyCheckedNames = checkedListSymbols.CheckedItems.Cast<string>().ToList();
 
-                panelAddSymbols.Visible = true;
-                panelAddSymbols.BringToFront();
+                    // If nothing is selected
+                    if (!currentlyCheckedNames.Any())
+                    {
+                        MessageBox.Show("Please select at least one symbol to confirm.", "No Selection", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        return;
+                    }
+
+                    // Map checked names back to their symbols
+                    var currentlyCheckedSymbols = SymbolName
+                        .Where(x => currentlyCheckedNames.Contains(x.SymbolName))
+                        .Select(x => x.Symbol)
+                        .ToList();
+
+                    // Compare with previous selection
+                    var previouslySelected = selectedSymbols;
+
+                    var addedSymbols = currentlyCheckedSymbols.Except(previouslySelected).ToList();
+                    var removedSymbols = previouslySelected.Except(currentlyCheckedSymbols).ToList();
+
+                    if (!addedSymbols.Any() && !removedSymbols.Any())
+                    {
+                        MessageBox.Show("No changes made.");
+                        return;
+                    }
+
+                    // Save changes
+                    EditableMarketWatchGrid editableMarketWatchGrid = EditableMarketWatchGrid.CurrentInstance ?? new EditableMarketWatchGrid();
+                    editableMarketWatchGrid.isGrid = false;
+                    editableMarketWatchGrid.saveFileName = saveFileName;
+                    editableMarketWatchGrid.username = username;
+                    selectedSymbols = currentlyCheckedSymbols;
+                    editableMarketWatchGrid.SaveSymbols(selectedSymbols);
+                    identifiers = selectedSymbols;
+                    if (!this.IsDisposed && this.IsHandleCreated)
+                    {
+                        BeginInvoke((MethodInvoker)(() =>
+                                    {
+                                        InitializeDataGridView();
+                                    })); 
+                    }
+                    await LoadInitialMarketDataAsync();
+                    await SignalREvent();
+
+                    panelAddSymbols.Visible = false;
+                };
+
+                btnCancelAddSymbols.Click += (s, e2) =>
+                {
+                    panelAddSymbols.Visible = false;
+                };
             }
-            catch (Exception ex)
+
+            // Refresh items before showing
+            checkedListSymbols.Items.Clear();
+
+            // Add selected symbols first
+            foreach (var item in SymbolName)
             {
-                ApplicationLogger.LogException(ex);
+                if (identifiers.Contains(item.Symbol))
+                {
+                    checkedListSymbols.Items.Add(item.SymbolName, true); // Display symbol name
+                }
             }
+
+            // Then unselected symbols
+            foreach (var item in SymbolName)
+            {
+                if (!identifiers.Contains(item.Symbol))
+                {
+                    checkedListSymbols.Items.Add(item.SymbolName, false);
+                }
+            }
+
+            panelAddSymbols.Visible = true;
+            panelAddSymbols.BringToFront();
         }
 
         private void DefaultGrid_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
@@ -1550,17 +1509,9 @@ namespace thecalcify
 
         public void SignalRTimer()
         {
-            try
-            {
-                signalRTimer = new System.Windows.Forms.Timer { Interval = 60_000 };
-                signalRTimer.Tick += async (s, e) => await TryReconnectAsync();
-                signalRTimer.Start();
-                ApplicationLogger.Log("SignalR timer started.","Info");
-            }
-            catch (Exception ex)
-            {
-                ApplicationLogger.LogException(ex);
-            }
+            signalRTimer = new System.Windows.Forms.Timer { Interval = 10_000 };
+            signalRTimer.Tick += async (s, e) => await TryReconnectAsync();
+            signalRTimer.Start();
         }
 
         private async Task TryReconnectAsync()
@@ -1664,7 +1615,21 @@ namespace thecalcify
                     }
                 };
 
+                var currentIdentifiers = new List<string>(identifiers); // snapshot copy
 
+                //for (int attempt = 0; attempt < 3; attempt++)
+                //{
+                //    try
+                //    {
+                //        await connection.StartAsync();
+                //        break; // success
+                //    }
+                //    catch (Exception ex)
+                //    {
+                //        Console.WriteLine($"Attempt {attempt + 1} failed: {ex.Message}");
+                //        if (attempt < 2) await Task.Delay(3000);
+                //    }
+                //}
                 await connection.StartAsync();
 
                 if (connection.State == HubConnectionState.Connected)
@@ -1687,19 +1652,12 @@ namespace thecalcify
 
         private void SetupUpdateTimer()
         {
-            try
+            _updateTimer = new System.Windows.Forms.Timer
             {
-                _updateTimer = new System.Windows.Forms.Timer
-                {
-                    Interval = 120
-                };
-                _updateTimer.Tick += UpdateTimer_Tick;
-                _updateTimer.Start();
-            }
-            catch (Exception ex)
-            {
-                ApplicationLogger.LogException(ex);
-            }
+                Interval = 120
+            };
+            _updateTimer.Tick += UpdateTimer_Tick;
+            _updateTimer.Start();
         }
 
         private void OnExcelRateReceived(string base64)
@@ -1728,7 +1686,7 @@ namespace thecalcify
                             CleanupEmptyRows();
                             AddMissingRows();
                         }
-                    }
+                    } 
                 }
 
                 //ApplicationLogger.Log("Received data from SignalR.", "Debug");
@@ -1747,94 +1705,70 @@ namespace thecalcify
 
         private void CleanupEmptyRows()
         {
-            try
+            lock (_tableLock)
             {
-                lock (_tableLock)
+                var rowsToRemove = new List<DataGridViewRow>();
+
+                foreach (DataGridViewRow row in defaultGrid.Rows)
                 {
-                    var rowsToRemove = new List<DataGridViewRow>();
+                    // Skip new rows if AllowUserToAddRows is accidentally enabled
+                    if (row.IsNewRow) continue;
 
-                    foreach (DataGridViewRow row in defaultGrid.Rows)
+                    var symbolCell = row.Cells["symbol"];
+                    if (symbolCell == null) continue;
+
+                    bool isEmpty = true;
+
+                    foreach (DataGridViewCell cell in row.Cells)
                     {
-                        // Skip new rows if AllowUserToAddRows is accidentally enabled
-                        if (row.IsNewRow) continue;
+                        if (cell.OwningColumn.Name == "symbol") continue;
 
-                        var symbolCell = row.Cells["symbol"];
-                        if (symbolCell == null) continue;
-
-                        bool isEmpty = true;
-
-                        foreach (DataGridViewCell cell in row.Cells)
+                        if (!IsNullOrEmptyOrPlaceholder(cell.Value))
                         {
-                            if (cell.OwningColumn.Name == "symbol") continue;
-
-                            if (!IsNullOrEmptyOrPlaceholder(cell.Value))
-                            {
-                                isEmpty = false;
-                                break;
-                            }
+                            isEmpty = false;
+                            break;
                         }
-
-                        if (isEmpty)
-                            rowsToRemove.Add(row);
                     }
 
-                    foreach (var row in rowsToRemove)
-                    {
-                        defaultGrid.Rows.Remove(row);
-                    }
+                    if (isEmpty)
+                        rowsToRemove.Add(row);
                 }
-            }
-            catch (Exception ex)
-            {
-                ApplicationLogger.LogException(ex);
+
+                foreach (var row in rowsToRemove)
+                {
+                    defaultGrid.Rows.Remove(row);
+                }
             }
         }
 
         private void AddMissingRows()
         {
-            try
+            lock (_tableLock)
             {
-                lock (_tableLock)
+                foreach (var symbol in identifiers)
                 {
-                    foreach (var symbol in identifiers)
+                    if (!IsSymbolPresentInGrid(symbol))
                     {
-                        if (!IsSymbolPresentInGrid(symbol))
+                        var dto = pastRateTickDTO?.FirstOrDefault(x => x.i == symbol);
+                        if (dto != null)
                         {
-                            var dto = pastRateTickDTO?.FirstOrDefault(x => x.i == symbol);
-                            if (dto != null)
-                            {
-                                AddRowFromDTO(dto);
-                            }
+                            AddRowFromDTO(dto);
                         }
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                ApplicationLogger.LogException(ex);
             }
         }
 
         private bool IsSymbolPresentInGrid(string symbol)
         {
-            try
+            foreach (DataGridViewRow row in defaultGrid.Rows)
             {
-                foreach (DataGridViewRow row in defaultGrid.Rows)
-                {
-                    if (row.IsNewRow) continue;
+                if (row.IsNewRow) continue;
 
-                    var cell = row.Cells["symbol"];
-                    if (cell?.Value?.ToString() == symbol)
-                        return true;
-                }
+                var cell = row.Cells["symbol"];
+                if (cell?.Value?.ToString() == symbol)
+                    return true;
             }
-            catch (Exception ex)
-            {
-                ApplicationLogger.LogException(ex);
-            }
-
-            ApplicationLogger.Log($"Symbol {symbol} not present in grid.", "Debug");
-
             return false;
         }
 
@@ -1890,49 +1824,47 @@ namespace thecalcify
 
         private void UpdateTimer_Tick(object sender, EventArgs e)
         {
+            if (_updateQueue.IsEmpty) return;
+
+            var updates = new List<MarketDataDto>();
+            while (_updateQueue.TryDequeue(out var data))
+            {
+                updates.Add(data);
+            }
+
+            if (updates.Count == 0) return;
+
+            // If queue has too many records, keep only the newest 1000
+            if (updates.Count > 1000)
+            {
+                // Sort by Time (assuming MarketDataDto has a Time property)
+                updates = updates
+                    .OrderByDescending(x => x.t)  // Newest first
+                    .Take(1000)                     // Keep only 1000 newest
+                    .OrderBy(x => x.t)           // Restore original order if needed
+                    .ToList();
+            }
+
             try
             {
-                if (_updateQueue.IsEmpty) return;
+                updates = updates.Where(x => long.TryParse(x.t, out _)).OrderByDescending(x => DateTimeOffset.FromUnixTimeMilliseconds(long.Parse(x.t)).LocalDateTime).ToList();
+            }
+            catch (Exception)
+            {
+                //ApplicationLogger.LogException(ex);
+            }
 
-                var updates = new List<MarketDataDto>();
-                while (_updateQueue.TryDequeue(out var data))
-                {
-                    updates.Add(data);
-                }
-
-                if (updates.Count == 0) return;
-
-                // If queue has too many records, keep only the newest 1000
-                if (updates.Count > 1000)
-                {
-                    // Sort by Time (assuming MarketDataDto has a Time property)
-                    updates = updates
-                        .OrderByDescending(x => x.t)  // Newest first
-                        .Take(1000)                     // Keep only 1000 newest
-                        .OrderBy(x => x.t)           // Restore original order if needed
-                        .ToList();
-                }
-
-                try
-                {
-                    updates = updates.Where(x => long.TryParse(x.t, out _)).OrderByDescending(x => DateTimeOffset.FromUnixTimeMilliseconds(long.Parse(x.t)).LocalDateTime).ToList();
-                }
-                catch (Exception ex)
-                {
-                    ApplicationLogger.LogException(ex);
-                }
-
-                if (updates != null && (!this.IsDisposed && this.IsHandleCreated))
+            if (updates != null)
+            {
+                if (!this.IsDisposed && this.IsHandleCreated)
                 {
                     if (defaultGrid.InvokeRequired)
+                    {
                         defaultGrid.BeginInvoke((MethodInvoker)(() => ApplyBatchUpdates(updates)));
+                    }
                     else
-                        ApplyBatchUpdates(updates);
+                        ApplyBatchUpdates(updates); 
                 }
-            }
-            catch (Exception ex)
-            {
-                ApplicationLogger.LogException(ex);
             }
         }
 
@@ -2029,6 +1961,7 @@ namespace thecalcify
                                 nameCell.Value = name;
                             }
 
+
                             // Ask price arrow direction
                             bool hasAskChange = false;
                             int askDirection = 0;
@@ -2088,6 +2021,8 @@ namespace thecalcify
                             }
                         }
 
+                        //UpdateExcelDataEfficiently(defaultGrid);
+
                         // Throttle font refresh
                         if ((DateTime.Now - lastUiUpdate).TotalMilliseconds > 120)
                         {
@@ -2144,26 +2079,7 @@ namespace thecalcify
         {
             try
             {
-                // 1️⃣ Stop background processes
-                await StopBackgroundTasks(); // You define this method
-
-                // 2️⃣ Unsubscribe event handlers
-                UnsubscribeAllEvents(); // Optional, but recommended if you manually subscribed
-
-                // 3️⃣ Show Login Form
-                Login loginForm = new Login();
-                loginForm.Show();
-
-                // 4️⃣ Dispose current form
-                this.Hide();      // optional: avoid flicker before dispose
-                this.Dispose();   // frees unmanaged resources
-                this.Close();   // frees unmanaged resources
-
-                // 5️⃣ Kill extra processes if needed (use with caution)
-                KillProcess();    // Only if you're absolutely sure it's safe to kill processes
-                //await DisconnectESCToolStripMenuItem_ClickAsync();
-
-                ApplicationLogger.Log("Disconnected and returned to login.", "Info");
+                await DisconnectESCToolStripMenuItem_ClickAsync();
             }
             catch (Exception ex)
             {
@@ -2331,9 +2247,9 @@ namespace thecalcify
             defaultGrid.Columns.Clear();
 
             string[] columns = {
-                "symbol", "Name", "Bid", "Ask", "LTP", "High", "Low", "Open", "Close", "Net Chng", "ATP",
-                "Bid Size", "Total Bid Size", "Ask Size", "Total Ask Size", "Volume", "Open Interest", "Last Size", "V", "Time"
-            };
+        "symbol", "Name", "Bid", "Ask", "LTP", "High", "Low", "Open", "Close", "Net Chng", "ATP",
+        "Bid Size", "Total Bid Size", "Ask Size", "Total Ask Size", "Volume", "Open Interest", "Last Size", "V", "Time"
+    };
 
             foreach (string colName in columns)
             {
@@ -2367,6 +2283,7 @@ namespace thecalcify
             {
                 col.Visible = columnPreferencesDefault.Contains(col.Name);
                 col.ReadOnly = true;
+                //col.SortMode = DataGridViewColumnSortMode.Automatic;
                 col.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
                 col.Resizable = DataGridViewTriState.True;
                 col.SortMode = DataGridViewColumnSortMode.NotSortable; // disable sort
@@ -2454,47 +2371,34 @@ namespace thecalcify
 
         private async Task AttemptReconnectAsync(string reason)
         {
+            lock (_reconnectLock)
+            {
+                if (DateTime.Now - _lastReconnectAttempt < _reconnectThrottle)
+                    return;
+
+                _lastReconnectAttempt = DateTime.Now;
+            }
+
+            ApplicationLogger.Log($"Attempting reconnect due to: {reason}");
+
             try
             {
-                lock (_reconnectLock)
+                if (connection == null)
                 {
-                    if (DateTime.Now - _lastReconnectAttempt < _reconnectThrottle)
-                        return;
-
-                    _lastReconnectAttempt = DateTime.Now;
+                    connection = BuildConnection();
+                    connection.On<string>("excelRate", OnExcelRateReceived);
                 }
 
-                ApplicationLogger.Log($"Attempting reconnect due to: {reason}");
-
-                try
+                if (connection.State == HubConnectionState.Disconnected)
                 {
-                    if (connection == null)
-                    {
-                        connection = BuildConnection();
-                        connection.On<string>("excelRate", OnExcelRateReceived);
-                        ApplicationLogger.Log($"App connection null due to {reason}");
-                    }
-
-                    if (connection.State == HubConnectionState.Disconnected)
-                    {
-                        await connection.StartAsync();
-                        await connection.InvokeAsync("SubscribeSymbols", symbolMaster);
-                        ApplicationLogger.Log("Reconnected and resubscribed.");
-                    }
-
-                    if (connection.State == HubConnectionState.Connecting || connection.State == HubConnectionState.Reconnecting)
-                    { 
-                        ApplicationLogger.Log($"Connecting {connection.State}");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    ApplicationLogger.Log($"Reconnect failed: {ex.Message}");
+                    await connection.StartAsync();
+                    await connection.InvokeAsync("SubscribeSymbols", symbolMaster);
+                    ApplicationLogger.Log("Reconnected and resubscribed.");
                 }
             }
             catch (Exception ex)
             {
-                ApplicationLogger.LogException(ex);
+                ApplicationLogger.Log($"Reconnect failed: {ex.Message}");
             }
         }
 
@@ -2527,6 +2431,10 @@ namespace thecalcify
                     MessageBox.Show("initdata.dat not found.");
                     return;
                 }
+
+                //string cipherText = File.ReadAllText(marketInitDataPath);
+                //string json = CryptoHelper.Decrypt(cipherText, EditableMarketWatchGrid.passphrase);
+                //var dict = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, object>>>(json);
 
                 var dict = new Dictionary<string, Dictionary<string, object>>(StringComparer.OrdinalIgnoreCase);
 
@@ -2796,7 +2704,6 @@ namespace thecalcify
             }
             catch (Exception ex)
             {
-                ApplicationLogger.LogException(ex);
                 Console.WriteLine("Error setting registry values: " + ex.Message);
             }
         }
@@ -2882,7 +2789,7 @@ namespace thecalcify
             for (int i = 0; i < allFields.Count; i++)
             {
                 if (allFields[i] == "Name")
-                    continue;
+                  continue;
 
                 formulaCells.Add(new ExcelFormulaCell
                 {
@@ -2967,6 +2874,8 @@ namespace thecalcify
                     var clickedItem = (ToolStripMenuItem)sender;
                     await DefaultToolStripMenuItem_Click(sender, e);
                     addEditSymbolsToolStripMenuItem.Enabled = false;
+                    //SetActiveMenuItem(clickedItem);
+                    //saveMarketWatchHost.Visible = false;
                     await LoadInitialMarketDataAsync();
                     //isGrid = true;
                     //reloadGrid = true;
@@ -3022,6 +2931,8 @@ namespace thecalcify
                     MenuLoad();
                     addEditSymbolsToolStripMenuItem.Enabled = false;
                     saveFileName = null;
+                    //SetActiveMenuItem(clickedItem);
+                    //saveMarketWatchHost.Visible = false;
                     titleLabel.Text = "DEFAULT";
                     await LoadInitialMarketDataAsync();
                     //isGrid = true;
@@ -3033,6 +2944,10 @@ namespace thecalcify
             catch (Exception ex)
             {
                 ApplicationLogger.LogException(ex);
+            }
+            finally
+            {
+                DefaultGrid_DataSourceChanged(this, EventArgs.Empty);
             }
         }
 
@@ -3064,6 +2979,7 @@ namespace thecalcify
             }
 
             thecalcifyGrid();
+
             MenuLoad();
         }
 
@@ -3107,24 +3023,25 @@ namespace thecalcify
 
         private void ClearCollections()
         {
-            try
+            lock (_updateQueue)
             {
-                lock (_updateQueue)
-                {
-                    while (_updateQueue.TryDequeue(out _)) { }
-                }
-
-                lock (symbolRowMap)
-                {
-                    symbolRowMap.Clear();
-                }
-
-                previousAsks.Clear();
+                while (_updateQueue.TryDequeue(out _)) { }
             }
-            catch (Exception ex)
+
+            lock (symbolRowMap)
             {
-                ApplicationLogger.LogException(ex);
+                symbolRowMap.Clear();
             }
+
+            //lock (marketDataTable)
+            //{
+            //    marketDataTable.Clear();
+            //    marketDataTable.Dispose();
+            //    marketDataTable = new System.Data.DataTable(); // Reinitialize if needed
+            //}
+
+            previousAsks.Clear();
+            //pastRateTickDTO.Clear();
         }
 
         private void UpdateUIStateForNewMarketWatch()
@@ -3142,6 +3059,7 @@ namespace thecalcify
                 saveMarketWatchHost.Text = "Save MarketWatch";
 
                 fontSizeComboBox.Visible = false;
+                // Update status label
 
                 // Update title based on edit mode
                 titleLabel.Text = isEdit
@@ -3168,36 +3086,32 @@ namespace thecalcify
 
         private void CleanupBeforeViewSwitch()
         {
-            try
+            // 1. Dispose SignalR connection properly
+            DisposeSignalRConnection();
+
+            // 2. Stop and dispose timers
+            signalRTimer?.Stop();
+            signalRTimer?.Dispose();
+            signalRTimer = null;
+
+            _updateTimer?.Stop();
+            _updateTimer?.Dispose();
+            _updateTimer = null;
+            while (_updateQueue.TryDequeue(out _)) { }
+            txtsearch.Text = string.Empty;
+            // 3. Clean up DataGridView
+            CleanupDataGridView();
+
+            // 4. Dispose existing editable grid if exists
+            var existingGrid = this.Controls.Find("editableMarketWatchGridView", true).FirstOrDefault();
+            if (existingGrid != null)
             {
-                // 1. Dispose SignalR connection properly
-                DisposeSignalRConnection();
-
-                // 2. Stop and dispose timers
-                signalRTimer?.Stop();
-                signalRTimer?.Dispose();
-                signalRTimer = null;
-
-                _updateTimer?.Stop();
-                _updateTimer?.Dispose();
-                _updateTimer = null;
-                while (_updateQueue.TryDequeue(out _)) { }
-                txtsearch.Text = string.Empty;
-                // 3. Clean up DataGridView
-                CleanupDataGridView();
-
-                // 4. Dispose existing editable grid if exists
-                var existingGrid = this.Controls.Find("editableMarketWatchGridView", true).FirstOrDefault();
-                if (existingGrid != null)
-                {
-                    this.Controls.Remove(existingGrid);
-                    existingGrid.Dispose();
-                }
+                this.Controls.Remove(existingGrid);
+                existingGrid.Dispose();
             }
-            catch (Exception ex)
-            {
-                ApplicationLogger.LogException(ex);
-            }
+
+            // 5. Clean up Excel resources
+            //CleanupExcel();
         }
 
         private void AlertToolStripMenuItem_Click(object sender, EventArgs e)
@@ -3219,57 +3133,41 @@ namespace thecalcify
 
         private void DisposeSignalRConnection()
         {
-            try
+            if (connection != null)
             {
-                if (connection != null)
+                try
                 {
-                    try
-                    {
-                        var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-
-                        connection.StopAsync(cts.Token).Wait();
-                        connection.DisposeAsync().AsTask().Wait();
-                    }
-                    catch (Exception ex)
-                    {
-                        ApplicationLogger.LogException(ex);
-                    }
-                    finally
-                    {
-                        connection = null; // ✅ CRUCIAL
-                    }
+                    connection.StopAsync().Wait();
+                    connection.DisposeAsync().AsTask().Wait();
                 }
-            }
-            catch (Exception ex)
-            {
-                ApplicationLogger.LogException(ex);
+                catch (Exception ex)
+                {
+                    ApplicationLogger.LogException(ex);
+                }
+                finally
+                {
+                    connection = null; // ✅ CRUCIAL
+                }
             }
         }
 
         private void CleanupDataGridView()
         {
-            try
-            {
-                defaultGrid.SuspendLayout();
-                defaultGrid.Visible = false;
+            defaultGrid.SuspendLayout();
+            defaultGrid.Visible = false;
 
-                // Unbind data
-                defaultGrid.DataSource = null;
+            // Unbind data
+            defaultGrid.DataSource = null;
 
-                // Clear the grid only after unbinding
-                defaultGrid.Rows.Clear();
-                defaultGrid.Columns.Clear();
+            // Clear the grid only after unbinding
+            defaultGrid.Rows.Clear();
+            defaultGrid.Columns.Clear();
 
-                // Dispose cell styles and other resources
-                defaultGrid.DefaultCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", fontSize);
-                defaultGrid.ColumnHeadersDefaultCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", fontSize + 1.5f, FontStyle.Bold);
+            // Dispose cell styles and other resources
+            defaultGrid.DefaultCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", fontSize);
+            defaultGrid.ColumnHeadersDefaultCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", fontSize + 1.5f, FontStyle.Bold);
 
-                defaultGrid.ResumeLayout();
-            }
-            catch (Exception ex)
-            {
-                ApplicationLogger.LogException(ex);
-            }
+            defaultGrid.ResumeLayout();
         }
 
         public static void KillProcess()
@@ -3295,24 +3193,17 @@ namespace thecalcify
 
         public void HandleLastOpenedMarketWatch()
         {
-            try
-            {
-                if (string.IsNullOrEmpty(lastOpenMarketWatch))
-                    return;
+            if (string.IsNullOrEmpty(lastOpenMarketWatch))
+                return;
 
-                // Find and click the matching menu item
-                foreach (ToolStripMenuItem item in viewToolStripMenuItem.DropDownItems)
-                {
-                    if (item.Text == lastOpenMarketWatch)
-                    {
-                        item.PerformClick();
-                        break;
-                    }
-                }
-            }
-            catch (Exception ex)
+            // Find and click the matching menu item
+            foreach (ToolStripMenuItem item in viewToolStripMenuItem.DropDownItems)
             {
-                ApplicationLogger.LogException(ex);
+                if (item.Text == lastOpenMarketWatch)
+                {
+                    item.PerformClick();
+                    break;
+                }
             }
         }
 
@@ -3362,17 +3253,10 @@ namespace thecalcify
 
         private static void SaveInitDataPathToRegistry()
         {
-            try
+            using (var baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64))
+            using (var key = baseKey.CreateSubKey(@"SOFTWARE\thecalcify"))
             {
-                using (var baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64))
-                using (var key = baseKey.CreateSubKey(@"SOFTWARE\thecalcify"))
-                {
-                    key.SetValue("InitDataPath", marketInitDataPath, RegistryValueKind.String);
-                }
-            }
-            catch (Exception ex)
-            {
-                ApplicationLogger.LogException(ex);
+                key.SetValue("InitDataPath", marketInitDataPath, RegistryValueKind.String);
             }
         }
 

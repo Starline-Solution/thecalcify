@@ -111,19 +111,12 @@ namespace thecalcify.MarketWatch
 
         public async void LoadIdentifier()
         {
-            try
-            {
-                thecalcify live_Rate = thecalcify.CurrentInstance;
-                identifiers = live_Rate?.identifiers;
-                symbolMaster = identifiers;
-                //identifiers.Clear();
-                await SignalREventAsync();
-                AddManualEditableRow();
-            }
-            catch (Exception ex)
-            {
-                ApplicationLogger.LogException(ex);
-            }
+            thecalcify live_Rate = thecalcify.CurrentInstance;
+            identifiers = live_Rate?.identifiers;
+            symbolMaster = identifiers;
+            //identifiers.Clear();
+            await SignalREventAsync();
+            AddManualEditableRow();
         }
 
         public void InitializeToolTip()
@@ -452,6 +445,7 @@ namespace thecalcify.MarketWatch
                                     }
 
                                     UpdateGridWithLatestData();
+                                    //UpdateGridColumnVisibility();
                                 }
                                 catch (Exception ex)
                                 {
@@ -506,6 +500,7 @@ namespace thecalcify.MarketWatch
                 await connection.StartAsync();
                 //}
                 await connection.InvokeAsync("SubscribeSymbols", identifiers);
+                //UpdateGridColumnVisibility();
                 Console.WriteLine("Successfully connected to SignalR hub");
             }
             catch (Exception ex)
@@ -809,273 +804,266 @@ namespace thecalcify.MarketWatch
 
         private void ShowAddColumnPanel()
         {
-            try
+            if (panelAddSymbols != null && panelAddSymbols.Visible)
+                panelAddSymbols.Visible = false;
+
+            // Create panel if it hasn't been initialized yet
+            if (panelAddColumns == null)
             {
-                if (panelAddSymbols != null && panelAddSymbols.Visible)
-                    panelAddSymbols.Visible = false;
-
-                // Create panel if it hasn't been initialized yet
-                if (panelAddColumns == null)
+                // Initialize panel
+                panelAddColumns = new Panel
                 {
-                    // Initialize panel
-                    panelAddColumns = new Panel
-                    {
-                        Size = new System.Drawing.Size(500, 500),
-                        BackColor = System.Drawing.Color.White,
-                        BorderStyle = BorderStyle.None,
-                        Visible = false,
-                        Padding = new Padding(20),
-                    };
+                    Size = new System.Drawing.Size(500, 500),
+                    BackColor = System.Drawing.Color.White,
+                    BorderStyle = BorderStyle.None,
+                    Visible = false,
+                    Padding = new Padding(20),
+                };
 
-                    panelAddColumns.Paint += (s2, e2) =>
-                    {
-                        ControlPaint.DrawBorder(e2.Graphics, panelAddColumns.ClientRectangle,
-                            System.Drawing.Color.LightGray, 2, ButtonBorderStyle.Solid,
-                            System.Drawing.Color.LightGray, 2, ButtonBorderStyle.Solid,
-                            System.Drawing.Color.LightGray, 2, ButtonBorderStyle.Solid,
-                            System.Drawing.Color.LightGray, 2, ButtonBorderStyle.Solid);
-                    };
+                panelAddColumns.Paint += (s2, e2) =>
+                {
+                    ControlPaint.DrawBorder(e2.Graphics, panelAddColumns.ClientRectangle,
+                        System.Drawing.Color.LightGray, 2, ButtonBorderStyle.Solid,
+                        System.Drawing.Color.LightGray, 2, ButtonBorderStyle.Solid,
+                        System.Drawing.Color.LightGray, 2, ButtonBorderStyle.Solid,
+                        System.Drawing.Color.LightGray, 2, ButtonBorderStyle.Solid);
+                };
 
+                panelAddColumns.Location = new System.Drawing.Point(
+                    (this.Width - panelAddColumns.Width) / 2,
+                    (this.Height - panelAddColumns.Height) / 2
+                );
+
+                // Title label
+                Label titleLabel = new Label
+                {
+                    Text = "📊 Add / Edit Columns",
+                    Font = new System.Drawing.Font("Microsoft Sans Serif Semibold", 16, FontStyle.Bold),
+                    ForeColor = System.Drawing.Color.FromArgb(50, 50, 50),
+                    Dock = DockStyle.Top,
+                    Height = 50,
+                    TextAlign = ContentAlignment.MiddleCenter,
+                    Padding = new Padding(0, 10, 0, 10)
+                };
+
+                // Add spacer panel for spacing
+                Panel spacerPanel = new Panel
+                {
+                    Height = 10, // Adjust height as needed
+                    Dock = DockStyle.Top
+                };
+
+                // CheckedListBox
+                checkedListColumns = new CheckedListBox
+                {
+                    Height = 320,
+                    Dock = DockStyle.Top,
+                    Font = new System.Drawing.Font("Microsoft Sans Serif", 10),
+                    BorderStyle = BorderStyle.FixedSingle,
+                    CheckOnClick = true,
+                    BackColor = System.Drawing.Color.White
+                };
+
+                // Button container
+                Panel buttonPanel = new Panel
+                {
+                    Height = 80,
+                    Dock = DockStyle.Bottom,
+                    Padding = new Padding(10),
+                    BackColor = System.Drawing.Color.White
+                };
+
+                // Buttons
+                btnSelectAllColumns = new Button
+                {
+                    Text = "Select All",
+                    Height = 40,
+                    Width = 120,
+                    BackColor = System.Drawing.Color.FromArgb(0, 122, 204),
+                    ForeColor = System.Drawing.Color.White,
+                    FlatStyle = FlatStyle.Flat,
+                    Font = new System.Drawing.Font("Microsoft Sans Serif", 10, FontStyle.Bold),
+                    Cursor = Cursors.Hand
+                };
+                btnSelectAllColumns.FlatAppearance.BorderSize = 0;
+
+                btnConfirmAddColumns = new Button
+                {
+                    Text = "✔ Save",
+                    Height = 40,
+                    Width = 120,
+                    BackColor = System.Drawing.Color.FromArgb(0, 122, 204),
+                    ForeColor = System.Drawing.Color.White,
+                    FlatStyle = FlatStyle.Flat,
+                    Font = new System.Drawing.Font("Microsoft Sans Serif", 10, FontStyle.Bold),
+                    Cursor = Cursors.Hand
+                };
+                btnConfirmAddColumns.FlatAppearance.BorderSize = 0;
+
+                btnCancelAddColumns = new Button
+                {
+                    Text = "✖ Cancel",
+                    Height = 40,
+                    Width = 120,
+                    BackColor = System.Drawing.Color.LightGray,
+                    ForeColor = System.Drawing.Color.Black,
+                    FlatStyle = FlatStyle.Flat,
+                    Font = new System.Drawing.Font("Microsoft Sans Serif", 10, FontStyle.Bold),
+                    Cursor = Cursors.Hand
+                };
+                btnCancelAddColumns.FlatAppearance.BorderSize = 0;
+
+                // Layout
+                btnSelectAllColumns.Location = new Point(30, 25);
+                btnConfirmAddColumns.Location = new Point(170, 25);
+                btnCancelAddColumns.Location = new Point(310, 25);
+
+                buttonPanel.Controls.Add(btnSelectAllColumns);
+                buttonPanel.Controls.Add(btnConfirmAddColumns);
+                buttonPanel.Controls.Add(btnCancelAddColumns);
+
+                panelAddColumns.Controls.Add(checkedListColumns);
+                panelAddColumns.Controls.Add(spacerPanel);
+                panelAddColumns.Controls.Add(buttonPanel);
+                panelAddColumns.Controls.Add(titleLabel);
+
+                this.Controls.Add(panelAddColumns);
+
+                this.Resize += (s3, e3) =>
+                {
                     panelAddColumns.Location = new System.Drawing.Point(
                         (this.Width - panelAddColumns.Width) / 2,
                         (this.Height - panelAddColumns.Height) / 2
                     );
+                };
 
-                    // Title label
-                    Label titleLabel = new Label
+                // Hook up events
+                btnSelectAllColumns.Click += (s, e2) =>
+                {
+                    bool allChecked = true;
+                    for (int i = 0; i < checkedListColumns.Items.Count; i++)
                     {
-                        Text = "📊 Add / Edit Columns",
-                        Font = new System.Drawing.Font("Microsoft Sans Serif Semibold", 16, FontStyle.Bold),
-                        ForeColor = System.Drawing.Color.FromArgb(50, 50, 50),
-                        Dock = DockStyle.Top,
-                        Height = 50,
-                        TextAlign = ContentAlignment.MiddleCenter,
-                        Padding = new Padding(0, 10, 0, 10)
-                    };
-
-                    // Add spacer panel for spacing
-                    Panel spacerPanel = new Panel
-                    {
-                        Height = 10, // Adjust height as needed
-                        Dock = DockStyle.Top
-                    };
-
-                    // CheckedListBox
-                    checkedListColumns = new CheckedListBox
-                    {
-                        Height = 320,
-                        Dock = DockStyle.Top,
-                        Font = new System.Drawing.Font("Microsoft Sans Serif", 10),
-                        BorderStyle = BorderStyle.FixedSingle,
-                        CheckOnClick = true,
-                        BackColor = System.Drawing.Color.White
-                    };
-
-                    // Button container
-                    Panel buttonPanel = new Panel
-                    {
-                        Height = 80,
-                        Dock = DockStyle.Bottom,
-                        Padding = new Padding(10),
-                        BackColor = System.Drawing.Color.White
-                    };
-
-                    // Buttons
-                    btnSelectAllColumns = new Button
-                    {
-                        Text = "Select All",
-                        Height = 40,
-                        Width = 120,
-                        BackColor = System.Drawing.Color.FromArgb(0, 122, 204),
-                        ForeColor = System.Drawing.Color.White,
-                        FlatStyle = FlatStyle.Flat,
-                        Font = new System.Drawing.Font("Microsoft Sans Serif", 10, FontStyle.Bold),
-                        Cursor = Cursors.Hand
-                    };
-                    btnSelectAllColumns.FlatAppearance.BorderSize = 0;
-
-                    btnConfirmAddColumns = new Button
-                    {
-                        Text = "✔ Save",
-                        Height = 40,
-                        Width = 120,
-                        BackColor = System.Drawing.Color.FromArgb(0, 122, 204),
-                        ForeColor = System.Drawing.Color.White,
-                        FlatStyle = FlatStyle.Flat,
-                        Font = new System.Drawing.Font("Microsoft Sans Serif", 10, FontStyle.Bold),
-                        Cursor = Cursors.Hand
-                    };
-                    btnConfirmAddColumns.FlatAppearance.BorderSize = 0;
-
-                    btnCancelAddColumns = new Button
-                    {
-                        Text = "✖ Cancel",
-                        Height = 40,
-                        Width = 120,
-                        BackColor = System.Drawing.Color.LightGray,
-                        ForeColor = System.Drawing.Color.Black,
-                        FlatStyle = FlatStyle.Flat,
-                        Font = new System.Drawing.Font("Microsoft Sans Serif", 10, FontStyle.Bold),
-                        Cursor = Cursors.Hand
-                    };
-                    btnCancelAddColumns.FlatAppearance.BorderSize = 0;
-
-                    // Layout
-                    btnSelectAllColumns.Location = new Point(30, 25);
-                    btnConfirmAddColumns.Location = new Point(170, 25);
-                    btnCancelAddColumns.Location = new Point(310, 25);
-
-                    buttonPanel.Controls.Add(btnSelectAllColumns);
-                    buttonPanel.Controls.Add(btnConfirmAddColumns);
-                    buttonPanel.Controls.Add(btnCancelAddColumns);
-
-                    panelAddColumns.Controls.Add(checkedListColumns);
-                    panelAddColumns.Controls.Add(spacerPanel);
-                    panelAddColumns.Controls.Add(buttonPanel);
-                    panelAddColumns.Controls.Add(titleLabel);
-
-                    this.Controls.Add(panelAddColumns);
-
-                    this.Resize += (s3, e3) =>
-                    {
-                        panelAddColumns.Location = new System.Drawing.Point(
-                            (this.Width - panelAddColumns.Width) / 2,
-                            (this.Height - panelAddColumns.Height) / 2
-                        );
-                    };
-
-                    // Hook up events
-                    btnSelectAllColumns.Click += (s, e2) =>
-                    {
-                        bool allChecked = true;
-                        for (int i = 0; i < checkedListColumns.Items.Count; i++)
+                        if (!checkedListColumns.GetItemChecked(i))
                         {
-                            if (!checkedListColumns.GetItemChecked(i))
-                            {
-                                allChecked = false;
-                                break;
-                            }
+                            allChecked = false;
+                            break;
                         }
+                    }
 
-                        bool check = !allChecked;
-                        btnSelectAllColumns.Text = check ? "Unselect All" : "Select All";
+                    bool check = !allChecked;
+                    btnSelectAllColumns.Text = check ? "Unselect All" : "Select All";
 
-                        for (int i = 0; i < checkedListColumns.Items.Count; i++)
-                        {
-                            checkedListColumns.SetItemChecked(i, check);
-                        }
-                    };
-
-                    btnConfirmAddColumns.Click += (s, e2) =>
+                    for (int i = 0; i < checkedListColumns.Items.Count; i++)
                     {
-                        var currentlyChecked = checkedListColumns.CheckedItems.Cast<string>().ToList();
-                        var previouslySelected = columnPreferences.Count > 0 ? columnPreferences : columnPreferencesDefault;
+                        checkedListColumns.SetItemChecked(i, check);
+                    }
+                };
 
-                        if (!currentlyChecked.Any())
-                        {
-                            MessageBox.Show("Please select at least one column.");
-                            return;
-                        }
+                btnConfirmAddColumns.Click += (s, e2) =>
+                {
+                    var currentlyChecked = checkedListColumns.CheckedItems.Cast<string>().ToList();
+                    var previouslySelected = columnPreferences.Count > 0 ? columnPreferences : columnPreferencesDefault;
 
-                        if (currentlyChecked.SequenceEqual(previouslySelected))
-                        {
-                            MessageBox.Show("No changes made.");
-                            panelAddColumns.Visible = false;
-                            return;
-                        }
+                    if (!currentlyChecked.Any())
+                    {
+                        MessageBox.Show("Please select at least one column.");
+                        return;
+                    }
 
-                        // Save the new column preferences
-                        columnPreferences = currentlyChecked;
-
-                        // Make sure Symbol column is always visible in the grid
-                        if (!columnPreferences.Contains("symbol"))
-                        {
-                            columnPreferences.Add("symbol");
-                            columnPreferences.Add("V");
-                        }
-
-                        // Update DataTable column visibility
-                        foreach (DataColumn column in marketWatchDatatable.Columns)
-                        {
-                            column.ColumnMapping = columnPreferences.Contains(column.ColumnName)
-                                ? MappingType.Element
-                                : MappingType.Hidden;
-
-                            if (column.ColumnName == "symbol" || column.ColumnName == "V")
-                                column.ColumnMapping = MappingType.Hidden;
-                        }
-
-                        // Update grid column visibility
-                        UpdateGridColumnVisibility();
-
+                    if (currentlyChecked.SequenceEqual(previouslySelected))
+                    {
+                        MessageBox.Show("No changes made.");
                         panelAddColumns.Visible = false;
-                        //MessageBox.Show("Columns updated successfully!");
-                    };
-
-                    btnCancelAddColumns.Click += (s, e2) =>
-                    {
-                        panelAddColumns.Visible = false;
-                    };
-                }
-
-                // Refresh items before showing
-                checkedListColumns.Items.Clear();
-
-                // Get the columns to display (use allColumns if no preferences set)
-                var columnsToShow = columnPreferences.Count > 0 ? columnPreferences : columnPreferencesDefault;
-
-                // Add selected columns first (preserving order)
-                foreach (string column in columnPreferencesDefault)
-                {
-                    if (columnsToShow.Contains(column) && column != "symbol" && column != "V")
-                    {
-                        checkedListColumns.Items.Add(column, true);
+                        return;
                     }
-                }
 
-                // Then add unselected columns
-                foreach (string column in columnPreferencesDefault)
-                {
-                    if (!columnsToShow.Contains(column) && column != "symbol" && column != "V")
+                    // Save the new column preferences
+                    columnPreferences = currentlyChecked;
+
+                    // Make sure Symbol column is always visible in the grid
+                    if (!columnPreferences.Contains("symbol"))
                     {
-                        checkedListColumns.Items.Add(column, false);
+                        columnPreferences.Add("symbol");
+                        columnPreferences.Add("V");
                     }
-                }
 
-                // Update Select All button text
-                btnSelectAllColumns.Text = checkedListColumns.CheckedItems.Count == checkedListColumns.Items.Count
-                    ? "Unselect All"
-                    : "Select All";
-
-                // Make sure Symbol column is always visible in the grid
-                if (!columnPreferences.Contains("symbol"))
-                {
-                    columnPreferences.Add("symbol");
-                    columnPreferences.Add("V");
-                }
-
-                // Update DataTable column visibility to ensure Symbol is always visible
-                foreach (DataColumn column in marketWatchDatatable.Columns)
-                {
-                    if (column.ColumnName == "symbol" && column.ColumnName != "V")
-                    {
-                        column.ColumnMapping = MappingType.Element;
-                    }
-                    else
+                    // Update DataTable column visibility
+                    foreach (DataColumn column in marketWatchDatatable.Columns)
                     {
                         column.ColumnMapping = columnPreferences.Contains(column.ColumnName)
                             ? MappingType.Element
                             : MappingType.Hidden;
-                    }
-                }
 
-                panelAddColumns.Visible = true;
-                panelAddColumns.BringToFront();
+                        if (column.ColumnName == "symbol" || column.ColumnName == "V")
+                            column.ColumnMapping = MappingType.Hidden;
+                    }
+
+                    // Update grid column visibility
+                    UpdateGridColumnVisibility();
+
+                    panelAddColumns.Visible = false;
+                    //MessageBox.Show("Columns updated successfully!");
+                };
+
+                btnCancelAddColumns.Click += (s, e2) =>
+                {
+                    panelAddColumns.Visible = false;
+                };
             }
-            catch (Exception ex)
+
+            // Refresh items before showing
+            checkedListColumns.Items.Clear();
+
+            // Get the columns to display (use allColumns if no preferences set)
+            var columnsToShow = columnPreferences.Count > 0 ? columnPreferences : columnPreferencesDefault;
+
+            // Add selected columns first (preserving order)
+            foreach (string column in columnPreferencesDefault)
             {
-                ApplicationLogger.LogException(ex);
+                if (columnsToShow.Contains(column) && column != "symbol" && column != "V")
+                {
+                    checkedListColumns.Items.Add(column, true);
+                }
             }
+
+            // Then add unselected columns
+            foreach (string column in columnPreferencesDefault)
+            {
+                if (!columnsToShow.Contains(column) && column != "symbol" && column != "V")
+                {
+                    checkedListColumns.Items.Add(column, false);
+                }
+            }
+
+            // Update Select All button text
+            btnSelectAllColumns.Text = checkedListColumns.CheckedItems.Count == checkedListColumns.Items.Count
+                ? "Unselect All"
+                : "Select All";
+
+            // Make sure Symbol column is always visible in the grid
+            if (!columnPreferences.Contains("symbol"))
+            {
+                columnPreferences.Add("symbol");
+                columnPreferences.Add("V");
+            }
+
+            // Update DataTable column visibility to ensure Symbol is always visible
+            foreach (DataColumn column in marketWatchDatatable.Columns)
+            {
+                if (column.ColumnName == "symbol" && column.ColumnName != "V")
+                {
+                    column.ColumnMapping = MappingType.Element;
+                }
+                else
+                {
+                    column.ColumnMapping = columnPreferences.Contains(column.ColumnName)
+                        ? MappingType.Element
+                        : MappingType.Hidden;
+                }
+            }
+
+            panelAddColumns.Visible = true;
+            panelAddColumns.BringToFront();
         }
 
         public void UpdateGridColumnVisibility()
@@ -1196,10 +1184,6 @@ namespace thecalcify.MarketWatch
                 // Apply fixed widths again to ensure consistency
                 ApplyFixedColumnWidths(this);
             }
-            catch (Exception ex)
-            {
-                ApplicationLogger.LogException(ex);
-            }
             finally
             {
                 this.ResumeLayout();
@@ -1300,6 +1284,9 @@ namespace thecalcify.MarketWatch
                 }
             }
 
+            //this.DefaultCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", fontSize,FontStyle.Regular);
+            //this.ColumnHeadersDefaultCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", fontSize,FontStyle.Bold);
+
             // Process rows in bulk
             foreach (DataGridViewRow gridRow in editableMarketWatchGridView.Rows)
             {
@@ -1315,7 +1302,12 @@ namespace thecalcify.MarketWatch
                 {
                     // Fall back to DTO if not found in market data
                     var dto = pastRateTickDTO.FirstOrDefault(x => x.i == symbol);
+                    //if (IsRowDataDifferent(gridRow, dataRow))
+                    //{
+                    //    // Update all cells at once for this row
+                    //    UpdateRowCells(gridRow, dataRow);
 
+                    //}
                     if (IsRowDataDifferent(gridRow, dto))
                     {
                         // Update from DTO
@@ -1338,6 +1330,8 @@ namespace thecalcify.MarketWatch
                         gridRow.Cells["Last Size"].Value = dto.ltq;
                         gridRow.Cells["V"].Value = dto.v;
                         gridRow.Cells["Time"].Value = Common.TimeStampConvert(dto.t);
+
+                        //isFirstSet = true;
                     }
                 }
                 else
@@ -1494,7 +1488,6 @@ namespace thecalcify.MarketWatch
                 }
                 catch (Exception ex)
                 {
-                    ApplicationLogger.LogException(ex);
                     Console.WriteLine("Error parsing rate value at UpdateRowCell1: " + ex.Message);
                 }
             }
@@ -1573,7 +1566,6 @@ namespace thecalcify.MarketWatch
             int rowIndex = Rows.Add();
             Rows[rowIndex].Height = (int)Math.Ceiling(fontSize * 2.8);
         }
-
         private void SetSymbolAndTriggerUpdate(int rowIndex, string symbolName, bool isNewRow = false)
         {
             // Validate row index
@@ -1597,6 +1589,9 @@ namespace thecalcify.MarketWatch
             // Set the value in the "Name" combobox column
             if (Columns["Name"] is DataGridViewComboBoxColumn)
             {
+                //// Set the display value
+                //Rows[rowIndex].Cells["Name"].Value = symbolName;
+
                 // Find the corresponding Symbol object
                 var symbolInfo = SymbolName.FirstOrDefault(sn =>
                     string.Equals(sn.SymbolName, symbolName, StringComparison.OrdinalIgnoreCase));
@@ -1786,7 +1781,6 @@ namespace thecalcify.MarketWatch
 
             return input;
         }
-
         private string DecompressGzip(byte[] compressed)
         {
             using (var input = new MemoryStream(compressed))
@@ -1797,7 +1791,6 @@ namespace thecalcify.MarketWatch
                 return Encoding.UTF8.GetString(output.ToArray());
             }
         }
-
         private bool IsRowDataDifferent(DataGridViewRow gridRow, MarketDataDto dto)
         {
             // Replace YourDtoType with the actual DTO type and compare relevant fields
