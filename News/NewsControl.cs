@@ -371,6 +371,8 @@ namespace thecalcify.News
         {
             try
             {
+                dgvNews.Enabled = false;
+
                 // Ignore header row clicks
                 if (e.RowIndex < 0) return;
 
@@ -388,12 +390,17 @@ namespace thecalcify.News
                     using (var frm = new NewsDescription(fullNews))
                     {
                         frm.ShowDialog();
+                        dgvNews.Enabled = true;
                     }
                 }
             }
             catch (Exception ex)
             {
                 ApplicationLogger.Log($"[dgvNews_CellDoubleClick] Error: {ex.Message}");
+            }
+            finally
+            {
+                dgvNews.Enabled = true;
             }
         }
 

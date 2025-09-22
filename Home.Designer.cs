@@ -58,6 +58,7 @@ namespace thecalcify
             this.viewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.newsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.alertToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.headerPanel = new System.Windows.Forms.Panel();
             this.titleLabel = new System.Windows.Forms.Label();
@@ -68,7 +69,6 @@ namespace thecalcify
             this.fontSizeComboBox = new System.Windows.Forms.ComboBox();
             this.newMarketWatchMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.txtsearch = new System.Windows.Forms.TextBox();
-            this.alertToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.defaultGrid)).BeginInit();
             this.Tools.SuspendLayout();
             this.menuStrip1.SuspendLayout();
@@ -182,7 +182,6 @@ namespace thecalcify
             this.menuStrip1.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.HorizontalStackWithOverflow;
             this.menuStrip1.Location = new System.Drawing.Point(0, 30);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Padding = new System.Windows.Forms.Padding(6, 2, 0, 2);
             this.menuStrip1.Size = new System.Drawing.Size(1115, 28);
             this.menuStrip1.TabIndex = 1;
             this.menuStrip1.Text = "menuStrip1";
@@ -259,6 +258,13 @@ namespace thecalcify
             this.newsToolStripMenuItem.Size = new System.Drawing.Size(65, 24);
             this.newsToolStripMenuItem.Text = "News";
             this.newsToolStripMenuItem.Click += new System.EventHandler(this.newsToolStripMenuItem_Click);
+            // 
+            // alertToolStripMenuItem
+            // 
+            this.alertToolStripMenuItem.Name = "alertToolStripMenuItem";
+            this.alertToolStripMenuItem.Size = new System.Drawing.Size(58, 24);
+            this.alertToolStripMenuItem.Text = "Alert";
+            this.alertToolStripMenuItem.Click += new System.EventHandler(this.AlertToolStripMenuItem_Click);
             // 
             // aboutToolStripMenuItem
             // 
@@ -352,7 +358,7 @@ namespace thecalcify
             "28",
             "30"});
             this.fontSizeComboBox.Location = new System.Drawing.Point(757, 29);
-            this.fontSizeComboBox.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.fontSizeComboBox.Margin = new System.Windows.Forms.Padding(4);
             this.fontSizeComboBox.Name = "fontSizeComboBox";
             this.fontSizeComboBox.Size = new System.Drawing.Size(160, 24);
             this.fontSizeComboBox.TabIndex = 5;
@@ -374,13 +380,6 @@ namespace thecalcify
             this.txtsearch.TabIndex = 6;
             this.txtsearch.TextChanged += new System.EventHandler(this.Txtsearch_TextChanged);
             this.txtsearch.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Txtsearch_KeyDown);
-            // 
-            // alertToolStripMenuItem
-            // 
-            this.alertToolStripMenuItem.Name = "alertToolStripMenuItem";
-            this.alertToolStripMenuItem.Size = new System.Drawing.Size(58, 24);
-            this.alertToolStripMenuItem.Text = "Alert";
-            this.alertToolStripMenuItem.Click += new System.EventHandler(this.AlertToolStripMenuItem_Click);
             // 
             // thecalcify
             // 
