@@ -43,9 +43,9 @@ namespace thecalcify.News
             this.lblSubCategory = new System.Windows.Forms.Label();
             this.pnlTop = new System.Windows.Forms.Panel();
             this.pnlBottom = new System.Windows.Forms.Panel();
-            this.btnPrevPage = new System.Windows.Forms.Button();
             this.lblPageInfo = new System.Windows.Forms.Label();
             this.btnNextPage = new System.Windows.Forms.Button();
+            this.btnPrevPage = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dgvNews)).BeginInit();
             this.pnlTop.SuspendLayout();
             this.pnlBottom.SuspendLayout();
@@ -78,6 +78,7 @@ namespace thecalcify.News
             this.DGVTitle,
             this.DVGCategory,
             this.DVGSubCategory});
+            this.dgvNews.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
             dataGridViewCellStyle3.BackColor = System.Drawing.Color.White;
             dataGridViewCellStyle3.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F);
@@ -95,7 +96,6 @@ namespace thecalcify.News
             this.dgvNews.RowHeadersVisible = false;
             this.dgvNews.RowHeadersWidth = 51;
             this.dgvNews.RowTemplate.Height = 36;
-            this.dgvNews.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.dgvNews.Size = new System.Drawing.Size(800, 372);
             this.dgvNews.TabIndex = 0;
             this.dgvNews.CellDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvNews_CellDoubleClick);
@@ -152,8 +152,7 @@ namespace thecalcify.News
             // 
             // btnSearchNews
             // 
-            this.btnSearchNews.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(120)))), ((int)(((byte)(215)))));
-            this.btnSearchNews.ForeColor = System.Drawing.Color.White;
+            this.btnSearchNews.BackColor = System.Drawing.Color.White;
             this.btnSearchNews.Location = new System.Drawing.Point(430, 36);
             this.btnSearchNews.Name = "btnSearchNews";
             this.btnSearchNews.Size = new System.Drawing.Size(99, 28);
@@ -209,18 +208,6 @@ namespace thecalcify.News
             this.pnlBottom.Size = new System.Drawing.Size(800, 50);
             this.pnlBottom.TabIndex = 2;
             // 
-            // btnPrevPage
-            // 
-            this.btnPrevPage.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(120)))), ((int)(((byte)(215)))));
-            this.btnPrevPage.ForeColor = System.Drawing.Color.White;
-            this.btnPrevPage.Location = new System.Drawing.Point(13, 10);
-            this.btnPrevPage.Name = "btnPrevPage";
-            this.btnPrevPage.Size = new System.Drawing.Size(105, 30);
-            this.btnPrevPage.TabIndex = 2;
-            this.btnPrevPage.Text = "< Home";
-            this.btnPrevPage.UseVisualStyleBackColor = false;
-            this.btnPrevPage.Click += new System.EventHandler(this.btnPrevPage_Click);
-            // 
             // lblPageInfo
             // 
             this.lblPageInfo.Anchor = System.Windows.Forms.AnchorStyles.None;
@@ -228,7 +215,7 @@ namespace thecalcify.News
             this.lblPageInfo.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblPageInfo.Location = new System.Drawing.Point(365, 15);
             this.lblPageInfo.Name = "lblPageInfo";
-            this.lblPageInfo.Size = new System.Drawing.Size(94, 20);
+            this.lblPageInfo.Size = new System.Drawing.Size(91, 20);
             this.lblPageInfo.TabIndex = 0;
             this.lblPageInfo.Text = "Page 1 of 1";
             this.lblPageInfo.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -236,15 +223,23 @@ namespace thecalcify.News
             // btnNextPage
             // 
             this.btnNextPage.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnNextPage.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(120)))), ((int)(((byte)(215)))));
-            this.btnNextPage.ForeColor = System.Drawing.Color.White;
             this.btnNextPage.Location = new System.Drawing.Point(682, 10);
             this.btnNextPage.Name = "btnNextPage";
             this.btnNextPage.Size = new System.Drawing.Size(105, 30);
             this.btnNextPage.TabIndex = 1;
             this.btnNextPage.Text = "Next >";
-            this.btnNextPage.UseVisualStyleBackColor = false;
+            this.btnNextPage.UseVisualStyleBackColor = true;
             this.btnNextPage.Click += new System.EventHandler(this.btnNextPage_Click);
+            // 
+            // btnPrevPage
+            // 
+            this.btnPrevPage.Location = new System.Drawing.Point(13, 10);
+            this.btnPrevPage.Name = "btnPrevPage";
+            this.btnPrevPage.Size = new System.Drawing.Size(105, 30);
+            this.btnPrevPage.TabIndex = 2;
+            this.btnPrevPage.Text = "< Home";
+            this.btnPrevPage.UseVisualStyleBackColor = true;
+            this.btnPrevPage.Click += new System.EventHandler(this.btnPrevPage_Click);
             // 
             // NewsControl
             // 
