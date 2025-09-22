@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http.Connections;
+﻿using DocumentFormat.OpenXml.EMMA;
+using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Win32;
 using Newtonsoft.Json;
@@ -244,7 +245,21 @@ namespace thecalcify
                 var app = new Microsoft.Office.Interop.Excel.Application();
                 app.Quit();
 
-                MenuLoad();
+                if (LoginInfo.IsRate && LoginInfo.IsNews)
+                {
+                    MenuLoad();
+                }
+                else if (LoginInfo.IsRate)
+                {
+                    MenuLoad();
+                    newsToolStripMenuItem.Visible = false;
+                }
+                else if (LoginInfo.IsNews)
+                {
+                    this.newsToolStripMenuItem_Click(this, EventArgs.Empty);
+                    newCTRLNToolStripMenuItem.Visible = false;
+                    toolsToolStripMenuItem.Enabled = true;
+                }
 
                 // --- LOAD INITIAL DATA ASYNCHRONOUSLY ---
                 await LoadInitialMarketDataAsync();
@@ -970,7 +985,7 @@ namespace thecalcify
                 }
             }
 
-            if (e.Control && e.KeyCode == Keys.N && marketWatchViewMode != MarketWatchViewMode.New)
+            if (e.Control && e.KeyCode == Keys.N && marketWatchViewMode != MarketWatchViewMode.New && LoginInfo.IsRate)
             {
                 NewCTRLNToolStripMenuItem1_Click(this, EventArgs.Empty);
                 e.Handled = true;

@@ -183,6 +183,16 @@ namespace thecalcify
                                     // Decode JWT token
                                     var payload = DecodeJwtPayload(token);
 
+                                    LoginInfo.IsNews = GetLoginInfo(payload, "IsNews");
+                                    LoginInfo.IsRate = GetLoginInfo(payload, "IsRate");
+
+                                    if (!LoginInfo.IsNews && !LoginInfo.IsRate)
+                                    {
+                                        MessageBox.Show("Please contact the Administrator", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                        loginbutton.Enabled = true;
+                                        return;
+                                    }
+
                                     ApplicationLogger.Log($"User Logged In", "Logon");
 
                                     thecalcify homeForm = new thecalcify();
@@ -249,6 +259,18 @@ namespace thecalcify
             {
                 return doc.RootElement.Clone();
             }
+        }
+
+        private static bool GetLoginInfo(JsonElement payload, string propertyName)
+        {
+            if (payload.TryGetProperty(propertyName, out JsonElement element))
+            {
+                // handle string "True"/"False"
+                if (element.ValueKind == JsonValueKind.String && bool.TryParse(element.GetString(), out bool result))
+                    return result;
+            }
+
+            return false; // default if missing or invalid
         }
 
         private void Login_FormClosed(object sender, FormClosedEventArgs e)

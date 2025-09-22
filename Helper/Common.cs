@@ -392,4 +392,10 @@ namespace thecalcify.Helper
         public string version { get; set; }
         public string code { get; set; }
     }
+
+    public static class LoginInfo
+    {
+        public static bool IsNews { get; set; }
+        public static bool IsRate { get; set; }
+    }
 }
