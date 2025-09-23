@@ -120,6 +120,9 @@ namespace thecalcify
         // 📌 Services / External Connections
         // ======================
         public HubConnection connection;
+        private bool isReconnectTimerRunning = false;
+        private bool _isReconnectInProgress = false;
+        private bool _eventHandlersAttached = false;
 
         public Common commonClass;
         private ConcurrentQueue<MarketDataDto> _updateQueue = new ConcurrentQueue<MarketDataDto>();
@@ -129,7 +132,7 @@ namespace thecalcify
         // ======================
         // 📌 Timers / Threads
         // ======================
-        private System.Windows.Forms.Timer _updateTimer;
+        private System.Threading.Timer _updateTimer;
 
         private System.Windows.Forms.Timer signalRTimer;
         private Thread licenceThread;
@@ -1560,38 +1563,68 @@ namespace thecalcify
 
         #region SignalR Methods
 
+        private readonly JsonSerializerSettings _jsonSettings = new JsonSerializerSettings
+        {
+            NullValueHandling = NullValueHandling.Ignore,
+            MissingMemberHandling = MissingMemberHandling.Ignore,
+            Formatting = Formatting.None
+        };
+
         public void SignalRTimer()
         {
-            try
+            if (signalRTimer != null) return; // prevent multiple timers
+
+            signalRTimer = new System.Windows.Forms.Timer { Interval = 10_000 };
+            signalRTimer.Tick += async (s, e) =>
             {
-                signalRTimer = new System.Windows.Forms.Timer { Interval = 10_000 };
-                signalRTimer.Tick += async (s, e) => await TryReconnectAsync();
-                signalRTimer.Start();
-            }
-            catch (Exception ex)
-            {
-                ApplicationLogger.LogException(ex);
-            }
+                try
+                {
+                    if (!isReconnectTimerRunning && connection?.State == HubConnectionState.Disconnected)
+                    {
+                        isReconnectTimerRunning = true;
+                        await TryReconnectAsync().ConfigureAwait(false);
+                        isReconnectTimerRunning = false;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ApplicationLogger.LogException(ex);
+                    isReconnectTimerRunning = false;
+                }
+            };
+            signalRTimer.Start();
         }
 
         private async Task TryReconnectAsync()
         {
-            if (connection?.State == HubConnectionState.Disconnected)
+            if (_isReconnectInProgress) return; // prevent parallel reconnects
+            if (connection?.State != HubConnectionState.Disconnected) return;
+
+            try
             {
-                try
-                {
-                    await SignalREvent();
-                }
-                catch (Exception ex) when (
-                    ex is OperationCanceledException ||
-                    ex is ObjectDisposedException ||
-                    ex is TargetInvocationException ||
-                    ex is InvalidOperationException)
-                {
-                    Console.WriteLine("SignalR reconnection attempt failed, retrying...");
-                    ApplicationLogger.LogException(ex);
-                    await SignalREvent();
-                }
+                _isReconnectInProgress = true;
+                await SignalREvent().ConfigureAwait(false);
+            }
+            catch (Exception ex) when (
+                ex is OperationCanceledException ||
+                ex is ObjectDisposedException ||
+                ex is TargetInvocationException ||
+                ex is InvalidOperationException)
+            {
+                ApplicationLogger.LogException(ex);
+
+                // 🔄 Instead of immediate retry → small backoff
+                await Task.Delay(2000);
+                await SignalREvent().ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                // Unexpected errors
+                ApplicationLogger.LogException(ex);
+            }
+            finally
+            {
+                _isReconnectInProgress = false;
             }
         }
 
@@ -1611,70 +1644,74 @@ namespace thecalcify
         {
             try
             {
-                connection = BuildConnection();
-
-                connection.On<string>("excelRate", OnExcelRateReceived);
-
-                connection.Closed += async (error) =>
+                // 🔄 Reuse connection if already exists
+                if (connection == null)
                 {
-                    Console.WriteLine("Connection closed");
-                    if (!isDisconnecting)
-                    {
-                        await Task.Delay(new Random().Next(0, 5) * 1000);
-                        // Possibly try reconnect manually if needed
-                    }
-                };
+                    connection = BuildConnection();
 
-                connection.Reconnected += async (connectionId) =>
-                {
-                    if (!isDisconnecting)
+                    if (!_eventHandlersAttached)
                     {
-                        Console.WriteLine("Reconnected to SignalR hub");
+                        // Attach event handlers only once
+                        connection.On<string>("excelRate", OnExcelRateReceived);
 
-                        try
+                        connection.Closed += async (error) =>
                         {
-                            if (selectedSymbols.Count != 0)
-                                identifiers = new List<string>(selectedSymbols);
+                            ApplicationLogger.Log("Connection closed");
+                            if (!isDisconnecting)
+                            {
+                                await Task.Delay(2000); // backoff instead of random
+                                await TryReconnectAsync(); // safe reconnect
+                            }
+                        };
 
-                            await connection.InvokeAsync("SubscribeSymbols", symbolMaster);
-                            Console.WriteLine("Resubscribed after reconnect.");
-                        }
-                        catch (Exception ex)
+                        connection.Reconnected += async (connectionId) =>
                         {
-                            Console.WriteLine("Failed to resubscribe after reconnect.");
-                            ApplicationLogger.LogException(ex);
-                        }
+                            if (!isDisconnecting)
+                            {
+                                ApplicationLogger.Log("Reconnected to SignalR hub");
+                                try
+                                {
+                                    if (selectedSymbols.Count > 0)
+                                        identifiers = new List<string>(selectedSymbols);
+
+                                    using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5)))
+                                    {
+                                        await connection.InvokeAsync("SubscribeSymbols", symbolMaster, cts.Token);
+                                    }
+                                    ApplicationLogger.Log("Resubscribed after reconnect.");
+                                }
+                                catch (Exception ex)
+                                {
+                                    ApplicationLogger.LogException(ex);
+                                }
+                            }
+                        };
+
+                        _eventHandlersAttached = true;
                     }
-                };
+                }
 
-                var currentIdentifiers = new List<string>(identifiers); // snapshot copy
-                await connection.StartAsync();
+                if (connection.State != HubConnectionState.Connected)
+                    await connection.StartAsync().ConfigureAwait(false);
 
-                try
+                if (connection.State == HubConnectionState.Connected)
                 {
-                    if (connection != null && connection.State == HubConnectionState.Connected)
+                    // identifiers sync only once per connection start
+                    if (selectedSymbols.Count > 0)
+                        identifiers = new List<string>(selectedSymbols);
+
+                    using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5)))
                     {
-                        if (selectedSymbols.Count != 0)
-                            identifiers = new List<string>(selectedSymbols);
-
-                        if (currentIdentifiers.Count() != identifiers.Count())
-                            identifiers = currentIdentifiers;
-
-                        var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-                        await connection.InvokeAsync("SubscribeSymbols", symbolMaster, cts.Token);
-                        SetupUpdateTimer();
+                        await connection.InvokeAsync("SubscribeSymbols", symbolMaster, cts.Token).ConfigureAwait(false);
                     }
+
+                    SetupUpdateTimer();
                 }
-                catch (TaskCanceledException ex)
-                {
-                    Console.WriteLine("SignalR task canceled: likely due to timeout or connection issue.");
-                    ApplicationLogger.LogException(ex);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("Error during SubscribeSymbols call.");
-                    ApplicationLogger.LogException(ex);
-                }
+            }
+            catch (TaskCanceledException ex)
+            {
+                ApplicationLogger.Log("SignalR subscribe timeout/canceled.");
+                ApplicationLogger.LogException(ex);
             }
             catch (Exception ex)
             {
@@ -1686,12 +1723,30 @@ namespace thecalcify
         {
             try
             {
-                _updateTimer = new System.Windows.Forms.Timer
+                // Purana timer dispose karo
+                if (_updateTimer != null)
                 {
-                    Interval = 120
-                };
-                _updateTimer.Tick += UpdateTimer_Tick;
-                _updateTimer.Start();
+                    _updateTimer.Dispose();
+                    _updateTimer = null;
+                }
+
+                // Background timer setup (100ms interval)
+                _updateTimer = new System.Threading.Timer(
+                    callback: state =>
+                    {
+                        try
+                        {
+                            UpdateTimer_Tick(null, EventArgs.Empty);
+                        }
+                        catch (Exception ex)
+                        {
+                            ApplicationLogger.LogException(ex);
+                        }
+                    },
+                    state: null,
+                    dueTime: 0,        // start immediately
+                    period: 100        // repeat every 100ms
+                );
             }
             catch (Exception ex)
             {
@@ -1699,40 +1754,25 @@ namespace thecalcify
             }
         }
 
+        private const int MaxQueueSize = 2000; // cap queue size
+
         private void OnExcelRateReceived(string base64)
         {
             if (connection == null) return;
 
             try
             {
-                if (!this.IsDisposed && this.IsHandleCreated)
-                {
-                    if (defaultGrid.InvokeRequired)
-                    {
-                        defaultGrid.BeginInvoke((MethodInvoker)(() =>
-                        {
-                            lock (_tableLock)
-                            {
-                                CleanupEmptyRows();
-                                AddMissingRows();
-                            }
-                        }));
-                    }
-                    else
-                    {
-                        lock (_tableLock)
-                        {
-                            CleanupEmptyRows();
-                            AddMissingRows();
-                        }
-                    }
-                }
+                // Decode & decompress
+                byte[] bytes = Convert.FromBase64String(base64);
+                string json = DecompressGzip(bytes);
 
-                var json = DecompressGzip(Convert.FromBase64String(base64));
-                var data = JsonConvert.DeserializeObject<MarketDataDto>(json);
+                // Reuse global serializer settings for perf
+                var data = JsonConvert.DeserializeObject<MarketDataDto>(json, _jsonSettings);
                 if (data == null) return;
 
+                // Cap queue size to avoid memory explosion
                 _updateQueue.Enqueue(data);
+                while (_updateQueue.Count > MaxQueueSize && _updateQueue.TryDequeue(out _)) { }
             }
             catch (Exception ex)
             {
@@ -3148,7 +3188,6 @@ namespace thecalcify
                 signalRTimer?.Dispose();
                 signalRTimer = null;
 
-                _updateTimer?.Stop();
                 _updateTimer?.Dispose();
                 _updateTimer = null;
                 while (_updateQueue.TryDequeue(out _)) { }
