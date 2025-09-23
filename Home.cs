@@ -971,12 +971,6 @@ namespace thecalcify
 
         private void TitleLabel_TextChanged(object sender, EventArgs e)
         {
-            if (titleLabel == null) return;
-
-            bool isNewWatch = titleLabel.Text.Equals("new marketwatch", StringComparison.OrdinalIgnoreCase);
-            saveMarketWatchHost.Visible = isNewWatch;
-            if (isNewWatch) saveMarketWatchHost.Text = "Save MarketWatch";
-
             txtsearch.Clear();
         }
 
