@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -388,7 +389,7 @@ namespace thecalcify.MarketWatch
                         var json = DecompressGzip(Convert.FromBase64String(base64));
                         //Console.WriteLine($"Decompressed JSON: {json}");
 
-                        var data = JsonSerializer.Deserialize<MarketDataDto>(json);
+                        var data = JsonConvert.DeserializeObject<MarketDataDto>(json);
 
                         if (data != null)
                         {
@@ -1703,7 +1704,7 @@ namespace thecalcify.MarketWatch
                                 MessageBox.Show("You can not file name Default");
                                 return;
                             }
-                            string json = JsonSerializer.Serialize(SymbolList);
+                            string json = System.Text.Json.JsonSerializer.Serialize(SymbolList);
                             string encryptedJson = CryptoHelper.Encrypt(json, passphrase);
 
                             // Ensure directory exists (should already exist from AppFolder)
@@ -1726,7 +1727,7 @@ namespace thecalcify.MarketWatch
                 }
                 else
                 {
-                    string json = JsonSerializer.Serialize(SymbolList);
+                    string json = System.Text.Json.JsonSerializer.Serialize(SymbolList);
                     string encryptedJson = CryptoHelper.Encrypt(json, passphrase);
 
                     // Ensure directory exists (should already exist from AppFolder)
@@ -1791,6 +1792,7 @@ namespace thecalcify.MarketWatch
                 return Encoding.UTF8.GetString(output.ToArray());
             }
         }
+
         private bool IsRowDataDifferent(DataGridViewRow gridRow, MarketDataDto dto)
         {
             // Replace YourDtoType with the actual DTO type and compare relevant fields
