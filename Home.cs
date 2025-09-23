@@ -1488,10 +1488,10 @@ namespace thecalcify
                 e.CellStyle.ForeColor = Color.Gray;
         }
 
-        private void OnNetworkAvailabilityChanged(object sender, NetworkAvailabilityEventArgs e)
+        private async void OnNetworkAvailabilityChanged(object sender, NetworkAvailabilityEventArgs e)
         {
             if (e.IsAvailable)
-                _ = AttemptReconnectAsync("Network availability restored.");
+                await SignalREvent();
             else
                 ApplicationLogger.Log("Network unavailable.");
         }
@@ -1501,10 +1501,10 @@ namespace thecalcify
             _ = AttemptReconnectAsync("Network address changed.");
         }
 
-        private void OnPowerModeChanged(object sender, PowerModeChangedEventArgs e)
+        private async void OnPowerModeChanged(object sender, PowerModeChangedEventArgs e)
         {
             if (e.Mode == PowerModes.Resume)
-                _ = AttemptReconnectAsync("System resumed from sleep/hibernate.");
+                await SignalREvent();
         }
 
         #endregion Form Method
@@ -2222,8 +2222,8 @@ namespace thecalcify
                     request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
                     request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-                    // Use async call instead of .Result
-                    HttpResponseMessage response = await client.SendAsync(request).ConfigureAwait(false);
+                    // ✅ Async call
+                    var response = await client.SendAsync(request).ConfigureAwait(false);
 
                     if (!response.IsSuccessStatusCode)
                     {
@@ -2231,49 +2231,89 @@ namespace thecalcify
                         return;
                     }
 
-                    string jsonString = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                    var jsonString = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                     resultdefault = JsonConvert.DeserializeObject<MarketApiResponse>(jsonString);
 
-                    if (resultdefault?.data != null)
+                    if (resultdefault != null && resultdefault.data != null)
                     {
                         SaveInitDataToFile(resultdefault.data);
 
-                        // Filter out instruments not in the valid list
-                        if (!this.IsDisposed && this.IsHandleCreated)
+                        if (this.InvokeRequired)
                         {
-                            this.Invoke((MethodInvoker)delegate
+                            if (!this.IsDisposed && this.IsHandleCreated)
                             {
-                                pastRateTickDTO = resultdefault.data;
-
-                                if (identifiers == null || saveFileName == null)
+                                this.BeginInvoke((MethodInvoker)delegate
                                 {
-                                    identifiers = resultdefault.data
-                                        .Where(x => !string.IsNullOrEmpty(x.i))
-                                        .Select(x => x.i)
-                                        .ToList();
+                                    pastRateTickDTO = resultdefault.data;
 
-                                    SymbolName = resultdefault.data
-                                         .Where(x => !string.IsNullOrEmpty(x.i) && !string.IsNullOrEmpty(x.n))
-                                         .Select(x => (Symbol: x.i, SymbolName: x.n)).ToList();
-
-                                }
-
-                                if (symbolMaster != null && symbolMaster.Count == 0)
-                                {
-                                    symbolMaster = resultdefault.data
+                                    // ✅ Initialize identifiers & SymbolName if needed
+                                    if (identifiers == null || saveFileName == null)
+                                    {
+                                        identifiers = resultdefault.data
                                             .Where(x => !string.IsNullOrEmpty(x.i))
                                             .Select(x => x.i)
                                             .ToList();
-                                }
 
-                                resultdefault.data = resultdefault.data
-                                    .Where(x => identifiers.Contains(x.i))
+                                        SymbolName = resultdefault.data
+                                            .Where(x => !string.IsNullOrEmpty(x.i) && !string.IsNullOrEmpty(x.n))
+                                            .Select(x => (Symbol: x.i, SymbolName: x.n)) // ✅ works in C# 7.3
+                                            .ToList();
+
+                                    }
+
+                                    // ✅ Initialize symbolMaster only once
+                                    if (symbolMaster != null && symbolMaster.Count == 0)
+                                    {
+                                        symbolMaster = resultdefault.data
+                                            .Where(x => !string.IsNullOrEmpty(x.i))
+                                            .Select(x => x.i)
+                                            .ToList();
+                                    }
+
+                                    // ✅ Filter with identifiers
+                                    resultdefault.data = resultdefault.data
+                                        .Where(x => identifiers != null && identifiers.Contains(x.i))
+                                        .ToList();
+
+                                    ApplyBatchUpdates(resultdefault.data);
+                                });
+                            }
+                        }
+                        else
+                        {
+                            pastRateTickDTO = resultdefault.data;
+
+                            // ✅ Initialize identifiers & SymbolName if needed
+                            if (identifiers == null || saveFileName == null)
+                            {
+                                identifiers = resultdefault.data
+                                    .Where(x => !string.IsNullOrEmpty(x.i))
+                                    .Select(x => x.i)
                                     .ToList();
 
-                                ApplyBatchUpdates(resultdefault.data);
-                            });
-                        }
+                                SymbolName = resultdefault.data
+                                    .Where(x => !string.IsNullOrEmpty(x.i) && !string.IsNullOrEmpty(x.n))
+                                    .Select(x => (Symbol: x.i, SymbolName: x.n)) // ✅ works in C# 7.3
+                                    .ToList();
 
+                            }
+
+                            // ✅ Initialize symbolMaster only once
+                            if (symbolMaster != null && symbolMaster.Count == 0)
+                            {
+                                symbolMaster = resultdefault.data
+                                    .Where(x => !string.IsNullOrEmpty(x.i))
+                                    .Select(x => x.i)
+                                    .ToList();
+                            }
+
+                            // ✅ Filter with identifiers
+                            resultdefault.data = resultdefault.data
+                                .Where(x => identifiers != null && identifiers.Contains(x.i))
+                                .ToList();
+
+                            ApplyBatchUpdates(resultdefault.data);
+                        }
                     }
                 }
             }
@@ -2451,443 +2491,6 @@ namespace thecalcify
         }
 
         #endregion SignalR Helper Method
-
-        #region Excel Export
-
-        private void ExportToExcelToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                ExportToExcelToolStripMenuItem.Enabled = false;
-
-                if (Type.GetTypeFromProgID("thecalcify", false) == null)
-                    RegisterRtdDll("thecalcifyRTD.dll");
-
-                SetThrottle();
-                KillProcess();
-
-                string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-                string destExcelPath = Path.Combine(desktopPath, "thecalcify.xlsx");
-
-                if (File.Exists(excelFilePath) && !File.Exists(destExcelPath))
-                {
-                    File.Copy(excelFilePath, destExcelPath);
-                }
-
-                if (!File.Exists(marketInitDataPath))
-                {
-                    MessageBox.Show("initdata.dat not found.");
-                    return;
-                }
-
-                var dict = new Dictionary<string, Dictionary<string, object>>(StringComparer.OrdinalIgnoreCase);
-
-                foreach (var d in resultdefault.data)
-                {
-                    dict[d.i] = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
-                    {
-                        ["Name"] = d.n,
-                        ["Bid"] = d.b,
-                        ["Ask"] = d.a,
-                        ["LTP"] = d.ltp,
-                        ["High"] = d.h,
-                        ["Low"] = d.l,
-                        ["Open"] = d.o,
-                        ["Close"] = d.c,
-                        ["Net Chng"] = d.d,
-                        ["V"] = d.v,
-                        ["ATP"] = d.atp,
-                        ["Bid Size"] = d.bq,
-                        ["Total Bid Size"] = d.tbq,
-                        ["Ask Size"] = d.sq,
-                        ["Total Ask Size"] = d.tsq,
-                        ["Volume"] = d.vt,
-                        ["Open Interest"] = d.oi,
-                        ["Last Size"] = d.ltq,
-                        ["Time"] = Common.TimeStampConvert(d.t)
-                    };
-                }
-
-                List<ExcelFormulaCell> formulaCells = BuildFormulaCells(dict);
-
-                // ✅ Excel attach/create
-                Microsoft.Office.Interop.Excel.Application excelApp = null;
-                try
-                {
-                    excelApp = (Microsoft.Office.Interop.Excel.Application)Marshal.GetActiveObject("Excel.Application");
-                }
-                catch
-                {
-                    excelApp = new Microsoft.Office.Interop.Excel.Application();
-                    excelApp.Visible = true;
-                }
-
-                // ✅ Workbook open or attach
-                Microsoft.Office.Interop.Excel.Workbook wb = null;
-                foreach (Microsoft.Office.Interop.Excel.Workbook openWb in excelApp.Workbooks)
-                {
-                    if (string.Equals(openWb.FullName, destExcelPath, StringComparison.OrdinalIgnoreCase))
-                    {
-                        wb = openWb;
-                        break;
-                    }
-                }
-
-                if (wb == null)
-                {
-                    if (!File.Exists(destExcelPath))
-                    {
-                        if (File.Exists(excelFilePath))
-                            File.Copy(excelFilePath, destExcelPath);
-                        else
-                        {
-                            MessageBox.Show("thecalcify Excel file not found.");
-                            return;
-                        }
-                    }
-
-                    wb = excelApp.Workbooks.Open(destExcelPath);
-                }
-
-                // ✅ Worksheet select/create
-                Microsoft.Office.Interop.Excel.Worksheet ws;
-                if (string.IsNullOrEmpty(saveFileName) || saveFileName == "Default")
-                {
-                    try
-                    {
-                        ws = wb.Sheets["Sheet1"];
-                        ws.Cells.Clear();
-                    }
-                    catch
-                    {
-                        ws = wb.Sheets.Add();
-                        ws.Name = "Sheet1";
-                    }
-                }
-                else
-                {
-                    try
-                    {
-                        ws = wb.Sheets[saveFileName];
-                        ws.Cells.Clear();
-                    }
-                    catch
-                    {
-                        ws = wb.Sheets.Add();
-                        ws.Name = saveFileName;
-                    }
-                }
-
-                // ✅ Make bulk 2D array
-                int maxRow = formulaCells.Max(c => c.Row);
-                int maxCol = formulaCells.Max(c => c.Column);
-                object[,] bulkData = new object[maxRow, maxCol];
-
-                foreach (var cell in formulaCells)
-                {
-                    if (cell.Row == 1 || cell.Column == 1)
-                    {
-                        // Plain text
-                        bulkData[cell.Row - 1, cell.Column - 1] = cell.Formula;
-                    }
-                    else
-                    {
-                        // Ensure formula has "="
-                        string f = cell.Formula.Trim();
-                        if (!f.StartsWith("="))
-                            f = "=" + f;
-
-                        bulkData[cell.Row - 1, cell.Column - 1] = f;
-                    }
-                }
-
-                // ✅ Dump in one shot to Excel Range
-                Microsoft.Office.Interop.Excel.Range startCell = ws.Cells[1, 1];
-                Microsoft.Office.Interop.Excel.Range endCell = ws.Cells[maxRow, maxCol];
-                Microsoft.Office.Interop.Excel.Range writeRange = ws.Range[startCell, endCell];
-                writeRange.Value2 = bulkData;
-
-                ws.Activate();
-                excelApp.Visible = true;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("An error occurred while exporting. Please retry.");
-                ApplicationLogger.LogException(ex);
-            }
-            finally
-            {
-                ExportToExcelToolStripMenuItem.Enabled = true;
-            }
-        }
-
-        public void RegisterRtdDll(string dllName, params string[] searchPaths)
-        {
-            try
-            {
-                // 🔹 Locate DLL
-                string dllPath = searchPaths
-                    .SelectMany(p => new[] { p, Path.Combine(p, dllName) })
-                    .Concat(new[]
-                    {
-                        Path.Combine(AppDomain.CurrentDomain.BaseDirectory, dllName),
-                        Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\bin\Debug", dllName),
-                        Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\bin\Release", dllName)
-                    })
-                    .Select(Path.GetFullPath)
-                    .FirstOrDefault(File.Exists);
-
-                if (dllPath == null)
-                {
-                    ApplicationLogger.Log($"RTD DLL '{dllName}' not found.");
-                    return;
-                }
-
-                // 🔹 Pick RegAsm (Excel 32-bit → Framework, Excel 64-bit → Framework64)
-                bool excel32 = true;
-                try
-                {
-                    var excelApp = new Microsoft.Office.Interop.Excel.Application();
-                    excel32 = !excelApp.OperatingSystem.Contains("64");
-                    excelApp.Quit();
-                }
-                catch { excel32 = true; }
-
-
-
-                string officeVersion = GetOfficeVersion(); // e.g., "16.0", "14.0"
-                int versionMajor = 16; // default to 16
-
-                if (int.TryParse(officeVersion.Split('.')[0], out int parsed))
-                {
-                    versionMajor = parsed;
-                }
-
-                // Decide RegAsm framework version based on Office version
-                string regasmFrameworkVersion = versionMajor >= 15 ? "v4.0.30319" : "v2.0.50727";
-
-                // Determine RegAsm path based on Excel bitness and version compatibility
-                string regasm = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.Windows),
-                    excel32 ? $@"Microsoft.NET\Framework\{regasmFrameworkVersion}\RegAsm.exe"
-                            : $@"Microsoft.NET\Framework64\{regasmFrameworkVersion}\RegAsm.exe");
-
-
-
-                // 🔹 Run unregister + register
-                foreach (var args in new[] { $"/unregister \"{dllPath}\"", $"\"{dllPath}\" /codebase /tlb" })
-                {
-                    var psi = new ProcessStartInfo(regasm, args)
-                    {
-                        UseShellExecute = false,
-                        CreateNoWindow = true,
-                        RedirectStandardOutput = true,
-                        RedirectStandardError = true
-                    };
-                    var proc = Process.Start(psi);
-                    string output = proc.StandardOutput.ReadToEnd();
-                    string error = proc.StandardError.ReadToEnd();
-                    proc.WaitForExit();
-                    if (proc.ExitCode != 0)
-                        ApplicationLogger.Log($"RegAsm failed. Args: {args}\nOutput: {output}\nError: {error}");
-                }
-
-                ApplicationLogger.Log($"RTD DLL registered successfully: {dllPath}");
-            }
-            catch (Exception ex)
-            {
-                ApplicationLogger.Log("RegisterRtdDll Error: " + ex.Message);
-            }
-        }
-
-        public static void SetThrottle()
-        {
-            try
-            {
-                string officeVersion = GetOfficeVersion();
-                string excelOptionsPath = $@"Software\Microsoft\Office\{officeVersion}\Excel\Options";
-                string graphicsPath = $@"Software\Microsoft\Office\{officeVersion}\Common\Graphics";
-
-                // --- Excel Options (RTD + EnableAnimations) ---
-                using (RegistryKey key = Registry.CurrentUser.OpenSubKey(excelOptionsPath, writable: true))
-                {
-                    if (key != null)
-                    {
-                        key.SetValue("RTDThrottleInterval", 200, RegistryValueKind.DWord);
-                        key.SetValue("EnableAnimations", 0, RegistryValueKind.DWord);
-                        Console.WriteLine("RTDThrottleInterval & EnableAnimations updated.");
-                    }
-                    else
-                    {
-                        using (RegistryKey newKey = Registry.CurrentUser.CreateSubKey(excelOptionsPath))
-                        {
-                            newKey.SetValue("RTDThrottleInterval", 200, RegistryValueKind.DWord);
-                            newKey.SetValue("EnableAnimations", 0, RegistryValueKind.DWord);
-                            Console.WriteLine("Excel Options key created & values set.");
-                        }
-                    }
-                }
-
-                // --- Common Graphics (DisableAnimations for Excel 2013+) ---
-                using (RegistryKey key = Registry.CurrentUser.OpenSubKey(graphicsPath, writable: true))
-                {
-                    if (key != null)
-                    {
-                        key.SetValue("DisableAnimations", 1, RegistryValueKind.DWord);
-                        Console.WriteLine("DisableAnimations updated.");
-                    }
-                    else
-                    {
-                        using (RegistryKey newKey = Registry.CurrentUser.CreateSubKey(graphicsPath))
-                        {
-                            newKey.SetValue("DisableAnimations", 1, RegistryValueKind.DWord);
-                            Console.WriteLine("Graphics key created & DisableAnimations set.");
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                ApplicationLogger.LogException(ex);
-                Console.WriteLine("Error setting registry values: " + ex.Message);
-            }
-        }
-
-        public static string GetOfficeVersion()
-        {
-            string defaultComVersion = "16.0"; // Default fallback
-            string detectedComVersion = "";
-            string[] installedVersions = new string[0];
-
-            try
-            {
-                // 🔹 Detect the default registered COM version of Excel
-                using (RegistryKey key = Registry.ClassesRoot.OpenSubKey(@"Excel.Application\CurVer"))
-                {
-                    string curVer = key?.GetValue(null)?.ToString(); // e.g. "Excel.Application.16"
-                    if (!string.IsNullOrEmpty(curVer))
-                    {
-                        detectedComVersion = curVer.Split('.').Last(); // Get "16"
-                        defaultComVersion = detectedComVersion + ".0";
-                    }
-                }
-
-                // 🔹 Detect all installed Excel versions (from registry)
-                string[] possibleVersions = { "16.0", "15.0", "14.0", "12.0", "11.0" };
-                string[] registryBases = {
-                @"SOFTWARE\Microsoft\Office\",
-                @"SOFTWARE\WOW6432Node\Microsoft\Office\"
-            };
-
-                var foundVersions = possibleVersions
-                    .SelectMany(version =>
-                        registryBases.Select(basePath =>
-                            Registry.LocalMachine.OpenSubKey($"{basePath}{version}\\Excel") != null ? version : null
-                        )
-                    )
-                    .Where(v => v != null)
-                    .Distinct()
-                    .ToArray();
-
-                installedVersions = foundVersions;
-            }
-            catch (Exception ex)
-            {
-                ApplicationLogger.Log("Failed to detect Excel version(s): " + ex.Message);
-            }
-
-            // 🧾 Log both
-            string installedList = installedVersions.Length > 0
-                ? string.Join(", ", installedVersions)
-                : "None Found";
-
-            ApplicationLogger.Log($"Default COM Excel Version: {defaultComVersion}");
-            ApplicationLogger.Log($"Installed Excel Versions Detected: {installedList}");
-
-            // 🔁 Optionally return just the default (for RegAsm decisions)
-            return defaultComVersion;
-        }
-
-        private List<ExcelFormulaCell> BuildFormulaCells(Dictionary<string, Dictionary<string, object>> dict)
-        {
-            var formulaCells = new List<ExcelFormulaCell>();
-
-            // Header row
-            formulaCells.Add(new ExcelFormulaCell
-            {
-                Row = 1,
-                Column = 1,
-                Formula = "Name"
-            });
-
-            int startRow = 2;
-            int startCol = 1;
-
-            // Collect all unique fields (excluding "V")
-            var allFields = dict.Values
-                .SelectMany(inner => inner.Keys)
-                .Distinct()
-                .Where(field => field != "V")
-                .ToList();
-
-            // Add field headers
-            for (int i = 0; i < allFields.Count; i++)
-            {
-                if (allFields[i] == "Name")
-                    continue;
-
-                formulaCells.Add(new ExcelFormulaCell
-                {
-                    Row = 1,
-                    Column = startCol + i,
-                    Formula = allFields[i]
-                });
-            }
-
-            int currentRow = startRow;
-
-            foreach (var outer in dict)
-            {
-                string symbol = outer.Key;
-                var valueDict = outer.Value;
-
-                // Safely get Name from inner dictionary
-                string name = valueDict.ContainsKey("Name") ? valueDict["Name"]?.ToString() ?? symbol : symbol;
-
-                // Add Name (from valueDict) to column A
-                formulaCells.Add(new ExcelFormulaCell
-                {
-                    Row = currentRow,
-                    Column = 1,
-                    Formula = name
-                });
-
-                // Add RTD formulas
-                for (int i = 0; i < allFields.Count; i++)
-                {
-                    string field = allFields[i];
-                    int col = startCol + i;
-
-                    if (field == "Name")
-                        continue;
-
-                    string formula = $"=RTD(\"thecalcify\", ,\"{symbol}\",\"{field}\")";
-
-                    formulaCells.Add(new ExcelFormulaCell
-                    {
-                        Row = currentRow,
-                        Column = col,
-                        Formula = formula
-                    });
-                }
-
-                currentRow++;
-            }
-
-            return formulaCells;
-        }
-
-        #endregion Excel Export
 
         #region Other Methods
 
@@ -3332,5 +2935,442 @@ namespace thecalcify
             }
         }
         #endregion Other Methods
+
+        #region Excel Export
+
+        private void ExportToExcelToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                ExportToExcelToolStripMenuItem.Enabled = false;
+
+                if (Type.GetTypeFromProgID("thecalcify", false) == null)
+                    RegisterRtdDll("thecalcifyRTD.dll");
+
+                SetThrottle();
+                KillProcess();
+
+                string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+                string destExcelPath = Path.Combine(desktopPath, "thecalcify.xlsx");
+
+                if (File.Exists(excelFilePath) && !File.Exists(destExcelPath))
+                {
+                    File.Copy(excelFilePath, destExcelPath);
+                }
+
+                if (!File.Exists(marketInitDataPath))
+                {
+                    MessageBox.Show("initdata.dat not found.");
+                    return;
+                }
+
+                var dict = new Dictionary<string, Dictionary<string, object>>(StringComparer.OrdinalIgnoreCase);
+
+                foreach (var d in resultdefault.data)
+                {
+                    dict[d.i] = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        ["Name"] = d.n,
+                        ["Bid"] = d.b,
+                        ["Ask"] = d.a,
+                        ["LTP"] = d.ltp,
+                        ["High"] = d.h,
+                        ["Low"] = d.l,
+                        ["Open"] = d.o,
+                        ["Close"] = d.c,
+                        ["Net Chng"] = d.d,
+                        ["V"] = d.v,
+                        ["ATP"] = d.atp,
+                        ["Bid Size"] = d.bq,
+                        ["Total Bid Size"] = d.tbq,
+                        ["Ask Size"] = d.sq,
+                        ["Total Ask Size"] = d.tsq,
+                        ["Volume"] = d.vt,
+                        ["Open Interest"] = d.oi,
+                        ["Last Size"] = d.ltq,
+                        ["Time"] = Common.TimeStampConvert(d.t)
+                    };
+                }
+
+                List<ExcelFormulaCell> formulaCells = BuildFormulaCells(dict);
+
+                // ✅ Excel attach/create
+                Microsoft.Office.Interop.Excel.Application excelApp = null;
+                try
+                {
+                    excelApp = (Microsoft.Office.Interop.Excel.Application)Marshal.GetActiveObject("Excel.Application");
+                }
+                catch
+                {
+                    excelApp = new Microsoft.Office.Interop.Excel.Application();
+                    excelApp.Visible = true;
+                }
+
+                // ✅ Workbook open or attach
+                Microsoft.Office.Interop.Excel.Workbook wb = null;
+                foreach (Microsoft.Office.Interop.Excel.Workbook openWb in excelApp.Workbooks)
+                {
+                    if (string.Equals(openWb.FullName, destExcelPath, StringComparison.OrdinalIgnoreCase))
+                    {
+                        wb = openWb;
+                        break;
+                    }
+                }
+
+                if (wb == null)
+                {
+                    if (!File.Exists(destExcelPath))
+                    {
+                        if (File.Exists(excelFilePath))
+                            File.Copy(excelFilePath, destExcelPath);
+                        else
+                        {
+                            MessageBox.Show("thecalcify Excel file not found.");
+                            return;
+                        }
+                    }
+
+                    wb = excelApp.Workbooks.Open(destExcelPath);
+                }
+
+                // ✅ Worksheet select/create
+                Microsoft.Office.Interop.Excel.Worksheet ws;
+                if (string.IsNullOrEmpty(saveFileName) || saveFileName == "Default")
+                {
+                    try
+                    {
+                        ws = wb.Sheets["Sheet1"];
+                        ws.Cells.Clear();
+                    }
+                    catch
+                    {
+                        ws = wb.Sheets.Add();
+                        ws.Name = "Sheet1";
+                    }
+                }
+                else
+                {
+                    try
+                    {
+                        ws = wb.Sheets[saveFileName];
+                        ws.Cells.Clear();
+                    }
+                    catch
+                    {
+                        ws = wb.Sheets.Add();
+                        ws.Name = saveFileName;
+                    }
+                }
+
+                // ✅ Make bulk 2D array
+                int maxRow = formulaCells.Max(c => c.Row);
+                int maxCol = formulaCells.Max(c => c.Column);
+                object[,] bulkData = new object[maxRow, maxCol];
+
+                foreach (var cell in formulaCells)
+                {
+                    if (cell.Row == 1 || cell.Column == 1)
+                    {
+                        // Plain text
+                        bulkData[cell.Row - 1, cell.Column - 1] = cell.Formula;
+                    }
+                    else
+                    {
+                        // Ensure formula has "="
+                        string f = cell.Formula.Trim();
+                        if (!f.StartsWith("="))
+                            f = "=" + f;
+
+                        bulkData[cell.Row - 1, cell.Column - 1] = f;
+                    }
+                }
+
+                // ✅ Dump in one shot to Excel Range
+                Microsoft.Office.Interop.Excel.Range startCell = ws.Cells[1, 1];
+                Microsoft.Office.Interop.Excel.Range endCell = ws.Cells[maxRow, maxCol];
+                Microsoft.Office.Interop.Excel.Range writeRange = ws.Range[startCell, endCell];
+                writeRange.Value2 = bulkData;
+
+                ws.Activate();
+                excelApp.Visible = true;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("An error occurred while exporting. Please retry.");
+                ApplicationLogger.LogException(ex);
+            }
+            finally
+            {
+                ExportToExcelToolStripMenuItem.Enabled = true;
+            }
+        }
+
+        public void RegisterRtdDll(string dllName, params string[] searchPaths)
+        {
+            try
+            {
+                // 🔹 Locate DLL
+                string dllPath = searchPaths
+                    .SelectMany(p => new[] { p, Path.Combine(p, dllName) })
+                    .Concat(new[]
+                    {
+                        Path.Combine(AppDomain.CurrentDomain.BaseDirectory, dllName),
+                        Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\bin\Debug", dllName),
+                        Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\bin\Release", dllName)
+                    })
+                    .Select(Path.GetFullPath)
+                    .FirstOrDefault(File.Exists);
+
+                if (dllPath == null)
+                {
+                    ApplicationLogger.Log($"RTD DLL '{dllName}' not found.");
+                    return;
+                }
+
+                // 🔹 Pick RegAsm (Excel 32-bit → Framework, Excel 64-bit → Framework64)
+                bool excel32 = true;
+                try
+                {
+                    var excelApp = new Microsoft.Office.Interop.Excel.Application();
+                    excel32 = !excelApp.OperatingSystem.Contains("64");
+                    excelApp.Quit();
+                }
+                catch { excel32 = true; }
+
+
+
+                string officeVersion = GetOfficeVersion(); // e.g., "16.0", "14.0"
+                int versionMajor = 16; // default to 16
+
+                if (int.TryParse(officeVersion.Split('.')[0], out int parsed))
+                {
+                    versionMajor = parsed;
+                }
+
+                // Decide RegAsm framework version based on Office version
+                string regasmFrameworkVersion = versionMajor >= 15 ? "v4.0.30319" : "v2.0.50727";
+
+                // Determine RegAsm path based on Excel bitness and version compatibility
+                string regasm = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.Windows),
+                    excel32 ? $@"Microsoft.NET\Framework\{regasmFrameworkVersion}\RegAsm.exe"
+                            : $@"Microsoft.NET\Framework64\{regasmFrameworkVersion}\RegAsm.exe");
+
+
+
+                // 🔹 Run unregister + register
+                foreach (var args in new[] { $"/unregister \"{dllPath}\"", $"\"{dllPath}\" /codebase /tlb" })
+                {
+                    var psi = new ProcessStartInfo(regasm, args)
+                    {
+                        UseShellExecute = false,
+                        CreateNoWindow = true,
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true
+                    };
+                    var proc = Process.Start(psi);
+                    string output = proc.StandardOutput.ReadToEnd();
+                    string error = proc.StandardError.ReadToEnd();
+                    proc.WaitForExit();
+                    if (proc.ExitCode != 0)
+                        ApplicationLogger.Log($"RegAsm failed. Args: {args}\nOutput: {output}\nError: {error}");
+                }
+
+                ApplicationLogger.Log($"RTD DLL registered successfully: {dllPath}");
+            }
+            catch (Exception ex)
+            {
+                ApplicationLogger.Log("RegisterRtdDll Error: " + ex.Message);
+            }
+        }
+
+        public static void SetThrottle()
+        {
+            try
+            {
+                string officeVersion = GetOfficeVersion();
+                string excelOptionsPath = $@"Software\Microsoft\Office\{officeVersion}\Excel\Options";
+                string graphicsPath = $@"Software\Microsoft\Office\{officeVersion}\Common\Graphics";
+
+                // --- Excel Options (RTD + EnableAnimations) ---
+                using (RegistryKey key = Registry.CurrentUser.OpenSubKey(excelOptionsPath, writable: true))
+                {
+                    if (key != null)
+                    {
+                        key.SetValue("RTDThrottleInterval", 200, RegistryValueKind.DWord);
+                        key.SetValue("EnableAnimations", 0, RegistryValueKind.DWord);
+                        Console.WriteLine("RTDThrottleInterval & EnableAnimations updated.");
+                    }
+                    else
+                    {
+                        using (RegistryKey newKey = Registry.CurrentUser.CreateSubKey(excelOptionsPath))
+                        {
+                            newKey.SetValue("RTDThrottleInterval", 200, RegistryValueKind.DWord);
+                            newKey.SetValue("EnableAnimations", 0, RegistryValueKind.DWord);
+                            Console.WriteLine("Excel Options key created & values set.");
+                        }
+                    }
+                }
+
+                // --- Common Graphics (DisableAnimations for Excel 2013+) ---
+                using (RegistryKey key = Registry.CurrentUser.OpenSubKey(graphicsPath, writable: true))
+                {
+                    if (key != null)
+                    {
+                        key.SetValue("DisableAnimations", 1, RegistryValueKind.DWord);
+                        Console.WriteLine("DisableAnimations updated.");
+                    }
+                    else
+                    {
+                        using (RegistryKey newKey = Registry.CurrentUser.CreateSubKey(graphicsPath))
+                        {
+                            newKey.SetValue("DisableAnimations", 1, RegistryValueKind.DWord);
+                            Console.WriteLine("Graphics key created & DisableAnimations set.");
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ApplicationLogger.LogException(ex);
+                Console.WriteLine("Error setting registry values: " + ex.Message);
+            }
+        }
+
+        public static string GetOfficeVersion()
+        {
+            string defaultComVersion = "16.0"; // Default fallback
+            string detectedComVersion = "";
+            string[] installedVersions = new string[0];
+
+            try
+            {
+                // 🔹 Detect the default registered COM version of Excel
+                using (RegistryKey key = Registry.ClassesRoot.OpenSubKey(@"Excel.Application\CurVer"))
+                {
+                    string curVer = key?.GetValue(null)?.ToString(); // e.g. "Excel.Application.16"
+                    if (!string.IsNullOrEmpty(curVer))
+                    {
+                        detectedComVersion = curVer.Split('.').Last(); // Get "16"
+                        defaultComVersion = detectedComVersion + ".0";
+                    }
+                }
+
+                // 🔹 Detect all installed Excel versions (from registry)
+                string[] possibleVersions = { "16.0", "15.0", "14.0", "12.0", "11.0" };
+                string[] registryBases = {
+                @"SOFTWARE\Microsoft\Office\",
+                @"SOFTWARE\WOW6432Node\Microsoft\Office\"
+            };
+
+                var foundVersions = possibleVersions
+                    .SelectMany(version =>
+                        registryBases.Select(basePath =>
+                            Registry.LocalMachine.OpenSubKey($"{basePath}{version}\\Excel") != null ? version : null
+                        )
+                    )
+                    .Where(v => v != null)
+                    .Distinct()
+                    .ToArray();
+
+                installedVersions = foundVersions;
+            }
+            catch (Exception ex)
+            {
+                ApplicationLogger.Log("Failed to detect Excel version(s): " + ex.Message);
+            }
+
+            // 🧾 Log both
+            string installedList = installedVersions.Length > 0
+                ? string.Join(", ", installedVersions)
+                : "None Found";
+
+            ApplicationLogger.Log($"Default COM Excel Version: {defaultComVersion}");
+            ApplicationLogger.Log($"Installed Excel Versions Detected: {installedList}");
+
+            // 🔁 Optionally return just the default (for RegAsm decisions)
+            return defaultComVersion;
+        }
+
+        private List<ExcelFormulaCell> BuildFormulaCells(Dictionary<string, Dictionary<string, object>> dict)
+        {
+            var formulaCells = new List<ExcelFormulaCell>();
+
+            // Header row
+            formulaCells.Add(new ExcelFormulaCell
+            {
+                Row = 1,
+                Column = 1,
+                Formula = "Name"
+            });
+
+            int startRow = 2;
+            int startCol = 1;
+
+            // Collect all unique fields (excluding "V")
+            var allFields = dict.Values
+                .SelectMany(inner => inner.Keys)
+                .Distinct()
+                .Where(field => field != "V")
+                .ToList();
+
+            // Add field headers
+            for (int i = 0; i < allFields.Count; i++)
+            {
+                if (allFields[i] == "Name")
+                    continue;
+
+                formulaCells.Add(new ExcelFormulaCell
+                {
+                    Row = 1,
+                    Column = startCol + i,
+                    Formula = allFields[i]
+                });
+            }
+
+            int currentRow = startRow;
+
+            foreach (var outer in dict)
+            {
+                string symbol = outer.Key;
+                var valueDict = outer.Value;
+
+                // Safely get Name from inner dictionary
+                string name = valueDict.ContainsKey("Name") ? valueDict["Name"]?.ToString() ?? symbol : symbol;
+
+                // Add Name (from valueDict) to column A
+                formulaCells.Add(new ExcelFormulaCell
+                {
+                    Row = currentRow,
+                    Column = 1,
+                    Formula = name
+                });
+
+                // Add RTD formulas
+                for (int i = 0; i < allFields.Count; i++)
+                {
+                    string field = allFields[i];
+                    int col = startCol + i;
+
+                    if (field == "Name")
+                        continue;
+
+                    string formula = $"=RTD(\"thecalcify\", ,\"{symbol}\",\"{field}\")";
+
+                    formulaCells.Add(new ExcelFormulaCell
+                    {
+                        Row = currentRow,
+                        Column = col,
+                        Formula = formula
+                    });
+                }
+
+                currentRow++;
+            }
+
+            return formulaCells;
+        }
+
+        #endregion Excel Export
     }
 }
