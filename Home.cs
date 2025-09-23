@@ -187,20 +187,6 @@ namespace thecalcify
 
         private async void Home_Load(object sender, EventArgs e)
         {
-            commonClass = new Common();
-
-            // --- UI SETUP (non-data related) ---
-            this.AutoScaleMode = AutoScaleMode.Dpi;
-
-            this.KeyPreview = true;
-            this.DoubleBuffered = true;
-            SetStyle(ControlStyles.OptimizedDoubleBuffer |
-                     ControlStyles.AllPaintingInWmPaint |
-                     ControlStyles.UserPaint, true);
-
-            // --- PARALLEL INITIALIZATION ---
-            var initializationTasks = new List<Task>();
-
             // Get login info (if not already available)
             Login login = Login.CurrentInstance;
             token = login?.token ?? string.Empty;
@@ -222,6 +208,22 @@ namespace thecalcify
             {
                 licenceExpire.Text = licenceExpire.Text + licenceDate;
             }
+
+            commonClass = new Common();
+
+            // --- UI SETUP (non-data related) ---
+            this.AutoScaleMode = AutoScaleMode.Dpi;
+
+            this.KeyPreview = true;
+            this.DoubleBuffered = true;
+            SetStyle(ControlStyles.OptimizedDoubleBuffer |
+                     ControlStyles.AllPaintingInWmPaint |
+                     ControlStyles.UserPaint, true);
+
+            // --- PARALLEL INITIALIZATION ---
+            var initializationTasks = new List<Task>();
+
+            
             initializationTasks.Add(Task.Run(() =>
             {
                 // --- COMMON CLASS ---
@@ -251,11 +253,14 @@ namespace thecalcify
 
             CurrentInstance = this;
 
-            // --- INITIALIZE DATA STRUCTURES ---
-            BeginInvoke((MethodInvoker)(() =>
+            if (!this.IsDisposed && this.IsHandleCreated)
             {
-                InitializeDataGridView();
-            }));
+                // --- INITIALIZE DATA STRUCTURES ---
+                BeginInvoke((MethodInvoker)(() =>
+                {
+                    InitializeDataGridView();
+                })); 
+            }
             await LoadInitialMarketDataAsync();
             SignalRTimer();
             await SignalREvent();
@@ -303,18 +308,21 @@ namespace thecalcify
 
                     try
                     {
-                        if (this.InvokeRequired)
+                        if (!this.IsDisposed && this.IsHandleCreated)
                         {
-                            this.Invoke((MethodInvoker)(() =>
+                            if (this.InvokeRequired)
+                            {
+                                this.Invoke((MethodInvoker)(() =>
+                                {
+                                    if (!this.IsDisposed)
+                                        UpdateLicenceLabel(licenceRemainingDays);
+                                }));
+                            }
+                            else
                             {
                                 if (!this.IsDisposed)
                                     UpdateLicenceLabel(licenceRemainingDays);
-                            }));
-                        }
-                        else
-                        {
-                            if (!this.IsDisposed)
-                                UpdateLicenceLabel(licenceRemainingDays);
+                            } 
                         }
                     }
                     catch (ObjectDisposedException)
@@ -332,19 +340,11 @@ namespace thecalcify
             }
         }
 
-        private void UpdateLicenceLabel(int licenceRemainingDays)
+        private async Task UpdateLicenceLabel(int licenceRemainingDays)
         {
             if (licenceRemainingDays < 0)
             {
-                //Console.WriteLine("❌ Licence expired. Application will now exit.");
-                isRunning = false;
-                Login login = new Login();
-                login.Show();
-
-                //this.Close();
-                this.Hide();
-                this.Dispose();
-                return;
+                await DisconnectESCToolStripMenuItem_ClickAsync();
             }
             else if (licenceRemainingDays <= 7)
             {
@@ -358,6 +358,33 @@ namespace thecalcify
                 licenceExpire.ForeColor = Color.Green;
             }
         }
+
+        private async Task DisconnectESCToolStripMenuItem_ClickAsync()
+        {
+            try
+            {
+                // 1️⃣ Stop background processes
+                await StopBackgroundTasks(); // Make sure this method exists
+
+                // 2️⃣ Unsubscribe event handlers
+                UnsubscribeAllEvents(); // Optional
+
+                // 3️⃣ Show Login Form
+                Login loginForm = new Login();
+                loginForm.Show();
+
+                // 4️⃣ Close current form
+                this.Close(); // Or this.Hide() if you want to reopen later
+
+                // 5️⃣ Kill background processes (optional)
+                KillProcess(); // Use only if safe
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error during disconnect: " + ex.Message);
+            }
+        }
+
 
         public void thecalcifyGrid()
         {
@@ -824,6 +851,7 @@ namespace thecalcify
             }
 
         }
+
         private void FullScreenF11ToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (!isFullScreen)
@@ -1397,10 +1425,13 @@ namespace thecalcify
                     selectedSymbols = currentlyCheckedSymbols;
                     editableMarketWatchGrid.SaveSymbols(selectedSymbols);
                     identifiers = selectedSymbols;
-                    BeginInvoke((MethodInvoker)(() =>
+                    if (!this.IsDisposed && this.IsHandleCreated)
                     {
-                        InitializeDataGridView();
-                    }));
+                        BeginInvoke((MethodInvoker)(() =>
+                                    {
+                                        InitializeDataGridView();
+                                    })); 
+                    }
                     await LoadInitialMarketDataAsync();
                     await SignalREvent();
 
@@ -1621,24 +1652,27 @@ namespace thecalcify
 
             try
             {
-                if (defaultGrid.InvokeRequired)
+                if (!this.IsDisposed && this.IsHandleCreated)
                 {
-                    defaultGrid.BeginInvoke((MethodInvoker)(() =>
+                    if (defaultGrid.InvokeRequired)
+                    {
+                        defaultGrid.BeginInvoke((MethodInvoker)(() =>
+                        {
+                            lock (_tableLock)
+                            {
+                                CleanupEmptyRows();
+                                AddMissingRows();
+                            }
+                        }));
+                    }
+                    else
                     {
                         lock (_tableLock)
                         {
                             CleanupEmptyRows();
                             AddMissingRows();
                         }
-                    }));
-                }
-                else
-                {
-                    lock (_tableLock)
-                    {
-                        CleanupEmptyRows();
-                        AddMissingRows();
-                    }
+                    } 
                 }
 
                 var json = DecompressGzip(Convert.FromBase64String(base64));
@@ -1798,12 +1832,15 @@ namespace thecalcify
 
             if (updates != null)
             {
-                if (defaultGrid.InvokeRequired)
+                if (!this.IsDisposed && this.IsHandleCreated)
                 {
-                    defaultGrid.BeginInvoke((MethodInvoker)(() => ApplyBatchUpdates(updates)));
+                    if (defaultGrid.InvokeRequired)
+                    {
+                        defaultGrid.BeginInvoke((MethodInvoker)(() => ApplyBatchUpdates(updates)));
+                    }
+                    else
+                        ApplyBatchUpdates(updates); 
                 }
-                else
-                    ApplyBatchUpdates(updates);
             }
         }
 
@@ -2015,23 +2052,7 @@ namespace thecalcify
         {
             try
             {
-                // 1️⃣ Stop background processes
-                await StopBackgroundTasks(); // You define this method
-
-                // 2️⃣ Unsubscribe event handlers
-                UnsubscribeAllEvents(); // Optional, but recommended if you manually subscribed
-
-                // 3️⃣ Show Login Form
-                Login loginForm = new Login();
-                loginForm.Show();
-
-                // 4️⃣ Dispose current form
-                this.Hide();      // optional: avoid flicker before dispose
-                this.Dispose();   // frees unmanaged resources
-                this.Close();   // frees unmanaged resources
-
-                // 5️⃣ Kill extra processes if needed (use with caution)
-                KillProcess();    // Only if you're absolutely sure it's safe to kill processes
+                await DisconnectESCToolStripMenuItem_ClickAsync();
             }
             catch (Exception ex)
             {
@@ -2140,32 +2161,34 @@ namespace thecalcify
                         SaveInitDataToFile(resultdefault.data);
 
                         // Filter out instruments not in the valid list
-                        this.Invoke((MethodInvoker)delegate
+                        if (!this.IsDisposed && this.IsHandleCreated)
                         {
-                            pastRateTickDTO = resultdefault.data;
-
-                            if (identifiers == null || saveFileName == null)
+                            this.Invoke((MethodInvoker)delegate
                             {
-                                // Extract all non-null, non-empty "i" values into identifiers list
-                                identifiers = resultdefault.data
-                                    .Where(x => !string.IsNullOrEmpty(x.i))
-                                    .Select(x => x.i)
+                                pastRateTickDTO = resultdefault.data;
+
+                                if (identifiers == null || saveFileName == null)
+                                {
+                                    identifiers = resultdefault.data
+                                        .Where(x => !string.IsNullOrEmpty(x.i))
+                                        .Select(x => x.i)
+                                        .ToList();
+
+                                    SymbolName = resultdefault.data
+                                         .Where(x => !string.IsNullOrEmpty(x.i) && !string.IsNullOrEmpty(x.n))
+                                         .Select(x => (Symbol: x.i, SymbolName: x.n)).ToList();
+
+                                    symbolMaster = identifiers;
+                                }
+
+                                resultdefault.data = resultdefault.data
+                                    .Where(x => identifiers.Contains(x.i))
                                     .ToList();
 
-                                SymbolName = resultdefault.data
-                                     .Where(x => !string.IsNullOrEmpty(x.i) && !string.IsNullOrEmpty(x.n))
-                                     .Select(x => (Symbol: x.i, SymbolName: x.n)).ToList();
+                                ApplyBatchUpdates(resultdefault.data);
+                            });
+                        }
 
-                                symbolMaster = identifiers;
-                            }
-
-                            // ✅ Filter resultdefault.data to keep only symbols in identifiers
-                            resultdefault.data = resultdefault.data
-                                .Where(x => identifiers.Contains(x.i))
-                                .ToList();
-
-                            ApplyBatchUpdates(resultdefault.data);
-                        });
                     }
                 }
             }

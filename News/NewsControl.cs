@@ -77,7 +77,7 @@ namespace thecalcify.News
                     // Access categories
                     var categories = categoriesResponse?.Data?.FilterOptions?.Categories;
 
-                    if (categories != null)
+                    if (categories != null && !this.IsDisposed && this.IsHandleCreated)
                     {
                         // **Invoke to UI thread**
                         if (cmbCategory.InvokeRequired)

@@ -153,10 +153,22 @@ namespace thecalcify
 
                                     try
                                     {
+
                                         if (!string.IsNullOrEmpty(expireTimeStr) &&
-                                                                        DateTime.TryParse(expireTimeStr, null, System.Globalization.DateTimeStyles.RoundtripKind, out DateTime expireDate))
+                                                                        DateTime.TryParse(expireTimeStr, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.RoundtripKind, out DateTime expireDate))
                                         {
                                             licenceDate = expireDate.ToString("dd/MM/yyyy");
+                                            DateTime txtlicenceDate = Common.ParseToDate(licenceDate);
+                                            DateTime currentDate = DateTime.Now.Date;
+                                            TimeSpan diff = txtlicenceDate - currentDate;
+                                            int RemainingDays = diff.Days;
+                                            if (RemainingDays < 0)
+                                            {
+                                                MessageBox.Show("Expired Subscription. Admin assistance required.", "Subscription Expired", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                                                loginbutton.Enabled = true;
+                                                return;
+                                            }
+
                                         }
                                         else
                                         {
