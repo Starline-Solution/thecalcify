@@ -194,29 +194,22 @@ namespace thecalcify
         {
             try
             {
-                // Get login info (if not already available)
-                Login login = Login.CurrentInstance;
+                // --- LOGIN INFO ---
+                var login = Login.CurrentInstance;
                 token = login?.token ?? string.Empty;
                 licenceDate = login?.licenceDate ?? string.Empty;
                 username = login?.username ?? string.Empty;
                 password = login?.userpassword ?? string.Empty;
 
-                DateTime txtlicenceDate = Common.ParseToDate(licenceDate);
-                DateTime currentDate = DateTime.Now.Date;
-                TimeSpan diff = txtlicenceDate - currentDate;
-                RemainingDays = diff.Days;
+                RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
                 if (RemainingDays <= 7)
                 {
-                    licenceThread = new Thread(new ThreadStart(() => CheckLicenceLoop().GetAwaiter().GetResult()));
-                    licenceThread.IsBackground = true; // Thread will close when app closes
-                    licenceThread.Start();
+                    CheckLicenceLoop(RemainingDays);
                 }
                 else
                 {
-                    licenceExpire.Text = licenceExpire.Text + licenceDate;
+                    licenceExpire.Text += licenceDate;
                 }
-
-                commonClass = new Common();
 
                 // --- UI SETUP (non-data related) ---
                 this.AutoScaleMode = AutoScaleMode.Dpi;
@@ -244,10 +237,11 @@ namespace thecalcify
                         (columnPreferencesDefault ?? new List<string>()) : currentColumns;
                 }));
 
-                // At app startup, spin up Excel hidden, then close it. This warms up the COM server so the real export is fast:
+                // Warm up Excel COM server (faster first export)
                 var app = new Microsoft.Office.Interop.Excel.Application();
                 app.Quit();
 
+                // --- MENU SETUP ---
                 if (LoginInfo.IsRate && LoginInfo.IsNews)
                 {
                     MenuLoad();
@@ -274,22 +268,18 @@ namespace thecalcify
 
                 CurrentInstance = this;
 
-                if (!this.IsDisposed && this.IsHandleCreated)
-                {
-                    // --- INITIALIZE DATA STRUCTURES ---
-                    BeginInvoke((MethodInvoker)(() =>
-                    {
-                        InitializeDataGridView();
-                    }));
-                }
-                await LoadInitialMarketDataAsync();
+                // Initialize Grid on UI thread
+                SafeInvoke(InitializeDataGridView);
+
+                // Start SignalR
                 SignalRTimer();
                 await SignalREvent();
 
+                // --- GLOBAL EVENTS ---
                 NetworkChange.NetworkAvailabilityChanged += OnNetworkAvailabilityChanged;
                 NetworkChange.NetworkAddressChanged += OnNetworkAddressChanged;
                 SystemEvents.PowerModeChanged += OnPowerModeChanged;
-                System.Windows.Forms.Application.ThreadException += Application_ThreadException;
+                Application.ThreadException += Application_ThreadException;
                 AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
 
                 KillProcess();
@@ -300,6 +290,35 @@ namespace thecalcify
             }
         }
 
+        private async Task CheckLicenceLoop(int RemainingDays)
+        {
+            RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
+            if (RemainingDays <= 7)
+            {
+                // Start a timer instead of thread
+                var licenceTimer = new System.Windows.Forms.Timer
+                {
+                    Interval = 500, // half a second
+                    Enabled = true
+                };
+                licenceTimer.Tick += async (s, e2) =>
+                {
+                    if (!isRunning || IsDisposed || !IsHandleCreated)
+                    {
+                        licenceTimer.Stop();
+                        licenceTimer.Dispose();
+                        return;
+                    }
+
+                    int licenceRemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
+                    await UpdateLicenceLabel(licenceRemainingDays);
+                };
+            }
+            else
+            {
+                licenceExpire.Text += licenceDate;
+            }
+        }
         private void Home_FormClosed(object sender, FormClosedEventArgs e)
         {
             isRunning = false;
@@ -318,80 +337,21 @@ namespace thecalcify
             System.Windows.Forms.Application.Exit();
         }
 
-        private async Task CheckLicenceLoop()
-        {
-            try
-            {
-                while (isRunning)
-                {
-                    DateTime txtlicenceDate = Common.ParseToDate(licenceDate);
-                    DateTime currentDate = DateTime.Now.Date;
-                    TimeSpan diff = txtlicenceDate - currentDate;
-                    int licenceRemainingDays = diff.Days;
-
-                    if (!this.IsHandleCreated || this.IsDisposed)
-                        break; // Exit if form is disposed or handle not created
-
-                    try
-                    {
-                        if (!this.IsDisposed && this.IsHandleCreated)
-                        {
-                            if (this.InvokeRequired)
-                            {
-                                this.Invoke((MethodInvoker)(async () =>
-                                {
-                                    if (!this.IsDisposed)
-                                        await UpdateLicenceLabel(licenceRemainingDays);
-                                }));
-                            }
-                            else
-                            {
-                                if (!this.IsDisposed)
-                                    await UpdateLicenceLabel(licenceRemainingDays);
-                            }
-                        }
-                    }
-                    catch (ObjectDisposedException)
-                    {
-                        // Form is disposed during invoke — safely exit
-                        break;
-                    }
-
-                    Thread.Sleep(500);
-                }
-            }
-            catch (Exception ex)
-            {
-                ApplicationLogger.LogException(ex);
-            }
-        }
-
         private async Task UpdateLicenceLabel(int licenceRemainingDays)
         {
             try
             {
                 if (licenceRemainingDays < 0)
                 {
-
                     try
                     {
-                        // 1️⃣ Stop background processes
-                        await StopBackgroundTasks(); // You define this method
+                        await StopBackgroundTasks();
+                        UnsubscribeAllEvents();
 
-                        // 2️⃣ Unsubscribe event handlers
-                        UnsubscribeAllEvents(); // Optional, but recommended if you manually subscribed
+                        new Login().Show();
 
-
-                        Login loginForm = new Login();
-                        loginForm.Show();
-
-                        // 4️⃣ Dispose current form
-                        this.Hide();      // optional: avoid flicker before dispose
-                        this.Dispose();   // frees unmanaged resources
-                        this.Close();   // frees unmanaged resources
-
-                        // 5️⃣ Kill extra processes if needed (use with caution)
-                        KillProcess();    // Only if you're absolutely sure it's safe to kill processes
+                        Close(); // Dispose + close safely
+                        KillProcess();
                     }
                     catch (Exception ex)
                     {
@@ -401,7 +361,6 @@ namespace thecalcify
                     {
                         await StopBackgroundTasks();
                     }
-
                 }
                 else if (licenceRemainingDays <= 7)
                 {
@@ -420,6 +379,7 @@ namespace thecalcify
                 ApplicationLogger.LogException(ex);
             }
         }
+
 
         public void thecalcifyGrid()
         {
@@ -477,8 +437,8 @@ namespace thecalcify
             // Check if Ctrl + Backspace is pressed
             if (e.Control && e.KeyCode == Keys.Back)
             {
-                txtsearch.Clear();  // Clear all text
-                e.SuppressKeyPress = true; // Prevent default backspace behavior
+                txtsearch.Clear();  // Clear all text 
+                e.SuppressKeyPress = true; // Prevent default backspace behavior 
             }
         }
 
@@ -1009,21 +969,15 @@ namespace thecalcify
 
         private void TitleLabel_TextChanged(object sender, EventArgs e)
         {
-            if (titleLabel != null)
-            {
-                if (titleLabel.Text.ToLower() == "new marketwatch")
-                {
-                    saveMarketWatchHost.Visible = true;
-                    saveMarketWatchHost.Text = "Save MarketWatch";
-                }
-                else
-                {
-                    saveMarketWatchHost.Visible = false;
-                }
+            if (titleLabel == null) return;
 
-                txtsearch.Text = null;
-            }
+            bool isNewWatch = titleLabel.Text.Equals("new marketwatch", StringComparison.OrdinalIgnoreCase);
+            saveMarketWatchHost.Visible = isNewWatch;
+            if (isNewWatch) saveMarketWatchHost.Text = "Save MarketWatch";
+
+            txtsearch.Clear();
         }
+
 
         private void AddEditColumnsToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -1476,13 +1430,7 @@ namespace thecalcify
                         selectedSymbols = currentlyCheckedSymbols;
                         editableMarketWatchGrid.SaveSymbols(selectedSymbols);
                         identifiers = selectedSymbols;
-                        if (!this.IsDisposed && this.IsHandleCreated)
-                        {
-                            BeginInvoke((MethodInvoker)(() =>
-                            {
-                                InitializeDataGridView();
-                            }));
-                        }
+                        SafeInvoke(InitializeDataGridView);
                         await LoadInitialMarketDataAsync();
                         await SignalREvent();
 
@@ -1948,15 +1896,7 @@ namespace thecalcify
 
                 if (updates != null)
                 {
-                    if (!this.IsDisposed && this.IsHandleCreated)
-                    {
-                        if (defaultGrid.InvokeRequired)
-                        {
-                            defaultGrid.BeginInvoke((MethodInvoker)(() => ApplyBatchUpdates(updates)));
-                        }
-                        else
-                            ApplyBatchUpdates(updates);
-                    }
+                    SafeInvoke(() => ApplyBatchUpdates(updates));
                 }
             }
             catch (Exception ex)
@@ -3383,6 +3323,14 @@ namespace thecalcify
             }
         }
 
+        private void SafeInvoke(Action action)
+        {
+            if (!IsDisposed && IsHandleCreated)
+            {
+                if (InvokeRequired) BeginInvoke((MethodInvoker)(() => action()));
+                else action();
+            }
+        }
         #endregion Other Methods
     }
 }
