@@ -162,26 +162,19 @@ namespace thecalcify
         // ======================
         // 📌 Enums
         // ======================
-        public enum MarketWatchViewMode
+        private enum MarketWatchViewMode
         {
             Default,
             New
         }
 
-        public MarketWatchViewMode marketWatchViewMode = MarketWatchViewMode.Default;
+        private MarketWatchViewMode marketWatchViewMode = MarketWatchViewMode.Default;
 
-        public enum ConnectionViewMode
-        {
-            Connect,
-            Disconnect
-        }
-
-        public ConnectionViewMode connectionViewMode = ConnectionViewMode.Connect;
-
+    
         // ======================
         // 📌 API Responses
         // ======================
-        public MarketApiResponse resultdefault;
+        private MarketApiResponse resultdefault;
 
 
         private readonly JsonSerializerSettings _jsonSettings = new JsonSerializerSettings
@@ -516,7 +509,7 @@ namespace thecalcify
                 };
 
                 // 4. Handle edit mode specific setup
-                if (isEdit && editableGrid.selectedSymbols != null && saveFileName != null)
+                if (isEdit && editableGrid.selectedSymbols != null && string.IsNullOrEmpty(saveFileName))
                 {
                     editableGrid.saveFileName = saveFileName;
                 }
@@ -1643,18 +1636,45 @@ namespace thecalcify
                     if (selectedSymbols.Count > 0)
                         identifiers = new List<string>(selectedSymbols);
 
-                    using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5)))
+                    using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(15)))
                     {
                         await connection.InvokeAsync("SubscribeSymbols", symbolMaster, cts.Token).ConfigureAwait(false);
+
+                        if (savelabel.InvokeRequired)
+                        {
+                            savelabel.Invoke(new Action(() =>
+                            {
+                                savelabel.Visible = false;
+                                savelabel.Text = string.Empty;
+                            }));
+                        }
+                        else
+                        {
+                            savelabel.Visible = false;
+                            savelabel.Text = string.Empty;
+                        }
                     }
 
                     SetupUpdateTimer();
                 }
             }
-            catch (TaskCanceledException ex)
+            catch (Exception ex) when (ex is TaskCanceledException || ex is OperationCanceledException)
             {
                 ApplicationLogger.Log("SignalR subscribe timeout/canceled.");
-                ApplicationLogger.LogException(ex);
+
+                if (savelabel.InvokeRequired)
+                {
+                    savelabel.Invoke(new Action(() =>
+                    {
+                        savelabel.Visible = true;
+                        savelabel.Text = "Client is offline, switch network.";
+                    }));
+                }
+                else
+                {
+                    savelabel.Visible = true;
+                    savelabel.Text = "Client is offline, switch network.";
+                }
             }
             catch (Exception ex)
             {
@@ -2145,7 +2165,7 @@ namespace thecalcify
                                     pastRateTickDTO = resultdefault.data;
 
                                     // ✅ Initialize identifiers & SymbolName if needed
-                                    if (identifiers == null || saveFileName == null)
+                                    if (identifiers == null || string.IsNullOrEmpty(saveFileName))
                                     {
                                         identifiers = resultdefault.data
                                             .Where(x => !string.IsNullOrEmpty(x.i))
@@ -2182,7 +2202,7 @@ namespace thecalcify
                             pastRateTickDTO = resultdefault.data;
 
                             // ✅ Initialize identifiers & SymbolName if needed
-                            if (identifiers == null || saveFileName == null)
+                            if (identifiers == null || string.IsNullOrEmpty(saveFileName))
                             {
                                 identifiers = resultdefault.data
                                     .Where(x => !string.IsNullOrEmpty(x.i))
@@ -2435,7 +2455,7 @@ namespace thecalcify
                     {
                         selectedSymbols.Clear();
                         identifiers.Clear();
-                        saveFileName = null;
+                        saveFileName = string.Empty;
                         _updateQueue = new ConcurrentQueue<MarketDataDto>();
 
                         var clickedItem = (ToolStripMenuItem)sender;
@@ -2449,7 +2469,25 @@ namespace thecalcify
                         saveMarketWatchHost.Visible = false;
                         await LoadSymbol(Path.Combine(saveFileName + ".slt"));
 
-                        titleLabel.Text = saveFileName.ToUpper();
+                        try
+                        {
+                            if (titleLabel != null)
+                            {
+                                titleLabel.Text = !string.IsNullOrWhiteSpace(saveFileName)
+                                    ? saveFileName.ToUpper()
+                                    : "Default";
+                            }
+                            else
+                            {
+                                ApplicationLogger.Log("titleLabel is null at MenuLoad");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            ApplicationLogger.LogException(ex);
+                            ApplicationLogger.Log("saveFileName: " + saveFileName ?? "NULL");
+                        }
+
                         isEdit = false;
                         await LoadInitialMarketDataAsync();
                         isGrid = true;
