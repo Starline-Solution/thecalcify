@@ -1652,15 +1652,42 @@ namespace thecalcify
                     using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5)))
                     {
                         await connection.InvokeAsync("SubscribeSymbols", symbolMaster, cts.Token).ConfigureAwait(false);
+
+                        if (savelabel.InvokeRequired)
+                        {
+                            savelabel.Invoke(new Action(() =>
+                            {
+                                savelabel.Visible = false;
+                                savelabel.Text = string.Empty;
+                            }));
+                        }
+                        else
+                        {
+                            savelabel.Visible = false;
+                            savelabel.Text = string.Empty;
+                        }
                     }
 
                     SetupUpdateTimer();
                 }
             }
-            catch (TaskCanceledException ex)
+            catch (Exception ex) when (ex is TaskCanceledException || ex is OperationCanceledException)
             {
                 ApplicationLogger.Log("SignalR subscribe timeout/canceled.");
-                ApplicationLogger.LogException(ex);
+
+                if (savelabel.InvokeRequired)
+                {
+                    savelabel.Invoke(new Action(() =>
+                    {
+                        savelabel.Visible = true;
+                        savelabel.Text = "Client is offline, switch network.";
+                    }));
+                }
+                else
+                {
+                    savelabel.Visible = true;
+                    savelabel.Text = "Client is offline, switch network.";
+                }
             }
             catch (Exception ex)
             {
