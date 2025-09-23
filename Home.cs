@@ -120,7 +120,7 @@ namespace thecalcify
         // ======================
         // 📌 Services / External Connections
         // ======================
-        public HubConnection connection;
+        public HubConnection connection { get; set; }
         private bool isReconnectTimerRunning = false;
         private bool _isReconnectInProgress = false;
         private bool _eventHandlersAttached = false;
@@ -466,6 +466,8 @@ namespace thecalcify
 
                 MenuLoad();
                 titleLabel.Text = "DEFAULT";
+                saveMarketWatchHost.Visible = false;
+                refreshMarketWatchHost.Visible = true;
                 isEdit = false;
                 identifiers = symbolMaster;
                 InitializeDataGridView();          // Configure the grid
@@ -1487,9 +1489,42 @@ namespace thecalcify
         private async void OnNetworkAvailabilityChanged(object sender, NetworkAvailabilityEventArgs e)
         {
             if (e.IsAvailable)
+            {
+                SignalRTimer();
                 await SignalREvent();
+                if (this.InvokeRequired)
+                {
+                    this.Invoke(new Action(() =>
+                    {
+                        refreshMarketWatchHost.Visible = true;
+                    }));
+                }
+                else
+                {
+                    refreshMarketWatchHost.Visible = true;
+                }
+            }
             else
+            {
                 ApplicationLogger.Log("Network unavailable.");
+                connection = null;
+                signalRTimer.Stop();
+
+                _eventHandlersAttached = false;
+
+                if (this.InvokeRequired)
+                {
+                    this.Invoke(new Action(() =>
+                    {
+                        refreshMarketWatchHost.Visible = false;
+                    }));
+                }
+                else
+                {
+                    refreshMarketWatchHost.Visible = false;
+                }
+            }
+                
         }
 
         private void OnNetworkAddressChanged(object sender, EventArgs e)
@@ -1502,6 +1537,66 @@ namespace thecalcify
             if (e.Mode == PowerModes.Resume)
                 await SignalREvent();
         }
+
+        private async void RefreshMarketWatchHost_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // 🚫 Disable refresh button while refreshing
+                refreshMarketWatchHost.Enabled = false;
+
+                // 🔄 Reset state
+                selectedSymbols.Clear();
+                identifiers.Clear();
+                _updateQueue = new ConcurrentQueue<MarketDataDto>();
+                isEdit = false;
+                isGrid = true;
+                reloadGrid = true;
+                saveFileName = null;
+                lastOpenMarketWatch = "Default";
+
+                // 🧹 Clear grid and data immediately
+                if (defaultGrid != null)
+                {
+                    defaultGrid.DataSource = null;
+                    defaultGrid.Rows.Clear();
+                    defaultGrid.Columns.Clear();
+                    defaultGrid.Refresh();
+                }
+
+                // 🔄 Dispose editable grid if any
+                EditableMarketWatchGrid editableMarketWatchGrid = EditableMarketWatchGrid.CurrentInstance;
+                editableMarketWatchGrid?.Dispose();
+                saveMarketWatchHost.Visible = false;
+                refreshMarketWatchHost.Visible = true;
+
+                // 🔄 Force Default view
+                await DefaultToolStripMenuItem_Click(sender, e);
+                titleLabel.Text = "DEFAULT";
+
+                // 🔄 Reload market data & reconnect SignalR
+                InitializeDataGridView();
+                await LoadInitialMarketDataAsync();
+                await SignalREvent();
+
+                ApplicationLogger.Log("Refresh: Switched back to DEFAULT Market Watch.");
+            }
+            catch (Exception ex)
+            {
+                ApplicationLogger.LogException(ex);
+                //MessageBox.Show("Failed to refresh and reset to Default view. Please try again.",
+                //                "Refresh Error",
+                //                MessageBoxButtons.OK,
+                //                MessageBoxIcon.Error);
+            }
+            finally
+            {
+                // ✅ Re-enable refresh button after process
+                refreshMarketWatchHost.Enabled = true;
+            }
+        }
+
+
 
         #endregion Form Method
 
@@ -2384,13 +2479,13 @@ namespace thecalcify
 
                 try
                 {
-                    if (connection == null)
-                    {
-                        connection = BuildConnection();
-                        connection.On<string>("excelRate", OnExcelRateReceived);
-                    }
+                    //if (connection == null)
+                    //{
+                    //    connection = BuildConnection();
+                    //    connection.On<string>("excelRate", OnExcelRateReceived);
+                    //}
 
-                    if (connection.State == HubConnectionState.Disconnected)
+                    if (connection != null && connection.State == HubConnectionState.Disconnected)
                     {
                         await connection.StartAsync();
                         await connection.InvokeAsync("SubscribeSymbols", symbolMaster);
@@ -2467,6 +2562,7 @@ namespace thecalcify
                         EditableMarketWatchGrid editableMarketWatchGrid = EditableMarketWatchGrid.CurrentInstance;
                         editableMarketWatchGrid?.Dispose();
                         saveMarketWatchHost.Visible = false;
+                        refreshMarketWatchHost.Visible = true;
                         await LoadSymbol(Path.Combine(saveFileName + ".slt"));
 
                         try
@@ -2577,6 +2673,7 @@ namespace thecalcify
                 };
 
                 saveMarketWatchHost.Visible = false;
+                refreshMarketWatchHost.Visible = true;
                 fontSizeComboBox.Visible = false;
                 // Update status label
 
@@ -2630,6 +2727,7 @@ namespace thecalcify
                 // Update save button visibility
                 saveMarketWatchHost.Visible = true;
                 saveMarketWatchHost.Text = "Save MarketWatch";
+                refreshMarketWatchHost.Visible = false;
 
                 fontSizeComboBox.Visible = false;
 

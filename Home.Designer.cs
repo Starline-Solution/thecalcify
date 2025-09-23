@@ -38,9 +38,9 @@ namespace thecalcify
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(thecalcify));
             this.defaultGrid = new System.Windows.Forms.DataGridView();
             this.Tools = new System.Windows.Forms.ContextMenuStrip(this.components);
@@ -53,11 +53,13 @@ namespace thecalcify
             this.disconnectESCToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.fullScreenF11ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveMarketWatchHost = new System.Windows.Forms.ToolStripMenuItem();
+            this.refreshMarketWatchHost = new System.Windows.Forms.ToolStripMenuItem();
             this.newCTRLNToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.newCTRLNToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.viewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.newsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.alertToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.headerPanel = new System.Windows.Forms.Panel();
             this.titleLabel = new System.Windows.Forms.Label();
@@ -68,7 +70,6 @@ namespace thecalcify
             this.fontSizeComboBox = new System.Windows.Forms.ComboBox();
             this.newMarketWatchMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.txtsearch = new System.Windows.Forms.TextBox();
-            this.alertToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.defaultGrid)).BeginInit();
             this.Tools.SuspendLayout();
             this.menuStrip1.SuspendLayout();
@@ -82,30 +83,30 @@ namespace thecalcify
             this.defaultGrid.AllowUserToAddRows = false;
             this.defaultGrid.AllowUserToDeleteRows = false;
             this.defaultGrid.AllowUserToResizeRows = false;
-            dataGridViewCellStyle1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(250)))), ((int)(((byte)(250)))), ((int)(((byte)(250)))));
-            this.defaultGrid.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle4.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(250)))), ((int)(((byte)(250)))), ((int)(((byte)(250)))));
+            this.defaultGrid.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle4;
             this.defaultGrid.BackgroundColor = System.Drawing.Color.White;
             this.defaultGrid.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.defaultGrid.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.Raised;
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle2.BackColor = System.Drawing.Color.CornflowerBlue;
-            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold);
-            dataGridViewCellStyle2.ForeColor = System.Drawing.Color.WhiteSmoke;
-            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.defaultGrid.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle5.BackColor = System.Drawing.Color.CornflowerBlue;
+            dataGridViewCellStyle5.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold);
+            dataGridViewCellStyle5.ForeColor = System.Drawing.Color.WhiteSmoke;
+            dataGridViewCellStyle5.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle5.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle5.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.defaultGrid.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle5;
             this.defaultGrid.ColumnHeadersHeight = 40;
             this.defaultGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             this.defaultGrid.ContextMenuStrip = this.Tools;
-            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle3.BackColor = System.Drawing.Color.White;
-            dataGridViewCellStyle3.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F);
-            dataGridViewCellStyle3.ForeColor = System.Drawing.Color.Black;
-            dataGridViewCellStyle3.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle3.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.defaultGrid.DefaultCellStyle = dataGridViewCellStyle3;
+            dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle6.BackColor = System.Drawing.Color.White;
+            dataGridViewCellStyle6.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F);
+            dataGridViewCellStyle6.ForeColor = System.Drawing.Color.Black;
+            dataGridViewCellStyle6.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle6.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle6.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.defaultGrid.DefaultCellStyle = dataGridViewCellStyle6;
             this.defaultGrid.Dock = System.Windows.Forms.DockStyle.Fill;
             this.defaultGrid.EnableHeadersVisualStyles = false;
             this.defaultGrid.GridColor = System.Drawing.Color.Gainsboro;
@@ -175,6 +176,7 @@ namespace thecalcify
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolsToolStripMenuItem,
             this.saveMarketWatchHost,
+            this.refreshMarketWatchHost,
             this.newCTRLNToolStripMenuItem,
             this.newsToolStripMenuItem,
             this.alertToolStripMenuItem,
@@ -182,7 +184,6 @@ namespace thecalcify
             this.menuStrip1.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.HorizontalStackWithOverflow;
             this.menuStrip1.Location = new System.Drawing.Point(0, 30);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Padding = new System.Windows.Forms.Padding(6, 2, 0, 2);
             this.menuStrip1.Size = new System.Drawing.Size(1115, 28);
             this.menuStrip1.TabIndex = 1;
             this.menuStrip1.Text = "menuStrip1";
@@ -192,7 +193,6 @@ namespace thecalcify
             this.toolsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.disconnectESCToolStripMenuItem,
             this.fullScreenF11ToolStripMenuItem});
-            this.toolsToolStripMenuItem.Enabled = false;
             this.toolsToolStripMenuItem.Name = "toolsToolStripMenuItem";
             this.toolsToolStripMenuItem.Size = new System.Drawing.Size(64, 24);
             this.toolsToolStripMenuItem.Text = "Tools";
@@ -222,6 +222,18 @@ namespace thecalcify
             this.saveMarketWatchHost.Text = "Save MarketWatch";
             this.saveMarketWatchHost.Visible = false;
             this.saveMarketWatchHost.Click += new System.EventHandler(this.SaveMarketWatchHost_Click);
+            // 
+            // refreshMarketWatchHost
+            // 
+            this.refreshMarketWatchHost.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.refreshMarketWatchHost.BackColor = System.Drawing.Color.Transparent;
+            this.refreshMarketWatchHost.ForeColor = System.Drawing.Color.Black;
+            this.refreshMarketWatchHost.Image = ((System.Drawing.Image)(resources.GetObject("refreshMarketWatchHost.Image")));
+            this.refreshMarketWatchHost.Margin = new System.Windows.Forms.Padding(5, 0, 10, 0);
+            this.refreshMarketWatchHost.Name = "refreshMarketWatchHost";
+            this.refreshMarketWatchHost.Size = new System.Drawing.Size(34, 24);
+            this.refreshMarketWatchHost.ToolTipText = "Refresh MarketWatch";
+            this.refreshMarketWatchHost.Click += new System.EventHandler(this.RefreshMarketWatchHost_Click);
             // 
             // newCTRLNToolStripMenuItem
             // 
@@ -258,7 +270,16 @@ namespace thecalcify
             this.newsToolStripMenuItem.Name = "newsToolStripMenuItem";
             this.newsToolStripMenuItem.Size = new System.Drawing.Size(65, 24);
             this.newsToolStripMenuItem.Text = "News";
+            this.newsToolStripMenuItem.Visible = false;
             this.newsToolStripMenuItem.Click += new System.EventHandler(this.newsToolStripMenuItem_Click);
+            // 
+            // alertToolStripMenuItem
+            // 
+            this.alertToolStripMenuItem.Name = "alertToolStripMenuItem";
+            this.alertToolStripMenuItem.Size = new System.Drawing.Size(58, 24);
+            this.alertToolStripMenuItem.Text = "Alert";
+            this.alertToolStripMenuItem.Visible = false;
+            this.alertToolStripMenuItem.Click += new System.EventHandler(this.AlertToolStripMenuItem_Click);
             // 
             // aboutToolStripMenuItem
             // 
@@ -352,7 +373,7 @@ namespace thecalcify
             "28",
             "30"});
             this.fontSizeComboBox.Location = new System.Drawing.Point(757, 29);
-            this.fontSizeComboBox.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.fontSizeComboBox.Margin = new System.Windows.Forms.Padding(4);
             this.fontSizeComboBox.Name = "fontSizeComboBox";
             this.fontSizeComboBox.Size = new System.Drawing.Size(160, 24);
             this.fontSizeComboBox.TabIndex = 5;
@@ -374,13 +395,6 @@ namespace thecalcify
             this.txtsearch.TabIndex = 6;
             this.txtsearch.TextChanged += new System.EventHandler(this.Txtsearch_TextChanged);
             this.txtsearch.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Txtsearch_KeyDown);
-            // 
-            // alertToolStripMenuItem
-            // 
-            this.alertToolStripMenuItem.Name = "alertToolStripMenuItem";
-            this.alertToolStripMenuItem.Size = new System.Drawing.Size(58, 24);
-            this.alertToolStripMenuItem.Text = "Alert";
-            this.alertToolStripMenuItem.Click += new System.EventHandler(this.AlertToolStripMenuItem_Click);
             // 
             // thecalcify
             // 
@@ -595,5 +609,7 @@ namespace thecalcify
         private Label savelabel;
         private ToolStripMenuItem newsToolStripMenuItem;
         private ToolStripMenuItem alertToolStripMenuItem;
+        private ToolStripMenuItem refreshMarketWatchHost;
+
     }
 }
