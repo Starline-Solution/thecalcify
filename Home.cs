@@ -12,6 +12,7 @@ using System.Drawing;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.NetworkInformation;
@@ -55,7 +56,7 @@ namespace thecalcify
         // ======================
         // 📌 Flags / States
         // ======================
-        private bool isDisconnecting = false, isConnectionDisposed = false;
+        private bool isConnectionDisposed = false;
 
         public bool isLoadedSymbol = false;
         public bool isEdit = false;
@@ -170,7 +171,7 @@ namespace thecalcify
 
         private MarketWatchViewMode marketWatchViewMode = MarketWatchViewMode.Default;
 
-    
+
         // ======================
         // 📌 API Responses
         // ======================
@@ -1490,6 +1491,9 @@ namespace thecalcify
         {
             if (e.IsAvailable)
             {
+                connection = null;
+                _eventHandlersAttached = false;
+
                 SignalRTimer();
                 await SignalREvent();
                 if (this.InvokeRequired)
@@ -1524,7 +1528,7 @@ namespace thecalcify
                     refreshMarketWatchHost.Visible = false;
                 }
             }
-                
+
         }
 
         private void OnNetworkAddressChanged(object sender, EventArgs e)
@@ -1688,34 +1692,32 @@ namespace thecalcify
                         connection.Closed += async (error) =>
                         {
                             ApplicationLogger.Log("Connection closed");
-                            if (!isDisconnecting)
-                            {
-                                await Task.Delay(2000); // backoff instead of random
-                                await TryReconnectAsync(); // safe reconnect
-                            }
+
+                            await Task.Delay(2000); // backoff instead of random
+                            await TryReconnectAsync(); // safe reconnect
+
                         };
 
                         connection.Reconnected += async (connectionId) =>
                         {
-                            if (!isDisconnecting)
-                            {
-                                ApplicationLogger.Log("Reconnected to SignalR hub");
-                                try
-                                {
-                                    if (selectedSymbols.Count > 0)
-                                        identifiers = new List<string>(selectedSymbols);
 
-                                    using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5)))
-                                    {
-                                        await connection.InvokeAsync("SubscribeSymbols", symbolMaster, cts.Token);
-                                    }
-                                    ApplicationLogger.Log("Resubscribed after reconnect.");
-                                }
-                                catch (Exception ex)
+                            ApplicationLogger.Log("Reconnected to SignalR hub");
+                            try
+                            {
+                                if (selectedSymbols.Count > 0)
+                                    identifiers = new List<string>(selectedSymbols);
+
+                                using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5)))
                                 {
-                                    ApplicationLogger.LogException(ex);
+                                    await connection.InvokeAsync("SubscribeSymbols", symbolMaster, cts.Token);
                                 }
+                                ApplicationLogger.Log("Resubscribed after reconnect.");
                             }
+                            catch (Exception ex)
+                            {
+                                ApplicationLogger.LogException(ex);
+                            }
+
                         };
 
                         _eventHandlersAttached = true;
@@ -1770,6 +1772,8 @@ namespace thecalcify
                     savelabel.Visible = true;
                     savelabel.Text = "Client is offline, switch network.";
                 }
+                connection = null;
+                _eventHandlersAttached = false;
             }
             catch (Exception ex)
             {
@@ -2329,6 +2333,11 @@ namespace thecalcify
                         }
                     }
                 }
+            }
+            catch (WebException webEx)
+            {
+                connection = null;
+                _eventHandlersAttached = false;
             }
             catch (Exception ex)
             {
