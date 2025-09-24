@@ -286,6 +286,7 @@ namespace thecalcify
                 AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
 
                 KillProcess();
+
             }
             catch (Exception ex)
             {
@@ -1129,7 +1130,7 @@ namespace thecalcify
                     bool check = !allChecked;
                     btnSelectAllColumns.Text = check ? "Unselect All" : "Select All";
 
-                    for (int i = 0; i < checkedListColumns.Items.Count; i++)
+                    for (int i = 0; i < checkedListColumns.Items.Count; i++) 
                     {
                         checkedListColumns.SetItemChecked(i, check);
                     }
@@ -1700,7 +1701,6 @@ namespace thecalcify
 
                         connection.Reconnected += async (connectionId) =>
                         {
-
                             ApplicationLogger.Log("Reconnected to SignalR hub");
                             try
                             {
@@ -1712,6 +1712,26 @@ namespace thecalcify
                                     await connection.InvokeAsync("SubscribeSymbols", symbolMaster, cts.Token);
                                 }
                                 ApplicationLogger.Log("Resubscribed after reconnect.");
+                            }
+                            catch (Exception ex) when (ex is TaskCanceledException || ex is OperationCanceledException)
+                            {
+                                ApplicationLogger.Log("SignalR Reconnecting/subscribe timeout/canceled.");
+
+                                if (savelabel.InvokeRequired)
+                                {
+                                    savelabel.Invoke(new Action(() =>
+                                    {
+                                        savelabel.Visible = true;
+                                        savelabel.Text = "Client is offline, switch network.";
+                                    }));
+                                }
+                                else
+                                {
+                                    savelabel.Visible = true;
+                                    savelabel.Text = "Client is offline, switch network.";
+                                }
+                                connection = null;
+                                _eventHandlersAttached = false;
                             }
                             catch (Exception ex)
                             {
@@ -1733,26 +1753,49 @@ namespace thecalcify
                     if (selectedSymbols.Count > 0)
                         identifiers = new List<string>(selectedSymbols);
 
-                    using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(15)))
+                    try
                     {
-                        await connection.InvokeAsync("SubscribeSymbols", symbolMaster, cts.Token).ConfigureAwait(false);
+                        using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(15)))
+                        {
+                            await connection.InvokeAsync("SubscribeSymbols", symbolMaster, cts.Token).ConfigureAwait(false);
+
+                            if (savelabel.InvokeRequired)
+                            {
+                                savelabel.Invoke(new Action(() =>
+                                {
+                                    savelabel.Visible = false;
+                                    savelabel.Text = string.Empty;
+                                }));
+                            }
+                            else
+                            {
+                                savelabel.Visible = false;
+                                savelabel.Text = string.Empty;
+                            }
+                        }
+
+                        SetupUpdateTimer();
+                    }
+                    catch (Exception ex) when (ex is TaskCanceledException || ex is OperationCanceledException)
+                    {
+                        ApplicationLogger.Log("SignalR subscribe timeout/canceled.");
 
                         if (savelabel.InvokeRequired)
                         {
                             savelabel.Invoke(new Action(() =>
                             {
-                                savelabel.Visible = false;
-                                savelabel.Text = string.Empty;
+                                savelabel.Visible = true;
+                                savelabel.Text = "Client is offline, switch network.";
                             }));
                         }
                         else
                         {
-                            savelabel.Visible = false;
-                            savelabel.Text = string.Empty;
+                            savelabel.Visible = true;
+                            savelabel.Text = "Client is offline, switch network.";
                         }
+                        connection = null;
+                        _eventHandlersAttached = false;
                     }
-
-                    SetupUpdateTimer();
                 }
             }
             catch (Exception ex) when (ex is TaskCanceledException || ex is OperationCanceledException)
