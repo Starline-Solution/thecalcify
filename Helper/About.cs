@@ -13,14 +13,15 @@ namespace thecalcify.Helper
 {
     public partial class About : Form
     {
-        public string username, password, licenceExpiryDate;
+        public string username, password, licenceExpiryDate,token;
 
-        public About(string username, string password, string licenceExpired)
+        public About(string username, string password, string licenceExpired,string token)
         {
             InitializeComponent();
             this.username = username;
             this.password = password;
             this.licenceExpiryDate = licenceExpired;
+            this.token = token;
         }
 
         private void About_Load(object sender, EventArgs e)
@@ -37,7 +38,7 @@ namespace thecalcify.Helper
         private void UpdateButton_Click(object sender, EventArgs e)
         {
             updateButton.Enabled = false;
-            UpdateAgent updateAgent = new UpdateAgent();
+            UpdateAgent updateAgent = new UpdateAgent(token);
             updateButton.Enabled = true;
         }
     }

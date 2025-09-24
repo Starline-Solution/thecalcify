@@ -415,7 +415,7 @@ namespace thecalcify
         {
             try
             {
-                using (var aboutForm = new About(username, password, licenceDate))
+                using (var aboutForm = new About(username, password, licenceDate,token))
                 {
                     if (isFullScreen)
                     {

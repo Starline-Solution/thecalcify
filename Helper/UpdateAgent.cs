@@ -1,4 +1,5 @@
 ﻿using Microsoft.Win32;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -6,6 +7,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -46,7 +48,7 @@ namespace thecalcify.Helper
         /// <summary>
         /// Create UpdateAgent Constructor
         /// </summary>
-        public UpdateAgent()
+        public UpdateAgent(string token)
         {
             try
             {
@@ -64,6 +66,9 @@ namespace thecalcify.Helper
 
                 using (var httpClient = new HttpClient())
                 {
+                    httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
+                    httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
                     var response = httpClient.GetAsync("http://api.thecalcify.com/setup").Result;
 
                     if (response.IsSuccessStatusCode)
@@ -334,7 +339,7 @@ namespace thecalcify.Helper
         /// Install New Version
         /// </summary>
         /// <param name="installerPath"></param>
-        public void InstallNewVersion(string installerPath)
+        public static void InstallNewVersion(string installerPath)
         {
             try
             {
