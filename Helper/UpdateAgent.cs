@@ -1,16 +1,12 @@
 ﻿using Microsoft.Win32;
-using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace thecalcify.Helper
@@ -18,7 +14,7 @@ namespace thecalcify.Helper
     public class UpdateAgent
     {
         string newInstallerPath = string.Empty;
-        string oldInstallerPath = @"C:\Program Files (x86)\thecalcify\thecalcify\thecalcify.exe";
+        string oldInstallerPath = @"C:\Program Files\thecalcify\thecalcify\thecalcify.exe";
 
         #region New Setup Version Reader
 
@@ -52,7 +48,6 @@ namespace thecalcify.Helper
         {
             try
             {
-
                 string tempBasePath = Path.Combine(Path.GetTempPath(), "thecalcify");
 
                 // Ensure the folder is fresh
@@ -60,6 +55,7 @@ namespace thecalcify.Helper
                 {
                     Directory.Delete(tempBasePath, true);
                 }
+
                 Directory.CreateDirectory(tempBasePath);
 
                 string tempZipPath = Path.Combine(Path.GetTempPath(), $"update_{Guid.NewGuid()}.zip");
@@ -100,7 +96,6 @@ namespace thecalcify.Helper
                 {
                     if (Version.Parse(currentveriosn) > Version.Parse(displayversion))
                     {
-
                         var result = MessageBox.Show("Application Has Newer Version Want to Upgrade", "Update Version", MessageBoxButtons.OKCancel);
                         if (result == DialogResult.OK)
                             UninstallOldVersion("thecalcify", displayversion);
@@ -206,6 +201,7 @@ namespace thecalcify.Helper
                 {
                     msiPath = file;
                 }
+
                 string version = GetMsiVersion(msiPath);
                 ApplicationLogger.Log($"Version {version}");
                 if (version != null)
@@ -300,21 +296,9 @@ namespace thecalcify.Helper
                                     if ((string.IsNullOrEmpty(uninstallString)))
                                         ApplicationLogger.Log($"Uninstalling {name}'s Uninstall String is Empty");
 
-
                                     uninstallString = uninstallString.Replace("MsiExec.exe /I", "MsiExec.exe /X");
-
                                     ApplicationLogger.Log($"Uninstalling {name}...");
-
-                                    //Process uninstallProcess = new Process();
-                                    //uninstallProcess.StartInfo.FileName = "cmd.exe";
-                                    //uninstallProcess.StartInfo.Arguments = "/C " + uninstallString + " /quiet";
-                                    //uninstallProcess.StartInfo.UseShellExecute = true;
-                                    //uninstallProcess.StartInfo.CreateNoWindow = true;
-                                    //uninstallProcess.Start();
-                                    //uninstallProcess.WaitForExit();
-
                                     CreateUninstallTask(uninstallString, Path.GetDirectoryName(newInstallerPath));
-
                                     ApplicationLogger.Log("Old version uninstalled.");
                                     break;
                                 }
@@ -322,17 +306,11 @@ namespace thecalcify.Helper
                         }
                     }
                 }
-
-                //if (Version.Parse(currentveriosn) > Version.Parse(displayversion))
-                //{
-                //    InstallNewVersion(newInstallerPath);
-                //}
             }
             catch (Exception ex)
             {
                 ApplicationLogger.LogException(ex);
             }
-
         }
 
         /// <summary>
@@ -354,14 +332,11 @@ namespace thecalcify.Helper
                 installProcess.WaitForExit();
 
                 ApplicationLogger.Log("New version installed successfully.");
-
-                //MessageBox.Show("Application Update SuccessFully");
             }
             catch (Exception ex)
             {
                 ApplicationLogger.LogException(ex);
             }
-
         }
 
         /// <summary>
@@ -418,6 +393,5 @@ namespace thecalcify.Helper
                 CreateNoWindow = true
             })?.WaitForExit();
         }
-
     }
 }
