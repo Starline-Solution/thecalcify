@@ -220,16 +220,16 @@ namespace thecalcify.News
             try
             {
                 // Clear old rows
-                dgvNews.Rows.Clear();
+                //dgvNews.Rows.Clear();
 
                 // Example category/subcategory selection
-                string category = cmbCategory.SelectedItem?.ToString() ?? "All";
-                string subCategory = cmbSubCategory.SelectedItem?.ToString() ?? "All";
+                Category category = cmbCategory.SelectedItem as Category;
+                Category subCategory = cmbSubCategory.SelectedItem as Category;
 
-                dgvNews.Rows.Add($"Showing {category} - {subCategory} news here...");
+                //dgvNews.Rows.Add($"Showing {category} - {subCategory} news here..."); 
 
                 // Fetch news data and update grid
-                await FetchNewsDataAndUpdateGrid(category, subCategory, pageSize, string.Empty);
+                await FetchNewsDataAndUpdateGrid(category?.Code ?? string.Empty, subCategory?.Code ?? string.Empty, pageSize, string.Empty);
             }
             catch (Exception ex)
             {
@@ -314,11 +314,15 @@ namespace thecalcify.News
 
                 if (result?.Data?.Search?.Items == null || result.Data.Search.Items.Count == 0)
                 {
+                    MessageBox.Show("No related data found.....","News Alert",MessageBoxButtons.OK,MessageBoxIcon.Warning);
+                    cmbCategory.SelectedItem = "All";
+                    // Call search button again with new category
+                    BtnSearchNews_Click(this, EventArgs.Empty);
                     ApplicationLogger.Log("[FetchNewsDataAndUpdateGrid] No items found.");
                     return cursor;
                 }
 
-                var newsItems = result.Data.Search.Items;
+                    var newsItems = result.Data.Search.Items;
 
                 // Update DataGridView on UI thread
                 _ = Invoke((Action)(() =>
