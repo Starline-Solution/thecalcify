@@ -207,7 +207,7 @@ namespace thecalcify
                 RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
                 if (RemainingDays <= 7)
                 {
-                    CheckLicenceLoop(RemainingDays);
+                    await CheckLicenceLoop(RemainingDays);
                 }
                 else
                 {
@@ -294,7 +294,7 @@ namespace thecalcify
             }
         }
 
-        private async Task CheckLicenceLoop(int RemainingDays)
+        private Task CheckLicenceLoop(int RemainingDays)
         {
             RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
             if (RemainingDays <= 7)
@@ -322,6 +322,8 @@ namespace thecalcify
             {
                 licenceExpire.Text += licenceDate;
             }
+
+            return Task.CompletedTask;
         }
         private void Home_FormClosed(object sender, FormClosedEventArgs e)
         {
@@ -949,8 +951,9 @@ namespace thecalcify
                 var result = MessageBox.Show("Do you want to Exit Application?", "Exit Application", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                 if (result == DialogResult.Yes)
                 {
-                    this.Close(); // Close the login form
-                    System.Windows.Forms.Application.Exit(); // Terminate the application
+                    //this.Close(); // Close the login form
+                    //Application.Exit(); // Terminate the application
+                    DisconnectESCToolStripMenuItem_Click(sender, e);
                 }
             }
 
@@ -960,7 +963,7 @@ namespace thecalcify
                 e.Handled = true;
             }
 
-            if (e.KeyCode == Keys.Escape)
+            if (e.KeyCode == Keys.Escape && !(e.Shift && e.KeyCode == Keys.Escape))
             {
                 FullScreenF11ToolStripMenuItem_Click(this, EventArgs.Empty);
                 e.Handled = true;
@@ -1502,11 +1505,15 @@ namespace thecalcify
                     this.Invoke(new Action(() =>
                     {
                         refreshMarketWatchHost.Visible = true;
+                        savelabel.Text = string.Empty;
+                        savelabel.Visible = false;
                     }));
                 }
                 else
                 {
                     refreshMarketWatchHost.Visible = true;
+                    savelabel.Text = string.Empty;
+                    savelabel.Visible = false;
                 }
             }
             else
@@ -1522,15 +1529,20 @@ namespace thecalcify
                     this.Invoke(new Action(() =>
                     {
                         refreshMarketWatchHost.Visible = false;
+                        savelabel.Text = "Client is offline, switch network.";
+                        savelabel.Visible = true;
                     }));
                 }
                 else
                 {
                     refreshMarketWatchHost.Visible = false;
+                    savelabel.Text = "Client is offline, switch network.";
+                    savelabel.Visible = true;
                 }
             }
 
         }
+
 
         private void OnNetworkAddressChanged(object sender, EventArgs e)
         {
@@ -3175,8 +3187,24 @@ namespace thecalcify
                 Microsoft.Office.Interop.Excel.Range startCell = ws.Cells[1, 1];
                 Microsoft.Office.Interop.Excel.Range endCell = ws.Cells[maxRow, maxCol];
                 Microsoft.Office.Interop.Excel.Range writeRange = ws.Range[startCell, endCell];
-                writeRange.Value2 = bulkData;
 
+                const int MAX_RETRIES = 10;
+                int retries = 0;
+                bool success = false;
+
+                while (!success && retries < MAX_RETRIES)
+                {
+                    try
+                    {
+                        writeRange.Value2 = bulkData;
+                        success = true;
+                    }
+                    catch (COMException ex) when ((uint)ex.ErrorCode == 0x800AC472)
+                    {
+                        retries++;
+                        System.Threading.Thread.Sleep(100); // Wait 100ms before retry
+                    }
+                }   
                 ws.Activate();
                 excelApp.Visible = true;
             }

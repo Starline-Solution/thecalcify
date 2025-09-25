@@ -94,20 +94,12 @@ namespace thecalcify.Helper
 
                 if (IsSoftwareInstalled("thecalcify"))
                 {
-                    if (Version.Parse(currentveriosn) > Version.Parse(displayversion))
+                    try
                     {
-                        var result = MessageBox.Show("Application Has Newer Version Want to Upgrade", "Update Version", MessageBoxButtons.OKCancel);
-                        if (result == DialogResult.OK)
-                            UninstallOldVersion("thecalcify", displayversion);
-                        else
-                            return;
-                    }
-                    else
-                    {
-                        DateTime olddateModified = File.GetLastWriteTime(oldInstallerPath);
-                        DateTime newdateModified = File.GetLastWriteTime(newInstallerPath);
+                        ApplicationLogger.Log("Software is installed. Checking versions...");
+                        ApplicationLogger.Log($"Current Version: {currentveriosn}, New Version: {displayversion}");
 
-                        if (olddateModified < newdateModified)
+                        if (Version.Parse(currentveriosn) > Version.Parse(displayversion))
                         {
                             var result = MessageBox.Show("Application Has Newer Version Want to Upgrade", "Update Version", MessageBoxButtons.OKCancel);
                             if (result == DialogResult.OK)
@@ -116,7 +108,29 @@ namespace thecalcify.Helper
                                 return;
                         }
                         else
-                            MessageBox.Show($"You Are already to our Upgraded Version, Which is {currentveriosn}", "Version Upgrade", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        {
+                            DateTime olddateModified = File.GetLastWriteTime(oldInstallerPath);
+                            DateTime newdateModified = File.GetLastWriteTime(newInstallerPath);
+
+                            ApplicationLogger.Log($"Old Version Date Modified: {olddateModified} && New Version Date Modified: {newdateModified}.");
+
+                            if (olddateModified < newdateModified)
+                            {
+                                var result = MessageBox.Show("Application Has Newer Version Want to Upgrade", "Update Version", MessageBoxButtons.OKCancel);
+                                ApplicationLogger.Log("User selected: " + result.ToString());
+
+                                if (result == DialogResult.OK)
+                                    UninstallOldVersion("thecalcify", displayversion);
+                                else
+                                    return;
+                            }
+                            else
+                                MessageBox.Show($"You Are already to our Upgraded Version, Which is {currentveriosn}", "Version Upgrade", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        ApplicationLogger.LogException(ex);
                     }
                 }
                 else
@@ -222,31 +236,26 @@ namespace thecalcify.Helper
         /// <returns></returns>
         public bool IsSoftwareInstalled(string displayName)
         {
-            try
+            RegistryView[] views = new[] { RegistryView.Registry64, RegistryView.Registry32 };
+            string uninstallPath = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall";
+
+            foreach (var view in views)
             {
-                // Define both 64-bit and 32-bit uninstall registry paths
-                string[] uninstallPaths = new[]
+                try
                 {
-                    @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall",
-                    @"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall"
-                };
-
-                foreach (string path in uninstallPaths)
-                {
-                    using (RegistryKey baseKey = Registry.LocalMachine.OpenSubKey(path))
+                    using (var baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, view))
+                    using (var rk = baseKey.OpenSubKey(uninstallPath))
                     {
-                        if (baseKey == null) continue;
+                        if (rk == null) continue;
 
-                        foreach (string subKeyName in baseKey.GetSubKeyNames())
+                        foreach (string subKeyName in rk.GetSubKeyNames())
                         {
-                            using (RegistryKey subKey = baseKey.OpenSubKey(subKeyName))
+                            using (var subKey = rk.OpenSubKey(subKeyName))
                             {
-                                if (subKey == null) continue;
+                                string name = subKey?.GetValue("DisplayName") as string;
+                                displayversion = subKey?.GetValue("DisplayVersion") as string;
 
-                                string name = subKey.GetValue("DisplayName") as string;
-                                displayversion = subKey.GetValue("DisplayVersion") as string;
-
-                                if (!string.IsNullOrEmpty(name) && name.Contains(displayName))
+                                if (!string.IsNullOrEmpty(name) && name.Equals(displayName, StringComparison.OrdinalIgnoreCase))
                                 {
                                     return true;
                                 }
@@ -254,14 +263,14 @@ namespace thecalcify.Helper
                         }
                     }
                 }
+                catch (Exception ex)
+                {
+                    ApplicationLogger.Log($"Error reading registry ({view}): {ex.Message}");
+                }
+            }
 
-                return false;
-            }
-            catch (Exception ex)
-            {
-                ApplicationLogger.LogException(ex);
-                return false;
-            }
+            ApplicationLogger.Log("Software not found in any registry view.");
+            return false;
         }
 
         /// <summary>
@@ -273,37 +282,45 @@ namespace thecalcify.Helper
         {
             try
             {
-                // Define both 64-bit and 32-bit uninstall registry paths
-                string[] uninstallPaths = new[]
-                {
-                    @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall",
-                    @"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall"
-                };
+                RegistryView[] views = new[] { RegistryView.Registry64, RegistryView.Registry32 };
+                string uninstallPath = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall";
 
-                foreach (string path in uninstallPaths)
+                foreach (var view in views)
                 {
-                    using (RegistryKey rk = Registry.LocalMachine.OpenSubKey(path))
+                    try
                     {
-                        foreach (string subKeyName in rk.GetSubKeyNames())
+                        using (var baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, view))
+                        using (var rk = baseKey.OpenSubKey(uninstallPath))
                         {
-                            using (RegistryKey subKey = rk.OpenSubKey(subKeyName))
+                            if (rk == null) continue;
+
+                            foreach (string subKeyName in rk.GetSubKeyNames())
                             {
-                                string name = subKey.GetValue("DisplayName") as string;
-                                string uninstallString = subKey.GetValue("UninstallString") as string;
-
-                                if (!string.IsNullOrEmpty(name) && name.Contains(displayName))
+                                using (var subKey = rk.OpenSubKey(subKeyName))
                                 {
-                                    if ((string.IsNullOrEmpty(uninstallString)))
-                                        ApplicationLogger.Log($"Uninstalling {name}'s Uninstall String is Empty");
+                                    string name = subKey?.GetValue("DisplayName") as string;
+                                    string uninstallString = subKey.GetValue("UninstallString") as string;
 
-                                    uninstallString = uninstallString.Replace("MsiExec.exe /I", "MsiExec.exe /X");
-                                    ApplicationLogger.Log($"Uninstalling {name}...");
-                                    CreateUninstallTask(uninstallString, Path.GetDirectoryName(newInstallerPath));
-                                    ApplicationLogger.Log("Old version uninstalled.");
-                                    break;
+                                    if (!string.IsNullOrEmpty(name) && name.Equals(displayName, StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        ApplicationLogger.Log($"Found installed software: {name}, Version: {displayversion}");
+
+                                        if ((string.IsNullOrEmpty(uninstallString)))
+                                            ApplicationLogger.Log($"Uninstalling {name}'s Uninstall String is Empty");
+
+                                        uninstallString = uninstallString.Replace("MsiExec.exe /I", "MsiExec.exe /X");
+                                        ApplicationLogger.Log($"Uninstalling {name}...");
+                                        CreateUninstallTask(uninstallString, Path.GetDirectoryName(newInstallerPath));
+                                        ApplicationLogger.Log("Old version uninstalled.");
+                                        break;
+                                    }
                                 }
                             }
                         }
+                    }
+                    catch (Exception ex)
+                    {
+                        ApplicationLogger.Log($"Error reading registry ({view}): {ex.Message}");
                     }
                 }
             }
@@ -321,6 +338,7 @@ namespace thecalcify.Helper
         {
             try
             {
+                ApplicationLogger.Log($"Starting installation of new version from {installerPath}...");
                 ApplicationLogger.Log("Installing new version...");
 
                 Process installProcess = new Process();
@@ -346,13 +364,15 @@ namespace thecalcify.Helper
         /// <param name="tempDir"></param>
         public void CreateUninstallTask(string uninstallString, string tempDir)
         {
-            string taskAName = "Clacify_UninstallTask";
-            string taskBName = "Clacify_InstallTask";
-            string uninstallCmd = Path.Combine(tempDir, "uninstall.cmd");
-            string installerExe = Path.Combine(tempDir, "thecalcify.exe");
+            try
+            {
+                string taskAName = "Clacify_UninstallTask";
+                string taskBName = "Clacify_InstallTask";
+                string uninstallCmd = Path.Combine(tempDir, "uninstall.cmd");
+                string installerExe = Path.Combine(tempDir, "thecalcify.exe");
 
-            // Step 1: Create uninstall.cmd file
-            File.WriteAllText(uninstallCmd, $@"
+                // Step 1: Create uninstall.cmd file
+                File.WriteAllText(uninstallCmd, $@"
                 @echo off
                 echo Uninstalling existing version...
                 {uninstallString} /quiet
@@ -373,25 +393,30 @@ namespace thecalcify.Helper
                 schtasks /Delete /TN {taskBName} /F
 
                 exit
-                ");
+            ");
 
-            // Step 2: Create Task Scheduler A to run uninstall.cmd
-            Process.Start(new ProcessStartInfo
-            {
-                FileName = "schtasks",
-                Arguments = $"/Create /TN {taskAName} /TR \"cmd.exe /c \"\"{uninstallCmd}\"\"\" /SC ONCE /ST {DateTime.Now.AddMinutes(1):HH:mm} /RL HIGHEST /F",
-                UseShellExecute = false,
-                CreateNoWindow = true,
-            })?.WaitForExit();
+                // Step 2: Create Task Scheduler A to run uninstall.cmd
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = "schtasks",
+                    Arguments = $"/Create /TN {taskAName} /TR \"cmd.exe /c \"\"{uninstallCmd}\"\"\" /SC ONCE /ST {DateTime.Now.AddMinutes(1):HH:mm} /RL HIGHEST /F",
+                    UseShellExecute = true,
+                    Verb = "runas", // Triggers UAC
+                })?.WaitForExit();
 
-            // Step 3: Run Task A immediately
-            Process.Start(new ProcessStartInfo
+                // Step 3: Run Task A immediately
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = "schtasks",
+                    Arguments = $"/Run /TN {taskAName}",
+                    UseShellExecute = true,
+                    Verb = "runas", // Triggers UAC
+                })?.WaitForExit();
+            }
+            catch (Exception ex) 
             {
-                FileName = "schtasks",
-                Arguments = $"/Run /TN {taskAName}",
-                UseShellExecute = false,
-                CreateNoWindow = true
-            })?.WaitForExit();
+                ApplicationLogger.LogException(ex);
+            }
         }
     }
 }

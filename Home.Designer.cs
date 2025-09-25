@@ -340,9 +340,10 @@ namespace thecalcify
             // savelabel
             // 
             this.savelabel.AutoSize = true;
+            this.savelabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.savelabel.Location = new System.Drawing.Point(7, 5);
             this.savelabel.Name = "savelabel";
-            this.savelabel.Size = new System.Drawing.Size(189, 16);
+            this.savelabel.Size = new System.Drawing.Size(242, 20);
             this.savelabel.TabIndex = 1;
             this.savelabel.Text = "Save MarketWatch (CTRL + S)";
             this.savelabel.Visible = false;
