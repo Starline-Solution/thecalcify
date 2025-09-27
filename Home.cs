@@ -47,6 +47,8 @@ namespace thecalcify
             "thecalcify");
 
         private readonly TimeSpan _reconnectThrottle = TimeSpan.FromSeconds(10); // prevent spam
+        private DateTime _lastExcelRateTime = DateTime.MinValue;
+        private System.Timers.Timer _watchdogTimer = null;
 
         // ======================
         // 📌 User / Credentials
@@ -207,7 +209,7 @@ namespace thecalcify
                 RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
                 if (RemainingDays <= 7)
                 {
-                    await CheckLicenceLoop(RemainingDays);
+                    await CheckLicenceLoop();
                 }
                 else
                 {
@@ -248,11 +250,38 @@ namespace thecalcify
                 if (LoginInfo.IsRate && LoginInfo.IsNews)
                 {
                     MenuLoad();
+
+
+                    // --- LOAD INITIAL DATA ASYNCHRONOUSLY ---
+                    await LoadInitialMarketDataAsync();
+                    HandleLastOpenedMarketWatch();
+
+
+                    // Initialize Grid on UI thread
+                    SafeInvoke(InitializeDataGridView);
+
+                    // Start SignalR
+                    SignalRTimer();
+                    await SignalREvent();
                 }
                 else if (LoginInfo.IsRate)
                 {
                     MenuLoad();
                     newsToolStripMenuItem.Visible = false;
+
+
+                    // --- LOAD INITIAL DATA ASYNCHRONOUSLY ---
+                    await LoadInitialMarketDataAsync();
+                    HandleLastOpenedMarketWatch();
+
+
+                    // Initialize Grid on UI thread
+                    SafeInvoke(InitializeDataGridView);
+
+                    // Start SignalR
+                    SignalRTimer();
+                    await SignalREvent();
+
                 }
                 else if (LoginInfo.IsNews)
                 {
@@ -261,9 +290,6 @@ namespace thecalcify
                     toolsToolStripMenuItem.Enabled = true;
                 }
 
-                // --- LOAD INITIAL DATA ASYNCHRONOUSLY ---
-                await LoadInitialMarketDataAsync();
-                HandleLastOpenedMarketWatch();
 
                 // --- FORM PROPERTIES ---
                 this.WindowState = FormWindowState.Maximized;
@@ -271,12 +297,6 @@ namespace thecalcify
 
                 CurrentInstance = this;
 
-                // Initialize Grid on UI thread
-                SafeInvoke(InitializeDataGridView);
-
-                // Start SignalR
-                SignalRTimer();
-                await SignalREvent();
 
                 // --- GLOBAL EVENTS ---
                 NetworkChange.NetworkAvailabilityChanged += OnNetworkAvailabilityChanged;
@@ -294,7 +314,7 @@ namespace thecalcify
             }
         }
 
-        private Task CheckLicenceLoop(int RemainingDays)
+        private Task CheckLicenceLoop()
         {
             RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
             if (RemainingDays <= 7)
@@ -454,6 +474,10 @@ namespace thecalcify
             {
                 fontSizeComboBox.Visible = true;
                 savelabel.Visible = false;
+
+
+                searchTextLabel.Visible = true;
+                txtsearch.Visible = true;
 
                 EditableMarketWatchGrid editableMarketWatchGrid = EditableMarketWatchGrid.CurrentInstance;
                 if (editableMarketWatchGrid != null && editableMarketWatchGrid.IsCurrentCellInEditMode)
@@ -1520,7 +1544,11 @@ namespace thecalcify
             {
                 ApplicationLogger.Log("Network unavailable.");
                 connection = null;
-                signalRTimer.Stop();
+                if (signalRTimer != null)
+                {
+                    signalRTimer.Stop();
+                }
+                
 
                 _eventHandlersAttached = false;
 
@@ -1613,7 +1641,63 @@ namespace thecalcify
             }
         }
 
+        private void StartWatchdogTimer()
+        {
+            if (_watchdogTimer != null)
+                return;
 
+            int _connectingRetryCount = 0;
+            int MaxConnectingRetries = 5;
+
+            _watchdogTimer = new System.Timers.Timer(15000); // check every 15 seconds
+            _watchdogTimer.Elapsed += async (s, e) =>
+            {
+                try
+                {
+                    if (connection == null)
+                    { return; }
+
+                    if (connection.State == HubConnectionState.Connecting)
+                    {
+                        _connectingRetryCount++;
+                        ApplicationLogger.Log($"SignalR still connecting... Attempt {_connectingRetryCount}");
+
+                        if (_connectingRetryCount >= MaxConnectingRetries)
+                        {
+                            ApplicationLogger.Log("SignalR stuck in connecting state. Forcing hard reconnect.");
+                            connection = null;
+                            _eventHandlersAttached = false;
+
+                            SignalRTimer();
+                            await SignalREvent();
+                            _connectingRetryCount = 0;
+                        }
+
+                        return;
+                    }
+
+                    var secondsSinceLastMessage = (DateTime.UtcNow - _lastExcelRateTime).TotalSeconds;
+
+                    if (secondsSinceLastMessage > 15) // 💀 No data in 30 seconds
+                    {
+                        ApplicationLogger.Log("No SignalR data in 15s — forcing reconnect.");
+
+                        connection = null;
+                        _eventHandlersAttached = false;
+
+                        SignalRTimer();
+                        await SignalREvent();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ApplicationLogger.LogException(ex);
+                }
+            };
+
+            _watchdogTimer.AutoReset = true;
+            _watchdogTimer.Start();
+        }
 
         #endregion Form Method
 
@@ -1679,11 +1763,7 @@ namespace thecalcify
         private HubConnection BuildConnection()
         {
             return new HubConnectionBuilder()
-                .WithUrl($"http://api.thecalcify.com/excel?user={username}&auth=Starline@1008&type=desktop", options =>
-                {
-                    options.Headers.Add("Origin", "http://api.thecalcify.com/");
-                    options.Transports = HttpTransportType.LongPolling | HttpTransportType.ServerSentEvents | HttpTransportType.WebSockets | HttpTransportType.None; // try fallback
-                })
+                .WithUrl($"http://api.thecalcify.com/excel?user={username}&auth=Starline@1008&type=desktop")
                 .WithAutomaticReconnect()
                 .Build();
         }
@@ -1750,7 +1830,7 @@ namespace thecalcify
                                 ApplicationLogger.LogException(ex);
                             }
 
-                        };
+                            };
 
                         _eventHandlersAttached = true;
                     }
@@ -1787,6 +1867,7 @@ namespace thecalcify
                         }
 
                         SetupUpdateTimer();
+                        StartWatchdogTimer();
                     }
                     catch (Exception ex) when (ex is TaskCanceledException || ex is OperationCanceledException)
                     {
@@ -1875,6 +1956,8 @@ namespace thecalcify
         {
             try
             {
+                _lastExcelRateTime = DateTime.UtcNow; // ⏱️ Update timestamp
+
                 byte[] bytes = Convert.FromBase64String(base64);
                 string json = DecompressGzip(bytes);
                 var data = JsonConvert.DeserializeObject<MarketDataDto>(json, _jsonSettings);
@@ -2693,6 +2776,10 @@ namespace thecalcify
             {
                 savelabel.Visible = false;
                 fontSizeComboBox.Visible = true;
+
+                searchTextLabel.Visible = false;
+                txtsearch.Visible = false;
+
                 string finalPath = Path.Combine(AppFolder, username);
                 selectedSymbols.Clear();
                 Filename = Path.Combine(finalPath, Filename);
@@ -2729,6 +2816,7 @@ namespace thecalcify
                     existingNews.Dispose();
                 }
 
+
                 // 2. Create new NewsControl
                 var newsControl = new NewsControl(username, password, token)
                 {
@@ -2736,9 +2824,12 @@ namespace thecalcify
                     Dock = DockStyle.Fill
                 };
 
+                CleanupBeforeViewSwitch();
                 saveMarketWatchHost.Visible = false;
-                refreshMarketWatchHost.Visible = true;
                 fontSizeComboBox.Visible = false;
+                searchTextLabel.Visible = false;
+                txtsearch.Visible = false;
+                refreshMarketWatchHost.Visible = false;
                 // Update status label
 
                 // Update title based on edit mode
@@ -2828,6 +2919,14 @@ namespace thecalcify
                 signalRTimer?.Stop();
                 signalRTimer?.Dispose();
                 signalRTimer = null;
+
+
+                if (_watchdogTimer != null)
+                {
+                    _watchdogTimer.Stop();
+                    _watchdogTimer.Dispose();
+                    _watchdogTimer = null; 
+                }
 
                 _updateTimer?.Dispose();
                 _updateTimer = null;

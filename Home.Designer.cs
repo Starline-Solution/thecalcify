@@ -270,7 +270,6 @@ namespace thecalcify
             this.newsToolStripMenuItem.Name = "newsToolStripMenuItem";
             this.newsToolStripMenuItem.Size = new System.Drawing.Size(65, 24);
             this.newsToolStripMenuItem.Text = "News";
-            this.newsToolStripMenuItem.Visible = false;
             this.newsToolStripMenuItem.Click += new System.EventHandler(this.newsToolStripMenuItem_Click);
             // 
             // alertToolStripMenuItem
