@@ -345,6 +345,7 @@ namespace thecalcify
 
             return Task.CompletedTask;
         }
+
         private void Home_FormClosed(object sender, FormClosedEventArgs e)
         {
             isRunning = false;
@@ -388,7 +389,13 @@ namespace thecalcify
                         await StopBackgroundTasks();
                     }
                 }
-                else if (licenceRemainingDays <= 7)
+                else if (licenceRemainingDays == 0)
+                {
+                    licenceExpire.Text = "⚠ Licence expires today!";
+                    licenceExpire.ForeColor = Color.Red;
+                    licenceExpire.Visible = !licenceExpire.Visible; // blink
+                }
+                else if (licenceRemainingDays <= 7 && licenceRemainingDays != 0)
                 {
                     licenceExpire.Text = $"⚠ Licence expires in {licenceRemainingDays} days!";
                     licenceExpire.ForeColor = Color.Red;

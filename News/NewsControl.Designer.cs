@@ -28,9 +28,9 @@ namespace thecalcify.News
         #region Component Designer generated code
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
             this.dgvNews = new System.Windows.Forms.DataGridView();
             this.dataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.DGVTitle = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -43,9 +43,10 @@ namespace thecalcify.News
             this.lblSubCategory = new System.Windows.Forms.Label();
             this.pnlTop = new System.Windows.Forms.Panel();
             this.pnlBottom = new System.Windows.Forms.Panel();
+            this.btnPrevPage = new System.Windows.Forms.Button();
             this.lblPageInfo = new System.Windows.Forms.Label();
             this.btnNextPage = new System.Windows.Forms.Button();
-            this.btnPrevPage = new System.Windows.Forms.Button();
+            this.newsUpdateLable = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.dgvNews)).BeginInit();
             this.pnlTop.SuspendLayout();
             this.pnlBottom.SuspendLayout();
@@ -57,20 +58,20 @@ namespace thecalcify.News
             this.dgvNews.AllowUserToAddRows = false;
             this.dgvNews.AllowUserToDeleteRows = false;
             this.dgvNews.AllowUserToResizeRows = false;
-            dataGridViewCellStyle1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(250)))), ((int)(((byte)(250)))), ((int)(((byte)(250)))));
-            this.dgvNews.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle4.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(250)))), ((int)(((byte)(250)))), ((int)(((byte)(250)))));
+            this.dgvNews.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle4;
             this.dgvNews.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.dgvNews.BackgroundColor = System.Drawing.Color.White;
             this.dgvNews.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.dgvNews.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.Raised;
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle2.BackColor = System.Drawing.Color.CornflowerBlue;
-            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold);
-            dataGridViewCellStyle2.ForeColor = System.Drawing.Color.WhiteSmoke;
-            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgvNews.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle5.BackColor = System.Drawing.Color.CornflowerBlue;
+            dataGridViewCellStyle5.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold);
+            dataGridViewCellStyle5.ForeColor = System.Drawing.Color.WhiteSmoke;
+            dataGridViewCellStyle5.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle5.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle5.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgvNews.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle5;
             this.dgvNews.ColumnHeadersHeight = 40;
             this.dgvNews.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             this.dgvNews.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
@@ -78,15 +79,14 @@ namespace thecalcify.News
             this.DGVTitle,
             this.DVGCategory,
             this.DVGSubCategory});
-            this.dgvNews.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle3.BackColor = System.Drawing.Color.White;
-            dataGridViewCellStyle3.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F);
-            dataGridViewCellStyle3.ForeColor = System.Drawing.Color.Black;
-            dataGridViewCellStyle3.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle3.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dgvNews.DefaultCellStyle = dataGridViewCellStyle3;
+            dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle6.BackColor = System.Drawing.Color.White;
+            dataGridViewCellStyle6.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F);
+            dataGridViewCellStyle6.ForeColor = System.Drawing.Color.Black;
+            dataGridViewCellStyle6.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle6.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle6.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgvNews.DefaultCellStyle = dataGridViewCellStyle6;
             this.dgvNews.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dgvNews.EnableHeadersVisualStyles = false;
             this.dgvNews.GridColor = System.Drawing.Color.Gainsboro;
@@ -96,9 +96,10 @@ namespace thecalcify.News
             this.dgvNews.RowHeadersVisible = false;
             this.dgvNews.RowHeadersWidth = 51;
             this.dgvNews.RowTemplate.Height = 36;
+            this.dgvNews.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.dgvNews.Size = new System.Drawing.Size(800, 372);
             this.dgvNews.TabIndex = 0;
-            this.dgvNews.CellDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvNews_CellDoubleClick);
+            this.dgvNews.CellDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.DgvNews_CellDoubleClick);
             // 
             // dataGridViewTextBoxColumn1
             // 
@@ -182,6 +183,7 @@ namespace thecalcify.News
             // 
             this.pnlTop.AutoSize = true;
             this.pnlTop.BackColor = System.Drawing.Color.White;
+            this.pnlTop.Controls.Add(this.newsUpdateLable);
             this.pnlTop.Controls.Add(this.lblCategory);
             this.pnlTop.Controls.Add(this.cmbCategory);
             this.pnlTop.Controls.Add(this.lblSubCategory);
@@ -208,6 +210,16 @@ namespace thecalcify.News
             this.pnlBottom.Size = new System.Drawing.Size(800, 50);
             this.pnlBottom.TabIndex = 2;
             // 
+            // btnPrevPage
+            // 
+            this.btnPrevPage.Location = new System.Drawing.Point(13, 10);
+            this.btnPrevPage.Name = "btnPrevPage";
+            this.btnPrevPage.Size = new System.Drawing.Size(105, 30);
+            this.btnPrevPage.TabIndex = 2;
+            this.btnPrevPage.Text = "< Home";
+            this.btnPrevPage.UseVisualStyleBackColor = true;
+            this.btnPrevPage.Click += new System.EventHandler(this.BtnPrevPage_Click);
+            // 
             // lblPageInfo
             // 
             this.lblPageInfo.Anchor = System.Windows.Forms.AnchorStyles.None;
@@ -215,10 +227,10 @@ namespace thecalcify.News
             this.lblPageInfo.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblPageInfo.Location = new System.Drawing.Point(365, 15);
             this.lblPageInfo.Name = "lblPageInfo";
-            this.lblPageInfo.Size = new System.Drawing.Size(91, 20);
+            this.lblPageInfo.Size = new System.Drawing.Size(121, 20);
             this.lblPageInfo.TabIndex = 0;
-            this.lblPageInfo.Text = "Page 1 of 1";
-            this.lblPageInfo.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblPageInfo.Text = "Page 1 of 1000";
+            this.lblPageInfo.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // btnNextPage
             // 
@@ -229,17 +241,17 @@ namespace thecalcify.News
             this.btnNextPage.TabIndex = 1;
             this.btnNextPage.Text = "Next >";
             this.btnNextPage.UseVisualStyleBackColor = true;
-            this.btnNextPage.Click += new System.EventHandler(this.btnNextPage_Click);
+            this.btnNextPage.Click += new System.EventHandler(this.BtnNextPage_Click);
             // 
-            // btnPrevPage
+            // newsUpdateLable
             // 
-            this.btnPrevPage.Location = new System.Drawing.Point(13, 10);
-            this.btnPrevPage.Name = "btnPrevPage";
-            this.btnPrevPage.Size = new System.Drawing.Size(105, 30);
-            this.btnPrevPage.TabIndex = 2;
-            this.btnPrevPage.Text = "< Home";
-            this.btnPrevPage.UseVisualStyleBackColor = true;
-            this.btnPrevPage.Click += new System.EventHandler(this.btnPrevPage_Click);
+            this.newsUpdateLable.AutoSize = true;
+            this.newsUpdateLable.Location = new System.Drawing.Point(559, 41);
+            this.newsUpdateLable.Name = "newsUpdateLable";
+            this.newsUpdateLable.Size = new System.Drawing.Size(148, 16);
+            this.newsUpdateLable.TabIndex = 5;
+            this.newsUpdateLable.Text = "Last News Recived At:- ";
+            this.newsUpdateLable.Visible = false;
             // 
             // NewsControl
             // 
@@ -263,5 +275,6 @@ namespace thecalcify.News
         private DataGridViewTextBoxColumn DGVTitle;
         private DataGridViewTextBoxColumn DVGCategory;
         private DataGridViewTextBoxColumn DVGSubCategory;
+        private Label newsUpdateLable;
     }
 }

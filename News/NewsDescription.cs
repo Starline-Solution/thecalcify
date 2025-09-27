@@ -27,10 +27,10 @@ namespace thecalcify.MarketWatch
             if (_news == null) return;
 
             lblHeadline.Text = _news.caption;
-            lblDateSource.Text = $"{_news.versionCreated:dd-MMM-yyyy HH:mm} · {_news.credit}";
+            lblDateSource.Text = $"{_news.versionCreated:dd-MMM-yyyy HH:mm}";
             txtDescription.Text = _news.fragment;
             //lblTags.Text = _news.keyword != null ? $"Tags: {_news.keyword}" : "Tags: -";
-            lblCopyright.Text = _news.copyrightNotice;
+            //lblCopyright.Text = _news.copyrightNotice;
         }
     }
 }
