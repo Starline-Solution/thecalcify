@@ -126,7 +126,7 @@
     <value>Microsoft Sans Serif, 10pt</value>
   </data>
   <data name="uname.Location" type="System.Drawing.Point, System.Drawing">
-    <value>125, 188</value>
+    <value>125, 249</value>
   </data>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="uname.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
@@ -151,7 +151,7 @@
     <value>formPanel</value>
   </data>
   <data name="&gt;&gt;uname.ZOrder" xml:space="preserve">
-    <value>3</value>
+    <value>4</value>
   </data>
   <data name="password.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -160,7 +160,7 @@
     <value>Microsoft Sans Serif, 10pt</value>
   </data>
   <data name="password.Location" type="System.Drawing.Point, System.Drawing">
-    <value>125, 275</value>
+    <value>125, 336</value>
   </data>
   <data name="password.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -184,13 +184,13 @@
     <value>formPanel</value>
   </data>
   <data name="&gt;&gt;password.ZOrder" xml:space="preserve">
-    <value>4</value>
+    <value>5</value>
   </data>
   <data name="unameTextBox.Font" type="System.Drawing.Font, System.Drawing">
     <value>Microsoft Sans Serif, 10pt</value>
   </data>
   <data name="unameTextBox.Location" type="System.Drawing.Point, System.Drawing">
-    <value>125, 219</value>
+    <value>125, 280</value>
   </data>
   <data name="unameTextBox.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
@@ -211,13 +211,13 @@
     <value>formPanel</value>
   </data>
   <data name="&gt;&gt;unameTextBox.ZOrder" xml:space="preserve">
-    <value>5</value>
+    <value>6</value>
   </data>
   <data name="passwordtextBox.Font" type="System.Drawing.Font, System.Drawing">
     <value>Microsoft Sans Serif, 10pt</value>
   </data>
   <data name="passwordtextBox.Location" type="System.Drawing.Point, System.Drawing">
-    <value>125, 306</value>
+    <value>125, 367</value>
   </data>
   <data name="passwordtextBox.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
@@ -241,7 +241,7 @@
     <value>formPanel</value>
   </data>
   <data name="&gt;&gt;passwordtextBox.ZOrder" xml:space="preserve">
-    <value>6</value>
+    <value>7</value>
   </data>
   <data name="loginbutton.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
     <value>Flat</value>
@@ -250,7 +250,7 @@
     <value>Microsoft Sans Serif, 10pt, style=Bold</value>
   </data>
   <data name="loginbutton.Location" type="System.Drawing.Point, System.Drawing">
-    <value>125, 439</value>
+    <value>125, 500</value>
   </data>
   <data name="loginbutton.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
@@ -274,10 +274,10 @@
     <value>formPanel</value>
   </data>
   <data name="&gt;&gt;loginbutton.ZOrder" xml:space="preserve">
-    <value>7</value>
+    <value>8</value>
   </data>
   <data name="eyePictureBox.Location" type="System.Drawing.Point, System.Drawing">
-    <value>462, 306</value>
+    <value>462, 367</value>
   </data>
   <data name="eyePictureBox.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
@@ -301,7 +301,7 @@
     <value>formPanel</value>
   </data>
   <data name="&gt;&gt;eyePictureBox.ZOrder" xml:space="preserve">
-    <value>8</value>
+    <value>9</value>
   </data>
   <metadata name="errorProvider.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>17, 17</value>
@@ -314,6 +314,30 @@
   </data>
   <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
     <value>750, 750</value>
+  </data>
+  <data name="pictureBox1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>114, 43</value>
+  </data>
+  <data name="pictureBox1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>410, 75</value>
+  </data>
+  <data name="pictureBox1.SizeMode" type="System.Windows.Forms.PictureBoxSizeMode, System.Windows.Forms">
+    <value>StretchImage</value>
+  </data>
+  <data name="pictureBox1.TabIndex" type="System.Int32, mscorlib">
+    <value>7</value>
+  </data>
+  <data name="&gt;&gt;pictureBox1.Name" xml:space="preserve">
+    <value>pictureBox1</value>
+  </data>
+  <data name="&gt;&gt;pictureBox1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.PictureBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;pictureBox1.Parent" xml:space="preserve">
+    <value>formPanel</value>
+  </data>
+  <data name="&gt;&gt;pictureBox1.ZOrder" xml:space="preserve">
+    <value>0</value>
   </data>
   <data name="exitLabelButton.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -343,13 +367,13 @@
     <value>formPanel</value>
   </data>
   <data name="&gt;&gt;exitLabelButton.ZOrder" xml:space="preserve">
-    <value>0</value>
+    <value>1</value>
   </data>
   <data name="saveCredential.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
   <data name="saveCredential.Location" type="System.Drawing.Point, System.Drawing">
-    <value>125, 374</value>
+    <value>125, 435</value>
   </data>
   <data name="saveCredential.Size" type="System.Drawing.Size, System.Drawing">
     <value>129, 22</value>
@@ -370,13 +394,13 @@
     <value>formPanel</value>
   </data>
   <data name="&gt;&gt;saveCredential.ZOrder" xml:space="preserve">
-    <value>1</value>
+    <value>2</value>
   </data>
   <data name="titleLabel.Font" type="System.Drawing.Font, System.Drawing">
     <value>Microsoft Sans Serif, 18pt, style=Bold</value>
   </data>
   <data name="titleLabel.Location" type="System.Drawing.Point, System.Drawing">
-    <value>4, 66</value>
+    <value>4, 162</value>
   </data>
   <data name="titleLabel.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -403,10 +427,10 @@
     <value>formPanel</value>
   </data>
   <data name="&gt;&gt;titleLabel.ZOrder" xml:space="preserve">
-    <value>2</value>
+    <value>3</value>
   </data>
   <data name="unameUnderline.Location" type="System.Drawing.Point, System.Drawing">
-    <value>125, 244</value>
+    <value>125, 305</value>
   </data>
   <data name="unameUnderline.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
@@ -427,10 +451,10 @@
     <value>formPanel</value>
   </data>
   <data name="&gt;&gt;unameUnderline.ZOrder" xml:space="preserve">
-    <value>9</value>
+    <value>10</value>
   </data>
   <data name="passwordUnderline.Location" type="System.Drawing.Point, System.Drawing">
-    <value>125, 331</value>
+    <value>125, 392</value>
   </data>
   <data name="passwordUnderline.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
@@ -451,7 +475,7 @@
     <value>formPanel</value>
   </data>
   <data name="&gt;&gt;passwordUnderline.ZOrder" xml:space="preserve">
-    <value>10</value>
+    <value>11</value>
   </data>
   <data name="formPanel.Location" type="System.Drawing.Point, System.Drawing">
     <value>62, 62</value>

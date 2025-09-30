@@ -1,10 +1,13 @@
 ﻿using IWshRuntimeLibrary;
 using Microsoft.Win32;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Linq;
+using System.Management;
 using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -164,7 +167,91 @@ namespace thecalcify.Helper
             }
         }
 
+        public static string UUIDExtractor() {
 
+            try
+            {
+                using (var searcher = new ManagementObjectSearcher("SELECT UUID FROM Win32_ComputerSystemProduct"))
+                {
+                    foreach (ManagementObject mo in searcher.Get())
+                    {
+                        return mo["UUID"]?.ToString();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ApplicationLogger.LogException(ex);
+            }
+            return string.Empty;
+        }
+
+        public static string JsonExtractor(string json)
+        {
+            string UUID = UUIDExtractor();
+
+            // Parse JSON
+            var root = JObject.Parse(json);
+
+            // Filter deviceAccess inside each item of data array
+            foreach (var item in root["data"])
+            {
+                if (string.IsNullOrWhiteSpace(item["deviceId"]?.ToString()) && string.IsNullOrWhiteSpace(UUID))
+                {
+                    continue;
+                }
+
+                var filteredDevices = item["deviceAccess"]
+                    .Where(d => d["deviceType"]?.ToString().ToLower() == "desktop" && d["deviceId"]?.ToString() == UUID)
+                    .ToList();
+
+                // Replace deviceAccess with filtered list
+                item["deviceAccess"] = new JArray(filteredDevices);
+
+                break;
+            }
+
+            // *** Flatten the JSON ***
+
+            // Take first item from data array
+            var dataItem = root["data"]?.First as JObject;
+            if (dataItem == null)
+            {
+                Console.WriteLine("No data found to flatten.");
+                return string.Empty;
+            }
+
+            // Take first deviceAccess item
+            var deviceItem = dataItem["deviceAccess"]?.First as JObject;
+
+            // Create new JObject for flattened JSON
+            var flattened = new JObject();
+
+            // Copy all root properties except 'data'
+            foreach (var prop in root.Properties())
+            {
+                if (prop.Name != "data")
+                    flattened[prop.Name] = prop.Value;
+            }
+
+            // Copy all dataItem properties except 'deviceAccess'
+            foreach (var prop in dataItem.Properties())
+            {
+                if (prop.Name != "deviceAccess")
+                    flattened[prop.Name] = prop.Value;
+            }
+
+            // Copy all deviceAccess properties if deviceItem is not null
+            if (deviceItem != null)
+            {
+                foreach (var prop in deviceItem.Properties())
+                {
+                    flattened[prop.Name] = prop.Value;
+                }
+            }
+
+            return flattened.ToString(Newtonsoft.Json.Formatting.Indented);
+        }
     }
 
 

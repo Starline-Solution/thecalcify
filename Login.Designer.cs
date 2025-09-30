@@ -37,6 +37,7 @@ namespace thecalcify
             this.eyePictureBox = new System.Windows.Forms.PictureBox();
             this.errorProvider = new System.Windows.Forms.ErrorProvider(this.components);
             this.formPanel = new System.Windows.Forms.Panel();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.exitLabelButton = new System.Windows.Forms.Label();
             this.saveCredential = new System.Windows.Forms.CheckBox();
             this.titleLabel = new System.Windows.Forms.Label();
@@ -45,6 +46,7 @@ namespace thecalcify
             ((System.ComponentModel.ISupportInitialize)(this.eyePictureBox)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.errorProvider)).BeginInit();
             this.formPanel.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
             // uname
@@ -110,6 +112,7 @@ namespace thecalcify
             // formPanel
             // 
             this.formPanel.BackColor = System.Drawing.Color.White;
+            this.formPanel.Controls.Add(this.pictureBox1);
             this.formPanel.Controls.Add(this.exitLabelButton);
             this.formPanel.Controls.Add(this.saveCredential);
             this.formPanel.Controls.Add(this.titleLabel);
@@ -123,6 +126,13 @@ namespace thecalcify
             this.formPanel.Controls.Add(this.passwordUnderline);
             resources.ApplyResources(this.formPanel, "formPanel");
             this.formPanel.Name = "formPanel";
+            // 
+            // pictureBox1
+            // 
+            this.pictureBox1.Image = global::thecalcify.Properties.Resources.starline_solution;
+            resources.ApplyResources(this.pictureBox1, "pictureBox1");
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.TabStop = false;
             // 
             // exitLabelButton
             // 
@@ -171,6 +181,7 @@ namespace thecalcify
             ((System.ComponentModel.ISupportInitialize)(this.errorProvider)).EndInit();
             this.formPanel.ResumeLayout(false);
             this.formPanel.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -190,5 +201,6 @@ namespace thecalcify
         private Panel unameUnderline;
         private Panel passwordUnderline;
         private Label exitLabelButton;
+        private PictureBox pictureBox1;
     }
 }

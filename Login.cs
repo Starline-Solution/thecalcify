@@ -358,6 +358,7 @@ namespace thecalcify
             this.Cursor = Cursors.Default;
         }
 
+
         private void EyePictureBox_Click(object sender, EventArgs e)
         {
             if (this.passwordtextBox.PasswordChar == '•')

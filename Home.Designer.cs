@@ -59,6 +59,10 @@ namespace thecalcify
             this.viewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.newsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.newsListToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.newsSubscriptionListToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.categorywiseSubsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.regionwiseSubscriptionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.alertToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.headerPanel = new System.Windows.Forms.Panel();
@@ -267,17 +271,48 @@ namespace thecalcify
             // 
             // newsToolStripMenuItem
             // 
+            this.newsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.newsListToolStripMenuItem,
+            this.newsSubscriptionListToolStripMenuItem});
             this.newsToolStripMenuItem.Name = "newsToolStripMenuItem";
             this.newsToolStripMenuItem.Size = new System.Drawing.Size(65, 24);
             this.newsToolStripMenuItem.Text = "News";
-            this.newsToolStripMenuItem.Click += new System.EventHandler(this.newsToolStripMenuItem_Click);
+            // 
+            // newsListToolStripMenuItem
+            // 
+            this.newsListToolStripMenuItem.Name = "newsListToolStripMenuItem";
+            this.newsListToolStripMenuItem.Size = new System.Drawing.Size(265, 26);
+            this.newsListToolStripMenuItem.Text = "News List";
+            this.newsListToolStripMenuItem.Click += new System.EventHandler(this.NewsListToolStripMenuItem_Click);
+            // 
+            // newsSubscriptionListToolStripMenuItem
+            // 
+            this.newsSubscriptionListToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.categorywiseSubsToolStripMenuItem,
+            this.regionwiseSubscriptionToolStripMenuItem});
+            this.newsSubscriptionListToolStripMenuItem.Name = "newsSubscriptionListToolStripMenuItem";
+            this.newsSubscriptionListToolStripMenuItem.Size = new System.Drawing.Size(265, 26);
+            this.newsSubscriptionListToolStripMenuItem.Text = "News Subscription List";
+            // 
+            // categorywiseSubsToolStripMenuItem
+            // 
+            this.categorywiseSubsToolStripMenuItem.Name = "categorywiseSubsToolStripMenuItem";
+            this.categorywiseSubsToolStripMenuItem.Size = new System.Drawing.Size(291, 26);
+            this.categorywiseSubsToolStripMenuItem.Text = "Categorywise Subscription";
+            this.categorywiseSubsToolStripMenuItem.Click += new System.EventHandler(this.CategorywiseSubsToolStripMenuItem_Click);
+            // 
+            // regionwiseSubscriptionToolStripMenuItem
+            // 
+            this.regionwiseSubscriptionToolStripMenuItem.Name = "regionwiseSubscriptionToolStripMenuItem";
+            this.regionwiseSubscriptionToolStripMenuItem.Size = new System.Drawing.Size(291, 26);
+            this.regionwiseSubscriptionToolStripMenuItem.Text = "Regionwise Subscription";
+            this.regionwiseSubscriptionToolStripMenuItem.Click += new System.EventHandler(this.RegionwiseSubscriptionToolStripMenuItem_Click);
             // 
             // alertToolStripMenuItem
             // 
             this.alertToolStripMenuItem.Name = "alertToolStripMenuItem";
             this.alertToolStripMenuItem.Size = new System.Drawing.Size(58, 24);
             this.alertToolStripMenuItem.Text = "Alert";
-            this.alertToolStripMenuItem.Visible = false;
             this.alertToolStripMenuItem.Click += new System.EventHandler(this.AlertToolStripMenuItem_Click);
             // 
             // aboutToolStripMenuItem
@@ -610,6 +645,9 @@ namespace thecalcify
         private ToolStripMenuItem newsToolStripMenuItem;
         private ToolStripMenuItem alertToolStripMenuItem;
         private ToolStripMenuItem refreshMarketWatchHost;
-
+        private ToolStripMenuItem newsListToolStripMenuItem;
+        private ToolStripMenuItem newsSubscriptionListToolStripMenuItem;
+        private ToolStripMenuItem categorywiseSubsToolStripMenuItem;
+        private ToolStripMenuItem regionwiseSubscriptionToolStripMenuItem;
     }
 }

@@ -129,7 +129,7 @@ namespace thecalcify
         private bool _eventHandlersAttached = false;
 
         public Common commonClass;
-        private ConcurrentQueue<MarketDataDto> _updateQueue = new ConcurrentQueue<MarketDataDto>();
+        //private ConcurrentQueue<MarketDataDto> _updateQueue = new ConcurrentQueue<MarketDataDto>();
         private readonly object _tableLock = new object();
         private readonly object _reconnectLock = new object();
 
@@ -285,7 +285,7 @@ namespace thecalcify
                 }
                 else if (LoginInfo.IsNews)
                 {
-                    this.newsToolStripMenuItem_Click(this, EventArgs.Empty);
+                    this.NewsListToolStripMenuItem_Click(this, EventArgs.Empty);
                     newCTRLNToolStripMenuItem.Visible = false;
                     toolsToolStripMenuItem.Enabled = true;
                 }
@@ -1600,7 +1600,7 @@ namespace thecalcify
                 // 🔄 Reset state
                 selectedSymbols.Clear();
                 identifiers.Clear();
-                _updateQueue = new ConcurrentQueue<MarketDataDto>();
+                //_updateQueue = new ConcurrentQueue<MarketDataDto>();
                 isEdit = false;
                 isGrid = true;
                 reloadGrid = true;
@@ -2067,50 +2067,56 @@ namespace thecalcify
             try
             {
                 defaultGrid.SuspendLayout();
-
-                lock (_tableLock)
+                if (connection != null)
                 {
-                    var now = DateTime.Now;
 
-                    foreach (var newData in updates)
+                    lock (_tableLock)
                     {
-                        if (newData == null || string.IsNullOrEmpty(newData.i))
-                            continue;
+                        var now = DateTime.Now;
 
-                        // Prepare dictionary and notify Excel
-                        var symbol = newData.i;
-                        var dict = CreateFieldDictionary(newData);
-                        ExcelNotifier.NotifyExcel(symbol, dict);
-
-                        if (!identifiers.Contains(symbol))
-                            continue;
-
-                        if (!symbolRowMap.TryGetValue(symbol, out int rowIndex))
+                        foreach (var newData in updates)
                         {
-                            var dto = pastRateTickDTO?.FirstOrDefault(x => x.i == symbol);
-                            if (dto != null)
-                                AddRowFromDTO(dto);
-
-                            if (!symbolRowMap.TryGetValue(symbol, out rowIndex))
+                            if (newData == null || string.IsNullOrEmpty(newData.i))
                                 continue;
+
+                            // Prepare dictionary and notify Excel
+                            var symbol = newData.i;
+                            var dict = CreateFieldDictionary(newData);
+                            ExcelNotifier.NotifyExcel(symbol, dict);
+
+                            if (!identifiers.Contains(symbol))
+                                continue;
+
+                            if (!symbolRowMap.TryGetValue(symbol, out int rowIndex))
+                            {
+                                var dto = pastRateTickDTO?.FirstOrDefault(x => x.i == symbol);
+                                if (dto != null)
+                                    AddRowFromDTO(dto);
+
+                                if (!symbolRowMap.TryGetValue(symbol, out rowIndex))
+                                    continue;
+                            }
+
+                            var row = defaultGrid.Rows[rowIndex];
+                            UpdateRow(row, newData);
                         }
 
-                        var row = defaultGrid.Rows[rowIndex];
-                        UpdateRow(row, newData);
-                    }
-
-                    // Throttle font refresh (once per batch)
-                    if ((now - lastUiUpdate).TotalMilliseconds > 120)
-                    {
-                        var font = new Font("Microsoft Sans Serif", fontSize);
-                        defaultGrid.DefaultCellStyle.Font = font;
-                        defaultGrid.RowHeadersDefaultCellStyle.Font = new Font(font.FontFamily, fontSize + 1.5f, FontStyle.Bold);
-                        lastUiUpdate = now;
-                    }
+                        // Throttle font refresh (once per batch)
+                        if ((now - lastUiUpdate).TotalMilliseconds > 120)
+                        {
+                            var font = new Font("Microsoft Sans Serif", fontSize);
+                            defaultGrid.DefaultCellStyle.Font = font;
+                            defaultGrid.RowHeadersDefaultCellStyle.Font = new Font(font.FontFamily, fontSize + 1.5f, FontStyle.Bold);
+                            lastUiUpdate = now;
+                        }
+                    } 
                 }
             }
             catch (Exception ex)
             {
+                if(connection == null)
+                    updates.Clear();
+
                 Console.WriteLine($"Error during batch update: {ex}");
             }
             finally
@@ -2705,7 +2711,7 @@ namespace thecalcify
                         selectedSymbols.Clear();
                         identifiers.Clear();
                         saveFileName = string.Empty;
-                        _updateQueue = new ConcurrentQueue<MarketDataDto>();
+                        //_updateQueue = new ConcurrentQueue<MarketDataDto>();
 
                         var clickedItem = (ToolStripMenuItem)sender;
 
@@ -2811,57 +2817,14 @@ namespace thecalcify
             MenuLoad();
         }
 
-        private void newsToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                // 1. Clean up existing NewsControl if already present
-                var existingNews = this.Controls.Find("newsControlView", true).FirstOrDefault();
-                if (existingNews != null)
-                {
-                    this.Controls.Remove(existingNews);
-                    existingNews.Dispose();
-                }
-
-
-                // 2. Create new NewsControl
-                var newsControl = new NewsControl(username, password, token)
-                {
-                    Name = "newsControlView",
-                    Dock = DockStyle.Fill
-                };
-
-                CleanupBeforeViewSwitch();
-                saveMarketWatchHost.Visible = false;
-                fontSizeComboBox.Visible = false;
-                searchTextLabel.Visible = false;
-                txtsearch.Visible = false;
-                refreshMarketWatchHost.Visible = false;
-                // Update status label
-
-                // Update title based on edit mode
-                titleLabel.Text = "News";
-
-                // 3. Add it to main form
-                this.Controls.Add(newsControl);
-                newsControl.BringToFront();
-                newsControl.Focus();
-            }
-            catch (Exception ex)
-            {
-                ApplicationLogger.LogException(ex);
-                MessageBox.Show($"Error loading News view: {ex.Message}");
-            }
-        }
-
         private void ClearCollections()
         {
             try
             {
-                lock (_updateQueue)
-                {
-                    while (_updateQueue.TryDequeue(out _)) { }
-                }
+                //lock (_updateQueue)
+                //{
+                //    while (_updateQueue.TryDequeue(out _)) { }
+                //}
 
                 lock (symbolRowMap)
                 {
@@ -2937,7 +2900,7 @@ namespace thecalcify
 
                 _updateTimer?.Dispose();
                 _updateTimer = null;
-                while (_updateQueue.TryDequeue(out _)) { }
+                _latestUpdates.Clear();
                 txtsearch.Text = string.Empty;
                 // 3. Clean up DataGridView
                 CleanupDataGridView();
@@ -3136,6 +3099,93 @@ namespace thecalcify
             {
                 if (InvokeRequired) BeginInvoke((MethodInvoker)(() => action()));
                 else action();
+            }
+        }
+
+        private void NewsListToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // 1. Clean up existing NewsControl if already present
+                var existingNews = this.Controls.Find("newsControlView", true).FirstOrDefault();
+                if (existingNews != null)
+                {
+                    this.Controls.Remove(existingNews);
+                    existingNews.Dispose();
+                }
+
+
+                // 2. Create new NewsControl
+                var newsControl = new NewsControl(username, password, token)
+                {
+                    Name = "newsControlView",
+                    Dock = DockStyle.Fill
+                };
+
+                CleanupBeforeViewSwitch();
+                saveMarketWatchHost.Visible = false;
+                fontSizeComboBox.Visible = false;
+                searchTextLabel.Visible = false;
+                txtsearch.Visible = false;
+                refreshMarketWatchHost.Visible = false;
+                // Update status label
+
+                // Update title based on edit mode
+                titleLabel.Text = "News";
+
+                // 3. Add it to main form
+                this.Controls.Add(newsControl);
+                newsControl.BringToFront();
+                newsControl.Focus();
+            }
+            catch (Exception ex)
+            {
+                ApplicationLogger.LogException(ex);
+                MessageBox.Show($"Error loading News view: {ex.Message}");
+            }
+        }
+
+   
+        private void CategorywiseSubsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            string jsonCategoriesFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Categories.json");
+            //string jsonRegionsFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Regions.json");
+            string jsonContent = File.ReadAllText(jsonCategoriesFilePath);
+
+
+            using (var NewsSubscribeForm = new NewsSubscriptionList(jsonContent, "category"))
+            {
+                if (isFullScreen)
+                {
+                    NewsSubscribeForm.StartPosition = FormStartPosition.CenterParent;
+                    NewsSubscribeForm.TopMost = true; // Ensures it stays above the full-screen window
+                    NewsSubscribeForm.ShowDialog(this); // Pass the main form as owner
+                }
+                else
+                {
+                    NewsSubscribeForm.ShowDialog();
+                }
+            }
+        }
+
+        private void RegionwiseSubscriptionToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            string jsonRegionsFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Regions.json");
+            string jsonContent = File.ReadAllText(jsonRegionsFilePath);
+
+
+            using (var NewsSubscribeForm = new NewsSubscriptionList(jsonContent, "region"))
+            {
+                if (isFullScreen)
+                {
+                    NewsSubscribeForm.StartPosition = FormStartPosition.CenterParent;
+                    NewsSubscribeForm.TopMost = true; // Ensures it stays above the full-screen window
+                    NewsSubscribeForm.ShowDialog(this); // Pass the main form as owner
+                }
+                else
+                {
+                    NewsSubscribeForm.ShowDialog();
+                }
             }
         }
         #endregion Other Methods
