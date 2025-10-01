@@ -29,7 +29,15 @@ namespace thecalcify.Helper
                     {
                         try
                         {
-                            client.Connect(100); // wait few sec
+                            try
+                            {
+                                client.Connect(1000); // wait few sec
+                            }
+                            catch (Exception ex)
+                            {
+                                ApplicationLogger.Log("while Connection Client");
+                                ApplicationLogger.LogException(ex);
+                            }
                             using (var writer = new StreamWriter(client) { AutoFlush = true })
                             {
 
@@ -42,7 +50,8 @@ namespace thecalcify.Helper
                         }
                         catch (Exception ex)
                         {
-                            Console.WriteLine("[App] Pipe error: " + ex.Message);
+                            ApplicationLogger.Log("[App] Pipe error: " + ex.Message);
+                            ApplicationLogger.LogException(ex);
                         }
                     }
                 }

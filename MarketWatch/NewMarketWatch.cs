@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -109,7 +110,48 @@ namespace thecalcify.MarketWatch
             InitializeToolTip();
         }
 
-        public async void LoadIdentifier()
+        public void EditableDispose()
+        {
+            try
+            {
+                // Dispose of the HubConnection (async-safe)
+                if (connection != null)
+                {
+                    try
+                    {
+                        connection.StopAsync().Wait(); // Stop connection gracefully
+                        connection.DisposeAsync().AsTask().Wait(); // Dispose the connection
+                    }
+                    catch (Exception ex)
+                    {
+                        ApplicationLogger.LogException(ex); // Log any connection-related issues
+                    }
+                    finally
+                    {
+                        connection = null; // Nullify the connection object
+                    }
+                }
+
+                // Dispose of UI controls (DataGridView, Panels, Buttons, etc.)
+                editableMarketWatchGridView?.Dispose(); // Dispose DataGridView
+             
+                // Flags or metadata should be reset
+                isEditMarketWatch = false;
+                isDelete = false;
+                isGrid = true; // Reset flag if necessary
+            }
+            catch (Exception ex)
+            {
+                ApplicationLogger.LogException(ex); // Log any errors during disposal
+            }
+            finally
+            {
+                // Ensure that CurrentInstance is null
+                CurrentInstance = null;
+            }
+        }
+
+        public async Task LoadIdentifier()
         {
             thecalcify live_Rate = thecalcify.CurrentInstance;
             identifiers = live_Rate?.identifiers;
@@ -383,12 +425,12 @@ namespace thecalcify.MarketWatch
                 {
                     try
                     {
-                        Console.WriteLine("Received data from SignalR");
+                        //Console.WriteLine("1");
 
                         var json = DecompressGzip(Convert.FromBase64String(base64));
                         //Console.WriteLine($"Decompressed JSON: {json}");
 
-                        var data = JsonSerializer.Deserialize<MarketDataDto>(json);
+                        var data = JsonConvert.DeserializeObject<MarketDataDto>(json);
 
                         if (data != null)
                         {
@@ -449,7 +491,7 @@ namespace thecalcify.MarketWatch
                                 }
                                 catch (Exception ex)
                                 {
-                                    Console.WriteLine($"UI Update Error: {ex}");
+                                    //Console.WriteLine($"UI Update Error: {ex}");
                                     ApplicationLogger.LogException(ex);
                                 }
                                 finally
@@ -461,7 +503,7 @@ namespace thecalcify.MarketWatch
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"Error processing data: {ex}");
+                        //Console.WriteLine($"Error processing data: {ex}");
                         ApplicationLogger.LogException(ex);
                     }
                 });
@@ -469,7 +511,7 @@ namespace thecalcify.MarketWatch
                 // Handle connection events
                 connection.Closed += async (error) =>
                 {
-                    Console.WriteLine($"Connection closed: {error?.Message}");
+                    //Console.WriteLine($"Connection closed: {error?.Message}");
                     await Task.Delay(new Random().Next(1000, 5000));
                     try
                     {
@@ -484,13 +526,13 @@ namespace thecalcify.MarketWatch
                     catch (Exception ex)
                     {
                         ApplicationLogger.LogException(ex);
-                        Console.WriteLine($"Reconnection failed: {ex.Message}");
+                        //Console.WriteLine($"Reconnection failed: {ex.Message}");
                     }
                 };
 
                 connection.Reconnected += async (connectionId) =>
                 {
-                    Console.WriteLine($"Reconnected with ID: {connectionId}");
+                    //Console.WriteLine($"Reconnected with ID: {connectionId}");
                     await connection.InvokeAsync("SubscribeSymbols", identifiers);
                 };
 
@@ -501,13 +543,13 @@ namespace thecalcify.MarketWatch
                 //}
                 await connection.InvokeAsync("SubscribeSymbols", identifiers);
                 //UpdateGridColumnVisibility();
-                Console.WriteLine("Successfully connected to SignalR hub");
+                //Console.WriteLine("Successfully connected to SignalR hub");
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Connection error: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 ApplicationLogger.LogException(ex);
-                Console.WriteLine($"Connection failed: {ex}");
+                //Console.WriteLine($"Connection failed: {ex}");
             }
         }
 
@@ -1374,7 +1416,7 @@ namespace thecalcify.MarketWatch
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("Error parsing rate value at UpdateRowCells: " + ex.Message);
+                    //Console.WriteLine("Error parsing rate value at UpdateRowCells: " + ex.Message);
                 }
             }
 
@@ -1488,7 +1530,8 @@ namespace thecalcify.MarketWatch
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("Error parsing rate value at UpdateRowCell1: " + ex.Message);
+                    //Console.WriteLine("Error parsing rate value at UpdateRowCell1: " + ex.Message);
+                    ApplicationLogger.LogException(ex);
                 }
             }
         }
@@ -1703,7 +1746,7 @@ namespace thecalcify.MarketWatch
                                 MessageBox.Show("You can not file name Default");
                                 return;
                             }
-                            string json = JsonSerializer.Serialize(SymbolList);
+                            string json = System.Text.Json.JsonSerializer.Serialize(SymbolList);
                             string encryptedJson = CryptoHelper.Encrypt(json, passphrase);
 
                             // Ensure directory exists (should already exist from AppFolder)
@@ -1726,7 +1769,7 @@ namespace thecalcify.MarketWatch
                 }
                 else
                 {
-                    string json = JsonSerializer.Serialize(SymbolList);
+                    string json = System.Text.Json.JsonSerializer.Serialize(SymbolList);
                     string encryptedJson = CryptoHelper.Encrypt(json, passphrase);
 
                     // Ensure directory exists (should already exist from AppFolder)
@@ -1791,6 +1834,7 @@ namespace thecalcify.MarketWatch
                 return Encoding.UTF8.GetString(output.ToArray());
             }
         }
+
         private bool IsRowDataDifferent(DataGridViewRow gridRow, MarketDataDto dto)
         {
             // Replace YourDtoType with the actual DTO type and compare relevant fields

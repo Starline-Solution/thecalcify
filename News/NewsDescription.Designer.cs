@@ -8,7 +8,6 @@ namespace thecalcify.MarketWatch
         private System.Windows.Forms.Label lblHeadline;
         private System.Windows.Forms.Label lblDateSource;
         private System.Windows.Forms.RichTextBox txtDescription;
-        private System.Windows.Forms.Label lblCopyright;
         private System.Windows.Forms.Button btnClose;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
         private System.Windows.Forms.Panel panelBottom;
@@ -28,11 +27,11 @@ namespace thecalcify.MarketWatch
 
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(NewsDescription));
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.lblHeadline = new System.Windows.Forms.Label();
             this.lblDateSource = new System.Windows.Forms.Label();
             this.txtDescription = new System.Windows.Forms.RichTextBox();
-            this.lblCopyright = new System.Windows.Forms.Label();
             this.panelBottom = new System.Windows.Forms.Panel();
             this.btnClose = new System.Windows.Forms.Button();
             this.tableLayoutPanel1.SuspendLayout();
@@ -47,7 +46,6 @@ namespace thecalcify.MarketWatch
             this.tableLayoutPanel1.Controls.Add(this.lblHeadline, 0, 0);
             this.tableLayoutPanel1.Controls.Add(this.lblDateSource, 0, 1);
             this.tableLayoutPanel1.Controls.Add(this.txtDescription, 0, 2);
-            this.tableLayoutPanel1.Controls.Add(this.lblCopyright, 0, 3);
             this.tableLayoutPanel1.Controls.Add(this.panelBottom, 0, 4);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
@@ -99,28 +97,13 @@ namespace thecalcify.MarketWatch
             this.txtDescription.Margin = new System.Windows.Forms.Padding(3, 0, 3, 10);
             this.txtDescription.Name = "txtDescription";
             this.txtDescription.ReadOnly = true;
-            this.txtDescription.Size = new System.Drawing.Size(612, 327);
+            this.txtDescription.Size = new System.Drawing.Size(612, 361);
             this.txtDescription.TabIndex = 2;
             this.txtDescription.TabStop = false;
             this.txtDescription.Text = "Description";
             this.txtDescription.Click += new System.EventHandler(this.txtDescription_Enter);
             this.txtDescription.Enter += new System.EventHandler(this.txtDescription_Enter);
             this.txtDescription.MouseDown += new System.Windows.Forms.MouseEventHandler(this.txtDescription_Enter);
-            // 
-            // lblCopyright
-            // 
-            this.lblCopyright.AutoSize = true;
-            this.lblCopyright.BackColor = System.Drawing.Color.White;
-            this.lblCopyright.Dock = System.Windows.Forms.DockStyle.Top;
-            this.lblCopyright.Font = new System.Drawing.Font("Segoe UI", 8F, System.Drawing.FontStyle.Italic);
-            this.lblCopyright.ForeColor = System.Drawing.Color.DarkGray;
-            this.lblCopyright.Location = new System.Drawing.Point(23, 434);
-            this.lblCopyright.Margin = new System.Windows.Forms.Padding(3, 0, 3, 15);
-            this.lblCopyright.Name = "lblCopyright";
-            this.lblCopyright.Size = new System.Drawing.Size(612, 19);
-            this.lblCopyright.TabIndex = 3;
-            this.lblCopyright.Text = "(c) Copyright Thomson Reuters 2024";
-            this.lblCopyright.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // panelBottom
             // 
@@ -149,6 +132,7 @@ namespace thecalcify.MarketWatch
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(658, 535);
             this.Controls.Add(this.tableLayoutPanel1);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "NewsDescription";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "News Details";

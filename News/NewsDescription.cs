@@ -27,10 +27,18 @@ namespace thecalcify.MarketWatch
             if (_news == null) return;
 
             lblHeadline.Text = _news.caption;
-            lblDateSource.Text = $"{_news.versionCreated:dd-MMM-yyyy HH:mm} · {_news.credit}";
+
+            // Define IST timezone
+            TimeZoneInfo istZone = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
+
+            // Convert the datetime to IST
+            DateTime istTime = TimeZoneInfo.ConvertTimeFromUtc(_news.versionCreated.ToUniversalTime(), istZone);
+
+            // Format and set the label text
+            lblDateSource.Text = $"{istTime:dd-MMM-yyyy HH:mm:ss}"; 
+            
             txtDescription.Text = _news.fragment;
-            //lblTags.Text = _news.keyword != null ? $"Tags: {_news.keyword}" : "Tags: -";
-            lblCopyright.Text = _news.copyrightNotice;
+
         }
     }
 }

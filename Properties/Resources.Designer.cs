@@ -73,9 +73,9 @@ namespace thecalcify.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap AppLogo {
+        internal static System.Drawing.Bitmap AppIcon {
             get {
-                object obj = ResourceManager.GetObject("AppLogo", resourceCulture);
+                object obj = ResourceManager.GetObject("AppIcon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -153,9 +153,9 @@ namespace thecalcify.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap Starline_Solution {
+        internal static System.Drawing.Bitmap starline_solution {
             get {
-                object obj = ResourceManager.GetObject("Starline_Solution", resourceCulture);
+                object obj = ResourceManager.GetObject("starline_solution", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

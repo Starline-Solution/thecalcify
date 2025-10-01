@@ -53,11 +53,19 @@ namespace thecalcify
             this.disconnectESCToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.fullScreenF11ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveMarketWatchHost = new System.Windows.Forms.ToolStripMenuItem();
+            this.refreshMarketWatchHost = new System.Windows.Forms.ToolStripMenuItem();
             this.newCTRLNToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.newCTRLNToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.viewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.newsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.newsListToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.newsSettingsToolStrip = new System.Windows.Forms.ToolStripMenuItem();
+            this.newsNotification = new System.Windows.Forms.ToolStripMenuItem();
+            this.newsSubscriptionListToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.CategorywiseSubscriptionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.RegionwiseSubscriptionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.alertToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.headerPanel = new System.Windows.Forms.Panel();
             this.titleLabel = new System.Windows.Forms.Label();
@@ -68,7 +76,6 @@ namespace thecalcify
             this.fontSizeComboBox = new System.Windows.Forms.ComboBox();
             this.newMarketWatchMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.txtsearch = new System.Windows.Forms.TextBox();
-            this.alertToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.defaultGrid)).BeginInit();
             this.Tools.SuspendLayout();
             this.menuStrip1.SuspendLayout();
@@ -175,6 +182,7 @@ namespace thecalcify
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolsToolStripMenuItem,
             this.saveMarketWatchHost,
+            this.refreshMarketWatchHost,
             this.newCTRLNToolStripMenuItem,
             this.newsToolStripMenuItem,
             this.alertToolStripMenuItem,
@@ -182,7 +190,6 @@ namespace thecalcify
             this.menuStrip1.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.HorizontalStackWithOverflow;
             this.menuStrip1.Location = new System.Drawing.Point(0, 30);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Padding = new System.Windows.Forms.Padding(6, 2, 0, 2);
             this.menuStrip1.Size = new System.Drawing.Size(1115, 28);
             this.menuStrip1.TabIndex = 1;
             this.menuStrip1.Text = "menuStrip1";
@@ -192,7 +199,6 @@ namespace thecalcify
             this.toolsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.disconnectESCToolStripMenuItem,
             this.fullScreenF11ToolStripMenuItem});
-            this.toolsToolStripMenuItem.Enabled = false;
             this.toolsToolStripMenuItem.Name = "toolsToolStripMenuItem";
             this.toolsToolStripMenuItem.Size = new System.Drawing.Size(64, 24);
             this.toolsToolStripMenuItem.Text = "Tools";
@@ -222,6 +228,18 @@ namespace thecalcify
             this.saveMarketWatchHost.Text = "Save MarketWatch";
             this.saveMarketWatchHost.Visible = false;
             this.saveMarketWatchHost.Click += new System.EventHandler(this.SaveMarketWatchHost_Click);
+            // 
+            // refreshMarketWatchHost
+            // 
+            this.refreshMarketWatchHost.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.refreshMarketWatchHost.BackColor = System.Drawing.Color.Transparent;
+            this.refreshMarketWatchHost.ForeColor = System.Drawing.Color.Black;
+            this.refreshMarketWatchHost.Image = ((System.Drawing.Image)(resources.GetObject("refreshMarketWatchHost.Image")));
+            this.refreshMarketWatchHost.Margin = new System.Windows.Forms.Padding(5, 0, 10, 0);
+            this.refreshMarketWatchHost.Name = "refreshMarketWatchHost";
+            this.refreshMarketWatchHost.Size = new System.Drawing.Size(34, 24);
+            this.refreshMarketWatchHost.ToolTipText = "Refresh MarketWatch";
+            this.refreshMarketWatchHost.Click += new System.EventHandler(this.RefreshMarketWatchHost_Click);
             // 
             // newCTRLNToolStripMenuItem
             // 
@@ -255,10 +273,70 @@ namespace thecalcify
             // 
             // newsToolStripMenuItem
             // 
+            this.newsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.newsListToolStripMenuItem,
+            this.newsSettingsToolStrip});
             this.newsToolStripMenuItem.Name = "newsToolStripMenuItem";
             this.newsToolStripMenuItem.Size = new System.Drawing.Size(65, 24);
             this.newsToolStripMenuItem.Text = "News";
-            this.newsToolStripMenuItem.Click += new System.EventHandler(this.newsToolStripMenuItem_Click);
+            // 
+            // newsListToolStripMenuItem
+            // 
+            this.newsListToolStripMenuItem.Name = "newsListToolStripMenuItem";
+            this.newsListToolStripMenuItem.Size = new System.Drawing.Size(200, 26);
+            this.newsListToolStripMenuItem.Text = "News List";
+            this.newsListToolStripMenuItem.Click += new System.EventHandler(this.NewsListToolStripMenuItem_Click);
+            // 
+            // newsSettingsToolStrip
+            // 
+            this.newsSettingsToolStrip.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.newsNotification,
+            this.newsSubscriptionListToolStripMenuItem});
+            this.newsSettingsToolStrip.Name = "newsSettingsToolStrip";
+            this.newsSettingsToolStrip.Size = new System.Drawing.Size(200, 26);
+            this.newsSettingsToolStrip.Text = "News Settings";
+            this.newsSettingsToolStrip.Visible = false;
+            // 
+            // newsNotification
+            // 
+            this.newsNotification.Checked = true;
+            this.newsNotification.CheckOnClick = true;
+            this.newsNotification.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.newsNotification.Name = "newsNotification";
+            this.newsNotification.Size = new System.Drawing.Size(265, 26);
+            this.newsNotification.Text = "News Notification";
+            this.newsNotification.Click += new System.EventHandler(this.NewsNotification_Click);
+            // 
+            // newsSubscriptionListToolStripMenuItem
+            // 
+            this.newsSubscriptionListToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.CategorywiseSubscriptionToolStripMenuItem,
+            this.RegionwiseSubscriptionToolStripMenuItem});
+            this.newsSubscriptionListToolStripMenuItem.Name = "newsSubscriptionListToolStripMenuItem";
+            this.newsSubscriptionListToolStripMenuItem.Size = new System.Drawing.Size(265, 26);
+            this.newsSubscriptionListToolStripMenuItem.Text = "News Subscription List";
+            // 
+            // CategorywiseSubscriptionToolStripMenuItem
+            // 
+            this.CategorywiseSubscriptionToolStripMenuItem.Name = "CategorywiseSubscriptionToolStripMenuItem";
+            this.CategorywiseSubscriptionToolStripMenuItem.Size = new System.Drawing.Size(291, 26);
+            this.CategorywiseSubscriptionToolStripMenuItem.Text = "Categorywise Subscription";
+            this.CategorywiseSubscriptionToolStripMenuItem.Click += new System.EventHandler(this.CategorywiseSubscriptionToolStripMenuItem_Click);
+            // 
+            // RegionwiseSubscriptionToolStripMenuItem
+            // 
+            this.RegionwiseSubscriptionToolStripMenuItem.Name = "RegionwiseSubscriptionToolStripMenuItem";
+            this.RegionwiseSubscriptionToolStripMenuItem.Size = new System.Drawing.Size(291, 26);
+            this.RegionwiseSubscriptionToolStripMenuItem.Text = "Regionwise Subscription";
+            this.RegionwiseSubscriptionToolStripMenuItem.Click += new System.EventHandler(this.RegionwiseSubscriptionToolStripMenuItem1_Click);
+            // 
+            // alertToolStripMenuItem
+            // 
+            this.alertToolStripMenuItem.Name = "alertToolStripMenuItem";
+            this.alertToolStripMenuItem.Size = new System.Drawing.Size(58, 24);
+            this.alertToolStripMenuItem.Text = "Alert";
+            this.alertToolStripMenuItem.Visible = false;
+            this.alertToolStripMenuItem.Click += new System.EventHandler(this.AlertToolStripMenuItem_Click);
             // 
             // aboutToolStripMenuItem
             // 
@@ -297,12 +375,11 @@ namespace thecalcify
             this.licenceExpire.AutoSize = true;
             this.licenceExpire.Dock = System.Windows.Forms.DockStyle.Right;
             this.licenceExpire.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold);
-            this.licenceExpire.Location = new System.Drawing.Point(936, 0);
+            this.licenceExpire.Location = new System.Drawing.Point(1105, 0);
             this.licenceExpire.Name = "licenceExpire";
             this.licenceExpire.Padding = new System.Windows.Forms.Padding(0, 4, 10, 0);
-            this.licenceExpire.Size = new System.Drawing.Size(179, 24);
+            this.licenceExpire.Size = new System.Drawing.Size(10, 24);
             this.licenceExpire.TabIndex = 0;
-            this.licenceExpire.Text = "Licence Expired :- ";
             this.licenceExpire.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // bottomPanel
@@ -319,9 +396,10 @@ namespace thecalcify
             // savelabel
             // 
             this.savelabel.AutoSize = true;
+            this.savelabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.savelabel.Location = new System.Drawing.Point(7, 5);
             this.savelabel.Name = "savelabel";
-            this.savelabel.Size = new System.Drawing.Size(189, 16);
+            this.savelabel.Size = new System.Drawing.Size(242, 20);
             this.savelabel.TabIndex = 1;
             this.savelabel.Text = "Save MarketWatch (CTRL + S)";
             this.savelabel.Visible = false;
@@ -352,7 +430,7 @@ namespace thecalcify
             "28",
             "30"});
             this.fontSizeComboBox.Location = new System.Drawing.Point(757, 29);
-            this.fontSizeComboBox.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.fontSizeComboBox.Margin = new System.Windows.Forms.Padding(4);
             this.fontSizeComboBox.Name = "fontSizeComboBox";
             this.fontSizeComboBox.Size = new System.Drawing.Size(160, 24);
             this.fontSizeComboBox.TabIndex = 5;
@@ -374,13 +452,6 @@ namespace thecalcify
             this.txtsearch.TabIndex = 6;
             this.txtsearch.TextChanged += new System.EventHandler(this.Txtsearch_TextChanged);
             this.txtsearch.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Txtsearch_KeyDown);
-            // 
-            // alertToolStripMenuItem
-            // 
-            this.alertToolStripMenuItem.Name = "alertToolStripMenuItem";
-            this.alertToolStripMenuItem.Size = new System.Drawing.Size(58, 24);
-            this.alertToolStripMenuItem.Text = "Alert";
-            this.alertToolStripMenuItem.Click += new System.EventHandler(this.AlertToolStripMenuItem_Click);
             // 
             // thecalcify
             // 
@@ -595,5 +666,12 @@ namespace thecalcify
         private Label savelabel;
         private ToolStripMenuItem newsToolStripMenuItem;
         private ToolStripMenuItem alertToolStripMenuItem;
+        private ToolStripMenuItem refreshMarketWatchHost;
+        private ToolStripMenuItem newsListToolStripMenuItem;
+        private ToolStripMenuItem newsSettingsToolStrip;
+        private ToolStripMenuItem newsNotification;
+        private ToolStripMenuItem newsSubscriptionListToolStripMenuItem;
+        private ToolStripMenuItem CategorywiseSubscriptionToolStripMenuItem;
+        private ToolStripMenuItem RegionwiseSubscriptionToolStripMenuItem;
     }
 }

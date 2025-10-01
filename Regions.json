@@ -1,0 +1,1532 @@
+[
+  {
+    "title": "Africa",
+    "topics": [
+      {
+        "code": "AO",
+        "title": "Angola",
+        "description": "Republic of Angola"
+      },
+      {
+        "code": "BF",
+        "title": "Burkina Faso",
+        "description": ""
+      },
+      {
+        "code": "BI",
+        "title": "Burundi",
+        "description": "Republic of Burundi"
+      },
+      {
+        "code": "BJ",
+        "title": "Benin",
+        "description": "Republic of Benin"
+      },
+      {
+        "code": "BW",
+        "title": "Botswana",
+        "description": "Republic of Botswana"
+      },
+      {
+        "code": "CD",
+        "title": "Congo (DRC)",
+        "description": "Democratic Republic of the Congo"
+      },
+      {
+        "code": "CF",
+        "title": "Central African Republic",
+        "description": ""
+      },
+      {
+        "code": "CG",
+        "title": "Congo (RC)",
+        "description": "Republic of the Congo"
+      },
+      {
+        "code": "CI",
+        "title": "Ivory Coast",
+        "description": "Republic of Côte d'Ivoire"
+      },
+      {
+        "code": "CM",
+        "title": "Cameroon",
+        "description": "Republic of Cameroon"
+      },
+      {
+        "code": "CV",
+        "title": "Cape Verde",
+        "description": "Republic of Cabo Verde"
+      },
+      {
+        "code": "DJ",
+        "title": "Djibouti",
+        "description": "Republic of Djibouti"
+      },
+      {
+        "code": "DZ",
+        "title": "Algeria",
+        "description": "People's Democratic Republic of Algeria"
+      },
+      {
+        "code": "EG",
+        "title": "Egypt",
+        "description": "Arab Republic of Egypt"
+      },
+      {
+        "code": "EH",
+        "title": "Western Sahara",
+        "description": ""
+      },
+      {
+        "code": "ER",
+        "title": "Eritrea",
+        "description": "State of Eritrea"
+      },
+      {
+        "code": "ET",
+        "title": "Ethiopia",
+        "description": "Federal Democratic Republic of Ethiopia"
+      },
+      {
+        "code": "GA",
+        "title": "Gabon",
+        "description": "Gabonese Republic"
+      },
+      {
+        "code": "GH",
+        "title": "Ghana",
+        "description": "Republic of Ghana"
+      },
+      {
+        "code": "GI",
+        "title": "Gibraltar",
+        "description": ""
+      },
+      {
+        "code": "GM",
+        "title": "Gambia",
+        "description": "Republic of The Gambia"
+      },
+      {
+        "code": "GN",
+        "title": "Guinea",
+        "description": "Republic of Guinea"
+      },
+      {
+        "code": "GQ",
+        "title": "Equatorial Guinea",
+        "description": "Republic of Equatorial Guinea"
+      },
+      {
+        "code": "GY",
+        "title": "Guyana",
+        "description": "Co-operative Republic of Guyana"
+      },
+      {
+        "code": "KE",
+        "title": "Kenya",
+        "description": "Republic of Kenya"
+      },
+      {
+        "code": "KM",
+        "title": "Comoros",
+        "description": "Union of the Comoros"
+      },
+      {
+        "code": "LR",
+        "title": "Liberia",
+        "description": "Republic of Liberia"
+      },
+      {
+        "code": "LS",
+        "title": "Lesotho",
+        "description": "Kingdom of Lesotho"
+      },
+      {
+        "code": "LY",
+        "title": "Libya",
+        "description": ""
+      },
+      {
+        "code": "MA",
+        "title": "Morocco",
+        "description": "Kingdom of Morocco"
+      },
+      {
+        "code": "MG",
+        "title": "Madagascar",
+        "description": "Republic of Madagascar"
+      },
+      {
+        "code": "ML",
+        "title": "Mali",
+        "description": "Republic of Mali"
+      },
+      {
+        "code": "MR",
+        "title": "Mauritania",
+        "description": "Islamic Republic of Mauritania"
+      },
+      {
+        "code": "MU",
+        "title": "Mauritius",
+        "description": "Republic of Mauritius"
+      },
+      {
+        "code": "MW",
+        "title": "Malawi",
+        "description": "Republic of Malawi"
+      },
+      {
+        "code": "MZ",
+        "title": "Mozambique",
+        "description": "Republic of Mozambique"
+      },
+      {
+        "code": "NA",
+        "title": "Namibia",
+        "description": "Republic of Namibia"
+      },
+      {
+        "code": "NE",
+        "title": "Niger",
+        "description": "Republic of Niger"
+      },
+      {
+        "code": "NG",
+        "title": "Nigeria",
+        "description": "Federal Republic of Nigeria"
+      },
+      {
+        "code": "RE",
+        "title": "Réunion",
+        "description": "Department of Réunion"
+      },
+      {
+        "code": "RW",
+        "title": "Rwanda",
+        "description": "Republic of Rwanda"
+      },
+      {
+        "code": "SC",
+        "title": "Seychelles",
+        "description": "Republic of Seychelles"
+      },
+      {
+        "code": "SD",
+        "title": "Sudan",
+        "description": "Republic of the Sudan"
+      },
+      {
+        "code": "SH",
+        "title": "Saint Helena, Ascension and Tristan da Cunha",
+        "description": ""
+      },
+      {
+        "code": "SL",
+        "title": "Sierra Leone",
+        "description": "Republic of Sierra Leone"
+      },
+      {
+        "code": "SN",
+        "title": "Senegal",
+        "description": "Republic of Senegal"
+      },
+      {
+        "code": "SO",
+        "title": "Somalia",
+        "description": "Federal Republic of Somalia"
+      },
+      {
+        "code": "SS",
+        "title": "South Sudan",
+        "description": ""
+      },
+      {
+        "code": "SZ",
+        "title": "Swaziland",
+        "description": "Kingdom of Swaziland"
+      },
+      {
+        "code": "TD",
+        "title": "Chad",
+        "description": "Republic of Chad"
+      },
+      {
+        "code": "TF",
+        "title": "French Southern Territories",
+        "description": "Territory of the French Southern and Antarctic Lands"
+      },
+      {
+        "code": "TG",
+        "title": "Togo",
+        "description": "Togolese Republic"
+      },
+      {
+        "code": "TN",
+        "title": "Tunisia",
+        "description": "Tunisian Republic"
+      },
+      {
+        "code": "TO",
+        "title": "Tonga",
+        "description": "Kingdom of Tonga"
+      },
+      {
+        "code": "TZ",
+        "title": "Tanzania",
+        "description": "United Republic of Tanzania"
+      },
+      {
+        "code": "UG",
+        "title": "Uganda",
+        "description": "Republic of Uganda"
+      },
+      {
+        "code": "ZA",
+        "title": "South Africa",
+        "description": "Republic of South Africa"
+      },
+      {
+        "code": "ZM",
+        "title": "Zambia",
+        "description": "Republic of Zambia"
+      },
+      {
+        "code": "ZW",
+        "title": "Zimbabwe",
+        "description": "Republic of Zimbabwe"
+      }
+    ]
+  },
+  {
+    "title": "Asia",
+    "topics": [
+      {
+        "code": "AF",
+        "title": "Afghanistan",
+        "description": "Islamic Republic of Afghanistan"
+      },
+      {
+        "code": "BD",
+        "title": "Bangladesh",
+        "description": "People's Republic of Bangladesh"
+      },
+      {
+        "code": "BN",
+        "title": "Brunei",
+        "description": "Negara Brunei Darussalam"
+      },
+      {
+        "code": "BT",
+        "title": "Bhutan",
+        "description": "Kingdom of Bhutan"
+      },
+      {
+        "code": "CN",
+        "title": "China (PRC)",
+        "description": "People's Republic of China"
+      },
+      {
+        "code": "HK",
+        "title": "Hong Kong",
+        "description": "Hong Kong Special Administrative Region"
+      },
+      {
+        "code": "ID",
+        "title": "Indonesia",
+        "description": "Republic of Indonesia"
+      },
+      {
+        "code": "IN",
+        "title": "India",
+        "description": "Republic of India"
+      },
+      {
+        "code": "JP",
+        "title": "Japan",
+        "description": ""
+      },
+      {
+        "code": "KG",
+        "title": "Kyrgyzstan",
+        "description": "Kyrgyz Republic"
+      },
+      {
+        "code": "KH",
+        "title": "Cambodia",
+        "description": "Kingdom of Cambodia"
+      },
+      {
+        "code": "KP",
+        "title": "North Korea",
+        "description": "Democratic People's Republic of Korea"
+      },
+      {
+        "code": "KR",
+        "title": "South Korea",
+        "description": "Republic of Korea"
+      },
+      {
+        "code": "KZ",
+        "title": "Kazakhstan",
+        "description": "Republic of Kazakhstan"
+      },
+      {
+        "code": "LA",
+        "title": "Laos",
+        "description": "Lao People's Democratic Republic"
+      },
+      {
+        "code": "LK",
+        "title": "Sri Lanka",
+        "description": "Democratic Socialist Republic of Sri Lanka"
+      },
+      {
+        "code": "MM",
+        "title": "Myanmar",
+        "description": "Republic of the Union of Myanmar"
+      },
+      {
+        "code": "MN",
+        "title": "Mongolia",
+        "description": ""
+      },
+      {
+        "code": "MO",
+        "title": "Macau",
+        "description": "Macau Special Administrative Region"
+      },
+      {
+        "code": "MV",
+        "title": "Maldives",
+        "description": "Republic of Maldives"
+      },
+      {
+        "code": "MY",
+        "title": "Malaysia",
+        "description": ""
+      },
+      {
+        "code": "NP",
+        "title": "Nepal",
+        "description": "Federal Democratic Republic of Nepal"
+      },
+      {
+        "code": "PH",
+        "title": "Philippines",
+        "description": "Republic of the Philippines"
+      },
+      {
+        "code": "PK",
+        "title": "Pakistan",
+        "description": "Islamic Republic of Pakistan"
+      },
+      {
+        "code": "SG",
+        "title": "Singapore",
+        "description": "Republic of Singapore"
+      },
+      {
+        "code": "TH",
+        "title": "Thailand",
+        "description": "Kingdom of Thailand"
+      },
+      {
+        "code": "TJ",
+        "title": "Tajikistan",
+        "description": "Republic of Tajikistan"
+      },
+      {
+        "code": "TL",
+        "title": "East Timor / Timor-Leste",
+        "description": "Democratic Republic of Timor-Leste"
+      },
+      {
+        "code": "TM",
+        "title": "Turkmenistan",
+        "description": ""
+      },
+      {
+        "code": "TW",
+        "title": "Taiwan",
+        "description": ""
+      },
+      {
+        "code": "UZ",
+        "title": "Uzbekistan",
+        "description": "Republic of Uzbekistan"
+      },
+      {
+        "code": "VN",
+        "title": "Vietnam",
+        "description": "Socialist Republic of Vietnam"
+      }
+    ]
+  },
+  {
+    "title": "Central America",
+    "topics": [
+      {
+        "code": "AG",
+        "title": "Antigua and Barbuda",
+        "description": ""
+      },
+      {
+        "code": "BZ",
+        "title": "Belize",
+        "description": ""
+      },
+      {
+        "code": "CR",
+        "title": "Costa Rica",
+        "description": "Republic of Costa Rica"
+      },
+      {
+        "code": "HN",
+        "title": "Honduras",
+        "description": "Republic of Honduras"
+      },
+      {
+        "code": "HT",
+        "title": "Haiti",
+        "description": "Republic of Haiti"
+      },
+      {
+        "code": "NI",
+        "title": "Nicaragua",
+        "description": "Republic of Nicaragua"
+      },
+      {
+        "code": "PA",
+        "title": "Panama",
+        "description": "Republic of Panama"
+      },
+      {
+        "code": "SV",
+        "title": "El Salvador",
+        "description": "Republic of El Salvador"
+      }
+    ]
+  },
+  {
+    "title": "Europe",
+    "topics": [
+      {
+        "code": "AD",
+        "title": "Andorra",
+        "description": "Principality of Andorra"
+      },
+      {
+        "code": "AL",
+        "title": "Albania",
+        "description": "Republic of Albania"
+      },
+      {
+        "code": "AM",
+        "title": "Armenia",
+        "description": "Republic of Armenia"
+      },
+      {
+        "code": "AT",
+        "title": "Austria",
+        "description": "Republic of Austria"
+      },
+      {
+        "code": "AZ",
+        "title": "Azerbaijan",
+        "description": "Republic of Azerbaijan"
+      },
+      {
+        "code": "BA",
+        "title": "Bosnia and Herzegovina",
+        "description": ""
+      },
+      {
+        "code": "BE",
+        "title": "Belgium",
+        "description": "Kingdom of Belgium"
+      },
+      {
+        "code": "BG",
+        "title": "Bulgaria",
+        "description": "Republic of Bulgaria"
+      },
+      {
+        "code": "BY",
+        "title": "Belarus",
+        "description": "Republic of Belarus"
+      },
+      {
+        "code": "CH",
+        "title": "Switzerland",
+        "description": "Swiss Confederation"
+      },
+      {
+        "code": "CY",
+        "title": "Cyprus",
+        "description": "Republic of Cyprus"
+      },
+      {
+        "code": "CZ",
+        "title": "Czech Republic",
+        "description": ""
+      },
+      {
+        "code": "DE",
+        "title": "Germany",
+        "description": "Federal Republic of Germany"
+      },
+      {
+        "code": "DK",
+        "title": "Denmark",
+        "description": "Kingdom of Denmark"
+      },
+      {
+        "code": "EE",
+        "title": "Estonia",
+        "description": "Republic of Estonia"
+      },
+      {
+        "code": "ES",
+        "title": "Spain",
+        "description": "Kingdom of Spain"
+      },
+      {
+        "code": "FI",
+        "title": "Finland",
+        "description": "Republic of Finland"
+      },
+      {
+        "code": "FR",
+        "title": "France",
+        "description": "French Republic"
+      },
+      {
+        "code": "GB",
+        "title": "United Kingdom",
+        "description": "United Kingdom of Great Britain and Northern Ireland"
+      },
+      {
+        "code": "GE",
+        "title": "Georgia",
+        "description": ""
+      },
+      {
+        "code": "GG",
+        "title": "Guernsey",
+        "description": "Bailiwick of Guernsey"
+      },
+      {
+        "code": "GL",
+        "title": "Greenland",
+        "description": ""
+      },
+      {
+        "code": "GR",
+        "title": "Greece",
+        "description": "Hellenic Republic"
+      },
+      {
+        "code": "HR",
+        "title": "Croatia",
+        "description": "Republic of Croatia"
+      },
+      {
+        "code": "HU",
+        "title": "Hungary",
+        "description": ""
+      },
+      {
+        "code": "IE",
+        "title": "Ireland",
+        "description": "Republic of Ireland"
+      },
+      {
+        "code": "IM",
+        "title": "Isle of Man",
+        "description": ""
+      },
+      {
+        "code": "IS",
+        "title": "Iceland",
+        "description": "Republic of Iceland"
+      },
+      {
+        "code": "IT",
+        "title": "Italy",
+        "description": "Italian Republic"
+      },
+      {
+        "code": "JE",
+        "title": "Jersey",
+        "description": "Bailiwick of Jersey"
+      },
+      {
+        "code": "KO",
+        "title": "Kosovo",
+        "description": "Republic of Kosovo"
+      },
+      {
+        "code": "LI",
+        "title": "Liechtenstein",
+        "description": "Principality of Liechtenstein"
+      },
+      {
+        "code": "LT",
+        "title": "Lithuania",
+        "description": "Republic of Lithuania"
+      },
+      {
+        "code": "LU",
+        "title": "Luxembourg",
+        "description": "Grand Duchy of Luxembourg"
+      },
+      {
+        "code": "LV",
+        "title": "Latvia",
+        "description": "Republic of Latvia"
+      },
+      {
+        "code": "MC",
+        "title": "Monaco",
+        "description": "Principality of Monaco"
+      },
+      {
+        "code": "MD",
+        "title": "Moldova",
+        "description": "Republic of Moldova"
+      },
+      {
+        "code": "ME",
+        "title": "Montenegro",
+        "description": ""
+      },
+      {
+        "code": "MK",
+        "title": "Macedonia (the former Yugoslav Republic of)",
+        "description": "Former Yugoslav Republic of Macedonia"
+      },
+      {
+        "code": "MT",
+        "title": "Malta",
+        "description": "Republic of Malta"
+      },
+      {
+        "code": "NL",
+        "title": "Netherlands",
+        "description": "Kingdom of the Netherlands"
+      },
+      {
+        "code": "NO",
+        "title": "Norway",
+        "description": "Kingdom of Norway"
+      },
+      {
+        "code": "PL",
+        "title": "Poland",
+        "description": "Republic of Poland"
+      },
+      {
+        "code": "PT",
+        "title": "Portugal",
+        "description": "Portuguese Republic"
+      },
+      {
+        "code": "RO",
+        "title": "Romania",
+        "description": ""
+      },
+      {
+        "code": "RU",
+        "title": "Russia",
+        "description": "Russian Federation"
+      },
+      {
+        "code": "SE",
+        "title": "Sweden",
+        "description": "Kingdom of Sweden"
+      },
+      {
+        "code": "SK",
+        "title": "Slovakia",
+        "description": "Slovak Republic"
+      },
+      {
+        "code": "SM",
+        "title": "San Marino",
+        "description": "Republic of San Marino"
+      },
+      {
+        "code": "SQ",
+        "title": "Slovenia",
+        "description": "Republic of Slovenia"
+      },
+      {
+        "code": "TR",
+        "title": "Turkey",
+        "description": "Republic of Turkey"
+      },
+      {
+        "code": "UA",
+        "title": "Ukraine",
+        "description": ""
+      },
+      {
+        "code": "VA",
+        "title": "Vatican City",
+        "description": "Holy See (Vatican City)"
+      },
+      {
+        "code": "GBE",
+        "title": "England",
+        "description": ""
+      },
+      {
+        "code": "GBS",
+        "title": "Scotland",
+        "description": ""
+      },
+      {
+        "code": "GBW",
+        "title": "Wales",
+        "description": ""
+      },
+      {
+        "code": "SRB",
+        "title": "Serbia",
+        "description": "Republic of Serbia"
+      },
+      {
+        "code": "GBNI",
+        "title": "Northern Ireland",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "title": "Middle East",
+    "topics": [
+      {
+        "code": "AE",
+        "title": "United Arab Emirates",
+        "description": ""
+      },
+      {
+        "code": "BH",
+        "title": "Bahrain",
+        "description": "Kingdom of Bahrain"
+      },
+      {
+        "code": "IL",
+        "title": "Israel",
+        "description": "State of Israel"
+      },
+      {
+        "code": "IQ",
+        "title": "Iraq",
+        "description": "Republic of Iraq"
+      },
+      {
+        "code": "IR",
+        "title": "Iran",
+        "description": "Islamic Republic of Iran"
+      },
+      {
+        "code": "JO",
+        "title": "Jordan",
+        "description": "Hashemite Kingdom of Jordan"
+      },
+      {
+        "code": "KW",
+        "title": "Kuwait",
+        "description": "State of Kuwait"
+      },
+      {
+        "code": "LB",
+        "title": "Lebanon",
+        "description": "Lebanese Republic"
+      },
+      {
+        "code": "OM",
+        "title": "Oman",
+        "description": "Sultanate of Oman"
+      },
+      {
+        "code": "PS",
+        "title": "Palestinian Territories",
+        "description": ""
+      },
+      {
+        "code": "QA",
+        "title": "Qatar",
+        "description": "State of Qatar"
+      },
+      {
+        "code": "SA",
+        "title": "Saudi Arabia",
+        "description": "Kingdom of Saudi Arabia"
+      },
+      {
+        "code": "SY",
+        "title": "Syria",
+        "description": "Syrian Arab Republic"
+      },
+      {
+        "code": "YE",
+        "title": "Yemen",
+        "description": "Republic of Yemen"
+      }
+    ]
+  },
+  {
+    "title": "North America",
+    "topics": [
+      {
+        "code": "AW",
+        "title": "Aruba",
+        "description": ""
+      },
+      {
+        "code": "BM",
+        "title": "Bermuda",
+        "description": ""
+      },
+      {
+        "code": "CA",
+        "title": "Canada",
+        "description": ""
+      },
+      {
+        "code": "MX",
+        "title": "Mexico",
+        "description": "United Mexican States"
+      },
+      {
+        "code": "PM",
+        "title": "Saint Pierre and Miquelon",
+        "description": "Territorial Collectivity of Saint Pierre and Miquelon"
+      },
+      {
+        "code": "US",
+        "title": "United States",
+        "description": "United States of America"
+      },
+      {
+        "code": "USAAK",
+        "title": "Alaska",
+        "description": ""
+      },
+      {
+        "code": "USAAL",
+        "title": "Alabama",
+        "description": ""
+      },
+      {
+        "code": "USAAR",
+        "title": "Arkansas",
+        "description": ""
+      },
+      {
+        "code": "USAAZ",
+        "title": "Arizona",
+        "description": ""
+      },
+      {
+        "code": "USACA",
+        "title": "California",
+        "description": ""
+      },
+      {
+        "code": "USACO",
+        "title": "Colorado",
+        "description": ""
+      },
+      {
+        "code": "USACT",
+        "title": "Connecticut",
+        "description": ""
+      },
+      {
+        "code": "USADC",
+        "title": "Washington DC",
+        "description": ""
+      },
+      {
+        "code": "USADE",
+        "title": "Delaware",
+        "description": ""
+      },
+      {
+        "code": "USAFL",
+        "title": "Florida",
+        "description": ""
+      },
+      {
+        "code": "USAGA",
+        "title": "Georgia",
+        "description": ""
+      },
+      {
+        "code": "USAHI",
+        "title": "Hawaii",
+        "description": ""
+      },
+      {
+        "code": "USAIA",
+        "title": "Iowa",
+        "description": ""
+      },
+      {
+        "code": "USAID",
+        "title": "Idaho",
+        "description": ""
+      },
+      {
+        "code": "USAIL",
+        "title": "Illinois",
+        "description": ""
+      },
+      {
+        "code": "USAIN",
+        "title": "Indiana",
+        "description": ""
+      },
+      {
+        "code": "USAKS",
+        "title": "Kansas",
+        "description": ""
+      },
+      {
+        "code": "USAKY",
+        "title": "Kentucky",
+        "description": ""
+      },
+      {
+        "code": "USALA",
+        "title": "Louisiana",
+        "description": ""
+      },
+      {
+        "code": "USAMA",
+        "title": "Massachusetts",
+        "description": ""
+      },
+      {
+        "code": "USAMD",
+        "title": "Maryland",
+        "description": ""
+      },
+      {
+        "code": "USAME",
+        "title": "Maine",
+        "description": ""
+      },
+      {
+        "code": "USAMI",
+        "title": "Michigan",
+        "description": ""
+      },
+      {
+        "code": "USAMN",
+        "title": "Minnesota",
+        "description": ""
+      },
+      {
+        "code": "USAMO",
+        "title": "Missouri",
+        "description": ""
+      },
+      {
+        "code": "USAMS",
+        "title": "Mississippi",
+        "description": ""
+      },
+      {
+        "code": "USAMT",
+        "title": "Montana",
+        "description": ""
+      },
+      {
+        "code": "USANC",
+        "title": "North Carolina",
+        "description": ""
+      },
+      {
+        "code": "USAND",
+        "title": "North Dakota",
+        "description": ""
+      },
+      {
+        "code": "USANE",
+        "title": "Nebraska",
+        "description": ""
+      },
+      {
+        "code": "USANH",
+        "title": "New Hampshire",
+        "description": ""
+      },
+      {
+        "code": "USANJ",
+        "title": "New Jersey",
+        "description": ""
+      },
+      {
+        "code": "USANM",
+        "title": "New Mexico",
+        "description": ""
+      },
+      {
+        "code": "USANV",
+        "title": "Nevada",
+        "description": ""
+      },
+      {
+        "code": "USANY",
+        "title": "New York",
+        "description": ""
+      },
+      {
+        "code": "USAOH",
+        "title": "Ohio",
+        "description": ""
+      },
+      {
+        "code": "USAOK",
+        "title": "Oklahoma",
+        "description": ""
+      },
+      {
+        "code": "USAOR",
+        "title": "Oregon",
+        "description": ""
+      },
+      {
+        "code": "USAPA",
+        "title": "Pennsylvania",
+        "description": ""
+      },
+      {
+        "code": "USARI",
+        "title": "Rhode Island",
+        "description": ""
+      },
+      {
+        "code": "USASC",
+        "title": "South Carolina",
+        "description": ""
+      },
+      {
+        "code": "USASD",
+        "title": "South Dakota",
+        "description": ""
+      },
+      {
+        "code": "USATN",
+        "title": "Tennessee",
+        "description": ""
+      },
+      {
+        "code": "USATX",
+        "title": "Texas",
+        "description": ""
+      },
+      {
+        "code": "USAUT",
+        "title": "Utah",
+        "description": ""
+      },
+      {
+        "code": "USAVA",
+        "title": "Virginia",
+        "description": ""
+      },
+      {
+        "code": "USAVT",
+        "title": "Vermont",
+        "description": ""
+      },
+      {
+        "code": "USAWA",
+        "title": "Washington",
+        "description": ""
+      },
+      {
+        "code": "USAWI",
+        "title": "Wisconsin",
+        "description": ""
+      },
+      {
+        "code": "USAWV",
+        "title": "West Virginia",
+        "description": ""
+      },
+      {
+        "code": "USAWY",
+        "title": "Wyoming",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "title": "Oceania",
+    "topics": [
+      {
+        "code": "AS",
+        "title": "American Samoa",
+        "description": "Territory of American Samoa"
+      },
+      {
+        "code": "AU",
+        "title": "Australia",
+        "description": "Commonwealth of Australia"
+      },
+      {
+        "code": "CC",
+        "title": "Cocos (Keeling) Islands",
+        "description": "Territory of Cocos (Keeling) Islands"
+      },
+      {
+        "code": "CK",
+        "title": "Cook Islands",
+        "description": ""
+      },
+      {
+        "code": "CX",
+        "title": "Christmas Island",
+        "description": "Territory of Christmas Island"
+      },
+      {
+        "code": "FJ",
+        "title": "Fiji",
+        "description": "Republic of Fiji"
+      },
+      {
+        "code": "FM",
+        "title": "Micronesia",
+        "description": "Federated States of Micronesia"
+      },
+      {
+        "code": "FO",
+        "title": "Faroe Islands",
+        "description": ""
+      },
+      {
+        "code": "GU",
+        "title": "Guam",
+        "description": "Territory of Guam"
+      },
+      {
+        "code": "HM",
+        "title": "Heard and McDonald Islands",
+        "description": "Territory of Heard Island and McDonald Islands"
+      },
+      {
+        "code": "KI",
+        "title": "Kiribati",
+        "description": "Republic of Kiribati"
+      },
+      {
+        "code": "MH",
+        "title": "Marshall Islands",
+        "description": "Republic of the Marshall Islands"
+      },
+      {
+        "code": "NC",
+        "title": "New Caledonia",
+        "description": "Territory of New Caledonia and Dependencies"
+      },
+      {
+        "code": "NF",
+        "title": "Norfolk Island",
+        "description": "Territory of Norfolk Island"
+      },
+      {
+        "code": "NR",
+        "title": "Nauru",
+        "description": "Republic of Nauru"
+      },
+      {
+        "code": "NU",
+        "title": "Niue",
+        "description": ""
+      },
+      {
+        "code": "NZ",
+        "title": "New Zealand",
+        "description": ""
+      },
+      {
+        "code": "PF",
+        "title": "French Polynesia",
+        "description": "Territory of French Polynesia"
+      },
+      {
+        "code": "PG",
+        "title": "Papua New Guinea",
+        "description": "Independent State of Papua New Guinea"
+      },
+      {
+        "code": "PN",
+        "title": "Pitcairn",
+        "description": "Pitcairn Islands"
+      },
+      {
+        "code": "PW",
+        "title": "Palau",
+        "description": "Republic of Palau"
+      },
+      {
+        "code": "SB",
+        "title": "Solomon Islands",
+        "description": ""
+      },
+      {
+        "code": "TK",
+        "title": "Tokelau",
+        "description": ""
+      },
+      {
+        "code": "TV",
+        "title": "Tuvalu",
+        "description": ""
+      },
+      {
+        "code": "UM",
+        "title": "United States Minor Outlying Islands",
+        "description": ""
+      },
+      {
+        "code": "VU",
+        "title": "Vanuatu",
+        "description": "Republic of Vanuatu"
+      },
+      {
+        "code": "WF",
+        "title": "Wallis and Futuna",
+        "description": "Territory of the Wallis and Futuna Islands"
+      },
+      {
+        "code": "WS",
+        "title": "Samoa",
+        "description": "Independent State of Samoa"
+      }
+    ]
+  },
+  {
+    "title": "Other",
+    "topics": [
+      {
+        "code": "AQ",
+        "title": "Antarctica",
+        "description": ""
+      },
+      {
+        "code": "MDS",
+        "title": "Mid-Sea",
+        "description": "A maritime location on or below the surface of a sea or ocean."
+      },
+      {
+        "code": "SPC",
+        "title": "Outer Space",
+        "description": "A location outside the Earth's atmosphere."
+      },
+      {
+        "code": "AIRB",
+        "title": "Airborne",
+        "description": "A location above the Earth's surface but within the atmosphere."
+      }
+    ]
+  },
+  {
+    "title": "South America",
+    "topics": [
+      {
+        "code": "AI",
+        "title": "Anguilla",
+        "description": ""
+      },
+      {
+        "code": "AR",
+        "title": "Argentina",
+        "description": "Argentine Republic"
+      },
+      {
+        "code": "BB",
+        "title": "Barbados",
+        "description": ""
+      },
+      {
+        "code": "BO",
+        "title": "Bolivia",
+        "description": "Plurinational State of Bolivia"
+      },
+      {
+        "code": "BR",
+        "title": "Brazil",
+        "description": "Federative Republic of Brazil"
+      },
+      {
+        "code": "BS",
+        "title": "Bahamas",
+        "description": "Commonwealth of the Bahamas"
+      },
+      {
+        "code": "CL",
+        "title": "Chile",
+        "description": "Republic of Chile"
+      },
+      {
+        "code": "CO",
+        "title": "Colombia",
+        "description": "Republic of Colombia"
+      },
+      {
+        "code": "CU",
+        "title": "Cuba",
+        "description": "Republic of Cuba"
+      },
+      {
+        "code": "DM",
+        "title": "Dominica",
+        "description": "Commonwealth of Dominica"
+      },
+      {
+        "code": "DO",
+        "title": "Dominican Republic",
+        "description": ""
+      },
+      {
+        "code": "EC",
+        "title": "Ecuador",
+        "description": "Republic of Ecuador"
+      },
+      {
+        "code": "FK",
+        "title": "Falkland Islands",
+        "description": ""
+      },
+      {
+        "code": "GD",
+        "title": "Grenada",
+        "description": ""
+      },
+      {
+        "code": "GF",
+        "title": "French Guiana",
+        "description": "Department of Guiana"
+      },
+      {
+        "code": "GP",
+        "title": "Guadeloupe",
+        "description": "Department of Guadeloupe"
+      },
+      {
+        "code": "GS",
+        "title": "South Georgia and South Sandwich Islands",
+        "description": ""
+      },
+      {
+        "code": "GT",
+        "title": "Guatemala",
+        "description": "Republic of Guatemala"
+      },
+      {
+        "code": "GW",
+        "title": "Guinea-Bissau",
+        "description": "Republic of Guinea-Bissau"
+      },
+      {
+        "code": "JM",
+        "title": "Jamaica",
+        "description": ""
+      },
+      {
+        "code": "KN",
+        "title": "Saint Kitts and Nevis",
+        "description": "Federation of Saint Kitts and Nevis"
+      },
+      {
+        "code": "KY",
+        "title": "Cayman Islands",
+        "description": ""
+      },
+      {
+        "code": "LC",
+        "title": "Saint Lucia",
+        "description": ""
+      },
+      {
+        "code": "MQ",
+        "title": "Martinique",
+        "description": "Department of Martinique"
+      },
+      {
+        "code": "MS",
+        "title": "Montserrat",
+        "description": ""
+      },
+      {
+        "code": "PE",
+        "title": "Peru",
+        "description": "Republic of Peru"
+      },
+      {
+        "code": "PR",
+        "title": "Puerto Rico",
+        "description": "Commonwealth of Puerto Rico"
+      },
+      {
+        "code": "PY",
+        "title": "Paraguay",
+        "description": "Republic of Paraguay"
+      },
+      {
+        "code": "SR",
+        "title": "Suriname",
+        "description": "Republic of Suriname"
+      },
+      {
+        "code": "ST",
+        "title": "Sao Tome and Principe",
+        "description": "Democratic Republic of Sao Tome and Principe"
+      },
+      {
+        "code": "TC",
+        "title": "Turks and Caicos Islands",
+        "description": ""
+      },
+      {
+        "code": "TT",
+        "title": "Trinidad and Tobago",
+        "description": "Republic of Trinidad and Tobago"
+      },
+      {
+        "code": "UY",
+        "title": "Uruguay",
+        "description": "Oriental Republic of Uruguay"
+      },
+      {
+        "code": "VC",
+        "title": "Saint Vincent and the Grenadines",
+        "description": ""
+      },
+      {
+        "code": "VE",
+        "title": "Venezuela",
+        "description": "Bolivarian Republic of Venezuela"
+      },
+      {
+        "code": "VG",
+        "title": "British Virgin Islands",
+        "description": ""
+      },
+      {
+        "code": "VI",
+        "title": "U.S. Virgin Islands",
+        "description": "United States Virgin Islands"
+      }
+    ]
+  }
+]

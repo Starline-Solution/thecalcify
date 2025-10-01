@@ -1,0 +1,3732 @@
+[
+  {
+    "title": "Arts/Culture/Entertainment",
+    "topics": [
+      {
+        "code": "ART",
+        "title": "Art",
+        "description": "Art including artists, exhibitions, movements and the creative processes involved. Also the sale of individual artworks."
+      },
+      {
+        "code": "BKS",
+        "title": "Books",
+        "description": "Literature including books, authors, plotlines, reviews and sales."
+      },
+      {
+        "code": "ENT",
+        "title": "Arts / Culture / Entertainment",
+        "description": "Performing and non-performing arts; music; theatre; tv; radio; festivals; exhibitions; dance; literature; libraries; museums; painting; sculpture; government policy."
+      },
+      {
+        "code": "FLM",
+        "title": "Film",
+        "description": "Motion pictures / films, including directors, actors, premieres, reviews and box office."
+      },
+      {
+        "code": "LIF",
+        "title": "Living / Lifestyle",
+        "description": "Lifestyle issues including culture, hobbies / pastimes and general interest"
+      },
+      {
+        "code": "CLEB",
+        "title": "Celebrities",
+        "description": "Personal news about individuals widely recognised, known and / or admired as a result of personal or professional achievement."
+      },
+      {
+        "code": "FASH",
+        "title": "Fashion",
+        "description": "Fashion, including designers, models, fashion shows, couture, styles and fashion trends."
+      },
+      {
+        "code": "MSIC",
+        "title": "Music",
+        "description": "Music and musical artists. Includes details and reviews of live performances and recorded music releases."
+      },
+      {
+        "code": "SMED",
+        "title": "Social Media",
+        "description": "News about social media."
+      },
+      {
+        "code": "TELE",
+        "title": "Television",
+        "description": "Television as a medium."
+      },
+      {
+        "code": "THTR",
+        "title": "Theater",
+        "description": "Dramatic stage performances and their performances. Includes theater, ballet and opera. Premieres, listings and reviews."
+      },
+      {
+        "code": "TOUR",
+        "title": "Tourism / Travel",
+        "description": "Travel information such as resort recommendations, air-travel routes, tour and vacation ideas, airline / travel guides, hotel packages and promotions. Includes items on or from conventions and visitors bureau."
+      },
+      {
+        "code": "VGAME",
+        "title": "Video Games",
+        "description": "News about the development, production, sales, and use of video games."
+      }
+    ]
+  },
+  {
+    "title": "Business - Assets",
+    "topics": [
+      {
+        "code": "ABS",
+        "title": "Asset-Backed Securities",
+        "description": "Bonds or notes that are based on pools of assets, or collateralized by the cash flows from a specified pool of underlying assets."
+      },
+      {
+        "code": "AGN",
+        "title": "Mortgage Agency Debt",
+        "description": "The issuance, pricing and trading of debt securities, usually in the form of bonds, issued by mortgage agencies."
+      },
+      {
+        "code": "BQ1",
+        "title": "Bank Qualified",
+        "description": "News about bank-qualified bonds, which allow banks to deduct interest paid to carry those bonds.  Bank-qualified bonds are typically issued for a public purpose in small amounts."
+      },
+      {
+        "code": "CDM",
+        "title": "Credit and Corporate Debt",
+        "description": "The issuance, pricing and trading of corporate debt securities, including derivatives such as CDS, equity-linked bonds and covered bonds, as well as the issuance and syndication of loans to corporates."
+      },
+      {
+        "code": "CDO",
+        "title": "Collateralized Debt Obligations",
+        "description": "Debt securities backed by a pool of bonds, loans and/or other assets."
+      },
+      {
+        "code": "CDV",
+        "title": "Credit Default Swaps",
+        "description": "The issuance, pricing and trading of Credit Default Swaps, or any financial swap arrangement under which the seller of the CDS will compensate the buyer in the event of a loan default or other defined credit event."
+      },
+      {
+        "code": "COM",
+        "title": "Commodities Markets",
+        "description": "Production, consumption and trading in primary commodities markets, including agricultural, energy, metals and diamonds. Also includes weather and shipping news affecting commodities markets."
+      },
+      {
+        "code": "DBT",
+        "title": "Debt / Fixed Income Markets",
+        "description": "Bond and other debt and credit market news, including new issues, yields and other rates, analyses, and market performance. Credit and corporate debt; government, agency, municipal and supranational debt; eurobonds and asset-backed debt."
+      },
+      {
+        "code": "DRV",
+        "title": "Derivatives",
+        "description": "Derivatives including futures, options, warrants, spreads, swaps, contracts for differences and other financial instruments that derive their basic value from other instruments and assets traded for cash. New issues of derivatives, forecasts and analyses of a derivatives market, market structure."
+      },
+      {
+        "code": "EQB",
+        "title": "Equity-Linked Bonds",
+        "description": "All news about equity-linked bonds, including convertible and exchangeable bonds and warrant-bearing bonds."
+      },
+      {
+        "code": "ETF",
+        "title": "Exchange-Traded Funds",
+        "description": "A fund that can be continuously traded on an exchange, which is generally comprised of a basket of financial instruments mirroring the composition of a securities market index.  ETFs offer low expense ratios relative to other funds and trade within a narrow spread with respect to NAV.  Although the legal structure of ETFs is generally open-ended, their distinct characteristics compel investors to treat as a discrete fund type."
+      },
+      {
+        "code": "EUB",
+        "title": "Eurobonds",
+        "description": "New eurobond issues in Europe; including issues by foreign borrowers in domestic markets where there is no eurobond market e.g. Swiss francs. Exclude corporate or domestic government bonds, e.g. gilts, Bunds, Samurais & Yankees."
+      },
+      {
+        "code": "FRX",
+        "title": "Currencies / Foreign Exchange Markets",
+        "description": "Exchange rates and analyses of currency markets. Comments on foreign-exchange developments."
+      },
+      {
+        "code": "GOS",
+        "title": "General Obligation Debt",
+        "description": "News about general obligation debt issued by state and local government entities; GO notes and taxable GO debt; general obligation certificates of participation; state appropriation debt; and news about new GO financings and new capital programs."
+      },
+      {
+        "code": "GVD",
+        "title": "National Government Debt",
+        "description": "News about all national government bond and debt instrument markets. Includes treasury gilts, bonds and notes (not T-bills, which are money market instruments)."
+      },
+      {
+        "code": "HOT",
+        "title": "Volatile Shares / Hot Stocks",
+        "description": "News about sharp changes in the price of a share or prices of several shares in the same market sector."
+      },
+      {
+        "code": "HYD",
+        "title": "High-Yield Securities",
+        "description": "The issuance, pricing and trading of debt securities that carry a relatively high risk of default and thus pay a relatively high yield, also sometimes known as junk bonds."
+      },
+      {
+        "code": "IGD",
+        "title": "Investment Grade Securities",
+        "description": "The issuance, pricing and trading of debt securities that carry a relatively low risk of default and thus pay a relatively low yield."
+      },
+      {
+        "code": "ILB",
+        "title": "Index-Linked Bonds",
+        "description": "Bonds linked to an underlying index, usually inflation."
+      },
+      {
+        "code": "ILS",
+        "title": "Insurance-Linked Securities",
+        "description": "The issuance, pricing and trading of financial instruments whose values are driven by insurance loss events."
+      },
+      {
+        "code": "LOA",
+        "title": "Loans",
+        "description": "Issuance, syndication, trading of loans by banks (or institutional investors) to corporate or institutional borrowers; trends in loan markets and issuance."
+      },
+      {
+        "code": "MMT",
+        "title": "Money Markets",
+        "description": "All money market news; reports about money markets. Trading in all money market instruments. Short-term borrowing and lending between banks."
+      },
+      {
+        "code": "MTG",
+        "title": "Mortgage-Backed Markets",
+        "description": "Mortgage-backed debt and securities, mortgage advances and changes in mortgage rates and conditions."
+      },
+      {
+        "code": "OPT",
+        "title": "Options",
+        "description": "All market reports that routinely mention options; all new issues of options; news items concerning forecasts and analyses of the options market; regulation of options markets."
+      },
+      {
+        "code": "PPL",
+        "title": "Pipelines",
+        "description": "Oil, refined oil and natural gas pipelines."
+      },
+      {
+        "code": "PVE",
+        "title": "Private Equity Funds",
+        "description": "Private equity funds, including fund raisings and mergers & acquisition activity. Also including debt covering leveraged buyouts."
+      },
+      {
+        "code": "REF",
+        "title": "Oil Refineries",
+        "description": "Plants which refine crude oil or other feedstocks derived from fossil fuels into products such as gasoline, liquefied petroleum gases (LPGs), naphtha, kerosene, heating oils and marine fuel oils."
+      },
+      {
+        "code": "SHL",
+        "title": "Shale Oil / Shale Gas",
+        "description": "Oil or gas extracted from shale deposits."
+      },
+      {
+        "code": "SOV",
+        "title": "Sovereign Wealth Funds",
+        "description": "Investment policies and changes in investments by state-owned investment funds, which consist of financial assets, including stocks, bonds, property and other investment vehicles."
+      },
+      {
+        "code": "STX",
+        "title": "Equities Markets",
+        "description": "Share market trading news, including the performance of share market indexes and individual shares."
+      },
+      {
+        "code": "SUK",
+        "title": "Sukuk",
+        "description": "Sukuk debt, typically defined as Islamic bonds or debt instruments that adhere to sharia (Islamic law)."
+      },
+      {
+        "code": "TA1",
+        "title": "Taxables",
+        "description": "News about taxable bonds, which are issued for purposes the federal government deems does not provide a significant benefit to the public."
+      },
+      {
+        "code": "TNC",
+        "title": "Terms / Conditions",
+        "description": "News about bond terms and conditions, including issuer name, coupon type and rate, maturity date and other features."
+      },
+      {
+        "code": "USC",
+        "title": "US Corporate Bonds",
+        "description": "All news about U.S. corporate bonds, including issues, forecasts and analysis."
+      },
+      {
+        "code": "AUCT",
+        "title": "Sovereign Debt Auctions",
+        "description": "Debt instruments offered by national governments in primary markets, usually by way of an auction, including announcements of planned sales, terms of the debt instruments offered, and auction results."
+      },
+      {
+        "code": "BINS",
+        "title": "Credit Enhancement",
+        "description": "News about credit enhancement, such as bond insurance and letters of credit and the companies that provide these products."
+      },
+      {
+        "code": "CMBS",
+        "title": "Commercial Mortgage-Backed Securities",
+        "description": "Types of mortgage-backed security backed by mortgages on commercial rather than residential real estate."
+      },
+      {
+        "code": "COVB",
+        "title": "Covered Bonds",
+        "description": "Mortgage-backed bonds where underlying collateral remains on the balance sheet, including issuance, pricing, secondary trading and general trends."
+      },
+      {
+        "code": "ETPS",
+        "title": "Exchange-Traded Products",
+        "description": "An Exchange-Traded Product (ETP) is an investment instrument that tracks the performance of an underlying asset or an asset index. ETPs are structured to allow investors to gain exposure to underlying assets without trading futures or taking physical delivery and are especially popular in the commodities market. Also known as Exchange-Traded Vehicles (ETVs)."
+      },
+      {
+        "code": "FUND",
+        "title": "Funds",
+        "description": "The views, forecasts, strategies and market actions of fund operators and other significant groups and classes of investors and traders with regard to capital flows across and within asset markets. Includes news about market performance of any and all types of funds including influential single-party traders and significant asset allocation decisions and views."
+      },
+      {
+        "code": "MUNI",
+        "title": "Municipal Debt",
+        "description": "News about all local, state and sub-national bond and debt issuance markets. Includes state, local authority, local agency and general obligation bonds. Municipal bonds."
+      },
+      {
+        "code": "NDFW",
+        "title": "Non-Deliverable Forwards",
+        "description": "Non-Deliverable Forwards, Non-Deliverable Forward Outrights and NDF Spreads."
+      },
+      {
+        "code": "PWRL",
+        "title": "Transmission Lines",
+        "description": "Power transmission grids."
+      },
+      {
+        "code": "REAM",
+        "title": "Real Estate Markets",
+        "description": "Real estate investments including REITs, private property funds, Islamic finance and the public sector. Including property returns and forecasts, housing data, land prices, mortgage-backed bond issues. Property deals such as building transactions or corporate sales and leasebacks. Property related government initiatives, regulatory issues, and the launch and performance of property investment products or sector indexes. Also major infrastructure projects."
+      },
+      {
+        "code": "REVS",
+        "title": "Revenue Bonds",
+        "description": "News about revenue bonds, issued by state, local authority and agency entities, that finance income-producing projects and are secured by a specified revenue source."
+      },
+      {
+        "code": "SUPD",
+        "title": "Supranational Agency Debt",
+        "description": "Debt securities issued by international organizations, which transcend established national boundaries or spheres of interest, such as the European Investment Bank, World Bank, IMF and development banks."
+      },
+      {
+        "code": "CORPD",
+        "title": "Corporate Debt",
+        "description": "All stories concerning the issuance, pricing, filing and redemption of debt instruments issued by a company. Includes convertible and other equity-linked bonds."
+      },
+      {
+        "code": "HEDGE",
+        "title": "Hedge Funds",
+        "description": "In general, a hedge fund is a managed portfolio of investments aiming at returning an absolute performance, regardless of the underlying trends in the financial markets.  Hedge funds use advanced investment strategies such as leverage, long, short, and derivative positions in order to capture market inefficiencies in both domestic and international markets with the goal of generating high returns. Hedge funds have far more flexibility in investment strategies than traditional funds, and the portfolios are usually highly leveraged."
+      },
+      {
+        "code": "MTNOT",
+        "title": "Medium-Term Notes",
+        "description": "Medium-term debt securities issued by government and non-government entities. Full range of maturities and amounts are available although typically maturing in 5-10 years, with more or less conventional features incorporated such as fixed or floating coupon basis."
+      },
+      {
+        "code": "RMBSE",
+        "title": "Residential Mortgage-Backed Securities",
+        "description": "Types of mortgage-backed security backed by mortgages on residential rather than commercial real estate."
+      },
+      {
+        "code": "TWPWR",
+        "title": "Tidal / Wave Power Stations",
+        "description": "Electrical power generated from waves, tides, sea currents, thermal and salinity differences. Price and profitability, interruptions in supply, opening and closing of power plants, technology and policy related to ocean power generation."
+      },
+      {
+        "code": "BIOPWR",
+        "title": "Biomass Power Stations",
+        "description": "Electrical power generated from the burning of biomass including woody material and waste, either alone or through co-firing with other fuels, as well as gas produced from biomass, manure and landfill."
+      },
+      {
+        "code": "COAPWR",
+        "title": "Coal-fired Power Stations",
+        "description": "Power generation from coal including regulation, price, interruptions in supply, opening and closing of power stations, technology related to coal fired power generation."
+      },
+      {
+        "code": "CRYCUR",
+        "title": "Cryptocurrencies",
+        "description": "Analysis of cryptocurrency markets."
+      },
+      {
+        "code": "GASPWR",
+        "title": "Gas-fired Power Stations",
+        "description": "Power generation from natural gas including regulation, price, interruptions in supply, opening and closing of power stations, technology related to gas fired power generation."
+      },
+      {
+        "code": "GEOPWR",
+        "title": "Geothermal Power Stations",
+        "description": "Electrical power from geothermal sources. Price and profitability, interruptions in supply, opening and closing of power stations, technology and policy related to geothermal power generation."
+      },
+      {
+        "code": "HYDPWR",
+        "title": "Hydroelectric Power Stations",
+        "description": "Hydro-electric power. Price and profitability, interruptions in supply, construction and maintenance of dams and power stations, water levels in reservoirs, technology and policy related to hydro power generation."
+      },
+      {
+        "code": "NUCPWR",
+        "title": "Nuclear Power Stations",
+        "description": "Nuclear power generation including regulation, price of power, interruptions in supply, opening and closing of power stations, technology related to nuclear power generation."
+      },
+      {
+        "code": "OILPWR",
+        "title": "Oil-fired Power Stations",
+        "description": "Power generation from oil, principally using fuel oil but also gas oil and crude oil, including regulation, price of power, interruptions in supply, opening and closing of power stations, technology related to oil fired power generation."
+      },
+      {
+        "code": "RNWPWR",
+        "title": "Renewable Energy Power Stations",
+        "description": "Power generation from renewable sources such as hydro, geothermal, solar, wind, biomass, wave and tidal. Policy, technology, price and profitability, interruptions in supply, opening and closing of power plants."
+      },
+      {
+        "code": "SOLPWR",
+        "title": "Solar Power Stations",
+        "description": "Electrical power from the heat or light of the sun using photovoltaic panels or solar thermal methods. Price and profitability, interruptions in supply, opening and closing of power plants, technology and policy related to solar power generation."
+      },
+      {
+        "code": "WINPWR",
+        "title": "Wind Farms",
+        "description": "Electrical power generated from wind. Price and profitability, interruptions in supply, opening and closing of wind farms, technology and policy related to wind power generation."
+      }
+    ]
+  },
+  {
+    "title": "Business - Commodities",
+    "topics": [
+      {
+        "code": "ALU",
+        "title": "Aluminum",
+        "description": "Extraction, transport, processing, trading / broking, demand for and use of aluminum (var. aluminium).  Organisations associated with aluminum."
+      },
+      {
+        "code": "BUN",
+        "title": "Bunker Fuel",
+        "description": "Production, transport, processing, trading / broking, demand for and use of bunker fuel, the heavy fuel oil used by ships, and marine diesel."
+      },
+      {
+        "code": "CHR",
+        "title": "Chromium",
+        "description": "Extraction, transport, processing, trading / broking, demand for and use of chromium.  Organisations associated with chromium."
+      },
+      {
+        "code": "CHS",
+        "title": "Cheese",
+        "description": "Production, transport, processing, trading / broking, demand for and use of Cheese.  Organisations associated with Cheese."
+      },
+      {
+        "code": "CO2",
+        "title": "Carbon / Emissions Markets",
+        "description": "Trading in permits to emit carbon dioxide and other greenhouse gases. Policy, allowances, regulations, monitoring and enforcement governing greenhouse gas emissions as well as related technology in energy intensive industries, including carbon capture and storage."
+      },
+      {
+        "code": "COA",
+        "title": "Coal",
+        "description": "Extraction, transport, processing, trading / broking, demand for and use of coal.  Organisations associated with coal."
+      },
+      {
+        "code": "COC",
+        "title": "Cocoa",
+        "description": "Growth, transport, processing, trading / broking, demand for and use of cocoa / cacao and chocolate.  ICCO and organisations associated with cocoa."
+      },
+      {
+        "code": "COF",
+        "title": "Coffee",
+        "description": "Growth, transport, processing, trading / broking, demand for and use of coffee.  Including arabica, robusta, roastings, milds, conillon.  ICO, IACO and organisations associated with coffee."
+      },
+      {
+        "code": "COR",
+        "title": "Corn",
+        "description": "Growth, transport, processing, trading / broking, demand for and use of Corn-Maize.  Organisations associated with Corn-Maize."
+      },
+      {
+        "code": "COT",
+        "title": "Cotton",
+        "description": "Production, transport, processing, trading / broking, demand for and use of cotton.  Organisations associated with cotton."
+      },
+      {
+        "code": "CRU",
+        "title": "Crude Oil",
+        "description": "Exploration, extraction, transport, processing, trading / broking, demand for and use of crude oil and gas condensate. Organisations associated with crude oil."
+      },
+      {
+        "code": "GOL",
+        "title": "Gold",
+        "description": "Extraction, transport, processing, trading / broking, demand for and use of gold.  Organisations associated with gold."
+      },
+      {
+        "code": "GRA",
+        "title": "Grains",
+        "description": "Grains - wheat; barley; oats; corn; maize; sorghum; cereal; rice; IWC; HGCA; FAO; EEP; COGECA; COCERAL; all grains commodity market reports; organisations associated with grains."
+      },
+      {
+        "code": "H2O",
+        "title": "Water",
+        "description": "Extraction, consumption, transportation, pricing, regulation, processing and use of water as a basic commodity."
+      },
+      {
+        "code": "IRN",
+        "title": "Iron Ore",
+        "description": "Extraction, transport, processing, trading / broking, demand for and use of iron ore. Organisations associated with iron ore."
+      },
+      {
+        "code": "JET",
+        "title": "Jet Fuel / Kerosene",
+        "description": "Production, transport, processing, trading / broking, demand for and use of jet kerosene as a jet fuel and for heating."
+      },
+      {
+        "code": "LIV",
+        "title": "Livestock",
+        "description": "Livestock - meat; beef; pork bellies; hogs; cattle; poultry; fish and fish oil; all livestock commodity market reports; organizations associated with livestock."
+      },
+      {
+        "code": "LNG",
+        "title": "Liquefied Natural Gas",
+        "description": "Production, transport, processing, trading / broking, demand for and use of liquefied natural gas."
+      },
+      {
+        "code": "MGS",
+        "title": "Manganese",
+        "description": "Extraction, transport, processing, trading / broking, demand for and use of manganese.  Organisations associated with manganese."
+      },
+      {
+        "code": "MLK",
+        "title": "Milk",
+        "description": "Production, transport, processing, trading / broking, demand for and use of Milk.  Organisations associated with Milk."
+      },
+      {
+        "code": "MOG",
+        "title": "Gasoline",
+        "description": "Production, transport, processing, trading / broking, demand for and use of gasoline / petrol."
+      },
+      {
+        "code": "NAP",
+        "title": "Naphtha",
+        "description": "Production, transport, processing, trading / broking, demand for and use of naphtha."
+      },
+      {
+        "code": "NGL",
+        "title": "Natural Gas Liquids",
+        "description": "Production, transport, processing, trading / broking, demand for and use of ethane, propane, normal butane, isobutane, pentane and combinations of these products including condensate, lease condensate, y-grade and natural gasoline."
+      },
+      {
+        "code": "NGS",
+        "title": "Natural Gas",
+        "description": "Production, transport, processing, trading / broking, demand for and use of natural gas.  Organisations associated with natural gas."
+      },
+      {
+        "code": "NKL",
+        "title": "Nickel",
+        "description": "Extraction, transport, processing, trading / broking, demand for and use of nickel.  Organisations associated with nickel."
+      },
+      {
+        "code": "NRG",
+        "title": "Energy Markets",
+        "description": "Production and consumption of physical energy products, including coal, gas, oil, power, renewable energy and emissions; market reports on and pricing of these commodities and their derivative instruments."
+      },
+      {
+        "code": "ORJ",
+        "title": "Orange Juice",
+        "description": "Growth, transport, processing, trading / broking, demand for and use of orange juice as juice or frozen concentrate.  Organisations associated with orange juice."
+      },
+      {
+        "code": "PGM",
+        "title": "Platinum Group Metals",
+        "description": "Production, consumption, transportation, pricing, regulation, processing and use of Platinum Group Metals, which is a term used to refer to six metallic elements, namely ruthenium, rhodium, palladium, osmium, iridium and platinum."
+      },
+      {
+        "code": "PWR",
+        "title": "Power Markets",
+        "description": "Electrical power generation, price, changes in supply such as the opening and closing of power stations, related technology and regulation. Organisations associated with power generation."
+      },
+      {
+        "code": "RFO",
+        "title": "Fuel Oil",
+        "description": "Production, transport, processing, trading / broking, demand for and use of heavy or residual fuel oil, including high-sulphur, low sulphur and bunker fuel oil as well as  vacuum gasoil."
+      },
+      {
+        "code": "RNW",
+        "title": "Renewable Energy",
+        "description": "Production, transport, processing, trading / broking, demand for and use of renewable energy, including wind, wave, solar, tidal, geothermal and hydro power, biomass and biofuels used for transport. Policy and regulations governing renewable energy."
+      },
+      {
+        "code": "RUB",
+        "title": "Rubber",
+        "description": "Growth, transport, processing, trading / broking, demand for and use of natural and synthetic rubber.  INRO, INRA, organisations associated with rubber."
+      },
+      {
+        "code": "SLK",
+        "title": "Silk",
+        "description": "Growth, transport, processing, trading / broking, demand for and use of silk.  Organisations associated with silk."
+      },
+      {
+        "code": "STE",
+        "title": "Steel",
+        "description": "Creation, transport, processing, trading / broking, demand for and use of steel including stainless steel."
+      },
+      {
+        "code": "SUG",
+        "title": "Sugar",
+        "description": "Growth, transport, processing, trading / broking, demand for and use of sugar from cane or beet.  Also high fructose corn syrup, HFCS, GEPLACEA, COGECA.  Organisations associated with sugar."
+      },
+      {
+        "code": "TEA",
+        "title": "Tea",
+        "description": "Growth, transport, processing, trading / broking, demand for and use of all teas. Including CTC, pekoe, fannings. Organisations associated with tea."
+      },
+      {
+        "code": "TMP",
+        "title": "Temperature",
+        "description": "Temperatures, notably unusual heat and cold and their effects. Heat waves and frosts as well as their impact on economic activities such as the production, transport and prices of commodities and energy."
+      },
+      {
+        "code": "WEA",
+        "title": "Weather Markets / Weather",
+        "description": "Weather related issues and reports; forecasts; statistics; warnings; meteorological phenomena."
+      },
+      {
+        "code": "WHT",
+        "title": "Wheat",
+        "description": "Growth, transport, processing, trading / broking, demand for and use of Wheat.  Organisations associated with Wheat."
+      },
+      {
+        "code": "WOO",
+        "title": "Wool",
+        "description": "Production, transport, processing, trading / broking, demand for and use of wool, merino or mohair.  Organisations associated with wool."
+      },
+      {
+        "code": "ZNC",
+        "title": "Zinc",
+        "description": "Extraction, transport, processing, trading / broking, demand for and use of zinc.  Organisations associated with zinc."
+      },
+      {
+        "code": "AGRI",
+        "title": "Agricultural Markets",
+        "description": "Production and consumption of physical agricultural products; market reports on the wholesale markets for these physical products plus their paper derivative products."
+      },
+      {
+        "code": "ATMY",
+        "title": "Antimony",
+        "description": "Extraction, transport, processing, trading / broking, demand for and use of antimony.  Organisations associated with antimony."
+      },
+      {
+        "code": "BIOF",
+        "title": "Biofuels",
+        "description": "Production, transport, processing, trading / broking, demand for and use of biofuels, including ethanol (derived from sugar cane), biodiesel (from animal or vegetable oils) and other fuels derived from living organisms."
+      },
+      {
+        "code": "BRGE",
+        "title": "Barge",
+        "description": "Inland waterway transport of oil and its products, grains, coal and other dry bulk commodities, related infrastructure, bookings and costs of vessels, accidents, government policy and regulation."
+      },
+      {
+        "code": "BRLY",
+        "title": "Barley",
+        "description": "Growth, transport, processing, trading / broking, demand for and use of Barley and Malting Barley.  Organisations associated with Barley."
+      },
+      {
+        "code": "BSMH",
+        "title": "Bismuth",
+        "description": "Extraction, transport, processing, trading / broking, demand for and use of bismuth.  Organisations associated with bismuth."
+      },
+      {
+        "code": "CBLT",
+        "title": "Cobalt",
+        "description": "Extraction, transport, processing, trading / broking, demand for and use of cobalt.  Organisations associated with cobalt."
+      },
+      {
+        "code": "CDMM",
+        "title": "Cadmium",
+        "description": "Extraction, transport, processing, trading / broking, demand for and use of cadmium.  Organisations associated with cadmium."
+      },
+      {
+        "code": "CONT",
+        "title": "Container",
+        "description": "Container transport of freight by water, road, rail and air, related infrastructure, bookings and costs, accidents, government policy and regulation."
+      },
+      {
+        "code": "CPPR",
+        "title": "Copper",
+        "description": "Extraction, transport, processing, trading / broking, demand for and use of copper.  Organisations associated with copper."
+      },
+      {
+        "code": "CTTL",
+        "title": "Cattle",
+        "description": "Production, transportation, pricing, animal welfare issues and regulations relating to live cattle."
+      },
+      {
+        "code": "DAIR",
+        "title": "Dairy",
+        "description": "Dairy products and eggs. Including butter, cheese, eggs, milk and yogurt."
+      },
+      {
+        "code": "DIAM",
+        "title": "Diamond Markets",
+        "description": "Extraction, transport, processing, trading / broking, demand for and use of diamonds.  Organisations associated with diamonds."
+      },
+      {
+        "code": "FERR",
+        "title": "Iron / Steel",
+        "description": "Production, transport, processing, trading / broking, demand for and use of iron, steel and ferrous alloys.  Organisations associated with iron, steel and ferrous alloys."
+      },
+      {
+        "code": "FERT",
+        "title": "Fertilisers",
+        "description": "Production, transport, processing, trading / broking, demand for and use of all fertilizers."
+      },
+      {
+        "code": "GALL",
+        "title": "Gallium",
+        "description": "Extraction, transport, processing, trading / broking, demand for and use of gallium.  Organisations associated with gallium."
+      },
+      {
+        "code": "GRMN",
+        "title": "Germanium",
+        "description": "Extraction, transport, processing, trading / broking, demand for and use of germanium.  Organisations associated with germanium."
+      },
+      {
+        "code": "HOIL",
+        "title": "Heating Oil / Gasoil",
+        "description": "Production, transport, processing, trading / broking, demand for heating oil, the gas oil or middle distillate chiefly used as a heating fuel or in industry."
+      },
+      {
+        "code": "INDI",
+        "title": "Indium",
+        "description": "Extraction, transport, processing, trading / broking, demand for and use of indium.  Organisations associated with indium."
+      },
+      {
+        "code": "IRDM",
+        "title": "Iridium",
+        "description": "Extraction, transport, processing, trading / broking, demand for and use of iridium.  Organisations associated with iridium."
+      },
+      {
+        "code": "LITH",
+        "title": "Lithium",
+        "description": "Production, consumption, transportation, pricing, regulation, processing and use of Lithium (Li), a soft, silver-white metal, used for many industrial applications."
+      },
+      {
+        "code": "LPG1",
+        "title": "Liquefied Petroleum Gas",
+        "description": "Production, transport, processing, trading / broking, demand for and use of liquefied petroleum gas, including propane and butane."
+      },
+      {
+        "code": "MEAL",
+        "title": "Meals / Feeds / Pulses",
+        "description": "Feed grains; expeller; soya meal; soy meal; rape-meal; fishmeal; sun meal; sunflower meal; tapioca; manioc; citrus pulp; pulses; lentils; corn gluten; all meals and feeds commodity market reports; organizations associated with meals and feeds."
+      },
+      {
+        "code": "METL",
+        "title": "Metals Markets",
+        "description": "Production and consumption of physical metals, including precious metals, and their derivatives instruments; market reports, pricing of these commodities."
+      },
+      {
+        "code": "MGSM",
+        "title": "Magnesium",
+        "description": "Extraction, transport, processing, trading / broking, demand for and use of magnesium.  Organisations associated with magnesium."
+      },
+      {
+        "code": "MLDM",
+        "title": "Molybdenum",
+        "description": "Extraction, transport, processing, trading / broking, demand for and use of molybdenum.  Organisations associated with molybdenum."
+      },
+      {
+        "code": "NIOB",
+        "title": "Niobium",
+        "description": "Production, consumption, transportation, pricing, regulation, processing and use of Niobium (Nb), a soft grey, ductile transition metal, used in superconducting materials."
+      },
+      {
+        "code": "OILS",
+        "title": "Oilseeds",
+        "description": "Oils and oilseeds - oilseed; soya bean; soybean; soy oil; rape seed; rape oil; colza; canola; palm oil; palm kernel; coconut; coconut oil; sunflower; sunoil; groundnut; peanut; linseed; linoil; olein; stearin; castor; tung; castor oil; tungoil."
+      },
+      {
+        "code": "PALL",
+        "title": "Palladium",
+        "description": "Extraction, transport, processing, trading / broking, demand for and use of palladium.  Organisations associated with palladium."
+      },
+      {
+        "code": "PETC",
+        "title": "Petrochemicals",
+        "description": "Production, transport, processing, trading / broking, demand for and use of petrochemicals including ethylene, propylene, butylene, benzene, toluene, styrene, xylene, ethyl benzene and cumene."
+      },
+      {
+        "code": "PHOS",
+        "title": "Phosphates",
+        "description": "Production, transport, processing, trading / broking, demand for and use of phosphates for fertilizer.  Organisations associated with phosphates."
+      },
+      {
+        "code": "PLAS",
+        "title": "Plastics / Polymers",
+        "description": "Production, transport, trading / broking, demand for and use of polymer materials, typically thermoplastic or thermosetting resins. Processing new or recycled plastics resins into intermediate or final products including packaging."
+      },
+      {
+        "code": "PLAT",
+        "title": "Platinum",
+        "description": "Extraction, transport, processing, trading / broking, demand for and use of platinum.  Organisations associated with platinum."
+      },
+      {
+        "code": "POIL",
+        "title": "Palm Oil",
+        "description": "Production, transport, processing, trading / broking, demand for and use of Palm Oil.  Organisations associated with Palm Oil."
+      },
+      {
+        "code": "POTH",
+        "title": "Potash",
+        "description": "Production, transport, processing, trading / broking, demand for and use of Potash for fertilizer.  Organisations associated with Potash."
+      },
+      {
+        "code": "PRCP",
+        "title": "Precipitation",
+        "description": "Rain, snow, hail or drought and their effects. Floods, rain related landslides as well as the impact of excessive or inadequate precipitation on economic activities such as the production, transport and prices of commodities and energy."
+      },
+      {
+        "code": "PROD",
+        "title": "Refined Products",
+        "description": "Production, transport, processing, trading / broking, demand for and use of refined oil products including fuel oil, naphtha, gasoline, petroleum, gas oil, jet kerosene and petrochemicals. News on refineries and on policy affecting petroleum products, such as new specifications for sulphur content."
+      },
+      {
+        "code": "RDFT",
+        "title": "Road Freight",
+        "description": "Road transport of oil and oil products, coal and dry or liquid bulk commodities and other goods, related infrastructure, bookings and costs of equipment, accidents, government policy and regulation."
+      },
+      {
+        "code": "RHDM",
+        "title": "Rhodium",
+        "description": "Extraction, transport, processing, trading / broking, demand for and use of rhodium.  Organisations associated with rhodium."
+      },
+      {
+        "code": "RHEN",
+        "title": "Rhenium",
+        "description": "Production, consumption, transportation, pricing, regulation, processing and use of Rhenium (Re), a metal used in combustion engines, turbine blades and exhaust nozzles of jet engines."
+      },
+      {
+        "code": "RLFT",
+        "title": "Rail Freight",
+        "description": "Rail transport of oil and oil products, coal, dry or liquid bulk commodities and other goods, related infrastructure, bookings and costs of equipment, accidents, government policy and regulation."
+      },
+      {
+        "code": "RTNM",
+        "title": "Ruthenium",
+        "description": "Extraction, transport, processing, trading / broking, demand for and use of ruthenium.  Organisations associated with ruthenium."
+      },
+      {
+        "code": "RYE1",
+        "title": "Rye",
+        "description": "Growth, transport, processing, trading / broking, demand for and use of Rye.  Organisations associated with Rye."
+      },
+      {
+        "code": "SCRP",
+        "title": "Scrap Metals",
+        "description": "Scrap / secondary metals including ferrous and non-ferrous metals."
+      },
+      {
+        "code": "SFTS",
+        "title": "Softs",
+        "description": "Soft commodities such as coffee, tea, sugar, rubber, tobacco and cocoa."
+      },
+      {
+        "code": "SHFV",
+        "title": "Spices / Herbs / Fruit / Vegetables",
+        "description": "Production, consumption, transportation, pricing, regulation, processing and use of any spices, herbs, fruits or vegetables."
+      },
+      {
+        "code": "SLCN",
+        "title": "Silicon",
+        "description": "Extraction, transport, processing, trading / broking, demand for and use of silicon.  Organisations associated with silicon."
+      },
+      {
+        "code": "SLNM",
+        "title": "Selenium",
+        "description": "Extraction, transport, processing, trading / broking, demand for and use of selenium.  Organisations associated with selenium."
+      },
+      {
+        "code": "SLVR",
+        "title": "Silver",
+        "description": "Extraction, transport, processing, trading / broking, demand for and use of silver.  Organisations associated with silver."
+      },
+      {
+        "code": "SOIL",
+        "title": "Soybean Oil",
+        "description": "Production, transport, processing, trading / broking, demand for and use of Soybean Oil.  Organisations associated with Soybean Oil."
+      },
+      {
+        "code": "SORG",
+        "title": "Sorghum / Milo",
+        "description": "Growth, transport, processing, trading / broking, demand for and use of Sorghum.  Organisations associated with Sorghum."
+      },
+      {
+        "code": "SOY1",
+        "title": "Soybean",
+        "description": "Growth, transport, processing, trading / broking, demand for and use of Soybean.  Organisations associated with Soybean."
+      },
+      {
+        "code": "SSTE",
+        "title": "Stainless Steel",
+        "description": "Production, transport, processing, trading / broking, demand for and use of stainless steel. Organisations associated with stainless steel."
+      },
+      {
+        "code": "TGSN",
+        "title": "Tungsten",
+        "description": "Extraction, transport, processing, trading / broking, demand for and use of tungsten.  Organisations associated with tungsten."
+      },
+      {
+        "code": "TIN1",
+        "title": "Tin",
+        "description": "Extraction, transport, processing, trading / broking, demand for and use of tin.  Organisations associated with tin."
+      },
+      {
+        "code": "TMBR",
+        "title": "Timber / Lumber",
+        "description": "Growth, transport, processing, trading / broking, demand for and use of timber / lumber.  Organisations associated with timber / lumber."
+      },
+      {
+        "code": "TNKR",
+        "title": "Tanker Freight",
+        "description": "Seaborne transport of oil, oil products and liquefied gas by tankers, closely related onshore infrastructure, bookings and costs of tankers, accidents, government policy and regulation. Organisations associated with tankers."
+      },
+      {
+        "code": "TNTE",
+        "title": "Tantalite",
+        "description": "Extraction, transport, processing, trading / broking, demand for and use of tantalite.  Organisations associated with tantalite."
+      },
+      {
+        "code": "TTNM",
+        "title": "Titanium",
+        "description": "Extraction, transport, processing, trading / broking, demand for and use of titanium.  Organisations associated with titanium."
+      },
+      {
+        "code": "URAN",
+        "title": "Uranium",
+        "description": "The mining, production, processing, export and supply of uranium. The uranium market and uranium trade. Included on corporate news about uranium miners and regulatory news about government policy relating to the supply of uranium. Not included on stories about uranium enrichment for nuclear weapons."
+      },
+      {
+        "code": "VNDM",
+        "title": "Vanadium",
+        "description": "Extraction, transport, processing, trading / broking, demand for and use of vanadium.  Organisations associated with vanadium."
+      },
+      {
+        "code": "AMCRU",
+        "title": "Americas Crudes",
+        "description": "Americas crude oil streams"
+      },
+      {
+        "code": "ASCRU",
+        "title": "Asia Crudes",
+        "description": "Asian crude oil streams"
+      },
+      {
+        "code": "BIOMS",
+        "title": "Biomass",
+        "description": "Production, consumption, transportation, pricing, regulation and use of energy generated by biological material from living or recently living organisms."
+      },
+      {
+        "code": "CTTLB",
+        "title": "Beef",
+        "description": "Production, consumption, pricing food safety issues and regulations relating to beef and beef products."
+      },
+      {
+        "code": "DBULK",
+        "title": "Dry Bulk Freight",
+        "description": "Seaborne transport of dry bulk freight including grains, coal and cement, related onshore infrastructure. Bookings and costs of vessels, accidents, government policy and regulation."
+      },
+      {
+        "code": "LEAD1",
+        "title": "Lead",
+        "description": "Extraction, transport, processing, trading / broking, demand for and use of lead.  Organisations associated with lead."
+      },
+      {
+        "code": "MECRU",
+        "title": "Middle East Crudes",
+        "description": "Middle Eastern crude oil streams"
+      },
+      {
+        "code": "NSCRU",
+        "title": "North Sea Crudes",
+        "description": "North Sea crude oil streams"
+      },
+      {
+        "code": "PLTRY",
+        "title": "Poultry",
+        "description": "Production, transportation, pricing, animal welfare issues and regulations relating to live poultry."
+      },
+      {
+        "code": "RAREE",
+        "title": "Rare Earths",
+        "description": "Extraction, production, consumption, transportation, pricing, regulation, processing and use of rare earth elements or REEs, which are also known as rare earth metals and consist of 17 chemical element in the periodic table, including the 15 lanthanides plus scandium and yttrium."
+      },
+      {
+        "code": "RICE1",
+        "title": "Rice",
+        "description": "Growth, transport, processing, trading / broking, demand for and use of Rice.  Organisations associated with Rice."
+      },
+      {
+        "code": "USCRU",
+        "title": "US Crudes",
+        "description": "US crude oil streams"
+      },
+      {
+        "code": "WINE1",
+        "title": "Wine",
+        "description": "Production, transport, processing, trading / broking, demand for and use of wine and wine products.  Organisations associated with wine."
+      },
+      {
+        "code": "AFRCRU",
+        "title": "Africa Crudes",
+        "description": "African crude oil streams"
+      },
+      {
+        "code": "AUSCRU",
+        "title": "Australasia Crudes",
+        "description": "Australasian crude oil streams"
+      },
+      {
+        "code": "BASMTL",
+        "title": "Base Metals",
+        "description": "Common non-precious metals such as copper, tin, or zinc."
+      },
+      {
+        "code": "BIOCEL",
+        "title": "Cellulosic Biofuels",
+        "description": "Production, transport, processing, trading / broking, demand for and use of next generation biofuels, chiefly ethanol, derived from cellulosic materials such as woody waste, leaves, stalks or non-food crops such as switchgrass."
+      },
+      {
+        "code": "BIODSL",
+        "title": "Biodiesel",
+        "description": "Production, transport, processing, trading / broking, demand for and use of biodiesel fuel, which resembles mineral diesel and is derived from animal or vegetable oils and fats."
+      },
+      {
+        "code": "BIOETH",
+        "title": "Bioethanol",
+        "description": "Production, transport, processing, trading / broking, demand for and use of bioethanol fuel, made from grains, sugar and other starches and which can be substituted for gasoline."
+      },
+      {
+        "code": "CANCRU",
+        "title": "Canada Crudes",
+        "description": "Canadian crude oil streams"
+      },
+      {
+        "code": "COCOIL",
+        "title": "Coconut Oil",
+        "description": "Production, transport, processing, trading / broking, demand for and use of Coconut Oil.  Organisations associated with Coconut Oil."
+      },
+      {
+        "code": "COFARA",
+        "title": "Arabica",
+        "description": "Growth, transport, processing, trading / broking, demand for and use of arabica coffee. Organisations associated with arabica coffee."
+      },
+      {
+        "code": "COFROB",
+        "title": "Robusta",
+        "description": "Growth, transport, processing, trading / broking, demand for and use of robusta coffee. Organisations associated with robusta coffee."
+      },
+      {
+        "code": "COROIL",
+        "title": "Corn Oil",
+        "description": "Production, transport, processing, trading / broking, demand for and use of Corn-Maize Oil.  Organisations associated with Corn-Maize Oil."
+      },
+      {
+        "code": "DISTLL",
+        "title": "Middle Distillates",
+        "description": "Production, transport, processing, trading / broking, demand for and use of middle distillates, including diesel, heating oil and jet kerosene."
+      },
+      {
+        "code": "EMACRU",
+        "title": "Europe / Middle East / Africa Crudes",
+        "description": "Europe / Middle East / Africa crude oil streams"
+      },
+      {
+        "code": "LATCRU",
+        "title": "Latin America Crudes",
+        "description": "Latin American crude oil streams"
+      },
+      {
+        "code": "MINMTL",
+        "title": "Minor Metals / Minerals",
+        "description": "Uncommon and scarce metals such as arsenic, cadmium, cobalt, uranium."
+      },
+      {
+        "code": "NASCRU",
+        "title": "North Asia Crudes",
+        "description": "North Asian crude oil streams"
+      },
+      {
+        "code": "OLVOIL",
+        "title": "Olive Oil",
+        "description": "Production, transport, processing, trading / broking, demand for and use of Olive Oil.  Organisations associated with Olive Oil."
+      },
+      {
+        "code": "PIGHOG",
+        "title": "Pigs / Hogs",
+        "description": "Production, transportation, pricing, animal welfare issues and regulations relating to live pigs / hogs."
+      },
+      {
+        "code": "PNTOIL",
+        "title": "Peanut Oil",
+        "description": "Production, transport, processing, trading / broking, demand for and use of Peanut-Groundnut Oil.  Organisations associated with Peanut-Groundnut Oil."
+      },
+      {
+        "code": "PORBEL",
+        "title": "Pork Bellies",
+        "description": "Production, consumption, pricing food safety issues and regulations relating to pork bellies."
+      },
+      {
+        "code": "PORPRO",
+        "title": "Pork",
+        "description": "Production, consumption, pricing food safety issues and regulations relating to pork products (excluding pork bellies)."
+      },
+      {
+        "code": "PREMTL",
+        "title": "Precious Metals",
+        "description": "Valuable metals such as gold, silver, or platinum."
+      },
+      {
+        "code": "RAPOIL",
+        "title": "Rapeseed / Canola Oil",
+        "description": "Production, transport, processing, trading / broking, demand for and use of Canola-Rapeseed Oil.  Organisations associated with Canola-Rapeseed Oil."
+      },
+      {
+        "code": "RUSCRU",
+        "title": "Russia / Other CIS Crudes",
+        "description": "Russian / Other CIS crude oil streams"
+      },
+      {
+        "code": "SEACRU",
+        "title": "South East Asia Crudes",
+        "description": "South East Asian crude oil streams"
+      },
+      {
+        "code": "SNFOIL",
+        "title": "Sunflower Oil",
+        "description": "Production, transport, processing, trading / broking, demand for and use of Sunflower Oil.  Organisations associated with Sunflower Oil."
+      },
+      {
+        "code": "TRNSPT",
+        "title": "Transportation Markets / Transportation",
+        "description": "Freight transport by road, rail, sea and river as well as movement of energy by oil or gas pipelines and electrical transmission lines."
+      }
+    ]
+  },
+  {
+    "title": "Business - General News",
+    "topics": [
+      {
+        "code": "AAA",
+        "title": "Credit / Debt Ratings",
+        "description": "The issuing of an assessment of the credit worthiness of borrowers and potential borrowers. These published ratings for securities such as preferred stock and debt issues are based on the likelihood of consistent and timely payments."
+      },
+      {
+        "code": "BL1",
+        "title": "Bond Inventory Balances",
+        "description": "News about bond inventory balances and unsold balances and account-closed and free-to-trade announcements."
+      },
+      {
+        "code": "CEN",
+        "title": "Central Banks / Central Bank Events",
+        "description": "Policies of and changes at any central bank, reserve bank, or monetary authority."
+      },
+      {
+        "code": "CM1",
+        "title": "Competitive Bond Sales",
+        "description": "News about competitive bond sales, including presale stories."
+      },
+      {
+        "code": "CNH",
+        "title": "Chinese Yuan Offshore",
+        "description": "Market comments and stories about the Chinese yuan when traded offshore."
+      },
+      {
+        "code": "DIV",
+        "title": "Dividends",
+        "description": "Dividend forecasts, declarations and payments. Announcements or projections of payment of a dividend and any major increases or decreases to its dividend."
+      },
+      {
+        "code": "ECI",
+        "title": "Economic Indicators",
+        "description": "Stories on economic indicator / data releases, including polls, forecasts and other stories wholly about economic indicators."
+      },
+      {
+        "code": "ESG",
+        "title": "ESG",
+        "description": "News and research relating to a company's environmental, social and governance standards used by ethical investors to screen their investments. Environmental standards measure how a company's activities affect the natural environment, while social standards are concerned with how a company manages relationships with its employees, suppliers, customers and the communities where it operates, and governance standards deal with how a company is managed and the interests of shareholders are served."
+      },
+      {
+        "code": "GBR",
+        "title": "Government Borrowing Requirement",
+        "description": "The amount government needs to borrow in order to fund the gap between expenditure and revenue."
+      },
+      {
+        "code": "GDP",
+        "title": "Economic Output",
+        "description": "Official GDP and GNP data releases, forecasts and other stories wholly about GDP or GNP."
+      },
+      {
+        "code": "GEN",
+        "title": "General News",
+        "description": "All news that is not primarily financial, business or sports."
+      },
+      {
+        "code": "INT",
+        "title": "Interest Rates / Policy",
+        "description": "Events relating to base lending rates and official interest rates set by central banking authorities."
+      },
+      {
+        "code": "IPO",
+        "title": "Initial Public Offerings",
+        "description": "News about initial public share offers - includes initial offers to professional investors such as via placings."
+      },
+      {
+        "code": "IPR",
+        "title": "Industrial Output",
+        "description": "Industrial production figures and forecasts. All measures of manufacturing output including the Purchasing Managers' Indices."
+      },
+      {
+        "code": "ISU",
+        "title": "New Issues",
+        "description": "News about new government, supranational and corporate issues of debt and all new equity issues."
+      },
+      {
+        "code": "JOB",
+        "title": "Labour / Personnel",
+        "description": "Labour issues, employment, unemployment, work relations, labour disputes, strikes, legislation, unions, job related issues, working conditions, employment discrimination, government employment policy and labour market reform."
+      },
+      {
+        "code": "MCE",
+        "title": "Economic Events",
+        "description": "News and analysis relating to the state of an economy, including government and central bank-related matters, economic forecasts and economic indicator announcements."
+      },
+      {
+        "code": "MRG",
+        "title": "Mergers / Acquisitions / Takeovers",
+        "description": "Includes news of any actual or possible purchase of a company, combination or unification of two or more companies, units or subsidiaries, and the acquisition of major assets such as infrastructure operating concessions or complete product lines. Also includes a company or party gaining more than a 50% stake in another company or increasing its control above that level."
+      },
+      {
+        "code": "NG1",
+        "title": "Negotiated Sales",
+        "description": "News about negotiated sales -- a transaction conducted by an issuer via a hired syndicate. The issuer hires a banker to structure and price a deal. The banker picks a sales date, pre-markets the bonds to potential investors and prices the deal."
+      },
+      {
+        "code": "NT1",
+        "title": "Note Sales",
+        "description": "News about note sales (short-term debt), including presale stories."
+      },
+      {
+        "code": "PMI",
+        "title": "Purchasing Managers Surveys",
+        "description": "Forecasts and reports relating to purchasing managers surveys such as ISM or Markit PMI."
+      },
+      {
+        "code": "PRO",
+        "title": "Personalities / People",
+        "description": "News and profiles focused on the life or major moments in the life of individuals."
+      },
+      {
+        "code": "PS1",
+        "title": "Presale Announcements",
+        "description": "News about presale announcements, including orders to purchase part of a new municipal bond issue that is accepted by an underwriting syndicate before an official public offering."
+      },
+      {
+        "code": "RCH",
+        "title": "Broker Research / Recommendations",
+        "description": "The issuing of an investment opinion by a broker / analyst about whether a given stock is a 'buy', 'sell' or a 'hold', or giving a target share price."
+      },
+      {
+        "code": "RES",
+        "title": "Performance / Results / Earnings",
+        "description": "All corporate financial results; tabular and textual reports; dividends; accounts, annual reports; forecasts and estimates of future earnings; corporate insolvencies and bankruptcies."
+      },
+      {
+        "code": "RWS",
+        "title": "Retail / Wholesale Sales Economic Indicators",
+        "description": "Retail and wholesale sales figures and forecasts as economic indicators."
+      },
+      {
+        "code": "SL1",
+        "title": "Bond Sales",
+        "description": "News about all bond sales, including presale stories."
+      },
+      {
+        "code": "STK",
+        "title": "Equity Stakes",
+        "description": "The purchase or sale of a potentially significant stake in a company's equity by another company, individual or group of investors. These are deals that result in stakes of 50% or less in the target company."
+      },
+      {
+        "code": "ACCI",
+        "title": "Accounting Issues",
+        "description": "Issues regarding an organisation's financial accounting and the auditing of the organization's financial statements and accounting records.  The company's adherence to generally accepted accounting principles, in all material respects. Also accounting-related investigations by regulatory agencies, accounting-related internal investigations and audits, and auditor changes."
+      },
+      {
+        "code": "BACT",
+        "title": "Corporate Events",
+        "description": "All business events relating to companies and other issuers of securities."
+      },
+      {
+        "code": "BKRT",
+        "title": "Bankruptcy / Insolvency",
+        "description": "News about companies being declared insolvent or put into administration, their administration and liquidations. Includes a company announcing its plans to file for bankruptcy protection, filing an initial or revised plan of reorganisation, the granting of bankruptcy court approval to the company's plan of reorganisation, and a company's emergence from bankruptcy protection."
+      },
+      {
+        "code": "BONS",
+        "title": "Bonus Share Issues",
+        "description": "When a company makes a free issue of shares to shareholders, based upon the number of shares that a shareholder owns. Also known as a Bonus Issue, Free Issue, a Capitalization Issue or a Pro Rata Issue."
+      },
+      {
+        "code": "BUYB",
+        "title": "Share Buybacks / Repurchases",
+        "description": "The purchase by a company of its own shares in the open market or by tender offer, usually based on the belief that the shares are undervalued and that buying them will provide a better investment return than putting cash into the underlying business of the company."
+      },
+      {
+        "code": "CCRE",
+        "title": "Consumer Credit",
+        "description": "Levels of consumer borrowing, spending and saving."
+      },
+      {
+        "code": "CEO1",
+        "title": "Change of CEO",
+        "description": "Change of a company's chief executive officer."
+      },
+      {
+        "code": "CFO1",
+        "title": "Change of CFO",
+        "description": "Change of a company's chief financial officer / finance director."
+      },
+      {
+        "code": "CNSL",
+        "title": "Share Consolidations",
+        "description": "Consolidations of shares in issue, sometimes called reverse stock splits."
+      },
+      {
+        "code": "DBTR",
+        "title": "Corporate Debt Restructurings",
+        "description": "The restructurings of corporate debt by altering the terms and provisions of the existing debt issue or issuance of new debt to replace existing debt. Includes financial restructurings undertaken under administration and bankruptcy protection proceedings."
+      },
+      {
+        "code": "DISP",
+        "title": "Labour Disputes",
+        "description": "Disputes between unions and industries that could lead to major disruptions in production or services."
+      },
+      {
+        "code": "DVST",
+        "title": "Divestitures / Spin-Offs",
+        "description": "News of a company disposing of a significant part of its business. Could involve converting the business to be disposed of into a new, separate company with shareholders in the parent being given shares in the offshoot."
+      },
+      {
+        "code": "FNAL",
+        "title": "Finals",
+        "description": "Indicates the level of competition is a Finals"
+      },
+      {
+        "code": "ILEI",
+        "title": "Leading Indicators",
+        "description": "Indices of leading indicators."
+      },
+      {
+        "code": "INDX",
+        "title": "Indices Changes",
+        "description": "News about market indexes, including changes in constituents, their weightings, the creation and abolition of indexes. Does not include routine market performance news."
+      },
+      {
+        "code": "INFL",
+        "title": "Inflation",
+        "description": "Inflation figures and forecasts. Consumer, retail, producer and wholesale prices and price indices."
+      },
+      {
+        "code": "MEVN",
+        "title": "Market Events",
+        "description": "News about the operation of financial markets and exchanges including news about changes in market indexes, trading hours, regulations and news about changes in ownership and structure."
+      },
+      {
+        "code": "MONS",
+        "title": "Money Supply",
+        "description": "Money Supply figures and forecasts. All measures of narrow and broad money, including M0, M1, M2, M3 and M4."
+      },
+      {
+        "code": "MPLT",
+        "title": "Employment / Unemployment",
+        "description": "Employment and unemployment figures. Payrolls, jobless rates and the volume of help-wanted job advertising."
+      },
+      {
+        "code": "OSTR",
+        "title": "Oil Storage",
+        "description": "Storage of crude oil and refined oil products."
+      },
+      {
+        "code": "PINV",
+        "title": "Personal Investing",
+        "description": "All news about the process of investing on the part of individuals. News about investment tools, techniques and regulations for the individual investor and market trends that are related to individual investors; news about how investors interact with markets, detailing patterns of behaviour of the investors and their aggregate impact on the macro-economy. Includes information with advice from experts about how to invest and helping in the process of making selections between various financial instruments."
+      },
+      {
+        "code": "PLCY",
+        "title": "Monetary / Fiscal Policy / Policy Makers",
+        "description": "Events covering monetary and fiscal policy and policy makers."
+      },
+      {
+        "code": "PRIV",
+        "title": "Privatization",
+        "description": "The sale of a state-owned company or sale of a significant government stake in a company to a private investor or group of investors."
+      },
+      {
+        "code": "PRXF",
+        "title": "Proxy Fights",
+        "description": "A proxy fight is an effort by activist shareholders of a publicly-traded company to gain partial or full control of the company by making a formal proposal to elect new members, backed by the dissidents, to the company's board of directors, to be voted on at a meeting of the company's shareholders, and then actively soliciting commitments from other shareholders to vote in favor of the proposal."
+      },
+      {
+        "code": "QRND",
+        "title": "Qualifying Rounds",
+        "description": "Indicates the level of competition is a Qualifying rounds"
+      },
+      {
+        "code": "REGS",
+        "title": "Regulation",
+        "description": "Regulatory issues, including inquiries, investigations, findings and rulings against companies by pan-national, national and local government bodies, such as competition and antitrust investigations. Also includes regulation and deregulation of a market or an industry, but excludes company-specific accounting-related issues, which are covered by Accounting Issues [ACCI]."
+      },
+      {
+        "code": "RESF",
+        "title": "Results Forecasts / Warnings",
+        "description": "Forecasts or \"guidance\" given by a company about its future results, including profit warnings."
+      },
+      {
+        "code": "SHPP",
+        "title": "Shareholder Protection Plans",
+        "description": "The actions taken by corporations to discourage a hostile takeovers by another company.  These actions include 'poison pills', 'flip-in' and 'flip-over' options, 'people pills', 'suicide pills' and adopting a 'scorched-earth policy'. Also known as a Shareholder Rights Plan."
+      },
+      {
+        "code": "SISU",
+        "title": "Secondary Share Offerings / Issues",
+        "description": "Secondary share issues. The issue of new stock or derivatives such as warrants and convertible bonds from a company that has already made its initial public offering (IPO). Includes placings and rights issues. Does not include bonus issues."
+      },
+      {
+        "code": "STAT",
+        "title": "Production Status Changes",
+        "description": "A disruption and/or resumption of production or services."
+      },
+      {
+        "code": "WPAY",
+        "title": "Workers Pay",
+        "description": "Stories about the levels of workers salaries, wages and benefits. Includes other forms of compensation such as share schemes, profit sharing, bonus schemes and loyalty payments."
+      },
+      {
+        "code": "ALLCE",
+        "title": "Strategic Combinations",
+        "description": "Any announcements of strategic alliance arrangement between two companies who have decided to collaborate or share resources in a specific project.  Or the formation of a joint venture where two or more companies are pooling resources to create a separate entity, or updating of an existing joint venture."
+      },
+      {
+        "code": "BOSS1",
+        "title": "Key Personnel Changes",
+        "description": "Changes of senior personnel in a corporation / organisation, including the chairperson, president, CEO and CFO."
+      },
+      {
+        "code": "BSENT",
+        "title": "Business Sentiment",
+        "description": "Business sentiment surveys and indices. Levels of business confidence and business outlooks."
+      },
+      {
+        "code": "CAPUT",
+        "title": "Capacity Utilisation",
+        "description": "The ratio between industrial output and industrial capacity."
+      },
+      {
+        "code": "CASE1",
+        "title": "Corporate Litigation",
+        "description": "Legal actions involving or affecting corporations and/or corporate officers. Includes news of moves to take legal action, judgments and dismissals of lawsuits."
+      },
+      {
+        "code": "CLASS",
+        "title": "Class Actions",
+        "description": "A legal action against a company or companies where an individual represents a group in a court claim. The judgment from the suit is for all the members of the group (class)."
+      },
+      {
+        "code": "CMPNY",
+        "title": "Company News",
+        "description": "Company news (added automatically when a story contains any company RIC)."
+      },
+      {
+        "code": "CPROD",
+        "title": "Products / Services",
+        "description": "News about products and services, including their development, launches, recalls, safety, litigation, regulatory approvals, sales and marketing."
+      },
+      {
+        "code": "CSENT",
+        "title": "Consumer Sentiment",
+        "description": "Consumer sentiment surveys and indices. Levels of consumer confidence and consumption expectations."
+      },
+      {
+        "code": "DDEAL",
+        "title": "Directors Dealings",
+        "description": "The purchase or sale of shares by directors or other key employees or by their agents in the publicly quoted companies for which they work."
+      },
+      {
+        "code": "DEAL1",
+        "title": "Deals",
+        "description": "News about any actual or possible purchase of a company, combination or unification of two or more companies, units, subsidiaries, major assets, or complete product lines. Also includes news about change of ownership in a significant stake in a company, spin-offs of business units and sales and acquisitions of significant or potentially significant stakes in a company, as well as news about alliances and joint venture agreements between companies."
+      },
+      {
+        "code": "DEVAL",
+        "title": "Currency Devaluation",
+        "description": "Downward adjustments of a currency's official par value or central exchange rate."
+      },
+      {
+        "code": "DGOOD",
+        "title": "Durable Goods Orders",
+        "description": "Orders to factories for manufactured goods. Durable goods orders."
+      },
+      {
+        "code": "FINE1",
+        "title": "Equity Capital Changes",
+        "description": "News about equity capital changes including IPOs and secondary share offers, buybacks, share redemptions and consolidations, share splits, bonus and scrip issues. Includes announcements that a company plans to make equity offering/placing, the pricing of offerings/placing and their completion."
+      },
+      {
+        "code": "HOSAL",
+        "title": "Home Sales",
+        "description": "New and existing home sales. Housing affordability indices."
+      },
+      {
+        "code": "INVTR",
+        "title": "Inventories",
+        "description": "Manufacturers' and distributors' inventories. Stockpiles of goods on shelves and backlogs."
+      },
+      {
+        "code": "KMOVE",
+        "title": "Capital Movements",
+        "description": "Capital movement between countries. Invisible trade and overseas investment."
+      },
+      {
+        "code": "LIST1",
+        "title": "Security Listings / Delistings",
+        "description": "When instruments are listed on or listed instruments are delisted from individual commercial exchanges. These can be exchanges trading in securities, options, futures or commodities. Includes movements from one sector to another sector and changes of listing category, e.g. from small cap to large cap."
+      },
+      {
+        "code": "MEET1",
+        "title": "Shareholder Meetings",
+        "description": "News about a company's annual general meetings (AGMs), including business concerns addressed, ballots for company initiatives and company board elections; also includes news about extraordinary general meetings (EGMs) and other shareholder meetings and the issues behind them."
+      },
+      {
+        "code": "MONOP",
+        "title": "Monopolies / Antitrust Issues",
+        "description": "Issues concerning competition law, including investigations into companies suspected of anti-competitive behaviour, and proposed takeovers and mergers, price-fixing and other restrictive business practices."
+      },
+      {
+        "code": "NAMEC",
+        "title": "Corporate Name Changes",
+        "description": "Corporate changes of identity, including rebranding, new logos, marketing slogans. Changes in the persona of a corporation which are designed to accord with and facilitate the attainment of business objectives, and are usually visibly manifested by way of branding and the use of trademarks."
+      },
+      {
+        "code": "PRES1",
+        "title": "Change of President",
+        "description": "Change of a company's president."
+      },
+      {
+        "code": "QFNAL",
+        "title": "Quarter-Finals",
+        "description": "Indicates the level of competition is a Quarter-finals"
+      },
+      {
+        "code": "RECLL",
+        "title": "Product Recalls",
+        "description": "Requests made or actions taken by a manufacturer or seller to recall or withdraw a product from the market due to concerns about possible or actual safety issues or product defects."
+      },
+      {
+        "code": "REORG",
+        "title": "Restructuring / Reorganization",
+        "description": "A significant modification made to a company's existing operations or organisational structure, such as when a company closes a location and/or lays off a significant proportion of its workforce. Can include divestments but not acquisitions."
+      },
+      {
+        "code": "REVAL",
+        "title": "Currency Revaluation",
+        "description": "Upward adjustments of a currency's official par value or central exchange rate."
+      },
+      {
+        "code": "SFNAL",
+        "title": "Semi-Finals",
+        "description": "Indicates the level of competition is a Semi-finals"
+      },
+      {
+        "code": "TRACC",
+        "title": "Trade / Current Account",
+        "description": "Current account / trade figures, including the balance of imports and exports."
+      },
+      {
+        "code": "XPAND",
+        "title": "Expansions / New Markets / New Units",
+        "description": "A company moving into a new area of business or expanding its existing business. Includes a company expanding geographically by market or product or service offering, creating a new unit or starting a new line of business. Excludes acquisitions of other companies, which are covered by Mergers / Acquisitions / Takeovers [MRG]."
+      },
+      {
+        "code": "BKRFIG",
+        "title": "Bankruptcy Figures",
+        "description": "The number of business failures nationally. Bankruptcy and liquidation figures."
+      },
+      {
+        "code": "BNKCAP",
+        "title": "Banking Capital and Liquidity Requirements",
+        "description": "Banking industry regulatory news regarding capital adequacy, stress testing and liquidity requirements including actions taken by individual banks to meet such requirements."
+      },
+      {
+        "code": "CARREG",
+        "title": "Car Registrations",
+        "description": "New car registration figures. Car and truck sales."
+      },
+      {
+        "code": "CHAIR1",
+        "title": "Change of Chairperson",
+        "description": "Change of a company's chairperson."
+      },
+      {
+        "code": "COMARB",
+        "title": "Commodity Arbitrage",
+        "description": "News about commodity arbitrage, ie the practice of taking advantage of a price difference between two or more markets: striking a combination of matching deals that capitalize upon the imbalance, the profit being the difference between the market prices minus any transportation or transfer costs."
+      },
+      {
+        "code": "CONFIG",
+        "title": "Construction Figures",
+        "description": "Housing Starts, building permits and housing approvals. Construction spending and housing completion figures."
+      },
+      {
+        "code": "CURINT",
+        "title": "Currency Intervention",
+        "description": "Trading by a central bank in the open market in order to influence exchange rates or stabilize market conditions."
+      },
+      {
+        "code": "LAYOFS",
+        "title": "Job Cuts",
+        "description": "Workforce reductions including temporary layoffs and plans to cut jobs gradually through natural wastage."
+      },
+      {
+        "code": "MEDREG",
+        "title": "Medical Regulatory Issues",
+        "description": "Regulatory news concerning drugs and other medical products and treatments, including approvals and trial results."
+      },
+      {
+        "code": "MNGISS",
+        "title": "Management Issues / Policies",
+        "description": "Management issues including internal controls, executive pay, bonuses and corporate governance. Also includes corporate litigation and accounting issues, shareholder activism and shareholder protection plans."
+      },
+      {
+        "code": "MRTAPP",
+        "title": "Mortgage Applications",
+        "description": "Mortgage applications and refinancing. Mortgage delinquency ratios."
+      },
+      {
+        "code": "ORDIMB",
+        "title": "Order Imbalance",
+        "description": "Notification of an excess of buy or sell orders for a specific security on a trading exchange."
+      },
+      {
+        "code": "RECAP1",
+        "title": "Recapitalization",
+        "description": "Restructuring a company's debt and equity mix, a move which might result in returning capital to shareholders in the form of a special dividend or share buyback."
+      },
+      {
+        "code": "RESASS",
+        "title": "Official Reserves",
+        "description": "Official reserve assets of foreign currency, gold and special drawing rights."
+      },
+      {
+        "code": "SHRACT",
+        "title": "Shareholder Activism",
+        "description": "An initiative by a shareholder to put pressure on the management of a public company on one or several issues such as board control, board representation, forcing or opposing an M&A transaction or reorganization or change in strategic direction. It can take several forms, such as proxy fights, negotiations with management, publicity campaigns, litigation, shareholder resolutions. See also Shareholder Meetings [MEET1]."
+      },
+      {
+        "code": "SPLITB",
+        "title": "Share Splits / Bonus Issues",
+        "description": "Moves to increase a company's shares in issue without increasing shareholder funds, such as stock splits and bonus issues."
+      },
+      {
+        "code": "STSALE",
+        "title": "Same-Store Sales",
+        "description": "A retailer's same-store sales reports."
+      }
+    ]
+  },
+  {
+    "title": "Business - Organizations",
+    "topics": [
+      {
+        "code": "EU",
+        "title": "European Union",
+        "description": "Stories about the European Union, its institutions and the European Parliament."
+      },
+      {
+        "code": "G7",
+        "title": "G7",
+        "description": "The Group of Seven (G7) nations which was formed in 1975 to facilitate economic cooperation among the seven major non-communist economic powers."
+      },
+      {
+        "code": "G8",
+        "title": "G8",
+        "description": "The Group of Eight (G8) nations. Formed in 1998, the G8 adds Russia to the G7 group of major industrialized nations."
+      },
+      {
+        "code": "BBK",
+        "title": "Deutsche Bundesbank",
+        "description": "News of activities by, or involving, the central bank of the Federal Republic of Germany."
+      },
+      {
+        "code": "BOC",
+        "title": "Bank of Canada",
+        "description": "News of activities by, or involving, the central bank of Canada."
+      },
+      {
+        "code": "BOE",
+        "title": "Bank of England",
+        "description": "News of activities by, or involving, the central bank of the United Kingdom."
+      },
+      {
+        "code": "BOJ",
+        "title": "Bank of Japan",
+        "description": "News of activities by, or involving, the central bank of Japan."
+      },
+      {
+        "code": "ECB",
+        "title": "European Central Bank",
+        "description": "News of activities of the Frankfurt-based central bank of the Eurozone, tasked with setting monetary policy in the countries who have the Euro as their currency, and whose sole objective is price stability."
+      },
+      {
+        "code": "FED",
+        "title": "US Federal Reserve",
+        "description": "News of activities by, or involving, the central banking system of the United States."
+      },
+      {
+        "code": "G20",
+        "title": "G20",
+        "description": "A grouping of developed and emerging economies that is emerging as the main international body coordinating attempts to fight financial crisis."
+      },
+      {
+        "code": "ICC",
+        "title": "International Criminal Court",
+        "description": "The International Criminal Court (ICC) is the first ever permanent, treaty-based, international institution, with jurisdiction to prosecute individuals responsible for the most serious crimes of international concern: genocide, crimes against humanity and war crimes. The jurisdiction of the ICC will be complementary to national courts, which means that the Court will only act when countries themselves are unable or unwilling to investigate or prosecute."
+      },
+      {
+        "code": "ICJ",
+        "title": "International Court of Justice",
+        "description": ""
+      },
+      {
+        "code": "IMF",
+        "title": "International Monetary Fund",
+        "description": "Stories about the International Monetary Fund (IMF) and its work, such as helping member countries in financial difficulty."
+      },
+      {
+        "code": "OMS",
+        "title": "World Health Organization",
+        "description": ""
+      },
+      {
+        "code": "RBA",
+        "title": "Reserve Bank of Australia",
+        "description": "News of activities by, or involving, the central bank of Australia."
+      },
+      {
+        "code": "SEN",
+        "title": "US Senate",
+        "description": "Elections to and activities by the upper house of the U.S. Congress, including any committees and individual senators as they pertain to the legislative process."
+      },
+      {
+        "code": "SNB",
+        "title": "Swiss National Bank",
+        "description": "News of activities by, or involving, the central bank of Switzerland."
+      },
+      {
+        "code": "UN1",
+        "title": "United Nations",
+        "description": "Stories about the United Nations which was established in 1945 to maintain international peace and security and to develop friendly relations among nations. Most of the world's sovereign states belong to the UN. Also use on stories about the UN agencies."
+      },
+      {
+        "code": "WTO",
+        "title": "World Trade Organization",
+        "description": "Stories about the World Trade Organization, its free trade negotiations and disputes."
+      },
+      {
+        "code": "AFRU",
+        "title": "African Union",
+        "description": "Stories about the African Union, which superseded the Organisation of African Unity (OAU) in 2002 with the declared aim of promoting the member countries' development and integration."
+      },
+      {
+        "code": "APEC",
+        "title": "Asia-Pacific Economic Cooperation",
+        "description": "Stories about the Asia-Pacific Economic Cooperation (APEC) forum, which has the declared aim of promoting \"sustainable economic growth and prosperity in the Asia-Pacific region\"."
+      },
+      {
+        "code": "BMXO",
+        "title": "Bank of Mexico",
+        "description": "News of activities by, or involving, the central bank of Mexico."
+      },
+      {
+        "code": "CBBR",
+        "title": "Central Bank of Brazil",
+        "description": "News of activities by, or involving, the central bank of Brazil."
+      },
+      {
+        "code": "CBNG",
+        "title": "Central Bank of Nigeria",
+        "description": "News of activities by, or involving, the central bank of Nigeria."
+      },
+      {
+        "code": "CBRT",
+        "title": "Central Bank of the Republic of Turkey",
+        "description": "News of activities by, or involving, the central bank of Turkey."
+      },
+      {
+        "code": "CBRU",
+        "title": "Central Bank of Russia",
+        "description": "News of activities by, or involving, the central bank of Russia."
+      },
+      {
+        "code": "HNBK",
+        "title": "Hungarian National Bank",
+        "description": "News of activities by, or involving, the central bank of Hungary."
+      },
+      {
+        "code": "HREP",
+        "title": "US House of Representatives",
+        "description": "Elections to and activities by the lower house of the U.S. Congress, including any committees and individual representatives as they pertain to the legislative process."
+      },
+      {
+        "code": "IAEA",
+        "title": "International Atomic Energy Agency",
+        "description": "Stories about the International Atomic Energy Agency (IAEA) and its work."
+      },
+      {
+        "code": "ICTY",
+        "title": "International Criminal Tribunal for the former Yugoslavia",
+        "description": "The International Criminal Tribunal for the former Yugoslavia (ICTY) is a United Nations court of law dealing with war crimes that took place during the conflicts in the Balkans in the 1990s. Established in 1993, the ICTY was the first war crimes court created by the UN and the first international war crimes tribunal since the Nuremberg and Tokyo tribunals."
+      },
+      {
+        "code": "NATO",
+        "title": "North Atlantic Treaty Organization",
+        "description": "Stories about the North Atlantic Treaty Organization which was formed in 1949 to promote mutual defense and cooperation amongst its member states in North America and Europe."
+      },
+      {
+        "code": "NBPL",
+        "title": "National Bank of Poland",
+        "description": "News of activities by, or involving, the central bank of Poland."
+      },
+      {
+        "code": "OECD",
+        "title": "Organisation for Economic Co-operation and Development",
+        "description": "The Organisation for Economic Co-operation and Development, but not the individual member states."
+      },
+      {
+        "code": "OPEC",
+        "title": "Organization of the Petroleum Exporting Countries",
+        "description": "OPEC policy, statements, meetings, output and exports; compliance by member countries with the crude oil producer group's decisions."
+      },
+      {
+        "code": "OSCE",
+        "title": "Organization for Security and Co-operation in Europe",
+        "description": "Stories about the Organization for Security and Co-operation in Europe (OSCE) and its work as a forum and agency for the 55 participating states from Europe, Central Asia and North America."
+      },
+      {
+        "code": "PBOC",
+        "title": "People's Bank of China",
+        "description": "News of activities by, or involving, the central bank of the Republic of China."
+      },
+      {
+        "code": "RBIN",
+        "title": "Reserve Bank of India",
+        "description": "News of activities by, or involving, the central bank of India."
+      },
+      {
+        "code": "RBNZ",
+        "title": "Reserve Bank of New Zealand",
+        "description": "News of activities by, or involving, the central bank of New Zealand."
+      },
+      {
+        "code": "SARB",
+        "title": "South African Reserve Bank",
+        "description": "News of activities by, or involving, the central bank of South Africa."
+      },
+      {
+        "code": "USDA",
+        "title": "United States Department of Agriculture",
+        "description": "Stories about the United States Department of Agriculture (USDA) and its work concerning food, agricultural and environmental issues."
+      },
+      {
+        "code": "WBNK",
+        "title": "World Bank",
+        "description": "Stories about the World Bank, a development institution whose goal is to reduce poverty by promoting sustainable economic growth in its client countries. Formed in 1944, it is the world's largest source of development assistance."
+      },
+      {
+        "code": "NORBK",
+        "title": "Norges Bank",
+        "description": "News of activities by, or involving, the central bank of Norway."
+      },
+      {
+        "code": "RIKBK",
+        "title": "Sveriges Riksbank",
+        "description": "News of activities by, or involving, the central bank of Sweden."
+      },
+      {
+        "code": "UNHCR",
+        "title": "Office of the UN High Commissioner for Refugees",
+        "description": ""
+      },
+      {
+        "code": "ASEAN1",
+        "title": "Association of Southeast Asian Nations",
+        "description": "Stories about the Association of Southeast Asian Nations (ASEAN). Established in 1967, it aims to accelerate the economic growth, social progress and cultural development of the region through joint endeavors, and to promote regional peace and stability."
+      },
+      {
+        "code": "UNESCO",
+        "title": "United Nations Educational, Scientific and Cultural Organization",
+        "description": ""
+      },
+      {
+        "code": "UNICEF",
+        "title": "United Nations Children's Fund",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "title": "Business - Sectors",
+    "topics": [
+      {
+        "code": "LUX",
+        "title": "Luxury Goods / Services",
+        "description": "Manufacturers and retailers of luxury goods. Suppliers of luxury services."
+      },
+      {
+        "code": "MIN",
+        "title": "Mining",
+        "description": "Stories about miners and processors of metals and minerals, coal and construction-related materials."
+      },
+      {
+        "code": "TMT",
+        "title": "Technology / Media / Telecoms",
+        "description": "Companies active in the technology, media or telecommunications industries."
+      },
+      {
+        "code": "AERO",
+        "title": "Aerospace & Defense (TRBC)",
+        "description": "Producers of commercial, military and private aircraft and spacecraft. Includes manufacturers of military equipment, vehicles, explosive ordnance, guidance systems, artillery, ammunition and other related weaponry. It also includes manufacturers of satellites."
+      },
+      {
+        "code": "AGRC",
+        "title": "Agricultural Chemicals (TRBC)",
+        "description": "Producers of potash, soda ash and peat humus, and nitrogenous, phosphoric, and ammonia-based fertilizers and minerals, as well as insecticides, fungicides, weed and rodent poisons, agricultural salts and other agricultural related products."
+      },
+      {
+        "code": "AIRL",
+        "title": "Airlines (TRBC)",
+        "description": "Providers of airline transportation services primarily for consumer and business passengers."
+      },
+      {
+        "code": "AIRP",
+        "title": "Airport Services (TRBC)",
+        "description": "Operators of fueling, repair, inspection, runway maintenance, hangar rental, passenger parking fields, landing services, catering, duty-free shops and other airport services."
+      },
+      {
+        "code": "ALUM",
+        "title": "Aluminum (TRBC)",
+        "description": "Miners and processers of bauxite, including smelting, refining and processing of alumina and aluminum alloys. Also includes operators of recycling and die-casting plants, and foundries, as well as producers of foil, molds, plate, tube, sheet, rods, pipe, wire and other aluminum products."
+      },
+      {
+        "code": "AMED",
+        "title": "Advanced Medical Equipment (TRBC)",
+        "description": "Manufacturers of high-tech medical equipment. Includes producers of MRI, PET and CAT scanning diagnostic equipment, radiation therapy, x-ray, ultrasonic, electro medical, laser and other expensive medical machines and equipment."
+      },
+      {
+        "code": "APPA",
+        "title": "Textiles & Apparel (TRBC)",
+        "description": "Manufacturers of fabrics, leather and other textiles, apparel, accessories and footwear."
+      },
+      {
+        "code": "APRE",
+        "title": "Applied Resources (TRBC)",
+        "description": "Producers of wood-based products and providers of related services, as well as manufacturers of paper and non-paper products, containers and packaging."
+      },
+      {
+        "code": "AUTO",
+        "title": "Automobiles & Auto Parts (TRBC)",
+        "description": "Manufacturers of automobiles, light trucks, motorcycles, as well as related vehicle parts, tires and primary rubber products."
+      },
+      {
+        "code": "BCST",
+        "title": "Broadcasting (TRBC)",
+        "description": "Providers of television, radio, cable internet, and satellite broadcasting services."
+      },
+      {
+        "code": "BEER",
+        "title": "Brewers (TRBC)",
+        "description": "Manufacturers of beer and malt liquor."
+      },
+      {
+        "code": "BEVS",
+        "title": "Beverages (TRBC)",
+        "description": "Brewers, distillers, producers and distributors of beer and malt liquor, wine and distilled liquors, as well as non-alcoholic beverages including water, fruit drinks, sodas and other flavored beverages."
+      },
+      {
+        "code": "BGDS",
+        "title": "Business Support Supplies (TRBC)",
+        "description": "Manufacturers of office furniture and supplies such as desks, cabinets, display shelves, writing utensils, staplers and other commercial supplies."
+      },
+      {
+        "code": "BISV",
+        "title": "Banking & Investment Services (TRBC)",
+        "description": "Providers of retail and commercial banking, consumer financial services, investment services,  commercial loans and diversified financial services."
+      },
+      {
+        "code": "BMAT",
+        "title": "Basic Materials (TRBC)",
+        "description": "Manufacturers, extractors and refiners of chemicals, minerals, precious metals, steel, aluminum, forest products, and construction and other raw materials."
+      },
+      {
+        "code": "BNKS",
+        "title": "Banks (TRBC level 4)",
+        "description": "Deposit-taking institutions such as commercial banks, savings and loans banks, credit institutions, universal banking institutions, retail banks, mortgage banks, Money Center Banks, private banks and Islamic banks. Excludes providers of investment banking services classified in Investment Banking."
+      },
+      {
+        "code": "BSUP",
+        "title": "Business Support Services (TRBC)",
+        "description": "Providers of commercial support services such as legal, cleaning, educational, security, office equipment rental, management consulting, architectural/interior design, payroll, accounting, basic data processing, credit agencies and other related services. Includes ATM operators that are not banks, as well as data processing companies."
+      },
+      {
+        "code": "BSVC",
+        "title": "Banking Services (TRBC)",
+        "description": "Providers of retail and commercial banking, consumer financial services and commercial loans for long-term equipment leases. Includes bank holding companies."
+      },
+      {
+        "code": "CARM",
+        "title": "Auto & Truck Manufacturers (TRBC)",
+        "description": "Manufacturers of automobiles, consumer-oriented light trucks, minivans, sports utility vehicles, motorcycles, snowmobiles and all-terrain vehicles."
+      },
+      {
+        "code": "CCOS",
+        "title": "Cyclical Consumer Services (TRBC)",
+        "description": "Providers of accommodation, entertainment and leisure services, marketing and advertising services and media & publishing services."
+      },
+      {
+        "code": "CELE",
+        "title": "Household Electronics",
+        "description": "Manufacturers and wholesalers of home audio and video equipment, such as television sets, VCR and DVD players, home projection equipment, stereo systems, consumer-oriented photographic equipment, and other related electronics."
+      },
+      {
+        "code": "CHEM",
+        "title": "Chemicals (TRBC)",
+        "description": "Producers and refiners of agricultural, commodity and specialty chemicals."
+      },
+      {
+        "code": "CHIP",
+        "title": "Semiconductors (TRBC)",
+        "description": "Designers and fabricators of high-value microcircuits, microprocessor chips, integrated circuits and memory chips. Includes operators of foundries and producers of chip components designed for specific industries."
+      },
+      {
+        "code": "CIGS",
+        "title": "Tobacco (TRBC)",
+        "description": "Farmers, processers and manufacturers of tobacco and tobacco products."
+      },
+      {
+        "code": "CMSS",
+        "title": "Commercial Services & Supplies (TRBC)",
+        "description": "Providers of environmental, employment, business support and commercial printing services and supplies."
+      },
+      {
+        "code": "COAM",
+        "title": "Coal (TRBC)",
+        "description": "Explorers, miners and processors of coal. Includes providers of test, tunnel, blast, train, and other contract-based, coal-related services."
+      },
+      {
+        "code": "COEN",
+        "title": "Construction & Engineering (TRBC)",
+        "description": "Builders and engineers that undertake commercial building, civil engineering, utility and other industrial plant construction projects. Includes builders of transport infrastructure, dam and water works as well as hotel, office buildings and other large scale construction projects such as shipbuilding. Also includes manufacturers of heavy machinery for permanent installation."
+      },
+      {
+        "code": "COFS",
+        "title": "Consumer Financial Services (TRBC)",
+        "description": "Providers of personal loan services, such as credit card services, mortgage lenders and brokers, and consumer leasing providers, such as for automobiles, as well as personal and student loan services."
+      },
+      {
+        "code": "COMA",
+        "title": "Construction Materials (TRBC)",
+        "description": "Miners and producers of raw materials for roads and construction. Includes extractors of sand, gravel, rock, clay, granite, limestone, marble, slate, gypsum, lime, and producers of cement, concrete, and bricks, as well as operators of filtering, bleaching, crushing, cutting, sizing and processing services."
+      },
+      {
+        "code": "COMC",
+        "title": "Commodity Chemicals (TRBC)",
+        "description": "Producers and refiners of industrial chemicals and gases, petrochemicals, liquid hydrocarbons, vinyl, casein and other plastic resin materials, stains, paints, tanning and softening agents, explosives and other commodity chemicals."
+      },
+      {
+        "code": "COMS",
+        "title": "Communications Equipment (TRBC)",
+        "description": "Manufacturers of telecommunications equipment such as modems, cable decoders, carrier switches, fiber cable, wireless and satellite communication equipment. Includes producers of cellular and voice-over-Internet-protocol (VoIP) phones."
+      },
+      {
+        "code": "CONG",
+        "title": "Industrial Conglomerates (TRBC)",
+        "description": "Large organizations engaged in multiple business lines within the industrial sector, where at least two business lines comprise a substantial portion of the company's total operation. Companies in the industry typically conduct business on a global scale."
+      },
+      {
+        "code": "CONS",
+        "title": "Construction Supplies & Fixtures (TRBC)",
+        "description": "Manufacturers of value-added building products and home improvement components. Includes, door and window frames, moldings and trims, tile, roofing, gutters, floorboards, insulating material, plumbing fixtures, cabinets and other building supplies."
+      },
+      {
+        "code": "CYCP",
+        "title": "Cyclical Consumer Products (TRBC)",
+        "description": "Manufacturers and producers of durable goods such as household goods, as well as textiles, apparel and accessories. Includes homebuilders."
+      },
+      {
+        "code": "CYCS",
+        "title": "Cyclical Consumer Goods & Services (TRBC)",
+        "description": "Manufacturers of automobiles, household goods, textiles and other products, as well as homebuilders and retailers, and providers of consumer services, such as hotel, entertainment and media services."
+      },
+      {
+        "code": "DEPT",
+        "title": "Department Stores (TRBC)",
+        "description": "Retailers operating department store chains offering a diversified product line. Includes auxiliary internet and mail order facilities."
+      },
+      {
+        "code": "DISC",
+        "title": "Discount Stores (TRBC)",
+        "description": "Retailers operating stores with a diversified product lines at a discount. Includes discount stores with auxiliary or primarily internet and mail order facilities."
+      },
+      {
+        "code": "DRIL",
+        "title": "Oil & Gas Drilling (TRBC)",
+        "description": "Providers of oil and gas drilling services on a contract basis, such as directional drilling, well drilling and reconditioning of oil and gas field wells."
+      },
+      {
+        "code": "ELCO",
+        "title": "Electrical Components & Equipment (TRBC)",
+        "description": "Manufacturers of small scale electrical equipment such as motors, electric heating and cooling systems, small generators, storage batteries and related equipment. Includes producers of electrical components such as wires, cables transistors, electron tubes and insulators."
+      },
+      {
+        "code": "ELEU",
+        "title": "Electric Utilities (TRBC)",
+        "description": "Generators and distributors of electric power. Includes hydroelectric, fossil fuel, nuclear, solar, tidal, wind and independent electric power generators."
+      },
+      {
+        "code": "ENER",
+        "title": "Energy (TRBC)",
+        "description": "Explorers, refiners, marketers and distributors of fossil fuels and renewable energy, as well as manufacturers of energy-related equipment and providers of supporting services."
+      },
+      {
+        "code": "ENTS",
+        "title": "Hotels & Entertainment Services (TRBC)",
+        "description": "Operators of hotels, motels, cruise lines, restaurants, casinos, gaming operations, sports stadiums, golf courses, amusement parks and other recreational services."
+      },
+      {
+        "code": "ENVS",
+        "title": "Environmental Services (TRBC)",
+        "description": "Providers of air, water and soil purification equipment, solid waste disposal, filtration systems and other pollution-reducing control equipment and environmental consulting services. Includes producers of commercial climate control and regulator systems, and plastic, paper, metal and glass recycling equipment and services."
+      },
+      {
+        "code": "EXCA",
+        "title": "Financial & Commodity Market Operators (TRBC)",
+        "description": "Operators of exchanges and markets for the trading of financial,  commodities and derivative instruments. Includes operators of electronic markets and providers of clearing, settlement and security custodial services."
+      },
+      {
+        "code": "FARM",
+        "title": "Fishing & Farming (TRBC)",
+        "description": "Operators of commercial farms and fisheries, as well as providers of genetic research and modification for agricultural purposes. Includes growers of fruits, vegetables, grains, animal feeds and other produce. Also includes harvesters of fish and operators of aquaculture, as well as raisers of livestock such as cattle, pigs and poultry."
+      },
+      {
+        "code": "FDRT",
+        "title": "Food & Drug Retailing (TRBC)",
+        "description": "Retailers operating pharmacies, grocery, convenience, liquor and specialty food stores."
+      },
+      {
+        "code": "FINS",
+        "title": "Financials (TRBC)",
+        "description": "Operators of commercial and investment banks, investment trusts and financial markets, as well as providers of investment, insurance and real estate services."
+      },
+      {
+        "code": "FOBE",
+        "title": "Food & Beverages (TRBC)",
+        "description": "Producers and processors of food, beverages and tobacco. Includes operators of farms and fisheries, as well as brewers, distillers and distributors, and packagers of Food & Beverages."
+      },
+      {
+        "code": "FOTB",
+        "title": "Food & Tobacco (TRBC)",
+        "description": "Producers and processors of Food & Tobacco. Includes operators of farms, aquaculture and fisheries."
+      },
+      {
+        "code": "GASU",
+        "title": "Natural Gas Utilities (TRBC)",
+        "description": "Producers and distributors natural gas under governmental regulation."
+      },
+      {
+        "code": "HARW",
+        "title": "Computer Hardware (TRBC)",
+        "description": "Assemblers and manufacturers of computers, computer hardware and computer peripherals. Includes producers of storage devices, circuit boards, keyboards, printers, monitors, pointing devices, Webcams and PC cameras, as well as ATM machines."
+      },
+      {
+        "code": "HECA",
+        "title": "Healthcare (TRBC)",
+        "description": "Manufacturers, developers and marketers of pharmaceuticals, medical equipment and supplies, as well as advanced therapeutic treatments and devices, and providers of healthcare facilities and medical research and development."
+      },
+      {
+        "code": "HELE",
+        "title": "Heavy Electrical Equipment (TRBC)",
+        "description": "Manufacturers of large scale electrical equipment, such as elevators, escalators, industrial conveyor belt systems and electrical machinery. Includes producers of hydraulic, steam and gas turbines, large generators and power grid equipment, such as transformers."
+      },
+      {
+        "code": "HFAC",
+        "title": "Healthcare Facilities & Services (TRBC)",
+        "description": "Operators of hospitals, physician and dental clinics, psychiatric facilities, nursing homes, consultancy services (nutritionists, homeopathic therapies) and home healthcare agencies. Includes medical laboratories that support healthcare facilities, such as blood analysis, pathology, urinalysis, medical x-ray and other diagnostic laboratories. Also includes veterinary services."
+      },
+      {
+        "code": "HMAC",
+        "title": "Heavy Machinery & Vehicles (TRBC)",
+        "description": "Manufacturers of heavy trucks, road paving and earth movers, tractors, cranes, planting and harvesting machinery, such as balers, graders, cotton ginning machinery, locomotives and rolling stock, as well as commercial shovels, lawnmowers and landscaping equipment."
+      },
+      {
+        "code": "HMOS",
+        "title": "Managed Healthcare (TRBC)",
+        "description": "Providers of managed healthcare, mainly operating in the United States."
+      },
+      {
+        "code": "HOME",
+        "title": "Homebuilding (TRBC)",
+        "description": "Builders of residential homes, mobile homes and prefabricated homes. Includes centralized homebuilding operators where work is channeled to specialized contractors."
+      },
+      {
+        "code": "HPAS",
+        "title": "Healthcare Providers & Services (TRBC)",
+        "description": "Operators of healthcare facilities and providers of managed healthcare."
+      },
+      {
+        "code": "HPRD",
+        "title": "Healthcare Equipment & Supplies (TRBC)",
+        "description": "Manufacturers of advanced medical equipment and basic medical supplies."
+      },
+      {
+        "code": "HRSC",
+        "title": "Employment Services (TRBC)",
+        "description": "Providers of human resource, employment and staff management services. Includes online job portals."
+      },
+      {
+        "code": "INDG",
+        "title": "Industrial Goods (TRBC)",
+        "description": "Manufacturers of aerospace and defense equipment, as well as industrial vehicles, machinery, equipment and components."
+      },
+      {
+        "code": "INDM",
+        "title": "Industrial Machinery & Equipment (TRBC)",
+        "description": "Manufacturers of basic power and hand tools, hardware, small scale machinery and other industrial components. Includes producers of power saws, polishing and metal working machines, drills, nuts, bolts, screws, springs, valves, pneumatic hoses and other basic industrial equipment."
+      },
+      {
+        "code": "INDS",
+        "title": "Industrials (TRBC)",
+        "description": "Manufacturers of industrial equipment and commercial supplies, as well as providers of related services, such as diversified trading, distribution operations and transportation services."
+      },
+      {
+        "code": "INSB",
+        "title": "Insurance Brokers (TRBC)",
+        "description": "Insurance and reinsurance brokers and agencies."
+      },
+      {
+        "code": "INSR",
+        "title": "Insurance (TRBC)",
+        "description": "Underwriters and carriers of property, casualty, life and health insurance policies, as well as reinsurance carriers."
+      },
+      {
+        "code": "INVM",
+        "title": "Investment Management & Fund Operators (TRBC)",
+        "description": "Operators of investment funds, including mutual funds, unit trusts, investment trusts, hedge funds, and exchange-traded funds (ETFs), as well as operators of pension funds, private equity firms and life insurance funds."
+      },
+      {
+        "code": "INVT",
+        "title": "Investment Trusts (TRBC)",
+        "description": "Operators of listed closed-end investment funds, as well as listed open-end investment funds, exchange-traded funds, unit investment trusts and blank check companies."
+      },
+      {
+        "code": "ISER",
+        "title": "Industrial Services (TRBC)",
+        "description": "Providers of construction, engineering and commercial supply services, as well as diversified trading and distribution operations."
+      },
+      {
+        "code": "ISLF",
+        "title": "Islamic Finance",
+        "description": "Islamic finance and banking. Banks run entirely according to koranic precepts and the development of islamic bond markets as well as the individual issuance of islamic bonds. Development of islamic banking regulations and other guidelines similarly."
+      },
+      {
+        "code": "ITSE",
+        "title": "IT Services & Consulting (TRBC)",
+        "description": "Producers of customized software development, ISP providers, online support services, online database management, interactive data access and auctioning services."
+      },
+      {
+        "code": "LEIS",
+        "title": "Leisure Products (TRBC)",
+        "description": "Manufacturers of toys, games, computer games and consoles, as well as recreational products, such as sporting goods, camping equipment, musical instruments and bicycles."
+      },
+      {
+        "code": "LINS",
+        "title": "Life & Health Insurance (TRBC)",
+        "description": "Insurance underwriters and carriers of accidental death and dismemberment, disability, dental, health, medical and life policies, as well as the management of annuity plans."
+      },
+      {
+        "code": "LIQS",
+        "title": "Distillers & Wineries (TRBC)",
+        "description": "Manufacturers of wine, champagne and sparkling wine, as well as distilled alcoholic beverages such as vodka, brandy, whisky, gin, sake and other malt and blended alcoholic beverages."
+      },
+      {
+        "code": "MACH",
+        "title": "Machinery, Equipment & Components (TRBC)",
+        "description": "Manufacturers of industrial, construction, agricultural and electrical machinery, equipment and components."
+      },
+      {
+        "code": "MDIA",
+        "title": "Media & Publishing (TRBC)",
+        "description": "Providers of advertising, marketing, broadcasting, entertainment production and publishing services."
+      },
+      {
+        "code": "MEDQ",
+        "title": "Medical Equipment, Supplies & Distribution (TRBC)",
+        "description": "Manufacturers and distributors of basic medical equipment and supplies. Includes producers of forceps, surgical knives and gloves, bandages and dressings, syringes, stethoscopes, medical laboratory equipment, x-ray films, dental drills, veterinarian instruments and other related supplies."
+      },
+      {
+        "code": "MEMI",
+        "title": "Specialty Mining & Metals (TRBC)",
+        "description": "Miners and processors of non-ferrous metals such as copper, zinc, lead, tin, nickel, cobalt, graphite, titanium and other non-ferrous metals. Includes non-metallic minerals."
+      },
+      {
+        "code": "MINE",
+        "title": "Mineral Resources (TRBC)",
+        "description": "Miners and processors of steel, aluminum, precious and specialty metals and minerals, and construction related materials."
+      },
+      {
+        "code": "MINS",
+        "title": "Multiline Insurance (TRBC)",
+        "description": "Insurance underwriters carrying life and non-life policies."
+      },
+      {
+        "code": "MRCH",
+        "title": "Biotechnology & Medical Research (TRBC)",
+        "description": "Researchers and developers of new drugs, medical devices and procedures. Includes manufacturers and marketers of drugs as a result of direct research and development."
+      },
+      {
+        "code": "MTAL",
+        "title": "Metals & Mining (TRBC)",
+        "description": "Miners and processors of precious metals and minerals, steel, aluminum and specialty metals and minerals."
+      },
+      {
+        "code": "NCYC",
+        "title": "Non-Cyclical Consumer Goods & Services (TRBC)",
+        "description": "Producers, processors and retailers of food, tobacco and beverages, and manufacturers of household and personal products, as well as providers of personal services."
+      },
+      {
+        "code": "OFCE",
+        "title": "Office Equipment (TRBC)",
+        "description": "Manufacturers of office technology equipment such as photocopiers, facsimile, calculators, cash registers, bar code readers, electronic tags, coin and currency counting devices, as well as scientific and analytical equipment and precision instruments."
+      },
+      {
+        "code": "OGTR",
+        "title": "Oil & Gas Transportation Services (TRBC)",
+        "description": "Distributors of oil, gas and refined products. Includes operators of pipelines, storage facilities, gas liquefaction and re-gasification plants, sea-borne tankers, and related services."
+      },
+      {
+        "code": "OILG",
+        "title": "Oil & Gas (TRBC)",
+        "description": "Producers, refiners and transporters of raw and refined oil and gas products."
+      },
+      {
+        "code": "OILI",
+        "title": "Integrated Oil & Gas (TRBC)",
+        "description": "Explorers, producers, refiners and distributors of oil and gas. Includes companies that have global operations and significant activities in both exploration and production, and refining and marketing operations."
+      },
+      {
+        "code": "OILQ",
+        "title": "Oil Related Services and Equipment (TRBC)",
+        "description": "Providers of oil-and-gas-related services on a contract basis, such as cleaning, testing, erecting, repairing and dismantling oil and gas field rigs and derricks. Includes providers of exploration services, such as geological surveys and mapping. Also includes manufacturers of oil and gas well pumping and other related equipment."
+      },
+      {
+        "code": "PACK",
+        "title": "Containers & Packaging (TRBC)",
+        "description": "Manufacturers of containers, as well as providers of packaging services."
+      },
+      {
+        "code": "PAPR",
+        "title": "Paper Products (TRBC)",
+        "description": "Operators of pulp and paper mills. Includes manufacturers of stationery, computer and construction paper, book and newsprint."
+      },
+      {
+        "code": "PHAR",
+        "title": "Pharmaceuticals (TRBC)",
+        "description": "Manufacturers and marketers of generic and specialty drugs, as well as researchers and developers of new drugs, medical products and procedures."
+      },
+      {
+        "code": "PHMR",
+        "title": "Pharmaceuticals & Medical Research (TRBC)",
+        "description": "Manufacturers and marketers of generic and specialty drugs, as well as researchers and developers of new drugs, medical products and procedures."
+      },
+      {
+        "code": "PHON",
+        "title": "Integrated Telecommunications Services (TRBC)",
+        "description": "Providers of telecommunication services other than wireless only. Includes integrated providers of both fixed-line and wireless services offering voice, data and high-density data transmission services, as well as Voice over Internet Protocol (VoIP) services."
+      },
+      {
+        "code": "PINS",
+        "title": "Property & Casualty Insurance (TRBC)",
+        "description": "Insurance underwriters and carriers of property, fire, marine, auto, title, professional liability, funeral, bonding, fidelity and other surety policies."
+      },
+      {
+        "code": "PLAY",
+        "title": "Toys & Games (TRBC)",
+        "description": "Manufacturers of toys, games, computer games and consoles."
+      },
+      {
+        "code": "PREC",
+        "title": "Precious Metals & Minerals (TRBC)",
+        "description": "Miners, refiners and producers of gold, silver, platinum, diamond, gem stone, semiprecious stones, uranium and other rare minerals and ores, as well as pearl cultivation. Includes funds primarily investing in precious metal mining operations."
+      },
+      {
+        "code": "PRIN",
+        "title": "Commercial Printing Services (TRBC)",
+        "description": "Printers and providers of supporting services to publishers, advertisers and other commercial businesses. Includes printers of business forms, directories, catalogs, books, magazines, greeting cards, art prints, newspapers and other printing services without proprietary publishing rights."
+      },
+      {
+        "code": "PSVC",
+        "title": "Personal Services (TRBC)",
+        "description": "Providers of accounting, counseling and rehabilitation, childcare, legal, marriage, laundry, lawn maintenance and funeral services, as well as personal enrichment services, such as test preparation, colleges and dance classes. Includes rental services for tuxedos and gowns, furniture, consumer electronics, movies and games."
+      },
+      {
+        "code": "RDIY",
+        "title": "Home Improvement Products & Services Retailers (TRBC)",
+        "description": "Retailers of home and garden improvement products and services, as well as building materials."
+      },
+      {
+        "code": "RDRL",
+        "title": "Highways & Rail Tracks (TRBC level 4)",
+        "description": "Owners and operators of transport infrastructure such as rail tracks, tunnels, bridges and roads. Includes toll collection, parking lot operations, emergency road services and towing, street cleaning, and independent bus terminal operators."
+      },
+      {
+        "code": "RDRU",
+        "title": "Drug Retailers (TRBC)",
+        "description": "Retailers operating pharmacies. Includes retail drug operators with auxiliary food and household good product lines."
+      },
+      {
+        "code": "READ",
+        "title": "Publishing (TRBC)",
+        "description": "Publishers of books, magazines, newspapers, directories, maps and catalogs, as well as printed and electronic databases."
+      },
+      {
+        "code": "REAL",
+        "title": "Real Estate (TRBC)",
+        "description": "Developers and managers of real estate operations and related services. The industry also includes residential and commercial real estate investment trusts."
+      },
+      {
+        "code": "REFI",
+        "title": "Oil & Gas Refining and Marketing (TRBC)",
+        "description": "Operators of oil and gas refineries for the production of heating and lubricating products, as well as fuel oils, and gasoline, diesel, jet fuel, propane, kerosene and other liquefied petroleum gas (LPG) products. Includes marketers and retailers of refined products, such as operators of bulk gasoline and crude oil terminals, and operators of truck and automobile service stations with or without convenience stores."
+      },
+      {
+        "code": "REIC",
+        "title": "Commercial REITs (TRBC)",
+        "description": "Operators of investment trusts that secure interests related to commercial real estate, such as office, retail and industrial properties."
+      },
+      {
+        "code": "REID",
+        "title": "Diversified REITs (TRBC)",
+        "description": "Operators of investment trusts that secure interests related to residential and commercial real estate."
+      },
+      {
+        "code": "REIR",
+        "title": "Residential REITs (TRBC)",
+        "description": "Operators of investment trusts that secure interests related to residential real estate, such as single- and multi-family homes, apartment complexes and condominiums."
+      },
+      {
+        "code": "REIT",
+        "title": "Residential & Commercial REITs (TRBC)",
+        "description": "Investment trusts that secure interests related to rights on residential and commercial real estate."
+      },
+      {
+        "code": "RELX",
+        "title": "Leisure & Recreation (TRBC)",
+        "description": "Tour operators, travel agencies, amusement parks, golf courses, gaming and fishing preserves, sport stadiums, sports teams, movie theaters, dance and theatrical companies, recreational goods rentals and other leisure services."
+      },
+      {
+        "code": "RENE",
+        "title": "Renewable Energy (TRBC)",
+        "description": "Manufacturers of renewable energy equipment, as well as service providers, and producers and distributors of renewable fuels."
+      },
+      {
+        "code": "RENF",
+        "title": "Renewable Fuels (TRBC)",
+        "description": "Producers and distributors of biofuels, hydrogen fuel and blended fuels such as biodiesel."
+      },
+      {
+        "code": "RENQ",
+        "title": "Renewable Energy Equipment & Services (TRBC)",
+        "description": "Manufacturers of solar power panels, hydrogen fuel cell systems, wind turbines, solar water-heating systems, wave power equipment and geothermal heating systems. Also includes renewable energy system installation and consulting services."
+      },
+      {
+        "code": "REOP",
+        "title": "Real Estate Operations (TRBC)",
+        "description": "Developers and managers of real estate who build, rent and lease residential and commercial properties. Includes real estate brokerage and agency services, real estate appraisal services and consulting services."
+      },
+      {
+        "code": "RESV",
+        "title": "Real Estate Services (TRBC)",
+        "description": "Real estate brokers, agency services, real estate appraisal services, consulting services and management services."
+      },
+      {
+        "code": "RETA",
+        "title": "Apparel & Accessories Retailers (TRBC)",
+        "description": "Retailers of men, women and children's clothing and accessories stores, including retailers of handbags, footwear, leather goods, luggage, jewelry and watches."
+      },
+      {
+        "code": "RETE",
+        "title": "Computer & Electronics Retailers (TRBC)",
+        "description": "Retailers of computers and peripherals, consumer electronics and other technology products. Includes retailers of household appliances, audio and video equipment, consumer software, digital cameras, cell phones and components, and other electronic goods."
+      },
+      {
+        "code": "RETS",
+        "title": "Miscellaneous Specialty Retailers (TRBC)",
+        "description": "Retailers operating specialized stores and dealerships. Includes operators of office supply, book, toy, vision care, video rental, sporting equipment and other focused retail outlets."
+      },
+      {
+        "code": "RFOD",
+        "title": "Food Distribution & Convenience Stores (TRBC)",
+        "description": "Retailers operating grocery, convenience, liquor and specialty food stores. Includes operators of grocery stores with an auxiliary drug department and vending machines."
+      },
+      {
+        "code": "RGEN",
+        "title": "Diversified Retail (TRBC)",
+        "description": "Retailers offering diversified product lines through department, discount and online or mail order stores."
+      },
+      {
+        "code": "RHOM",
+        "title": "Home Furnishings Retailers (TRBC)",
+        "description": "Retailers of home furnishings and furniture."
+      },
+      {
+        "code": "RINS",
+        "title": "Reinsurance (TRBC)",
+        "description": "Property and casualty, and life and health reinsurance carriers."
+      },
+      {
+        "code": "RRLF",
+        "title": "Freight Transportation, Ground (TRBC)",
+        "description": "Providers of railroad and trucking freight transportation services. Includes operators of short-term truck and trailer rental, as well as freight warehousing and crating."
+      },
+      {
+        "code": "RRLP",
+        "title": "Passenger Transportation, Ground & Sea (TRBC)",
+        "description": "Providers of transportation services including urban transit, bus, subway and rail operators, taxi, school bus and short-term car rental services, as well as short-distance water ferry operators."
+      },
+      {
+        "code": "RUBB",
+        "title": "Tires & Rubber Products (TRBC)",
+        "description": "Manufacturers of tires, basic rubber products and rubber plantation operations. Includes wholesalers of new and used tires and providers of tire retreading and repairing materials, as well as producers of molded and mechanical rubber goods."
+      },
+      {
+        "code": "SBIZ",
+        "title": "Sports Business",
+        "description": "Business and economic aspects of sport, and sports stories, with a cross-asset appeal to financial clients. Includes all financial aspects of sport, the selling or sponsorship of sport, stadium construction and organisation of major events such as the Olympic Games and Soccer World Cup. Also includes large changes in share ownership of publicly owned sports teams and the issuing of bonds."
+      },
+      {
+        "code": "SEMI",
+        "title": "Semiconductors & Semiconductor Equipment (TRBC)",
+        "description": "Designers and manufacturers of semiconductors, as well as producers of testing and manufacturing equipment for semiconductor manufacturers."
+      },
+      {
+        "code": "SHOE",
+        "title": "Footwear (TRBC)",
+        "description": "Manufacturers of footwear such as dress shoes, sneakers, slippers, boots, galoshes, sandals and athletic and trade related footwear. Includes producers of footwear parts such as shoe laces, buckles, clasps, inner soles, heels and padding."
+      },
+      {
+        "code": "SHOP",
+        "title": "Retailers excl Food and Drug Specialists (TRBC)",
+        "description": "Retailers that operate department, discount, catalog and internet, apparel & accessories, computers and electronics and other specialty stores."
+      },
+      {
+        "code": "SHOW",
+        "title": "Entertainment Production (TRBC)",
+        "description": "Producers of motion pictures, syndicated television, teleproduction, music and music videos. Includes operators of recording studios, theaters and providers of production services such as editing, special effects contracting, video conversion, as well as distribution services."
+      },
+      {
+        "code": "SOFW",
+        "title": "Software (TRBC)",
+        "description": "Developers and marketers of system and application software. Includes developers of operating systems, word processors, spreadsheet applications, CAD and database engines."
+      },
+      {
+        "code": "STAY",
+        "title": "Hotels, Motels & Cruise Lines (TRBC)",
+        "description": "Operators of accommodation services including hotels, bed and breakfast inns, motels, cabins, cottages, youth hostels, cruise lines and other tourist and boarding lodges."
+      },
+      {
+        "code": "SWIT",
+        "title": "Software & IT Services (TRBC)",
+        "description": "Developers and marketers of generic system and application software, as well as providers of consulting and IT services."
+      },
+      {
+        "code": "TCOM",
+        "title": "Telecommunications Services (TRBC)",
+        "description": "Owners and operators of fixed line and wireless telecommunication networks and services. The sector serves consumers of voice, video and data transmission."
+      },
+      {
+        "code": "TECH",
+        "title": "Technology (TRBC)",
+        "description": "Manufacturers of semiconductors, communications equipment, computer hardware and technology related office equipment, as well as providers of consulting and IT services."
+      },
+      {
+        "code": "TEEQ",
+        "title": "Technology Equipment (TRBC)",
+        "description": "Manufacturers of semiconductors, communications equipment, computer hardware and technology-related office equipment."
+      },
+      {
+        "code": "TRAD",
+        "title": "Diversified Trading & Distributing (TRBC)",
+        "description": "Wholesalers and distributors of multiple lines of mainly industrial goods."
+      },
+      {
+        "code": "TRAN",
+        "title": "Transportation (TRBC)",
+        "description": "Transporters of freight and passengers by air, land and sea, and operators of supporting services."
+      },
+      {
+        "code": "TREE",
+        "title": "Paper & Forest Products (TRBC)",
+        "description": "Operators of forests, pulp and paper mills, producers and manufacturers of wood and paper products, and providers of related services."
+      },
+      {
+        "code": "TXTL",
+        "title": "Textiles & Leather Goods (TRBC)",
+        "description": "Operators of cotton farms, and woven and non-woven fabric mills, as well as manufacturers of basic leather goods. Includes producers of stock and primary leather goods, cotton, wool, rayon, polyester, silk, velvet, hemp, lace and other fabric mills, fur bearing animal production and basic textile goods such as linens, cloths, rags and bed sheets."
+      },
+      {
+        "code": "UTIL",
+        "title": "Utilities (TRBC)",
+        "description": "Producers and distributors of electricity, natural gas, water and steam, among other utility services, whose distribution facilities and infrastructure are regulated by government. The sector serves private and industrial consumers."
+      },
+      {
+        "code": "UTIM",
+        "title": "Multiline Utilities (TRBC)",
+        "description": "Producers and distributors both electric power and natural gas. Includes utility companies with significant operations in multiple utility operations consisting of electric, natural gas, water and other regulated utility operations."
+      },
+      {
+        "code": "WATR",
+        "title": "Water & Other Utilities (TRBC)",
+        "description": "Operators of water delivery infrastructure, water treatment, filtration and sewage disposal plants. Includes operators supplying geothermal, steam heat and cooled air."
+      },
+      {
+        "code": "WEAR",
+        "title": "Apparel & Accessories (TRBC)",
+        "description": "Manufacturers of clothing such as, men's, women's, children's and pet clothing, uniforms, jackets, hats, socks, gloves, robes, hosiery and swim suits. Includes producers of accessories such as handbags, attache cases, umbrellas, cosmetic bags, jewelry, watches, luggage."
+      },
+      {
+        "code": "WLES",
+        "title": "Wireless Telecommunications Services (TRBC)",
+        "description": "Providers of wireless communication services, such as paging, cell phone and other satellite telecommunication services."
+      },
+      {
+        "code": "WLTH",
+        "title": "Wealth Management",
+        "description": "Companies engaged in the business of wealth management, including retail brokerage, private wealth advisory and private banking."
+      },
+      {
+        "code": "WOOD",
+        "title": "Forest & Wood Products (TRBC)",
+        "description": "Producers of lumber, plywood, sawdust, wood flooring, shingles, tiles, laminated veneer, fencing and other primary wood products. Includes operators of timber tracks and nurseries and providers of cutting, logging, transporting, as well as other forest management services."
+      },
+      {
+        "code": "ADVMK",
+        "title": "Advertising & Marketing (TRBC level 4)",
+        "description": "Print, digital and broadcast media advertising agencies, marketing research, public opinion research, public relations and other marketing and consulting services."
+      },
+      {
+        "code": "APRET",
+        "title": "Apparel & Accessories Retailers (TRBC level 4)",
+        "description": "Retailers of men, women and children's clothing and accessories stores, including retailers of handbags, footwear, leather goods, luggage, jewelry and watches."
+      },
+      {
+        "code": "AUTPT",
+        "title": "Auto, Truck & Motorcycle Parts (TRBC level 4)",
+        "description": "Manufacturers of original and replacement parts for cars, light trucks and motorcycles."
+      },
+      {
+        "code": "CASGM",
+        "title": "Casinos & Gaming (TRBC level 4)",
+        "description": "Operators of casinos and gambling operations. Includes stand-alone casinos, casino hotels, riverboat casinos, bingo halls, gambling machine manufacturers, lottery services, internet gambling services, bookmaking and other gambling services."
+      },
+      {
+        "code": "CHMSP",
+        "title": "Specialty Chemicals (TRBC level 4)",
+        "description": "Producers and wholesalers of specialized chemicals such as pigments, inks, dyes, synthetic fibers, filaments and polymers, synthetic chemicals, adhesives, glues and epoxies."
+      },
+      {
+        "code": "CRDBX",
+        "title": "Paper Packaging (TRBC level 4)",
+        "description": "Manufacturers and wholesalers of paper packaging including cardboard, laminated paper containers, and wood-fiber boxes, bags and wrapping paper."
+      },
+      {
+        "code": "EXPRO",
+        "title": "Oil & Gas Exploration and Production (TRBC level 4)",
+        "description": "Explorers, extractors and producers of crude petroleum and natural gas. Includes operators that recover butane, ethane and natural liquefied petroleum gases (LPG) from oil and gas fields in land, water, as well as explorers and producers of unconventional oil and gas."
+      },
+      {
+        "code": "FODPR",
+        "title": "Food Processing (TRBC level 4)",
+        "description": "Processers and packagers of produce, meats, fish, animal feeds, fruit juices, coffee, tea and dairy products. Includes grain milling, crop cleaning, grading and packaging, animal slaughtering and packaging operations, seafood processing, freezing, canning operations and all other food manufacturers, including pet foods."
+      },
+      {
+        "code": "HMFRN",
+        "title": "Home Furnishings (TRBC level 4)",
+        "description": "Manufacturers of furniture, non-upholstered kitchenware, floor coverings, wall coverings and related furnishings. Includes producers of couches, mattresses, bed frames and headboards, desks, tables, chairs, tables, draws, entertainment centers and stands, wall units, outdoor furniture, carpets, rugs, wall paper, blinds, shades and curtains."
+      },
+      {
+        "code": "HRDWR",
+        "title": "Appliances, Tools & Housewares (TRBC level 4)",
+        "description": "Manufacturers of kitchen appliances, hand and light power tools, gardening tools, cookware, silverware and other household goods. Includes manufacturers of stoves, refrigerators, blenders, washer/dryers, vacuum cleaners, pottery, hairdryers, clocks, home use drills, lawnmowers, rakes, shovels, as well as silverware, china, cutlery, cooking utensils and other related house wares."
+      },
+      {
+        "code": "HSEPR",
+        "title": "Household Products (TRBC level 4)",
+        "description": "Manufacturers of non-durable goods such as cleaning products, detergents, disinfectants, brooms, mops, towels and rags, disposable plates and cutlery."
+      },
+      {
+        "code": "INVBR",
+        "title": "Investment Banking & Brokerage Services (TRBC level 4)",
+        "description": "Providers of investment banking and security brokerage services without significant commercial banking operations, facilitating mergers and acquisitions; underwriting and capital raising via public debt or equity offerings, private placements and restructuring, as well as auxiliary security brokerage services."
+      },
+      {
+        "code": "IRNST",
+        "title": "Iron & Steel (TRBC level 4)",
+        "description": "Miners and processers of iron ore and coke coal and producers of iron and steel. Includes providers of metal ore exploration and mining services, operators of iron and steel foundries for beneficiating, smelting, rolling, forging, spinning, recycling, stamping, polishing and plating of iron and steel products such as pipes, tubes, wire, spring, rolls and bars, and providers of metal processing services and wholesalers of iron and steel products."
+      },
+      {
+        "code": "NPCNT",
+        "title": "Non-Paper Containers & Packaging (TRBC level 4)",
+        "description": "Manufacturers and wholesalers of metal, glass and plastic containers, and providers of diversified, paper and non-paper container and packaging services."
+      },
+      {
+        "code": "PRTSV",
+        "title": "Marine Port Services (TRBC level 4)",
+        "description": "Owners and operators of marine ports and supporting services such as port loading and unloading, canal, harbor and docking services, longshoreman support, tugboat, navigational control and other related services."
+      },
+      {
+        "code": "PSNPR",
+        "title": "Personal Products (TRBC level 4)",
+        "description": "Manufacturers of toiletries, personal hygienic and birth control products. Includes producers of combs, toothbrushes, mouthwash, perfumes, cosmetics, deodorants, hand and body soaps, sunscreen lotion, walking canes, burial caskets, hair pieces, prophylactics, spectacles, contact lenses and other personal products."
+      },
+      {
+        "code": "REALE",
+        "title": "Real Estate Rental, Development & Operations (TRBC level 4)",
+        "description": "Companies engaged in developing, renting and leasing residential, retail, office, industrial and commercial properties."
+      },
+      {
+        "code": "RECPR",
+        "title": "Recreational Products (TRBC level 4)",
+        "description": "Manufacturers of sporting goods, camping equipment, motor homes, caravans, bicycles and musical instruments."
+      },
+      {
+        "code": "RESBR",
+        "title": "Restaurants & Bars (TRBC level 4)",
+        "description": "Operators of restaurants, diners, taverns, pubs, nightclubs, banquet halls, fixed location snack bars, food cart vendors, food service contractors and wholesalers of commercial food service equipment."
+      },
+      {
+        "code": "SEAFT",
+        "title": "Marine Freight & Logistics (TRBC level 4)",
+        "description": "Operators of marine and inland water transportation services for freight. Includes deep-sea freight and cargo, barge, inland water, vessel chartering and other freight transportation operations."
+      },
+      {
+        "code": "SFTBV",
+        "title": "Non-Alcoholic Beverages (TRBC)",
+        "description": "Manufacturers of non-alcoholic beverages such as water, fruit drinks, soft drinks, coffee and tea, as well as other flavored beverages."
+      },
+      {
+        "code": "VHRET",
+        "title": "Auto Vehicles, Parts & Service Retailers (TRBC level 4)",
+        "description": "Retailers of auto vehicles, parts and services."
+      },
+      {
+        "code": "AIRFRT",
+        "title": "Companies engaged in the provision of scheduled and chartered air freight services.",
+        "description": "Companies engaged in the provision of scheduled and chartered air freight services."
+      },
+      {
+        "code": "CHEMDV",
+        "title": "Diversified Chemicals (TRBC level 5)",
+        "description": "Companies significantly engaged in at least two the following industries: Commodity Chemicals, Agricultural Chemicals and Specialty Chemicals."
+      },
+      {
+        "code": "ENQSVC",
+        "title": "Oil & Gas Related Equipment and Services (TRBC level 3)",
+        "description": "Providers of oil and gas drilling and related services, as well as manufacturers of oil related equipment."
+      },
+      {
+        "code": "HLTHSE",
+        "title": "Healthcare Services & Equipment (TRBC level 2)",
+        "description": "Manufacturers of medical equipment and supplies, providers of medical technology/software, as well as operators of healthcare facilities and providers of managed healthcare."
+      },
+      {
+        "code": "HSEBLD",
+        "title": "Homebuilding & Construction Supplies (TRBC level 3)",
+        "description": "Builders of residential homes, mobile homes and prefabricated homes, and manufacturers of value-added building products and home improvement components."
+      },
+      {
+        "code": "HSEGDS",
+        "title": "Household Goods (TRBC level 3)",
+        "description": "Manufacturers of household appliances, tools, house wares and home furnishing goods."
+      },
+      {
+        "code": "HSEHLD",
+        "title": "Personal & Household Products & Services (TRBC level 3)",
+        "description": "Manufacturers of non-durable household goods, personal products and providers of personal services."
+      },
+      {
+        "code": "INVBIS",
+        "title": "Investment Banking & Investment Services (TRBC level 3)",
+        "description": "Providers of investment banking, brokerage and investment management services without significant commercial or retail banking operations."
+      },
+      {
+        "code": "INVDIV",
+        "title": "Diversified Investment Services (TRBC level 5)",
+        "description": "Companies that combine investment banking/security brokerage services with investment management/ fund operating operations, none being dominant."
+      },
+      {
+        "code": "SHOPAL",
+        "title": "All Retail",
+        "description": "Stories about retail businesses, including online retailers."
+      },
+      {
+        "code": "SPCRET",
+        "title": "Specialty Retailers (TRBC level 3)",
+        "description": "Retailers operating stores and dealerships focused on a single area. Includes auto part, home improvement, home furnishing, office supply, toy, sporting equipment, book, kitchenware and houseware retailers. Includes also garden centers, car and truck dealerships."
+      },
+      {
+        "code": "NO EQUIVALENT",
+        "title": "Speciality Financials",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "title": "Conflicts/War/Peace",
+    "topics": [
+      {
+        "code": "CWP",
+        "title": "Conflicts / War / Peace",
+        "description": "Civil and international wars, including violent political uprisings."
+      },
+      {
+        "code": "DEF",
+        "title": "Defense",
+        "description": "The affairs of the various branches of the armed services in an individual country or alliance of countries, including defense procurement and weapons policy.  Excluding actual combat."
+      },
+      {
+        "code": "IMM",
+        "title": "Asylum / Immigration / Refugees",
+        "description": "Asylum, immigration, refugees, visa, passport and extradition issues."
+      },
+      {
+        "code": "VIO",
+        "title": "Civil Unrest",
+        "description": "Disturbances to internal peace or public order caused by the collective actions of a group of citizens. Including both legal and illegal acts including demonstrations, protests, marches, riots; hooliganism and looting."
+      },
+      {
+        "code": "WAR",
+        "title": "Military Conflicts",
+        "description": "Hostile actions or attacks involving the use of regular or irregular armed forces between countries, by one or more countries against one or more other countries, or within a country between opposing groups, usually for territorial or political gain.  Does not include violence between individuals or for criminal intent."
+      },
+      {
+        "code": "BOMB",
+        "title": "Bombing (Non-Military)",
+        "description": "Placing or detonation of an explosive or incendiary device with the intention of causing damage to property and / or loss of life.  Also includes the threat (false or otherwise) of exploding such a device.  Does not include bombardment as part of a military action."
+      }
+    ]
+  },
+  {
+    "title": "Crime/Law/Justice",
+    "topics": [
+      {
+        "code": "ACB",
+        "title": "Anti-competitive Behaviour / Price Fixing",
+        "description": "News about alleged or actual anti-competitive commercial behaviour by companies or their officers which if proven would be punishable in law."
+      },
+      {
+        "code": "CLJ",
+        "title": "Crime / Law / Justice",
+        "description": "Crime, law and justice."
+      },
+      {
+        "code": "HJK",
+        "title": "Hijacking / Piracy",
+        "description": "Commandeer a vehicle by coercion, sometimes for political or percuniary motives."
+      },
+      {
+        "code": "BRIB",
+        "title": "Corruption / Bribery / Embezzlement",
+        "description": "Abusing one's position of trust for personal dishonest gain, being open to bribes and / or acting without the virtues, integrity or honesty of an individual beholden with the same position of responsibility."
+      },
+      {
+        "code": "CRIM",
+        "title": "Crime",
+        "description": "The commission / omission of an act in violation of international / domestic law and for which, if convicted, punishment is imposed.  Includes government policy on crime and crime figures."
+      },
+      {
+        "code": "HACK",
+        "title": "Computer Crime / Hacking / Cybercrime",
+        "description": "Computer hackers or crackers illegally gaining access to another's computer system to obtain secret information or commit acts of sabotage. Including the deliberate creation or spreading of computer viruses."
+      },
+      {
+        "code": "KDNP",
+        "title": "Kidnapping",
+        "description": "The forcible abduction of one or more individuals for ideological, political or pecuniary motives. Also includes hostages held to secure the taker's demands."
+      },
+      {
+        "code": "MURD",
+        "title": "Murder / Suspected Murder",
+        "description": "An unlawful killing of a human being where there was an intention to kill or cause serious harm."
+      },
+      {
+        "code": "NARC",
+        "title": "Drug Trafficking / Narcotics",
+        "description": "Illegal activities involving the use and trafficking of drugs."
+      },
+      {
+        "code": "FAKE1",
+        "title": "Intellectual Property Crime",
+        "description": "Counterfeiting and other intellectual property crime. Excludes civil disputes concerning intellectual property laws, which are covered by Intellectual Property [IPROP]."
+      },
+      {
+        "code": "SCAM1",
+        "title": "Financial Fraud / Securities Fraud",
+        "description": "Acts of deception intended for personal gain or to cause a loss to others involving financial transactions."
+      },
+      {
+        "code": "SCRIM",
+        "title": "Sex Crimes",
+        "description": "Forcing an individual to participate in acts of a sexual or indecent nature by using or threatening physical force. Including forcing another person to submit to sexual intercourse without consent."
+      },
+      {
+        "code": "FRAUD1",
+        "title": "White Collar Crime / Fraud / Corporate Crime",
+        "description": "Acts of deception deliberately practised in order to secure unfair or unlawful financial gain, including fraudulent behaviour in sports. Also acts of financial deception or improper accounting by executive officers of a listed or unlisted company in contravention of securities, disclosure and accountancy law in order to secure unfair or unlawful gain or in order to mislead stakeholders in the company as to the true state of its financial affairs."
+      }
+    ]
+  },
+  {
+    "title": "Disasters/Accidents",
+    "topics": [
+      {
+        "code": "DIS",
+        "title": "Disasters / Accidents",
+        "description": "Natural disasters such as floods, earthquakes, hurricanes and volcanic eruptions; manmade disasters and accidents, including road accidents, plane crashes, train crashes, shipwrecks and industrial accidents; their human and economic consequences."
+      },
+      {
+        "code": "FLD",
+        "title": "Floods",
+        "description": "Floods, tidal waves and tsunami including damage and loss of life, clean up and rebuilding, long-term implications and insurance costs."
+      },
+      {
+        "code": "WND",
+        "title": "Wind / Hurricanes / Typhoons / Tornadoes",
+        "description": "Wind, storms, hurricanes, cyclones, tornadoes and typhoons and their effects. The impact of strong winds on economic activities such as the production, transport and prices of commodities and energy."
+      },
+      {
+        "code": "COLL",
+        "title": "Ground Accidents / Collisions",
+        "description": "Major road or rail accidents."
+      },
+      {
+        "code": "CRSH",
+        "title": "Air Accidents",
+        "description": "Aircraft accidents."
+      },
+      {
+        "code": "DFTS",
+        "title": "Droughts",
+        "description": "Droughts including the extent, severity and implications of."
+      },
+      {
+        "code": "DRWN",
+        "title": "Sea Accidents",
+        "description": "Major accidents at sea or on inland waters."
+      },
+      {
+        "code": "QUAK",
+        "title": "Earthquakes",
+        "description": "Earthquakes, volcanic eruptions and landslides.  Effects of seismic activity including damage, loss of life, rescue efforts and long-term implications."
+      },
+      {
+        "code": "INCEN",
+        "title": "Fires",
+        "description": "Accidental explosions or building fires.  Not bombs or bomb damage as part of a military campaign."
+      },
+      {
+        "code": "TWAVE",
+        "title": "Tsunami",
+        "description": "News about tsunamis and similar large destructive waves in a large body of water."
+      },
+      {
+        "code": "WFIRE",
+        "title": "Wildfires / Forest Fires",
+        "description": "Forest and brush fires including extent of damage and efforts to contain."
+      }
+    ]
+  },
+  {
+    "title": "Oddly Enough",
+    "topics": [
+      {
+        "code": "ODD",
+        "title": "Human Interest / Brights / Odd News",
+        "description": "Unusual human interest items. Covers both the bizarre and the humorous. Strange but true stories."
+      }
+    ]
+  },
+  {
+    "title": "Politics/International Affairs",
+    "topics": [
+      {
+        "code": "AID",
+        "title": "Overseas Development Aid",
+        "description": "Overseas development policy and development aid. Includes emergency relief aid"
+      },
+      {
+        "code": "BRU",
+        "title": "EU Institutions",
+        "description": "News about the European Commission, Parliament, Courts and Councils."
+      },
+      {
+        "code": "CIV",
+        "title": "Fundamental Rights / Civil Liberties",
+        "description": "Policies concerning claimed fundamental human rights and civil liberties."
+      },
+      {
+        "code": "DAT",
+        "title": "Privacy / Data Protection",
+        "description": "Policies concerning privacy laws, such as the protection of personal data."
+      },
+      {
+        "code": "DIP",
+        "title": "Diplomacy / Foreign Policy",
+        "description": "Foreign affairs including summits, treaties and official visits. International disputes and co-operation. Also including actions of diplomats and embassies."
+      },
+      {
+        "code": "EDU",
+        "title": "Education",
+        "description": "Issues relating to education; legislation, performance, curricula, teachers and fees.  Including public, private, nursery, primary and secondary schooling, further education, college and university."
+      },
+      {
+        "code": "LAW",
+        "title": "Lawmaking",
+        "description": "The formulation of legislation by supranational, national, sub-national or local parliaments and the legislative decisions of courts of law."
+      },
+      {
+        "code": "NGO",
+        "title": "Non-Governmental Organizations",
+        "description": "Not-for-profit organisations which operate independently of governments and are not constituted as a political party or have any criminal purpose."
+      },
+      {
+        "code": "POL",
+        "title": "Government / Politics",
+        "description": "Political parties, national and sub-national parliaments, legislation and constitutional issues. Opinion polls and referendums. Local government bodies and the civil service."
+      },
+      {
+        "code": "RTM",
+        "title": "Retirement / Old Age",
+        "description": "All news about retirement and related issues, including financial regulation and financial industry trends that affect retirement."
+      },
+      {
+        "code": "SDS",
+        "title": "Subsidies",
+        "description": "Government support for an industry / activity that provides it with a competitive trading advantage."
+      },
+      {
+        "code": "TAX",
+        "title": "Taxation",
+        "description": "The levying of direct and indirect taxes by national, sub-national or local governments or parliaments."
+      },
+      {
+        "code": "TRD",
+        "title": "International Trade",
+        "description": "Commercial agreements, tariffs and quotas between countries or groupings of countries. Including the World Trade Organisation and regional trading alliances."
+      },
+      {
+        "code": "TRF",
+        "title": "Tariffs",
+        "description": "Government imposed system of duties on imports / exports."
+      },
+      {
+        "code": "WOM",
+        "title": "Women's Issues",
+        "description": "Women's Issues, including women's rights."
+      },
+      {
+        "code": "WRM",
+        "title": "Climate Politics",
+        "description": "Issues of climate change and evidence of global warming and public policies to affect climate changes."
+      },
+      {
+        "code": "ADVO",
+        "title": "Advocacy Groups / Pressure Groups / Lobbies",
+        "description": "Non-governmental organizations whose aim is to influence government or quasi-government policies in a specific area."
+      },
+      {
+        "code": "CENS",
+        "title": "Freedom of Speech / Censorship",
+        "description": "Freedom of speech / censorship and press freedom."
+      },
+      {
+        "code": "CHLD",
+        "title": "Children / Youth Issues",
+        "description": "News about social issues affecting children and young adults."
+      },
+      {
+        "code": "GFIN",
+        "title": "Government Finances",
+        "description": "Government finance, budgets and tax policy"
+      },
+      {
+        "code": "HRGT",
+        "title": "Human Rights / Civil Rights",
+        "description": "Legal issues concerning human rights and abuses. Including civil liberties, equality and discrimination, freedom of expression and freedom to worship."
+      },
+      {
+        "code": "HUMA",
+        "title": "Aid Relief / Humanitarian Agencies",
+        "description": "Non-governmental organizations involved in the provision of aid and development assistance."
+      },
+      {
+        "code": "LGBT",
+        "title": "Lesbian / Gay / Bisexual / Transsexual",
+        "description": "Issues concerning sexual orientation."
+      },
+      {
+        "code": "NUCL",
+        "title": "Nuclear Armaments / Nuclear Proliferation",
+        "description": "News concerning nuclear weapons including international arms control affairs."
+      },
+      {
+        "code": "RACR",
+        "title": "Race Relations / Ethnic Issues",
+        "description": "Relations among and issues concerning racial and ethnic groups, including discrimination, stereotyping, abuse of individuals based on race or ethnic background, segregation, integration, public policy, and legal measures and procedures concerning racial or ethnic groups and issues."
+      },
+      {
+        "code": "SOCI",
+        "title": "Society / Social Issues",
+        "description": "Society and social issues."
+      },
+      {
+        "code": "VOTE",
+        "title": "Elections / Voting",
+        "description": "National; regional; local elections, manifestos, referendums and polling."
+      },
+      {
+        "code": "VOTG",
+        "title": "Gubernatorial Elections",
+        "description": "Elections of state or provincial governors."
+      },
+      {
+        "code": "VOTH",
+        "title": "Lower House Elections",
+        "description": "Elections to the lower house of a legislative body."
+      },
+      {
+        "code": "VOTP",
+        "title": "Presidential Elections",
+        "description": "Presidential elections."
+      },
+      {
+        "code": "VOTS",
+        "title": "Upper House Elections",
+        "description": "Elections to the upper house (such as a senate) of a legislative body."
+      },
+      {
+        "code": "WASH",
+        "title": "US Government News",
+        "description": "US Federal government politics, policies and economics."
+      },
+      {
+        "code": "INTAG",
+        "title": "International Agencies / Treaty Groups",
+        "description": ""
+      },
+      {
+        "code": "SECUR",
+        "title": "International / National Security",
+        "description": "International and national security considerations relating to hostile organizations / countries. Including all covert action, all intelligence gathering, and all steps taken to defend against action by hostile organizations / countries.  Also includes acts committed by hostile organizations / countries."
+      },
+      {
+        "code": "DEFBUY",
+        "title": "Military Procurement",
+        "description": "Issues related to the procurement of military equipmnent."
+      },
+      {
+        "code": "GUNCTR",
+        "title": "Gun Control",
+        "description": "Policies to regulate the private ownership of fire arms."
+      },
+      {
+        "code": "INSURG",
+        "title": "Insurgencies",
+        "description": "Guerrilla and rebel groups involved in armed rebellion, usually having access to light arms and bomb-making materials, but not full-scale military ordnance."
+      }
+    ]
+  },
+  {
+    "title": "Religion",
+    "topics": [
+      {
+        "code": "BUD",
+        "title": "Buddhism",
+        "description": "A religious system from ancient Nepal and India, founded by Siddhartha Gautama (the Buddha), that says moral behaviour can lead to Nirvana, the state of enlightenment and end of reincarnation.  Its main branches are Theravada (dominant in South and Southeast Asia) and Mahayana (in China, Japan, Tibet and northern Asia)."
+      },
+      {
+        "code": "JUD",
+        "title": "Judaism",
+        "description": "The monotheistic religion of the Jews, tracing its origins to Abraham with spiritual and ethical principles embodied chiefly in the Hebrew Scriptures and the Talmud.  Apart from Orthodox Judaism, there are Conservative, Hasidic, Reform and other movements."
+      },
+      {
+        "code": "REL",
+        "title": "Religion / Belief",
+        "description": "Religion / Belief."
+      },
+      {
+        "code": "CHRI",
+        "title": "Christianity",
+        "description": "All denominations that believe Jesus Christ is the Son of God who rose from the dead after his crucifixion, as related in the Bible.  Refers to all Christians, their churches or relations among different Christian denominations."
+      },
+      {
+        "code": "HIND",
+        "title": "Hinduism",
+        "description": "The dominant faith in India, Nepal and among the Tamils in Sri Lanka.  It is henotheistic, i.e. believes in one god without denying other deities.  The main Hindu gods are Brahma the Creator, Vishnu (Krishna) the Preserver and Shiva the Destroyer."
+      },
+      {
+        "code": "ISLM",
+        "title": "Islam",
+        "description": "Islamic religion and culture."
+      }
+    ]
+  },
+  {
+    "title": "Science/Technology",
+    "topics": [
+      {
+        "code": "CLC",
+        "title": "Climate Change",
+        "description": "All news coverage associated with the broader topic of climate change."
+      },
+      {
+        "code": "ENV",
+        "title": "Environment",
+        "description": "Conservation; green issues; recycling; energy saving; alternative energy; natural world; environmental disasters; environmental politics; natural resources; waste; government policy."
+      },
+      {
+        "code": "GMO",
+        "title": "Genetically Modified Organisms",
+        "description": "Genetically modified organisms their development, deployment and any products made from them.  Also including government policy and opposition to."
+      },
+      {
+        "code": "HEA",
+        "title": "Health / Medicine",
+        "description": "Health; disease; medical research; preventative medicine; hospitals; government policy."
+      },
+      {
+        "code": "SCI",
+        "title": "Science",
+        "description": "All aspects of science; research and new technology; applied sciences; human sciences; natural sciences; philosophical sciences; scientific exploration; government policy."
+      },
+      {
+        "code": "WWW",
+        "title": "Internet / World Wide Web",
+        "description": "New developments in, and issues affecting, the internet / world wide web, such as viruses, domain names, freedom of access and censorship."
+      },
+      {
+        "code": "ARTI",
+        "title": "Artificial Intelligence",
+        "description": "News about artificial intelligence (AI), the ability of digital systems to perform tasks commonly associated with intelligent beings, and its use in applications such as medical diagnosis, computer search engines, voice recognition and autonomous vehicles."
+      },
+      {
+        "code": "AWLQ",
+        "title": "Pollution",
+        "description": "Short and long-term pollution affecting air, water and land."
+      },
+      {
+        "code": "ITEC",
+        "title": "Information Technologies / Computer Sciences",
+        "description": "News about the science of information technology and computing."
+      },
+      {
+        "code": "LSCI",
+        "title": "Life Sciences",
+        "description": "News concerning the life sciences with the exception of medicine, which is covered by Health / Medicine [HEA]."
+      },
+      {
+        "code": "NATU",
+        "title": "Nature / Wildlife",
+        "description": "Environmental issues concerning flora or fauna."
+      },
+      {
+        "code": "SPEX",
+        "title": "Space Exploration",
+        "description": "Astronomy / space exploration including new research into celestial objects, space, and the physical universe.  Also spaceflights of manned and unmanned vehicles"
+      },
+      {
+        "code": "EHVEH",
+        "title": "Electric / Hybrid Vehicles",
+        "description": "Vehicles using an electric motor for propulsion."
+      },
+      {
+        "code": "INFDIS",
+        "title": "Infectious Diseases",
+        "description": "Research into, causes and treatment of all infectious diseases, including food poisoning, hepatitis, influenza, malaria and sexually transmitted diseases (STDs)."
+      }
+    ]
+  },
+  {
+    "title": "Sports",
+    "topics": [
+      {
+        "code": "DOP",
+        "title": "Doping / Drugs Tests",
+        "description": "The use, regulation or prohibition of performance-enhancing substances and tests to uncover the use of drugs, mostly used in sports."
+      },
+      {
+        "code": "FO1",
+        "title": "Formula 1",
+        "description": ""
+      },
+      {
+        "code": "MMA",
+        "title": "Mixed Martial Arts",
+        "description": ""
+      },
+      {
+        "code": "NBA",
+        "title": "NBA Basketball",
+        "description": "Events relating to the sport of National Basketball Association basketball."
+      },
+      {
+        "code": "NFL",
+        "title": "NFL American Football",
+        "description": "Events relating to the sport of National Football League american football."
+      },
+      {
+        "code": "NHL",
+        "title": "NHL Ice Hockey",
+        "description": "Events relating to the sport of National Hockey League ice hockey."
+      },
+      {
+        "code": "SNO",
+        "title": "Snowboarding",
+        "description": "Events relating to the sport of snowboarding. A a snowboard is a board resembling a small surfboard and equipped with bindings, used for descending snow-covered slopes on one's feet but without ski poles."
+      },
+      {
+        "code": "SPO",
+        "title": "Sport",
+        "description": "Sports, with a focus on both sporting events of consequence, and the world-wide business of sports. Includes: championship events, major signings, the most important business, legal and regulatory matters, stories on important new teams leagues or events,"
+      },
+      {
+        "code": "ALPS",
+        "title": "Alpine Skiing",
+        "description": "Events relating to the sport of alpine skiing"
+      },
+      {
+        "code": "AMER",
+        "title": "American Football",
+        "description": "Events relating to the sport of american football."
+      },
+      {
+        "code": "ANGL",
+        "title": "Angling",
+        "description": "Events relating to the sport of angling and competitive fishing."
+      },
+      {
+        "code": "ARCH",
+        "title": "Archery",
+        "description": "Events relating to the sport of archery."
+      },
+      {
+        "code": "ATHL",
+        "title": "Athletics",
+        "description": "Events relating to the sport of athletics."
+      },
+      {
+        "code": "AUSR",
+        "title": "Australian Rules Football",
+        "description": "Events relating to the sport of australian rules football."
+      },
+      {
+        "code": "BADM",
+        "title": "Badminton",
+        "description": "Events relating to the sport of badminton."
+      },
+      {
+        "code": "BASE",
+        "title": "Baseball",
+        "description": "Events relating to the sport of baseball."
+      },
+      {
+        "code": "BASK",
+        "title": "Basketball",
+        "description": "Events relating to the sport of basketball."
+      },
+      {
+        "code": "BIAT",
+        "title": "Biathlon",
+        "description": "Events relating to the sport of biathlon."
+      },
+      {
+        "code": "BILL",
+        "title": "Billiards",
+        "description": "Events relating to the sport of billiards."
+      },
+      {
+        "code": "BOAR",
+        "title": "Boardsailing / Windsurfing",
+        "description": "Events relating to the sport of boardsailing."
+      },
+      {
+        "code": "BOBS",
+        "title": "Bobsleigh",
+        "description": "Events relating to the sport of bobsleigh."
+      },
+      {
+        "code": "BOWL",
+        "title": "Bowls",
+        "description": "Events relating to the sport of bowls."
+      },
+      {
+        "code": "BOXI",
+        "title": "Boxing",
+        "description": "Events relating to the sport of boxing."
+      },
+      {
+        "code": "CANO",
+        "title": "Canoeing",
+        "description": "Events relating to the sport of canoeing."
+      },
+      {
+        "code": "CLMB",
+        "title": "Climbing",
+        "description": "Events relating to the sport of climbing."
+      },
+      {
+        "code": "CRIC",
+        "title": "Cricket",
+        "description": "Events relating to the sport of cricket."
+      },
+      {
+        "code": "CURL",
+        "title": "Curling",
+        "description": "Events relating to the sport of curling."
+      },
+      {
+        "code": "CYCL",
+        "title": "Cycling",
+        "description": "Events relating to the sport of cycling."
+      },
+      {
+        "code": "DIVE",
+        "title": "Diving",
+        "description": "Events relating to the sport of diving."
+      },
+      {
+        "code": "DNCG",
+        "title": "Competitive Dancing",
+        "description": "Events relating to competitive dancing."
+      },
+      {
+        "code": "DRTS",
+        "title": "Darts",
+        "description": "Events relating to the sport of darts."
+      },
+      {
+        "code": "EQUE",
+        "title": "Equestrian",
+        "description": "Events relating to equestrian sports."
+      },
+      {
+        "code": "FENC",
+        "title": "Fencing",
+        "description": "Events relating to the sport of fencing."
+      },
+      {
+        "code": "FIGS",
+        "title": "Figure Skating",
+        "description": "Events relating to figure skating."
+      },
+      {
+        "code": "FSKI",
+        "title": "Freestyle Skiing",
+        "description": "Events relating to the sport of freestyle skiing."
+      },
+      {
+        "code": "GOLF",
+        "title": "Golf",
+        "description": "Events relating to the sport of golf."
+      },
+      {
+        "code": "GYMN",
+        "title": "Gymnastics",
+        "description": "Events relating to the sport of gymnastics."
+      },
+      {
+        "code": "HAND",
+        "title": "Handball",
+        "description": "Events relating to the sport of handball."
+      },
+      {
+        "code": "HOCK",
+        "title": "Field Hockey",
+        "description": "Events relating to the sport of field hockey."
+      },
+      {
+        "code": "HORS",
+        "title": "Horse Racing",
+        "description": "Events relating to the sport of horse racing."
+      },
+      {
+        "code": "ICEH",
+        "title": "Ice Hockey",
+        "description": "Events relating to the sport of ice hockey."
+      },
+      {
+        "code": "JAIA",
+        "title": "Jai Alai / Pelota",
+        "description": "Events relating to the sport of jai alai. Jai Alai or pelota is a court game in which players use a long hand-shaped basket strapped to the wrist to propel a ball against a wall."
+      },
+      {
+        "code": "JUDO",
+        "title": "Judo",
+        "description": "Events relating to the sport of judo."
+      },
+      {
+        "code": "KARA",
+        "title": "Karate",
+        "description": "Events relating to the sport of karate."
+      },
+      {
+        "code": "LACR",
+        "title": "Lacrosse",
+        "description": "Events relating to the sport of lacrosse."
+      },
+      {
+        "code": "LUGE",
+        "title": "Luge",
+        "description": "Events relating to the sport of luge. Luge is an alpine sport where a racing sled for one or two people is ridden with the rider or riders lying supine down a specially prepared ice track against the clock."
+      },
+      {
+        "code": "MOCR",
+        "title": "Motocross",
+        "description": "Events relating to the sport of motocross. Motocross is a closed-course motorcycle race over natural or simulated rough terrain."
+      },
+      {
+        "code": "MOCY",
+        "title": "Motorcycle Racing",
+        "description": "Events relating to the sport of motorcycling. This includes bikes competing in MotoGP road racing, 125cc , 250cc, superbike and motocross categories."
+      },
+      {
+        "code": "MODE",
+        "title": "Modern Pentathlon",
+        "description": "Events relating to the sport of modern pentathlon."
+      },
+      {
+        "code": "MORA",
+        "title": "Motor Racing",
+        "description": "Events relating to the sport of motor racing. This includes cars competing in track races, including Formula One, Nascar, Cart and Indy."
+      },
+      {
+        "code": "MTHN",
+        "title": "Marathon",
+        "description": "Events relating to marathons. A marathon is a footrace run on an open course usually of 26 miles 385 yards (42.2 kilometers)."
+      },
+      {
+        "code": "NETB",
+        "title": "Netball",
+        "description": "Events relating to the sport of netball."
+      },
+      {
+        "code": "NORS",
+        "title": "Nordic Skiing",
+        "description": "Events relating to the sport of nordic skiing."
+      },
+      {
+        "code": "RALL",
+        "title": "Rallying",
+        "description": "Events relating to the sport of rallying."
+      },
+      {
+        "code": "ROWI",
+        "title": "Rowing",
+        "description": "Events relating to the sport of rowing."
+      },
+      {
+        "code": "RUGL",
+        "title": "Rugby League",
+        "description": "Events relating to the sport of rugby league."
+      },
+      {
+        "code": "RUGU",
+        "title": "Rugby Union",
+        "description": "Events relating to the sport of rugby union."
+      },
+      {
+        "code": "SDOG",
+        "title": "Sled Dog Racing",
+        "description": "Events relating to the sport of sled dog racing. The racing sleds are pulled by dogs over snow-covered courses. One of the most famous events is the Iditarod race to Nome, created to help promote Alaska's mushing history."
+      },
+      {
+        "code": "SHOO",
+        "title": "Shooting",
+        "description": "Events relating to the sport of shooting."
+      },
+      {
+        "code": "SKAT",
+        "title": "Speed Skating",
+        "description": "Events relating to the sport of speed skating."
+      },
+      {
+        "code": "SKEL",
+        "title": "Skeleton",
+        "description": "Events relating to the sport of skeleton. Skeleton is an alpine sport where a racing sled is ridden with the rider lying on their stomach, head first, down a specially prepared ice track against the clock."
+      },
+      {
+        "code": "SKIJ",
+        "title": "Ski Jumping",
+        "description": "Events relating to the sport of ski jumping."
+      },
+      {
+        "code": "SNOO",
+        "title": "Snooker",
+        "description": "Events relating to the sport of snooker. Snooker is pocket billiards played with 15 red balls and 6 balls of other colors."
+      },
+      {
+        "code": "SOCC",
+        "title": "Soccer",
+        "description": "Events relating to the sport of soccer."
+      },
+      {
+        "code": "SOFT",
+        "title": "Softball",
+        "description": "Events relating to the sport of softball."
+      },
+      {
+        "code": "SPEE",
+        "title": "Speedway",
+        "description": "Events relating to the sport of speedway. Speedway a special track a form of dirt-track racing where stripped-down motorcycles without brakes race round an oval track."
+      },
+      {
+        "code": "SQUA",
+        "title": "Squash",
+        "description": "Events relating to the sport of squash."
+      },
+      {
+        "code": "STSK",
+        "title": "Short Track Skating",
+        "description": "Events relating to the sport of short track (speed) skating."
+      },
+      {
+        "code": "SUMO",
+        "title": "Sumo Wrestling",
+        "description": "Events relating to the sport of sumo wrestling."
+      },
+      {
+        "code": "SWIM",
+        "title": "Swimming",
+        "description": "Events relating to the sport of swimming."
+      },
+      {
+        "code": "TABT",
+        "title": "Table Tennis",
+        "description": "Events relating to the sport of table tennis."
+      },
+      {
+        "code": "TAEK",
+        "title": "Taekwondo",
+        "description": "Events relating to tae kwon do, a Korean martial art resembling karate."
+      },
+      {
+        "code": "TENN",
+        "title": "Tennis",
+        "description": "Events relating to the sport of tennis."
+      },
+      {
+        "code": "TENP",
+        "title": "Tenpin Bowling",
+        "description": "Events relating to tenpin bowling."
+      },
+      {
+        "code": "TRIA",
+        "title": "Triathlon",
+        "description": "Events relating to triathlon. An athletic contest in which participants compete without stopping in three successive events, usually long-distance swimming, bicycling, and running."
+      },
+      {
+        "code": "VOLL",
+        "title": "Volleyball",
+        "description": "Events relating to the sport of volleyball. A game played by two teams on a rectangular court divided by a high net, in which both teams use up to three hits to ground the ball on the opposing team's side of the net."
+      },
+      {
+        "code": "WATP",
+        "title": "Water Polo",
+        "description": "Events relating to the sport of water polo. A water sport with two teams of swimmers each of which tries to pass a ball into the other's goal."
+      },
+      {
+        "code": "WATS",
+        "title": "Water Skiing",
+        "description": "Events relating to the sport of water skiing."
+      },
+      {
+        "code": "WEIG",
+        "title": "Weightlifting",
+        "description": "Events relating to competitive weighlifting."
+      },
+      {
+        "code": "WRES",
+        "title": "Wrestling",
+        "description": "Events relating to wrestling. A sport in which two competitors attempt to throw or immobilize each other by grappling."
+      },
+      {
+        "code": "XCTY",
+        "title": "Cross-Country Skiing",
+        "description": "Events relating to the sport of cross-country skiing."
+      },
+      {
+        "code": "YACH",
+        "title": "Yachting / Sailing",
+        "description": "Events relating to competitive yachting or sailing."
+      },
+      {
+        "code": "AQSPO",
+        "title": "Aquatic Sports",
+        "description": ""
+      },
+      {
+        "code": "BVOLL",
+        "title": "Beach Volleyball",
+        "description": "Events relating to the sport of beach volleyball. Beach volleyball is a variation on volleyball played on a court made of sand with teams of two players."
+      },
+      {
+        "code": "CHESS",
+        "title": "Chess",
+        "description": "Events relating to competitive chess."
+      },
+      {
+        "code": "MARTS",
+        "title": "Martial Arts",
+        "description": ""
+      },
+      {
+        "code": "ORENT",
+        "title": "Orienteering",
+        "description": "Events relating to the sport of orienteering. Orienteering is a cross-country race in which competitors use a map and compass to find their way through unfamiliar territory."
+      },
+      {
+        "code": "PBOAT",
+        "title": "Power Boating",
+        "description": "Events relating to the sport of power boating."
+      },
+      {
+        "code": "SBOAT",
+        "title": "Boating / Sailing",
+        "description": ""
+      },
+      {
+        "code": "SPOLO",
+        "title": "Polo",
+        "description": "Events relating to the sport of polo. Polo is a game played by teams of players on horseback using mallets with long flexible handles to drive a wooden ball through goalposts."
+      },
+      {
+        "code": "SPOOL",
+        "title": "Pool",
+        "description": "Events relating to the sport of pool. Pool can be any of several games played on a six-pocket billiard table usually with 15 object balls and a cue ball. Also called pocket billiards."
+      },
+      {
+        "code": "SRFNG",
+        "title": "Surfing",
+        "description": "Events relating to the sport of surfing / surfboarding."
+      },
+      {
+        "code": "SYNCS",
+        "title": "Synchronised Swimming",
+        "description": ""
+      }
+    ]
+  }
+]

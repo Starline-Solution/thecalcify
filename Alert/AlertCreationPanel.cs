@@ -440,7 +440,7 @@ namespace thecalcify.Alert
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("Error parsing rate value at SendAlertToApiAsync: " + ex.Message);
+                    ApplicationLogger.Log("Error parsing rate value at SendAlertToApiAsync: " + ex.Message);
                 }
 
                 if (existingAlert != null)
@@ -479,7 +479,7 @@ namespace thecalcify.Alert
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("Error parsing rate value at SendAlertToApiAsync1: " + ex.Message);
+                    ApplicationLogger.Log("Error parsing rate value at SendAlertToApiAsync1: " + ex.Message);
                 }
 
                 var payload = new
@@ -590,7 +590,7 @@ namespace thecalcify.Alert
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error parsing rate value at ValidateAlertInputs: " + ex.Message);
+                ApplicationLogger.Log("Error parsing rate value at ValidateAlertInputs: " + ex.Message);
             }
 
             return true;
