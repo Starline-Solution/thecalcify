@@ -103,7 +103,18 @@ namespace thecalcify.Helper
                         {
                             var result = MessageBox.Show("Application Has Newer Version Want to Upgrade", "Update Version", MessageBoxButtons.OKCancel);
                             if (result == DialogResult.OK)
-                                UninstallOldVersion("thecalcify", displayversion);
+                                if (SystemInformation.PowerStatus.PowerLineStatus == PowerLineStatus.Online)
+                                    UninstallOldVersion("thecalcify", displayversion);
+                                else
+                                {
+                                    MessageBox.Show(
+                                        "The process cannot continue while the system is running on battery power.\n\nPlease connect your device to a power source and restart the process.",
+                                        "Power Supply Disconnected",
+                                        MessageBoxButtons.OK,
+                                        MessageBoxIcon.Warning
+                                    );
+                                    return;
+                                }
                             else
                                 return;
                         }
@@ -120,7 +131,18 @@ namespace thecalcify.Helper
                                 ApplicationLogger.Log("User selected: " + result.ToString());
 
                                 if (result == DialogResult.OK)
-                                    UninstallOldVersion("thecalcify", displayversion);
+                                    if (SystemInformation.PowerStatus.PowerLineStatus == PowerLineStatus.Online)
+                                        UninstallOldVersion("thecalcify", displayversion);
+                                    else
+                                    {
+                                        MessageBox.Show(
+                                            "The process cannot continue while the system is running on battery power.\n\nPlease connect your device to a power source and restart the process.",
+                                            "Power Supply Disconnected",
+                                            MessageBoxButtons.OK,
+                                            MessageBoxIcon.Warning
+                                        );
+                                        return;
+                                    }
                                 else
                                     return;
                             }
@@ -381,7 +403,7 @@ namespace thecalcify.Helper
                 sb.AppendLine("timeout /t 5");
                 sb.AppendLine();
                 sb.AppendLine(":: Create Task Scheduler B to install new version");
-                sb.AppendLine($"schtasks /Create /TN {taskBName} /TR \"\\\"{installerExe}\\\" /quiet\" /SC ONCE /ST {DateTime.Now.AddMinutes(1):HH:mm} /RL HIGHEST /F");
+                sb.AppendLine($"schtasks /Create /TN {taskBName} /TR \"\\\"{installerExe}\\\" /quiet\" /SC ONCE /ST {DateTime.Now.AddMinutes(1):HH:mm:ss} /RL HIGHEST /F /NP");
                 sb.AppendLine();
                 sb.AppendLine(":: Run install task");
                 sb.AppendLine($"schtasks /Run /TN {taskBName}");
@@ -397,7 +419,7 @@ namespace thecalcify.Helper
                 sb.AppendLine();
                 sb.AppendLine("exit");
 
-                File.WriteAllText(uninstallCmd, sb.ToString(), Encoding.UTF8);
+                File.WriteAllText(uninstallCmd, sb.ToString(), new UTF8Encoding(false));
 
                 ApplicationLogger.Log($"Uninstall script created at {sb.ToString()}");
 
@@ -405,7 +427,7 @@ namespace thecalcify.Helper
                 Process.Start(new ProcessStartInfo
                 {
                     FileName = "schtasks",
-                    Arguments = $"/Create /TN {taskAName} /TR \"cmd.exe /c \"\"{uninstallCmd}\"\"\" /SC ONCE /ST {DateTime.Now.AddMinutes(1):HH:mm} /RL HIGHEST /F",
+                    Arguments = $"/Create /TN {taskAName} /TR \"cmd.exe /c \"\"{uninstallCmd}\"\"\" /SC ONCE /ST {DateTime.Now.AddMinutes(1):HH:mm:ss} /RL HIGHEST /F /NP",
                     UseShellExecute = true,
                     Verb = "runas", // Triggers UAC
                 })?.WaitForExit();
