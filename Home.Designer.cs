@@ -60,9 +60,11 @@ namespace thecalcify
             this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.newsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.newsListToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.newsSettingsToolStrip = new System.Windows.Forms.ToolStripMenuItem();
+            this.newsNotification = new System.Windows.Forms.ToolStripMenuItem();
             this.newsSubscriptionListToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.categorywiseSubsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.regionwiseSubscriptionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.CategorywiseSubscriptionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.RegionwiseSubscriptionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.alertToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.headerPanel = new System.Windows.Forms.Panel();
@@ -273,7 +275,7 @@ namespace thecalcify
             // 
             this.newsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.newsListToolStripMenuItem,
-            this.newsSubscriptionListToolStripMenuItem});
+            this.newsSettingsToolStrip});
             this.newsToolStripMenuItem.Name = "newsToolStripMenuItem";
             this.newsToolStripMenuItem.Size = new System.Drawing.Size(65, 24);
             this.newsToolStripMenuItem.Text = "News";
@@ -281,38 +283,59 @@ namespace thecalcify
             // newsListToolStripMenuItem
             // 
             this.newsListToolStripMenuItem.Name = "newsListToolStripMenuItem";
-            this.newsListToolStripMenuItem.Size = new System.Drawing.Size(265, 26);
+            this.newsListToolStripMenuItem.Size = new System.Drawing.Size(200, 26);
             this.newsListToolStripMenuItem.Text = "News List";
             this.newsListToolStripMenuItem.Click += new System.EventHandler(this.NewsListToolStripMenuItem_Click);
+            // 
+            // newsSettingsToolStrip
+            // 
+            this.newsSettingsToolStrip.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.newsNotification,
+            this.newsSubscriptionListToolStripMenuItem});
+            this.newsSettingsToolStrip.Name = "newsSettingsToolStrip";
+            this.newsSettingsToolStrip.Size = new System.Drawing.Size(200, 26);
+            this.newsSettingsToolStrip.Text = "News Settings";
+            this.newsSettingsToolStrip.Visible = false;
+            // 
+            // newsNotification
+            // 
+            this.newsNotification.Checked = true;
+            this.newsNotification.CheckOnClick = true;
+            this.newsNotification.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.newsNotification.Name = "newsNotification";
+            this.newsNotification.Size = new System.Drawing.Size(265, 26);
+            this.newsNotification.Text = "News Notification";
+            this.newsNotification.Click += new System.EventHandler(this.NewsNotification_Click);
             // 
             // newsSubscriptionListToolStripMenuItem
             // 
             this.newsSubscriptionListToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.categorywiseSubsToolStripMenuItem,
-            this.regionwiseSubscriptionToolStripMenuItem});
+            this.CategorywiseSubscriptionToolStripMenuItem,
+            this.RegionwiseSubscriptionToolStripMenuItem});
             this.newsSubscriptionListToolStripMenuItem.Name = "newsSubscriptionListToolStripMenuItem";
             this.newsSubscriptionListToolStripMenuItem.Size = new System.Drawing.Size(265, 26);
             this.newsSubscriptionListToolStripMenuItem.Text = "News Subscription List";
             // 
-            // categorywiseSubsToolStripMenuItem
+            // CategorywiseSubscriptionToolStripMenuItem
             // 
-            this.categorywiseSubsToolStripMenuItem.Name = "categorywiseSubsToolStripMenuItem";
-            this.categorywiseSubsToolStripMenuItem.Size = new System.Drawing.Size(291, 26);
-            this.categorywiseSubsToolStripMenuItem.Text = "Categorywise Subscription";
-            this.categorywiseSubsToolStripMenuItem.Click += new System.EventHandler(this.CategorywiseSubsToolStripMenuItem_Click);
+            this.CategorywiseSubscriptionToolStripMenuItem.Name = "CategorywiseSubscriptionToolStripMenuItem";
+            this.CategorywiseSubscriptionToolStripMenuItem.Size = new System.Drawing.Size(291, 26);
+            this.CategorywiseSubscriptionToolStripMenuItem.Text = "Categorywise Subscription";
+            this.CategorywiseSubscriptionToolStripMenuItem.Click += new System.EventHandler(this.CategorywiseSubscriptionToolStripMenuItem_Click);
             // 
-            // regionwiseSubscriptionToolStripMenuItem
+            // RegionwiseSubscriptionToolStripMenuItem
             // 
-            this.regionwiseSubscriptionToolStripMenuItem.Name = "regionwiseSubscriptionToolStripMenuItem";
-            this.regionwiseSubscriptionToolStripMenuItem.Size = new System.Drawing.Size(291, 26);
-            this.regionwiseSubscriptionToolStripMenuItem.Text = "Regionwise Subscription";
-            this.regionwiseSubscriptionToolStripMenuItem.Click += new System.EventHandler(this.RegionwiseSubscriptionToolStripMenuItem_Click);
+            this.RegionwiseSubscriptionToolStripMenuItem.Name = "RegionwiseSubscriptionToolStripMenuItem";
+            this.RegionwiseSubscriptionToolStripMenuItem.Size = new System.Drawing.Size(291, 26);
+            this.RegionwiseSubscriptionToolStripMenuItem.Text = "Regionwise Subscription";
+            this.RegionwiseSubscriptionToolStripMenuItem.Click += new System.EventHandler(this.RegionwiseSubscriptionToolStripMenuItem1_Click);
             // 
             // alertToolStripMenuItem
             // 
             this.alertToolStripMenuItem.Name = "alertToolStripMenuItem";
             this.alertToolStripMenuItem.Size = new System.Drawing.Size(58, 24);
             this.alertToolStripMenuItem.Text = "Alert";
+            this.alertToolStripMenuItem.Visible = false;
             this.alertToolStripMenuItem.Click += new System.EventHandler(this.AlertToolStripMenuItem_Click);
             // 
             // aboutToolStripMenuItem
@@ -352,12 +375,11 @@ namespace thecalcify
             this.licenceExpire.AutoSize = true;
             this.licenceExpire.Dock = System.Windows.Forms.DockStyle.Right;
             this.licenceExpire.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold);
-            this.licenceExpire.Location = new System.Drawing.Point(936, 0);
+            this.licenceExpire.Location = new System.Drawing.Point(1105, 0);
             this.licenceExpire.Name = "licenceExpire";
             this.licenceExpire.Padding = new System.Windows.Forms.Padding(0, 4, 10, 0);
-            this.licenceExpire.Size = new System.Drawing.Size(179, 24);
+            this.licenceExpire.Size = new System.Drawing.Size(10, 24);
             this.licenceExpire.TabIndex = 0;
-            this.licenceExpire.Text = "Licence Expired :- ";
             this.licenceExpire.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // bottomPanel
@@ -646,8 +668,10 @@ namespace thecalcify
         private ToolStripMenuItem alertToolStripMenuItem;
         private ToolStripMenuItem refreshMarketWatchHost;
         private ToolStripMenuItem newsListToolStripMenuItem;
+        private ToolStripMenuItem newsSettingsToolStrip;
+        private ToolStripMenuItem newsNotification;
         private ToolStripMenuItem newsSubscriptionListToolStripMenuItem;
-        private ToolStripMenuItem categorywiseSubsToolStripMenuItem;
-        private ToolStripMenuItem regionwiseSubscriptionToolStripMenuItem;
+        private ToolStripMenuItem CategorywiseSubscriptionToolStripMenuItem;
+        private ToolStripMenuItem RegionwiseSubscriptionToolStripMenuItem;
     }
 }

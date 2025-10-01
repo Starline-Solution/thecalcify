@@ -70,7 +70,13 @@ namespace thecalcify.Helper
                 "MM/dd/yyyy", "M/d/yyyy",
                 "yyyy-MM-dd", "yyyy/MM/dd",
                 "dd-MM-yyyy", "d-M-yyyy",
-                "dd.MM.yyyy", "d.M.yyyy"
+                "dd.MM.yyyy", "d.M.yyyy",
+                 // Add formats with time
+                "dd/MM/yyyy HH:mm:ss", "d/M/yyyy HH:mm:ss",
+                "MM/dd/yyyy HH:mm:ss", "M/d/yyyy HH:mm:ss",
+                "yyyy-MM-dd HH:mm:ss", "yyyy/MM/dd HH:mm:ss",
+                "dd-MM-yyyy HH:mm:ss", "d-M-yyyy HH:mm:ss",
+                "dd.MM.yyyy HH:mm:ss", "d.M.yyyy HH:mm:ss"
             };
 
             if (DateTime.TryParseExact(
@@ -149,7 +155,7 @@ namespace thecalcify.Helper
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("Error parsing rate value at timeStampConvert: " + ex.Message);
+                    ApplicationLogger.LogException(ex);
                 }
 
                 long timestamp = long.Parse(value);
@@ -217,7 +223,8 @@ namespace thecalcify.Helper
             var dataItem = root["data"]?.First as JObject;
             if (dataItem == null)
             {
-                Console.WriteLine("No data found to flatten.");
+                //Console.WriteLine("No data found to flatten.");
+                ApplicationLogger.Log("No data found to flatten.");
                 return string.Empty;
             }
 
@@ -276,7 +283,7 @@ namespace thecalcify.Helper
         public string o { get; set; }
         public string c { get; set; }
 
-        [JsonConverter(typeof(StringOrNumberConverter))]
+        //[JsonConverter(typeof(StringOrNumberConverter))]
         public string d { get; set; } = "--";
         public string v { get; set; }
         public string t { get; set; }
@@ -484,5 +491,8 @@ namespace thecalcify.Helper
     {
         public static bool IsNews { get; set; }
         public static bool IsRate { get; set; }
+
+        public static DateTime RateExpiredDate { get; set; } = DateTime.MinValue;
+        public static DateTime NewsExpiredDate { get; set; } = DateTime.MinValue;
     }
 }

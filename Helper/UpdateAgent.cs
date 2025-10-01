@@ -370,30 +370,36 @@ namespace thecalcify.Helper
                 string taskBName = "Clacify_InstallTask";
                 string uninstallCmd = Path.Combine(tempDir, "uninstall.cmd");
                 string installerExe = Path.Combine(tempDir, "thecalcify.exe");
+                string currentExe = @"C:\Program Files\thecalcify\thecalcify\thecalcify.exe";
 
-                // Step 1: Create uninstall.cmd file
-                File.WriteAllText(uninstallCmd, $@"
-                @echo off
-                echo Uninstalling existing version...
-                {uninstallString} /quiet
+                var sb = new StringBuilder();
 
-                timeout /t 5
+                sb.AppendLine("@echo off");
+                sb.AppendLine("echo Uninstalling existing version...");
+                sb.AppendLine($"{uninstallString} /quiet");
+                sb.AppendLine();
+                sb.AppendLine("timeout /t 5");
+                sb.AppendLine();
+                sb.AppendLine(":: Create Task Scheduler B to install new version");
+                sb.AppendLine($"schtasks /Create /TN {taskBName} /TR \"\\\"{installerExe}\\\" /quiet\" /SC ONCE /ST {DateTime.Now.AddMinutes(1):HH:mm} /RL HIGHEST /F");
+                sb.AppendLine();
+                sb.AppendLine(":: Run install task");
+                sb.AppendLine($"schtasks /Run /TN {taskBName}");
+                sb.AppendLine();
+                sb.AppendLine("timeout /t 5");
+                sb.AppendLine();
+                sb.AppendLine(":: Delete both tasks");
+                sb.AppendLine($"schtasks /Delete /TN {taskAName} /F");
+                sb.AppendLine($"schtasks /Delete /TN {taskBName} /F");
+                sb.AppendLine();
+                sb.AppendLine(":: start thecalcify");
+                sb.AppendLine($"start \"\" \"{currentExe}\"");
+                sb.AppendLine();
+                sb.AppendLine("exit");
 
-                :: Create Task Scheduler B to install new version
-                schtasks /Create /TN {taskBName} /TR ""\""{installerExe}\"" /quiet"" /SC ONCE /ST {DateTime.Now.AddMinutes(1):HH:mm} /RL HIGHEST /F
+                File.WriteAllText(uninstallCmd, sb.ToString(), Encoding.UTF8);
 
-                :: Run install task
-                schtasks /Run /TN {taskBName}
-
-                
-                timeout /t 5
-
-                :: Delete both tasks
-                schtasks /Delete /TN {taskAName} /F
-                schtasks /Delete /TN {taskBName} /F
-
-                exit
-            ");
+                ApplicationLogger.Log($"Uninstall script created at {sb.ToString()}");
 
                 // Step 2: Create Task Scheduler A to run uninstall.cmd
                 Process.Start(new ProcessStartInfo

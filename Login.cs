@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Drawing;
 using System.Net;
@@ -178,20 +179,46 @@ namespace thecalcify
                                     }
                                     catch (Exception ex)
                                     {
-                                        Console.WriteLine("Error parsing rate value at Login_Click: " + ex.Message);
+                                        ApplicationLogger.Log("Error parsing rate value at Login_Click: " + ex.Message);
                                     }
                                     // Decode JWT token
-                                    var payload = DecodeJwtPayload(token);
 
-                                    LoginInfo.IsNews = GetLoginInfo(payload, "IsNews");
-                                    LoginInfo.IsRate = GetLoginInfo(payload, "IsRate");
+                                    // Decode JWT and get all the data as a dictionary
+                                    var jwtData = DecodeJwtData(token);
 
-                                    if (!LoginInfo.IsNews && !LoginInfo.IsRate)
+                                    // Now you can access the specific values by key
+                                    if (jwtData.TryGetValue("IsNews", out object isNews))
+                                    {
+                                        LoginInfo.IsNews = (bool)isNews;
+                                    }
+
+                                    if (jwtData.TryGetValue("IsRate", out object isRate))
+                                    {
+                                        LoginInfo.IsRate = (bool)isRate;
+                                    }
+
+                                    if (jwtData.TryGetValue("RateExpiredDate", out object rateExpiredDate))
+                                    {
+                                        LoginInfo.RateExpiredDate = Common.ParseToDate(Convert.ToString(rateExpiredDate));
+                                        LoginInfo.RateExpiredDate = LoginInfo.RateExpiredDate.Date;
+                                    }
+
+                                    if (jwtData.TryGetValue("NewsExpiredDate", out object newsExpiredDate))
+                                    {
+                                        LoginInfo.NewsExpiredDate = Common.ParseToDate(Convert.ToString(newsExpiredDate));
+                                        LoginInfo.NewsExpiredDate = LoginInfo.NewsExpiredDate.Date;
+                                    }
+
+
+                                    if (!LoginInfo.IsNews && !LoginInfo.IsRate &&
+                                        LoginInfo.RateExpiredDate < DateTime.Today.Date &&
+                                        LoginInfo.NewsExpiredDate < DateTime.Today.Date)
                                     {
                                         MessageBox.Show("Please contact the Administrator", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
                                         loginbutton.Enabled = true;
                                         return;
                                     }
+
 
                                     ApplicationLogger.Log($"User Logged In", "Logon");
 
@@ -242,10 +269,14 @@ namespace thecalcify
             }
         }
 
-        // Helper method to decode JWT payload
-        public static JsonElement DecodeJwtPayload(string jwt)
+        public static Dictionary<string, object> DecodeJwtData(string jwt)
         {
+            var result = new Dictionary<string, object>();
+
             string payload = jwt.Split('.')[1];
+
+            // Base64Url decoding adjustment
+            payload = payload.Replace('-', '+').Replace('_', '/');
 
             // Add padding if required
             int mod = payload.Length % 4;
@@ -257,21 +288,52 @@ namespace thecalcify
 
             using (JsonDocument doc = JsonDocument.Parse(json))
             {
-                return doc.RootElement.Clone();
+                JsonElement root = doc.RootElement;
+
+                // Iterate through all properties in the payload and parse the appropriate values
+                foreach (var property in root.EnumerateObject())
+                {
+                    string key = property.Name;
+                    JsonElement element = property.Value;
+
+                    if (element.ValueKind == JsonValueKind.String)
+                    {
+                        // Try parsing as bool if the string is "True"/"False"
+                        if (bool.TryParse(element.GetString(), out bool boolValue))
+                        {
+                            result[key] = boolValue;
+                        }
+                        else if (DateTime.TryParse(element.GetString(), out DateTime dateValue))
+                        {
+                            result[key] = dateValue;
+                        }
+                        else
+                        {
+                            result[key] = element.GetString(); // Just store the string as is
+                        }
+                    }
+                    else if (element.ValueKind == JsonValueKind.Number)
+                    {
+                        if (element.TryGetInt64(out long longValue))
+                        {
+                            // Handle numbers as Unix timestamps if needed (e.g., for expiration dates)
+                            result[key] = DateTimeOffset.FromUnixTimeSeconds(longValue).DateTime;
+                        }
+                        else if (element.TryGetDouble(out double doubleValue))
+                        {
+                            result[key] = doubleValue;
+                        }
+                    }
+                    else if (element.ValueKind == JsonValueKind.True || element.ValueKind == JsonValueKind.False)
+                    {
+                        result[key] = element.GetBoolean(); // Handle booleans directly
+                    }
+                }
             }
+
+            return result; // Return the parsed data as a dictionary
         }
 
-        private static bool GetLoginInfo(JsonElement payload, string propertyName)
-        {
-            if (payload.TryGetProperty(propertyName, out JsonElement element))
-            {
-                // handle string "True"/"False"
-                if (element.ValueKind == JsonValueKind.String && bool.TryParse(element.GetString(), out bool result))
-                    return result;
-            }
-
-            return false; // default if missing or invalid
-        }
 
         private void Login_FormClosed(object sender, FormClosedEventArgs e)
         {

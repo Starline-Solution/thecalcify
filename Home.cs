@@ -1,6 +1,8 @@
 ﻿using DocumentFormat.OpenXml.EMMA;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Win32;
 using Newtonsoft.Json;
 using System;
@@ -19,6 +21,7 @@ using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -206,16 +209,6 @@ namespace thecalcify
                 username = login?.username ?? string.Empty;
                 password = login?.userpassword ?? string.Empty;
 
-                RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
-                if (RemainingDays <= 7)
-                {
-                    await CheckLicenceLoop();
-                }
-                else
-                {
-                    licenceExpire.Text += licenceDate;
-                }
-
                 // --- UI SETUP (non-data related) ---
                 this.AutoScaleMode = AutoScaleMode.Dpi;
 
@@ -247,10 +240,9 @@ namespace thecalcify
                 app.Quit();
 
                 // --- MENU SETUP ---
-                if (LoginInfo.IsRate && LoginInfo.IsNews)
+                if (LoginInfo.IsRate && LoginInfo.IsNews && LoginInfo.RateExpiredDate.Date >= DateTime.Today.Date && LoginInfo.NewsExpiredDate >= DateTime.Today.Date )
                 {
                     MenuLoad();
-
 
                     // --- LOAD INITIAL DATA ASYNCHRONOUSLY ---
                     await LoadInitialMarketDataAsync();
@@ -263,9 +255,24 @@ namespace thecalcify
                     // Start SignalR
                     SignalRTimer();
                     await SignalREvent();
+
+
+                    RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
+                    if (RemainingDays <= 7)
+                    {
+                        await CheckLicenceLoop();
+                    }
+                    else
+                    {
+                        licenceExpire.Text = $"Licence Expired :- {licenceDate}";
+                    }
+
                 }
-                else if (LoginInfo.IsRate)
+                else if (LoginInfo.IsRate && LoginInfo.RateExpiredDate >= DateTime.Today.Date)
                 {
+
+                    licenceDate = LoginInfo.RateExpiredDate.ToString("dd/MM/yyyy");
+
                     MenuLoad();
                     newsToolStripMenuItem.Visible = false;
 
@@ -282,12 +289,38 @@ namespace thecalcify
                     SignalRTimer();
                     await SignalREvent();
 
+
+                    RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
+                    if (RemainingDays <= 7)
+                    {
+                        await CheckLicenceLoop();
+                    }
+                    else
+                    {
+                        licenceExpire.Text = $"Licence Expired :- {licenceDate}";
+                    }
+
+
                 }
-                else if (LoginInfo.IsNews)
+                else if (LoginInfo.IsNews && LoginInfo.NewsExpiredDate >= DateTime.Today.Date)
                 {
+                    licenceDate = LoginInfo.NewsExpiredDate.ToString("dd/MM/yyyy");
+
                     this.NewsListToolStripMenuItem_Click(this, EventArgs.Empty);
                     newCTRLNToolStripMenuItem.Visible = false;
                     toolsToolStripMenuItem.Enabled = true;
+
+
+                    RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
+                    if (RemainingDays <= 7)
+                    {
+                        await CheckLicenceLoop();
+                    }
+                    else
+                    {
+                        licenceExpire.Text = $"Licence Expired :- {licenceDate}";
+                    }
+
                 }
 
 
@@ -322,7 +355,7 @@ namespace thecalcify
                 // Start a timer instead of thread
                 var licenceTimer = new System.Windows.Forms.Timer
                 {
-                    Interval = 500, // half a second
+                    Interval = 1000, // 1 second
                     Enabled = true
                 };
                 licenceTimer.Tick += async (s, e2) =>
@@ -340,7 +373,7 @@ namespace thecalcify
             }
             else
             {
-                licenceExpire.Text += licenceDate;
+                licenceExpire.Text = $"Licence Expired :- {licenceDate}";
             }
 
             return Task.CompletedTask;
@@ -479,6 +512,22 @@ namespace thecalcify
         {
             try
             {
+                if (connection != null)
+                {
+                    try
+                    {
+                        // Dispose the old connection first if any
+                        connection.StopAsync().Wait();
+                        connection.DisposeAsync().AsTask().Wait();
+                        connection = null;  // Clear the existing connection
+                        _eventHandlersAttached = false;
+                    }
+                    catch (Exception ex)
+                    {
+                        ApplicationLogger.LogException(ex);
+                    }
+                }
+
                 fontSizeComboBox.Visible = true;
                 savelabel.Visible = false;
 
@@ -487,11 +536,16 @@ namespace thecalcify
                 txtsearch.Visible = true;
 
                 EditableMarketWatchGrid editableMarketWatchGrid = EditableMarketWatchGrid.CurrentInstance;
-                if (editableMarketWatchGrid != null && editableMarketWatchGrid.IsCurrentCellInEditMode)
+                if (editableMarketWatchGrid != null)
                 {
-                    editableMarketWatchGrid.EndEdit();
+                    if (editableMarketWatchGrid.IsCurrentCellInEditMode)
+                    {
+                        editableMarketWatchGrid.EndEdit();
+                    }
+
+                    editableMarketWatchGrid.EditableDispose(); // Dispose the grid
+                    editableMarketWatchGrid.Dispose();
                 }
-                editableMarketWatchGrid?.Dispose();
                 toolsToolStripMenuItem.Enabled = true;
                 isLoadedSymbol = false;
                 thecalcifyGrid();
@@ -514,7 +568,7 @@ namespace thecalcify
             }
         }
 
-        private void NewCTRLNToolStripMenuItem1_Click(object sender, EventArgs e)
+        private async void NewCTRLNToolStripMenuItem1_Click(object sender, EventArgs e)
         {
             try
             {
@@ -564,9 +618,45 @@ namespace thecalcify
                 ApplicationLogger.LogException(ex);
                 MessageBox.Show($"Error switching to new market watch: {ex.Message}");
             }
+            finally 
+            {
+                if (this.InvokeRequired)
+                {
+                    this.Invoke(new Action(async () =>
+                    {
+                        newsSettingsToolStrip.Visible = false;
+                        licenceDate = LoginInfo.RateExpiredDate.ToString("dd/MM/yyyy");
+
+                        RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
+                        if (RemainingDays <= 7)
+                        {
+                            await CheckLicenceLoop();
+                        }
+                        else
+                        {
+                            licenceExpire.Text = $"Licence Expired :- {licenceDate}";
+                        }
+                    }));
+                }
+                else
+                {
+                    newsSettingsToolStrip.Visible = false;
+                    licenceDate = LoginInfo.RateExpiredDate.ToString("dd/MM/yyyy");
+
+                    RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
+                    if (RemainingDays <= 7)
+                    {
+                        await CheckLicenceLoop();
+                    }
+                    else
+                    {
+                        licenceExpire.Text = $"Licence Expired :- {licenceDate}";
+                    }
+                }
+            }
         }
 
-        private void DeleteToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void DeleteToolStripMenuItem_Click(object sender, EventArgs e)
         {
             try
             {
@@ -780,6 +870,19 @@ namespace thecalcify
 
                             MenuLoad();
                         }
+
+                        if (this.InvokeRequired)
+                        {
+                            this.Invoke(new Action(() =>
+                            {
+                                newsSettingsToolStrip.Visible = false;
+                            }));
+                        }
+                        else
+                        {
+                            newsSettingsToolStrip.Visible = false;
+                        }
+
                     };
 
                     // Search functionality
@@ -825,6 +928,42 @@ namespace thecalcify
             catch (Exception ex)
             {
                 ApplicationLogger.LogException(ex);
+            }
+            finally
+            {
+                if (this.InvokeRequired)
+                {
+                    this.Invoke(new Action(async () =>
+                    {
+                        newsSettingsToolStrip.Visible = false;
+                        licenceDate = LoginInfo.RateExpiredDate.ToString("dd/MM/yyyy");
+
+                        RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
+                        if (RemainingDays <= 7)
+                        {
+                            await CheckLicenceLoop();
+                        }
+                        else
+                        {
+                            licenceExpire.Text = $"Licence Expired :- {licenceDate}";
+                        }
+                    }));
+                }
+                else
+                {
+                    newsSettingsToolStrip.Visible = false;
+                    licenceDate = LoginInfo.RateExpiredDate.ToString("dd/MM/yyyy");
+
+                    RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
+                    if (RemainingDays <= 7)
+                    {
+                        await CheckLicenceLoop();
+                    }
+                    else
+                    {
+                        licenceExpire.Text = $"Licence Expired :- {licenceDate}";
+                    }
+                }
             }
         }
 
@@ -1551,6 +1690,8 @@ namespace thecalcify
             {
                 ApplicationLogger.Log("Network unavailable.");
                 connection = null;
+                _eventHandlersAttached = false;
+
                 if (signalRTimer != null)
                 {
                     signalRTimer.Stop();
@@ -1618,7 +1759,16 @@ namespace thecalcify
 
                 // 🔄 Dispose editable grid if any
                 EditableMarketWatchGrid editableMarketWatchGrid = EditableMarketWatchGrid.CurrentInstance;
-                editableMarketWatchGrid?.Dispose();
+                if (editableMarketWatchGrid != null)
+                {
+                    if (editableMarketWatchGrid.IsCurrentCellInEditMode)
+                    {
+                        editableMarketWatchGrid.EndEdit();
+                    }
+
+                    editableMarketWatchGrid.EditableDispose(); // Dispose the grid
+                    editableMarketWatchGrid.Dispose();
+                }
                 saveMarketWatchHost.Visible = false;
                 refreshMarketWatchHost.Visible = true;
 
@@ -1685,9 +1835,9 @@ namespace thecalcify
 
                     var secondsSinceLastMessage = (DateTime.UtcNow - _lastExcelRateTime).TotalSeconds;
 
-                    if (secondsSinceLastMessage > 15) // 💀 No data in 30 seconds
+                    if (secondsSinceLastMessage > 30) // 💀 No data in 30 seconds
                     {
-                        ApplicationLogger.Log("No SignalR data in 15s — forcing reconnect.");
+                        ApplicationLogger.Log("No SignalR data in 30s — forcing reconnect.");
 
                         connection = null;
                         _eventHandlersAttached = false;
@@ -1769,20 +1919,45 @@ namespace thecalcify
 
         private HubConnection BuildConnection()
         {
+            
             return new HubConnectionBuilder()
                 .WithUrl($"http://api.thecalcify.com/excel?user={username}&auth=Starline@1008&type=desktop")
                 .WithAutomaticReconnect()
+                .AddNewtonsoftJsonProtocol(options =>
+                {
+                    options.PayloadSerializerSettings = new JsonSerializerSettings
+                    {
+                        NullValueHandling = NullValueHandling.Ignore,
+                        MissingMemberHandling = MissingMemberHandling.Ignore,
+                        Formatting = Formatting.None
+                    };
+                })
+                .ConfigureLogging(logging =>
+                 {
+                     logging.AddConsole();  // Add logging for debugging
+                 })
                 .Build();
+
         }
 
         public async Task SignalREvent()
         {
             try
             {
+                //Console.WriteLine($"Start At {DateTime.Now}");
                 // 🔄 Reuse connection if already exists
                 if (connection == null)
                 {
                     connection = BuildConnection();
+
+                    //Console.WriteLine($"Connection Info: {connection}");
+
+                    // Log the connection state
+                    //Console.WriteLine($"Connection State: {connection.State}");
+
+                    // Log the connection string (URL)
+                    //Console.WriteLine($"Connection URL: {connection.ConnectionId}");
+
 
                     if (!_eventHandlersAttached)
                     {
@@ -1848,29 +2023,38 @@ namespace thecalcify
 
                 if (connection.State == HubConnectionState.Connected)
                 {
-                    // identifiers sync only once per connection start
-                    if (selectedSymbols.Count > 0)
-                        identifiers = new List<string>(selectedSymbols);
+
+
+                    // Log the connection string (URL)
+                    //Console.WriteLine($"Connection URL: {connection.ConnectionId}");
+
+                    if (symbolMaster == null || symbolMaster.Count == 0)
+                    {
+                        //Console.WriteLine("symbolmaster is null/empty");
+                        ApplicationLogger.Log("Symbol list is empty, cannot subscribe.");
+                        connection = null;
+                        _eventHandlersAttached = false;
+                        _lastExcelRateTime = DateTime.MinValue;
+                        return;
+                    }
 
                     try
                     {
-                        using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(15)))
-                        {
-                            await connection.InvokeAsync("SubscribeSymbols", symbolMaster, cts.Token).ConfigureAwait(false);
+                        //Console.WriteLine($"Connection Time Symbols Count is {symbolMaster.Count}");
+                        await connection.InvokeAsync("SubscribeSymbols", symbolMaster).ConfigureAwait(false);
 
-                            if (savelabel.InvokeRequired)
-                            {
-                                savelabel.Invoke(new Action(() =>
-                                {
-                                    savelabel.Visible = false;
-                                    savelabel.Text = string.Empty;
-                                }));
-                            }
-                            else
+                        if (savelabel.InvokeRequired)
+                        {
+                            savelabel.Invoke(new Action(() =>
                             {
                                 savelabel.Visible = false;
                                 savelabel.Text = string.Empty;
-                            }
+                            }));
+                        }
+                        else
+                        {
+                            savelabel.Visible = false;
+                            savelabel.Text = string.Empty;
                         }
 
                         SetupUpdateTimer();
@@ -1922,6 +2106,7 @@ namespace thecalcify
             {
                 ApplicationLogger.LogException(ex);
             }
+            //Console.WriteLine($"End At {DateTime.Now}");
         }
 
         private void SetupUpdateTimer()
@@ -1965,14 +2150,18 @@ namespace thecalcify
             {
                 _lastExcelRateTime = DateTime.UtcNow; // ⏱️ Update timestamp
 
-                byte[] bytes = Convert.FromBase64String(base64);
-                string json = DecompressGzip(bytes);
-                var data = JsonConvert.DeserializeObject<MarketDataDto>(json, _jsonSettings);
+                if (!string.IsNullOrEmpty(base64))
+                {
 
-                if (data == null || string.IsNullOrEmpty(data.i))
-                    return;
+                    byte[] bytes = Convert.FromBase64String(base64);
+                    string json = DecompressGzip(bytes);
+                    var data = JsonConvert.DeserializeObject<MarketDataDto>(json, _jsonSettings);
 
-                _latestUpdates[data.i] = data; // replace latest update for each symbol
+                    if (data == null || string.IsNullOrEmpty(data.i))
+                        return;
+
+                    _latestUpdates[data.i] = data; // replace latest update for each symbol 
+                }
             }
             catch (Exception ex)
             {
@@ -1982,8 +2171,10 @@ namespace thecalcify
 
         private void AddRowFromDTO(MarketDataDto dto)
         {
-            object[] rowData = new object[]
+            try
             {
+                object[] rowData = new object[]
+                    {
                 dto.i,                                // symbol
                 dto.n ?? "--",                        // Name
                 dto.b ?? "--",                        // Bid
@@ -2004,17 +2195,23 @@ namespace thecalcify
                 dto.ltq ?? "--",                      // Last Size
                 dto.v ?? "--",                        // V
                 Common.TimeStampConvert(dto.t)   // Time
-            };
+                    };
 
-            if (defaultGrid.Columns.Count == 0)
-            {
-                InitializeDataGridView(); // or any custom setup that defines columns
+                if (defaultGrid.Columns.Count == 0)
+                {
+                    InitializeDataGridView(); // or any custom setup that defines columns
+                }
+
+                int newRowIdx = defaultGrid.Rows.Add(rowData);
+
+                // Update symbolRowMap with new row index
+                symbolRowMap[dto.i] = newRowIdx;
             }
+            catch (Exception ex)
+            {
 
-            int newRowIdx = defaultGrid.Rows.Add(rowData);
-
-            // Update symbolRowMap with new row index
-            symbolRowMap[dto.i] = newRowIdx;
+                ApplicationLogger.LogException(ex);
+            }
         }
 
         private void UpdateTimer_Tick(object sender, EventArgs e)
@@ -2082,8 +2279,11 @@ namespace thecalcify
                             // Prepare dictionary and notify Excel
                             var symbol = newData.i;
                             var dict = CreateFieldDictionary(newData);
-                            ExcelNotifier.NotifyExcel(symbol, dict);
+                            if (dict != null || dict.Count != 0)
+                            {
+                                ExcelNotifier.NotifyExcel(symbol, dict);
 
+                            }
                             if (!identifiers.Contains(symbol))
                                 continue;
 
@@ -2117,7 +2317,7 @@ namespace thecalcify
                 if(connection == null)
                     updates.Clear();
 
-                Console.WriteLine($"Error during batch update: {ex}");
+                ApplicationLogger.Log($"Error during batch update: {ex} && {ex.Message} && {ex.StackTrace}");
             }
             finally
             {
@@ -2127,127 +2327,149 @@ namespace thecalcify
 
         private static Dictionary<string, object> CreateFieldDictionary(MarketDataDto data)
         {
-            return new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
+            try
             {
-                ["Name"] = data.i,
-                ["Bid"] = data.b,
-                ["Ask"] = data.a,
-                ["LTP"] = data.ltp,
-                ["High"] = data.h,
-                ["Low"] = data.l,
-                ["Open"] = data.o,
-                ["Close"] = data.c,
-                ["Net Chng"] = data.d,
-                ["V"] = data.v,
-                ["ATP"] = data.atp,
-                ["Bid Size"] = data.bq,
-                ["Total Bid Size"] = data.tbq,
-                ["Ask Size"] = data.sq,
-                ["Total Ask Size"] = data.tsq,
-                ["Volume"] = data.vt,
-                ["Open Interest"] = data.oi,
-                ["Last Size"] = data.ltq,
-                ["Time"] = Common.TimeStampConvert(data.t)
-            };
+                return new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["Name"] = data.i,
+                    ["Bid"] = data.b,
+                    ["Ask"] = data.a,
+                    ["LTP"] = data.ltp,
+                    ["High"] = data.h,
+                    ["Low"] = data.l,
+                    ["Open"] = data.o,
+                    ["Close"] = data.c,
+                    ["Net Chng"] = data.d,
+                    ["V"] = data.v,
+                    ["ATP"] = data.atp,
+                    ["Bid Size"] = data.bq,
+                    ["Total Bid Size"] = data.tbq,
+                    ["Ask Size"] = data.sq,
+                    ["Total Ask Size"] = data.tsq,
+                    ["Volume"] = data.vt,
+                    ["Open Interest"] = data.oi,
+                    ["Last Size"] = data.ltq,
+                    ["Time"] = Common.TimeStampConvert(data.t)
+                };
+            }
+            catch (Exception ex)
+            {
+                ApplicationLogger.LogException(ex);
+                return new Dictionary<string, object>();
+            }
         }
 
         private void UpdateRow(DataGridViewRow row, MarketDataDto data)
         {
-            var symbol = data.i;
-            var previousValues = new Dictionary<string, string>();
-
-            foreach (var col in numericColumns)
+            try
             {
-                if (defaultGrid.Columns.Contains(col))
-                    previousValues[col] = row.Cells[col].Value?.ToString() ?? "";
-            }
+                var symbol = data.i;
+                var previousValues = new Dictionary<string, string>();
 
-            // Update all values
-            SetCellValue(row, "Bid", data.b);
-            SetCellValue(row, "Ask", data.a);
-            SetCellValue(row, "LTP", data.ltp);
-            SetCellValue(row, "High", data.h);
-            SetCellValue(row, "Low", data.l);
-            SetCellValue(row, "Open", data.o);
-            SetCellValue(row, "Close", data.c);
-            SetCellValue(row, "Net Chng", data.d);
-            SetCellValue(row, "V", data.v);
-            SetCellValue(row, "ATP", data.atp);
-            SetCellValue(row, "Bid Size", data.bq);
-            SetCellValue(row, "Total Bid Size", data.tbq);
-            SetCellValue(row, "Ask Size", data.sq);
-            SetCellValue(row, "Total Ask Size", data.tsq);
-            SetCellValue(row, "Volume", data.vt);
-            SetCellValue(row, "Open Interest", data.oi);
-            SetCellValue(row, "Last Size", data.ltq);
-            SetCellValue(row, "Time", Common.TimeStampConvert(data.t));
-
-            // Name cell update
-            var nameCell = row.Cells["Name"];
-            if ((nameCell.Value?.ToString() ?? "N/A") == "N/A")
-                nameCell.Value = pastRateTickDTO?.FirstOrDefault(x => x.i == symbol)?.n ?? "--";
-
-            // Ask price arrow logic
-            string askStr = data.a;
-            int askDirection = 0;
-            bool hasAskChange = false;
-
-            if (!string.IsNullOrEmpty(askStr) && double.TryParse(askStr, out double newAsk))
-            {
-                if (previousAskMap.TryGetValue(symbol, out double prevAsk))
+                foreach (var col in numericColumns)
                 {
-                    if (newAsk > prevAsk)
+                    if (defaultGrid.Columns.Contains(col))
+                        previousValues[col] = row.Cells[col].Value?.ToString() ?? "";
+                }
+
+                // Update all values
+                SetCellValue(row, "Bid", data.b);
+                SetCellValue(row, "Ask", data.a);
+                SetCellValue(row, "LTP", data.ltp);
+                SetCellValue(row, "High", data.h);
+                SetCellValue(row, "Low", data.l);
+                SetCellValue(row, "Open", data.o);
+                SetCellValue(row, "Close", data.c);
+                SetCellValue(row, "Net Chng", data.d);
+                SetCellValue(row, "V", data.v);
+                SetCellValue(row, "ATP", data.atp);
+                SetCellValue(row, "Bid Size", data.bq);
+                SetCellValue(row, "Total Bid Size", data.tbq);
+                SetCellValue(row, "Ask Size", data.sq);
+                SetCellValue(row, "Total Ask Size", data.tsq);
+                SetCellValue(row, "Volume", data.vt);
+                SetCellValue(row, "Open Interest", data.oi);
+                SetCellValue(row, "Last Size", data.ltq);
+                SetCellValue(row, "Time", Common.TimeStampConvert(data.t));
+
+                // Name cell update
+                var nameCell = row.Cells["Name"];
+                if ((nameCell.Value?.ToString() ?? "N/A") == "N/A")
+                    nameCell.Value = pastRateTickDTO?.FirstOrDefault(x => x.i == symbol)?.n ?? "--";
+
+                // Ask price arrow logic
+                string askStr = data.a;
+                int askDirection = 0;
+                bool hasAskChange = false;
+
+                if (!string.IsNullOrEmpty(askStr) && double.TryParse(askStr, out double newAsk))
+                {
+                    if (previousAskMap.TryGetValue(symbol, out double prevAsk))
                     {
-                        askDirection = 1;
-                        hasAskChange = true;
+                        if (newAsk > prevAsk)
+                        {
+                            askDirection = 1;
+                            hasAskChange = true;
+                        }
+                        else if (newAsk < prevAsk)
+                        {
+                            askDirection = -1;
+                            hasAskChange = true;
+                        }
                     }
-                    else if (newAsk < prevAsk)
+
+                    previousAskMap[symbol] = newAsk;
+                }
+
+                // Highlight changed numeric columns
+                foreach (string col in numericColumns)
+                {
+                    if (!defaultGrid.Columns.Contains(col)) continue;
+
+                    var cell = row.Cells[col];
+                    var prev = previousValues.TryGetValue(col, out string prevVal) ? prevVal : "";
+                    var curr = cell.Value?.ToString() ?? "";
+
+                    if (IsNumericChange(prev, curr, out int direction))
                     {
-                        askDirection = -1;
-                        hasAskChange = true;
+                        cell.Style.ForeColor = direction == 1 ? Color.Green :
+                                               direction == -1 ? Color.Red :
+                                               cell.Style.ForeColor;
                     }
                 }
 
-                previousAskMap[symbol] = newAsk;
-            }
-
-            // Highlight changed numeric columns
-            foreach (string col in numericColumns)
-            {
-                if (!defaultGrid.Columns.Contains(col)) continue;
-
-                var cell = row.Cells[col];
-                var prev = previousValues.TryGetValue(col, out string prevVal) ? prevVal : "";
-                var curr = cell.Value?.ToString() ?? "";
-
-                if (IsNumericChange(prev, curr, out int direction))
+                // Arrow in name
+                if (hasAskChange)
                 {
-                    cell.Style.ForeColor = direction == 1 ? Color.Green :
-                                           direction == -1 ? Color.Red :
-                                           cell.Style.ForeColor;
+                    string baseName = (nameCell.Value?.ToString() ?? "").Replace(" ▲", "").Replace(" ▼", "").Trim();
+                    nameCell.Value = askDirection == 1 ? baseName + " ▲" :
+                                     askDirection == -1 ? baseName + " ▼" : baseName;
+                    nameCell.Style.ForeColor = askDirection == 1 ? Color.Green :
+                                               askDirection == -1 ? Color.Red : nameCell.Style.ForeColor;
                 }
             }
-
-            // Arrow in name
-            if (hasAskChange)
+            catch (Exception ex)
             {
-                string baseName = (nameCell.Value?.ToString() ?? "").Replace(" ▲", "").Replace(" ▼", "").Trim();
-                nameCell.Value = askDirection == 1 ? baseName + " ▲" :
-                                 askDirection == -1 ? baseName + " ▼" : baseName;
-                nameCell.Style.ForeColor = askDirection == 1 ? Color.Green :
-                                           askDirection == -1 ? Color.Red : nameCell.Style.ForeColor;
+                ApplicationLogger.LogException(ex);
             }
         }
 
         private void SetCellValue(DataGridViewRow row, string columnName, object value)
         {
-            if (!defaultGrid.Columns.Contains(columnName)) return;
-
-            var cell = row.Cells[columnName];
-            var newVal = value ?? "--";
-            if ((cell.Value?.ToString() ?? "--") != newVal.ToString())
+            try
             {
-                cell.Value = newVal;
+                if (!defaultGrid.Columns.Contains(columnName)) return;
+
+                var cell = row.Cells[columnName];
+                var newVal = value ?? "--";
+                if ((cell.Value?.ToString() ?? "--") != newVal.ToString())
+                {
+                    cell.Value = newVal;
+                }
+            }
+            catch (Exception ex)
+            {
+                ApplicationLogger.LogException(ex);
             }
         }
 
@@ -2255,26 +2477,34 @@ namespace thecalcify
         {
             direction = 0;
 
-            if (oldVal == null || newVal == null) return false;
-
-            string oldStr = oldVal.ToString();
-            string newStr = newVal.ToString();
-
-            if (double.TryParse(oldStr, out double oldNum) && double.TryParse(newStr, out double newNum))
+            try
             {
-                if (newNum > oldNum)
-                {
-                    direction = 1;
-                    return true;
-                }
-                else if (newNum < oldNum)
-                {
-                    direction = -1;
-                    return true;
-                }
-            }
+                if (oldVal == null || newVal == null) return false;
 
-            return false;
+                string oldStr = oldVal.ToString();
+                string newStr = newVal.ToString();
+
+                if (double.TryParse(oldStr, out double oldNum) && double.TryParse(newStr, out double newNum))
+                {
+                    if (newNum > oldNum)
+                    {
+                        direction = 1;
+                        return true;
+                    }
+                    else if (newNum < oldNum)
+                    {
+                        direction = -1;
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+            catch (Exception ex)
+            {
+                ApplicationLogger.LogException(ex);
+                return false;
+            }
         }
 
         private async void DisconnectESCToolStripMenuItem_Click(object sender, EventArgs e)
@@ -2344,12 +2574,12 @@ namespace thecalcify
             catch (ObjectDisposedException)
             {
                 // Already disposed, safe to ignore or log once
-                Console.WriteLine("SignalR connection was already disposed.");
+                ApplicationLogger.Log("SignalR connection was already disposed.");
             }
             catch (Exception ex)
             {
                 // Catch other unexpected issues
-                Console.WriteLine("Error stopping background tasks: " + ex.Message);
+                //Console.WriteLine("Error stopping background tasks: " + ex.Message);
                 ApplicationLogger.LogException(ex);
             }
         }
@@ -2395,7 +2625,7 @@ namespace thecalcify
 
                     if (!response.IsSuccessStatusCode)
                     {
-                        Console.WriteLine("Request failed with status code: " + response.StatusCode);
+                        ApplicationLogger.Log("Request failed with status code: " + response.StatusCode);
                         return;
                     }
 
@@ -2492,8 +2722,45 @@ namespace thecalcify
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error loading initial market data: " + ex.Message);
+                //Console.WriteLine("Error loading initial market data: " + ex.Message);
                 ApplicationLogger.LogException(ex);
+            }
+            finally
+            {
+                if (this.InvokeRequired)
+                {
+                    this.Invoke(new Action(async () =>
+                    {
+                        newsSettingsToolStrip.Visible = false;
+                        licenceDate = LoginInfo.RateExpiredDate.ToString("dd/MM/yyyy");
+
+                        RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
+                        if (RemainingDays <= 7)
+                        {
+                            await CheckLicenceLoop();
+                        }
+                        else
+                        {
+                            licenceExpire.Text = $"Licence Expired :- {licenceDate}";
+                        }
+                    }));
+                }
+                else
+                {
+                    newsSettingsToolStrip.Visible = false;
+                    licenceDate = LoginInfo.RateExpiredDate.ToString("dd/MM/yyyy");
+
+                    RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
+                    if (RemainingDays <= 7)
+                    {
+                        await CheckLicenceLoop();
+                    }
+                    else
+                    {
+                        licenceExpire.Text = $"Licence Expired :- {licenceDate}";
+                    }
+                }
+
             }
         }
 
@@ -2720,7 +2987,17 @@ namespace thecalcify
                         lastOpenMarketWatch = saveFileName;
 
                         EditableMarketWatchGrid editableMarketWatchGrid = EditableMarketWatchGrid.CurrentInstance;
-                        editableMarketWatchGrid?.Dispose();
+                        if (editableMarketWatchGrid != null)
+                        {
+                            if (editableMarketWatchGrid.IsCurrentCellInEditMode)
+                            {
+                                editableMarketWatchGrid.EndEdit();
+                            }
+
+                            editableMarketWatchGrid.EditableDispose(); // Dispose the grid
+                            editableMarketWatchGrid.Dispose();
+                        }
+
                         saveMarketWatchHost.Visible = false;
                         refreshMarketWatchHost.Visible = true;
                         await LoadSymbol(Path.Combine(saveFileName + ".slt"));
@@ -2953,7 +3230,8 @@ namespace thecalcify
                     }
                     finally
                     {
-                        connection = null; // ✅ CRUCIAL
+                        connection = null; // Crucial to reset connection
+                        _eventHandlersAttached = false; 
                     }
                 }
             }
@@ -2967,27 +3245,38 @@ namespace thecalcify
         {
             try
             {
-                defaultGrid.SuspendLayout();
-                defaultGrid.Visible = false;
-
-                // Unbind data
-                defaultGrid.DataSource = null;
-
-                // Clear the grid only after unbinding
-                defaultGrid.Rows.Clear();
-                defaultGrid.Columns.Clear();
-
-                // Dispose cell styles and other resources
-                defaultGrid.DefaultCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", fontSize);
-                defaultGrid.ColumnHeadersDefaultCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", fontSize + 1.5f, FontStyle.Bold);
-
-                defaultGrid.ResumeLayout();
+                if (defaultGrid.InvokeRequired)
+                {
+                    this.Invoke(new Action(() =>
+                    {
+                        defaultGrid.SuspendLayout();
+                        defaultGrid.Visible = false;
+                        defaultGrid.DataSource = null; // Unbind data
+                        defaultGrid.Rows.Clear();
+                        defaultGrid.Columns.Clear();
+                        defaultGrid.DefaultCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", fontSize);
+                        defaultGrid.ColumnHeadersDefaultCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", fontSize + 1.5f, FontStyle.Bold);
+                        defaultGrid.ResumeLayout();
+                    }));
+                }
+                else
+                {
+                    defaultGrid.SuspendLayout();
+                    defaultGrid.Visible = false;
+                    defaultGrid.DataSource = null; // Unbind data
+                    defaultGrid.Rows.Clear();
+                    defaultGrid.Columns.Clear();
+                    defaultGrid.DefaultCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", fontSize);
+                    defaultGrid.ColumnHeadersDefaultCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", fontSize + 1.5f, FontStyle.Bold);
+                    defaultGrid.ResumeLayout();
+                }
             }
             catch (Exception ex)
             {
                 ApplicationLogger.LogException(ex);
             }
         }
+
 
         public static void KillProcess()
         {
@@ -3004,7 +3293,7 @@ namespace thecalcify
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("Error killing Excel process: " + ex.Message);
+                    //Console.WriteLine("Error killing Excel process: " + ex.Message);
                     ApplicationLogger.LogException(ex);
                 }
             }
@@ -3102,7 +3391,7 @@ namespace thecalcify
             }
         }
 
-        private void NewsListToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void NewsListToolStripMenuItem_Click(object sender, EventArgs e)
         {
             try
             {
@@ -3114,6 +3403,18 @@ namespace thecalcify
                     existingNews.Dispose();
                 }
 
+                EditableMarketWatchGrid editableMarketWatchGrid = EditableMarketWatchGrid.CurrentInstance;
+                if (editableMarketWatchGrid != null)
+                {
+                    if (editableMarketWatchGrid.IsCurrentCellInEditMode)
+                    {
+                        editableMarketWatchGrid.EndEdit();
+                    }
+
+                    editableMarketWatchGrid.EditableDispose(); // Dispose the grid
+                    editableMarketWatchGrid.Dispose();
+                }
+
 
                 // 2. Create new NewsControl
                 var newsControl = new NewsControl(username, password, token)
@@ -3122,7 +3423,7 @@ namespace thecalcify
                     Dock = DockStyle.Fill
                 };
 
-                CleanupBeforeViewSwitch();
+                //DisposeSignalRConnection();
                 saveMarketWatchHost.Visible = false;
                 fontSizeComboBox.Visible = false;
                 searchTextLabel.Visible = false;
@@ -3137,16 +3438,42 @@ namespace thecalcify
                 this.Controls.Add(newsControl);
                 newsControl.BringToFront();
                 newsControl.Focus();
+
+                licenceDate = LoginInfo.NewsExpiredDate.ToString("dd/MM/yyyy");
+
+                RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
+                if (RemainingDays <= 7)
+                {
+                    await CheckLicenceLoop();
+                }
+                else
+                {
+                    licenceExpire.Text = $"Licence Expired :- {licenceDate}";
+                }
+
             }
             catch (Exception ex)
             {
                 ApplicationLogger.LogException(ex);
                 MessageBox.Show($"Error loading News view: {ex.Message}");
             }
+            finally 
+            {
+                if (this.InvokeRequired)
+                {
+                    this.Invoke(new Action(() =>
+                    {
+                        newsSettingsToolStrip.Visible = true;
+                    }));
+                }
+                else
+                {
+                    newsSettingsToolStrip.Visible = true;
+                }
+            }
         }
 
-   
-        private void CategorywiseSubsToolStripMenuItem_Click(object sender, EventArgs e)
+        private void CategorywiseSubscriptionToolStripMenuItem_Click(object sender, EventArgs e)
         {
             string jsonCategoriesFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Categories.json");
             //string jsonRegionsFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Regions.json");
@@ -3168,7 +3495,7 @@ namespace thecalcify
             }
         }
 
-        private void RegionwiseSubscriptionToolStripMenuItem_Click(object sender, EventArgs e)
+        private void RegionwiseSubscriptionToolStripMenuItem1_Click(object sender, EventArgs e)
         {
             string jsonRegionsFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Regions.json");
             string jsonContent = File.ReadAllText(jsonRegionsFilePath);
@@ -3188,6 +3515,52 @@ namespace thecalcify
                 }
             }
         }
+
+        private void NewsNotification_Click(object sender, EventArgs e)
+        {
+            // Check if the button is checked
+            if (!newsNotification.Checked)
+            {
+                // If checked, prompt the user if they want to turn off notifications
+                var result = MessageBox.Show("Do you want to turn off notifications?",
+                                             "Turn off notifications",
+                                             MessageBoxButtons.YesNo,
+                                             MessageBoxIcon.Question);
+
+                // If user clicks Yes, uncheck the button
+                if (result == DialogResult.Yes)
+                {
+                    newsNotification.Checked = false;
+                    MessageBox.Show("Notifications have been turned off.", "Notification", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else                
+                {
+                    newsNotification.Checked = true; // Keep it checked if user clicks No
+                }
+                // If user clicks No, do nothing and keep the button checked
+            }
+            else
+            {
+                // If unchecked, ask the user if they want to start receiving notifications
+                var result = MessageBox.Show("Do you want to turn on notifications?",
+                                             "Turn on notifications",
+                                             MessageBoxButtons.YesNo,
+                                             MessageBoxIcon.Question);
+
+                // If user clicks Yes, check the button
+                if (result == DialogResult.Yes)
+                {
+                    newsNotification.Checked = true;
+                    MessageBox.Show("Notifications have been turned on.", "Notification", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else
+                {
+                    newsNotification.Checked = false; // Keep it unchecked if user clicks No
+                }
+                // If user clicks No, do nothing and keep the button unchecked
+            }
+        }
+
         #endregion Other Methods
 
         #region Excel Export
@@ -3469,7 +3842,7 @@ namespace thecalcify
                     {
                         key.SetValue("RTDThrottleInterval", 200, RegistryValueKind.DWord);
                         key.SetValue("EnableAnimations", 0, RegistryValueKind.DWord);
-                        Console.WriteLine("RTDThrottleInterval & EnableAnimations updated.");
+                        //Console.WriteLine("RTDThrottleInterval & EnableAnimations updated.");
                     }
                     else
                     {
@@ -3477,7 +3850,7 @@ namespace thecalcify
                         {
                             newKey.SetValue("RTDThrottleInterval", 200, RegistryValueKind.DWord);
                             newKey.SetValue("EnableAnimations", 0, RegistryValueKind.DWord);
-                            Console.WriteLine("Excel Options key created & values set.");
+                            //Console.WriteLine("Excel Options key created & values set.");
                         }
                     }
                 }
@@ -3488,14 +3861,14 @@ namespace thecalcify
                     if (key != null)
                     {
                         key.SetValue("DisableAnimations", 1, RegistryValueKind.DWord);
-                        Console.WriteLine("DisableAnimations updated.");
+                        //Console.WriteLine("DisableAnimations updated.");
                     }
                     else
                     {
                         using (RegistryKey newKey = Registry.CurrentUser.CreateSubKey(graphicsPath))
                         {
                             newKey.SetValue("DisableAnimations", 1, RegistryValueKind.DWord);
-                            Console.WriteLine("Graphics key created & DisableAnimations set.");
+                            //Console.WriteLine("Graphics key created & DisableAnimations set.");
                         }
                     }
                 }
@@ -3503,7 +3876,7 @@ namespace thecalcify
             catch (Exception ex)
             {
                 ApplicationLogger.LogException(ex);
-                Console.WriteLine("Error setting registry values: " + ex.Message);
+                //Console.WriteLine("Error setting registry values: " + ex.Message);
             }
         }
 

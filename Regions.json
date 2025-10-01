@@ -1,1531 +1,1531 @@
 [
   {
-    "continent": "Africa",
-    "countries": [
+    "title": "Africa",
+    "topics": [
       {
-        "topic_code": "AO",
-        "name": "Angola",
-        "formal_name": "Republic of Angola"
+        "code": "AO",
+        "title": "Angola",
+        "description": "Republic of Angola"
       },
       {
-        "topic_code": "BF",
-        "name": "Burkina Faso",
-        "formal_name": ""
+        "code": "BF",
+        "title": "Burkina Faso",
+        "description": ""
       },
       {
-        "topic_code": "BI",
-        "name": "Burundi",
-        "formal_name": "Republic of Burundi"
+        "code": "BI",
+        "title": "Burundi",
+        "description": "Republic of Burundi"
       },
       {
-        "topic_code": "BJ",
-        "name": "Benin",
-        "formal_name": "Republic of Benin"
+        "code": "BJ",
+        "title": "Benin",
+        "description": "Republic of Benin"
       },
       {
-        "topic_code": "BW",
-        "name": "Botswana",
-        "formal_name": "Republic of Botswana"
+        "code": "BW",
+        "title": "Botswana",
+        "description": "Republic of Botswana"
       },
       {
-        "topic_code": "CD",
-        "name": "Congo (DRC)",
-        "formal_name": "Democratic Republic of the Congo"
+        "code": "CD",
+        "title": "Congo (DRC)",
+        "description": "Democratic Republic of the Congo"
       },
       {
-        "topic_code": "CF",
-        "name": "Central African Republic",
-        "formal_name": ""
+        "code": "CF",
+        "title": "Central African Republic",
+        "description": ""
       },
       {
-        "topic_code": "CG",
-        "name": "Congo (RC)",
-        "formal_name": "Republic of the Congo"
+        "code": "CG",
+        "title": "Congo (RC)",
+        "description": "Republic of the Congo"
       },
       {
-        "topic_code": "CI",
-        "name": "Ivory Coast",
-        "formal_name": "Republic of Côte d'Ivoire"
+        "code": "CI",
+        "title": "Ivory Coast",
+        "description": "Republic of Côte d'Ivoire"
       },
       {
-        "topic_code": "CM",
-        "name": "Cameroon",
-        "formal_name": "Republic of Cameroon"
+        "code": "CM",
+        "title": "Cameroon",
+        "description": "Republic of Cameroon"
       },
       {
-        "topic_code": "CV",
-        "name": "Cape Verde",
-        "formal_name": "Republic of Cabo Verde"
+        "code": "CV",
+        "title": "Cape Verde",
+        "description": "Republic of Cabo Verde"
       },
       {
-        "topic_code": "DJ",
-        "name": "Djibouti",
-        "formal_name": "Republic of Djibouti"
+        "code": "DJ",
+        "title": "Djibouti",
+        "description": "Republic of Djibouti"
       },
       {
-        "topic_code": "DZ",
-        "name": "Algeria",
-        "formal_name": "People's Democratic Republic of Algeria"
+        "code": "DZ",
+        "title": "Algeria",
+        "description": "People's Democratic Republic of Algeria"
       },
       {
-        "topic_code": "EG",
-        "name": "Egypt",
-        "formal_name": "Arab Republic of Egypt"
+        "code": "EG",
+        "title": "Egypt",
+        "description": "Arab Republic of Egypt"
       },
       {
-        "topic_code": "EH",
-        "name": "Western Sahara",
-        "formal_name": ""
+        "code": "EH",
+        "title": "Western Sahara",
+        "description": ""
       },
       {
-        "topic_code": "ER",
-        "name": "Eritrea",
-        "formal_name": "State of Eritrea"
+        "code": "ER",
+        "title": "Eritrea",
+        "description": "State of Eritrea"
       },
       {
-        "topic_code": "ET",
-        "name": "Ethiopia",
-        "formal_name": "Federal Democratic Republic of Ethiopia"
+        "code": "ET",
+        "title": "Ethiopia",
+        "description": "Federal Democratic Republic of Ethiopia"
       },
       {
-        "topic_code": "GA",
-        "name": "Gabon",
-        "formal_name": "Gabonese Republic"
+        "code": "GA",
+        "title": "Gabon",
+        "description": "Gabonese Republic"
       },
       {
-        "topic_code": "GH",
-        "name": "Ghana",
-        "formal_name": "Republic of Ghana"
+        "code": "GH",
+        "title": "Ghana",
+        "description": "Republic of Ghana"
       },
       {
-        "topic_code": "GI",
-        "name": "Gibraltar",
-        "formal_name": ""
+        "code": "GI",
+        "title": "Gibraltar",
+        "description": ""
       },
       {
-        "topic_code": "GM",
-        "name": "Gambia",
-        "formal_name": "Republic of The Gambia"
+        "code": "GM",
+        "title": "Gambia",
+        "description": "Republic of The Gambia"
       },
       {
-        "topic_code": "GN",
-        "name": "Guinea",
-        "formal_name": "Republic of Guinea"
+        "code": "GN",
+        "title": "Guinea",
+        "description": "Republic of Guinea"
       },
       {
-        "topic_code": "GQ",
-        "name": "Equatorial Guinea",
-        "formal_name": "Republic of Equatorial Guinea"
+        "code": "GQ",
+        "title": "Equatorial Guinea",
+        "description": "Republic of Equatorial Guinea"
       },
       {
-        "topic_code": "GY",
-        "name": "Guyana",
-        "formal_name": "Co-operative Republic of Guyana"
+        "code": "GY",
+        "title": "Guyana",
+        "description": "Co-operative Republic of Guyana"
       },
       {
-        "topic_code": "KE",
-        "name": "Kenya",
-        "formal_name": "Republic of Kenya"
+        "code": "KE",
+        "title": "Kenya",
+        "description": "Republic of Kenya"
       },
       {
-        "topic_code": "KM",
-        "name": "Comoros",
-        "formal_name": "Union of the Comoros"
+        "code": "KM",
+        "title": "Comoros",
+        "description": "Union of the Comoros"
       },
       {
-        "topic_code": "LR",
-        "name": "Liberia",
-        "formal_name": "Republic of Liberia"
+        "code": "LR",
+        "title": "Liberia",
+        "description": "Republic of Liberia"
       },
       {
-        "topic_code": "LS",
-        "name": "Lesotho",
-        "formal_name": "Kingdom of Lesotho"
+        "code": "LS",
+        "title": "Lesotho",
+        "description": "Kingdom of Lesotho"
       },
       {
-        "topic_code": "LY",
-        "name": "Libya",
-        "formal_name": ""
+        "code": "LY",
+        "title": "Libya",
+        "description": ""
       },
       {
-        "topic_code": "MA",
-        "name": "Morocco",
-        "formal_name": "Kingdom of Morocco"
+        "code": "MA",
+        "title": "Morocco",
+        "description": "Kingdom of Morocco"
       },
       {
-        "topic_code": "MG",
-        "name": "Madagascar",
-        "formal_name": "Republic of Madagascar"
+        "code": "MG",
+        "title": "Madagascar",
+        "description": "Republic of Madagascar"
       },
       {
-        "topic_code": "ML",
-        "name": "Mali",
-        "formal_name": "Republic of Mali"
+        "code": "ML",
+        "title": "Mali",
+        "description": "Republic of Mali"
       },
       {
-        "topic_code": "MR",
-        "name": "Mauritania",
-        "formal_name": "Islamic Republic of Mauritania"
+        "code": "MR",
+        "title": "Mauritania",
+        "description": "Islamic Republic of Mauritania"
       },
       {
-        "topic_code": "MU",
-        "name": "Mauritius",
-        "formal_name": "Republic of Mauritius"
+        "code": "MU",
+        "title": "Mauritius",
+        "description": "Republic of Mauritius"
       },
       {
-        "topic_code": "MW",
-        "name": "Malawi",
-        "formal_name": "Republic of Malawi"
+        "code": "MW",
+        "title": "Malawi",
+        "description": "Republic of Malawi"
       },
       {
-        "topic_code": "MZ",
-        "name": "Mozambique",
-        "formal_name": "Republic of Mozambique"
+        "code": "MZ",
+        "title": "Mozambique",
+        "description": "Republic of Mozambique"
       },
       {
-        "topic_code": "NA",
-        "name": "Namibia",
-        "formal_name": "Republic of Namibia"
+        "code": "NA",
+        "title": "Namibia",
+        "description": "Republic of Namibia"
       },
       {
-        "topic_code": "NE",
-        "name": "Niger",
-        "formal_name": "Republic of Niger"
+        "code": "NE",
+        "title": "Niger",
+        "description": "Republic of Niger"
       },
       {
-        "topic_code": "NG",
-        "name": "Nigeria",
-        "formal_name": "Federal Republic of Nigeria"
+        "code": "NG",
+        "title": "Nigeria",
+        "description": "Federal Republic of Nigeria"
       },
       {
-        "topic_code": "RE",
-        "name": "Réunion",
-        "formal_name": "Department of Réunion"
+        "code": "RE",
+        "title": "Réunion",
+        "description": "Department of Réunion"
       },
       {
-        "topic_code": "RW",
-        "name": "Rwanda",
-        "formal_name": "Republic of Rwanda"
+        "code": "RW",
+        "title": "Rwanda",
+        "description": "Republic of Rwanda"
       },
       {
-        "topic_code": "SC",
-        "name": "Seychelles",
-        "formal_name": "Republic of Seychelles"
+        "code": "SC",
+        "title": "Seychelles",
+        "description": "Republic of Seychelles"
       },
       {
-        "topic_code": "SD",
-        "name": "Sudan",
-        "formal_name": "Republic of the Sudan"
+        "code": "SD",
+        "title": "Sudan",
+        "description": "Republic of the Sudan"
       },
       {
-        "topic_code": "SH",
-        "name": "Saint Helena, Ascension and Tristan da Cunha",
-        "formal_name": ""
+        "code": "SH",
+        "title": "Saint Helena, Ascension and Tristan da Cunha",
+        "description": ""
       },
       {
-        "topic_code": "SL",
-        "name": "Sierra Leone",
-        "formal_name": "Republic of Sierra Leone"
+        "code": "SL",
+        "title": "Sierra Leone",
+        "description": "Republic of Sierra Leone"
       },
       {
-        "topic_code": "SN",
-        "name": "Senegal",
-        "formal_name": "Republic of Senegal"
+        "code": "SN",
+        "title": "Senegal",
+        "description": "Republic of Senegal"
       },
       {
-        "topic_code": "SO",
-        "name": "Somalia",
-        "formal_name": "Federal Republic of Somalia"
+        "code": "SO",
+        "title": "Somalia",
+        "description": "Federal Republic of Somalia"
       },
       {
-        "topic_code": "SS",
-        "name": "South Sudan",
-        "formal_name": ""
+        "code": "SS",
+        "title": "South Sudan",
+        "description": ""
       },
       {
-        "topic_code": "SZ",
-        "name": "Swaziland",
-        "formal_name": "Kingdom of Swaziland"
+        "code": "SZ",
+        "title": "Swaziland",
+        "description": "Kingdom of Swaziland"
       },
       {
-        "topic_code": "TD",
-        "name": "Chad",
-        "formal_name": "Republic of Chad"
+        "code": "TD",
+        "title": "Chad",
+        "description": "Republic of Chad"
       },
       {
-        "topic_code": "TF",
-        "name": "French Southern Territories",
-        "formal_name": "Territory of the French Southern and Antarctic Lands"
+        "code": "TF",
+        "title": "French Southern Territories",
+        "description": "Territory of the French Southern and Antarctic Lands"
       },
       {
-        "topic_code": "TG",
-        "name": "Togo",
-        "formal_name": "Togolese Republic"
+        "code": "TG",
+        "title": "Togo",
+        "description": "Togolese Republic"
       },
       {
-        "topic_code": "TN",
-        "name": "Tunisia",
-        "formal_name": "Tunisian Republic"
+        "code": "TN",
+        "title": "Tunisia",
+        "description": "Tunisian Republic"
       },
       {
-        "topic_code": "TO",
-        "name": "Tonga",
-        "formal_name": "Kingdom of Tonga"
+        "code": "TO",
+        "title": "Tonga",
+        "description": "Kingdom of Tonga"
       },
       {
-        "topic_code": "TZ",
-        "name": "Tanzania",
-        "formal_name": "United Republic of Tanzania"
+        "code": "TZ",
+        "title": "Tanzania",
+        "description": "United Republic of Tanzania"
       },
       {
-        "topic_code": "UG",
-        "name": "Uganda",
-        "formal_name": "Republic of Uganda"
+        "code": "UG",
+        "title": "Uganda",
+        "description": "Republic of Uganda"
       },
       {
-        "topic_code": "ZA",
-        "name": "South Africa",
-        "formal_name": "Republic of South Africa"
+        "code": "ZA",
+        "title": "South Africa",
+        "description": "Republic of South Africa"
       },
       {
-        "topic_code": "ZM",
-        "name": "Zambia",
-        "formal_name": "Republic of Zambia"
+        "code": "ZM",
+        "title": "Zambia",
+        "description": "Republic of Zambia"
       },
       {
-        "topic_code": "ZW",
-        "name": "Zimbabwe",
-        "formal_name": "Republic of Zimbabwe"
+        "code": "ZW",
+        "title": "Zimbabwe",
+        "description": "Republic of Zimbabwe"
       }
     ]
   },
   {
-    "continent": "Asia",
-    "countries": [
+    "title": "Asia",
+    "topics": [
       {
-        "topic_code": "AF",
-        "name": "Afghanistan",
-        "formal_name": "Islamic Republic of Afghanistan"
+        "code": "AF",
+        "title": "Afghanistan",
+        "description": "Islamic Republic of Afghanistan"
       },
       {
-        "topic_code": "BD",
-        "name": "Bangladesh",
-        "formal_name": "People's Republic of Bangladesh"
+        "code": "BD",
+        "title": "Bangladesh",
+        "description": "People's Republic of Bangladesh"
       },
       {
-        "topic_code": "BN",
-        "name": "Brunei",
-        "formal_name": "Negara Brunei Darussalam"
+        "code": "BN",
+        "title": "Brunei",
+        "description": "Negara Brunei Darussalam"
       },
       {
-        "topic_code": "BT",
-        "name": "Bhutan",
-        "formal_name": "Kingdom of Bhutan"
+        "code": "BT",
+        "title": "Bhutan",
+        "description": "Kingdom of Bhutan"
       },
       {
-        "topic_code": "CN",
-        "name": "China (PRC)",
-        "formal_name": "People's Republic of China"
+        "code": "CN",
+        "title": "China (PRC)",
+        "description": "People's Republic of China"
       },
       {
-        "topic_code": "HK",
-        "name": "Hong Kong",
-        "formal_name": "Hong Kong Special Administrative Region"
+        "code": "HK",
+        "title": "Hong Kong",
+        "description": "Hong Kong Special Administrative Region"
       },
       {
-        "topic_code": "ID",
-        "name": "Indonesia",
-        "formal_name": "Republic of Indonesia"
+        "code": "ID",
+        "title": "Indonesia",
+        "description": "Republic of Indonesia"
       },
       {
-        "topic_code": "IN",
-        "name": "India",
-        "formal_name": "Republic of India"
+        "code": "IN",
+        "title": "India",
+        "description": "Republic of India"
       },
       {
-        "topic_code": "JP",
-        "name": "Japan",
-        "formal_name": ""
+        "code": "JP",
+        "title": "Japan",
+        "description": ""
       },
       {
-        "topic_code": "KG",
-        "name": "Kyrgyzstan",
-        "formal_name": "Kyrgyz Republic"
+        "code": "KG",
+        "title": "Kyrgyzstan",
+        "description": "Kyrgyz Republic"
       },
       {
-        "topic_code": "KH",
-        "name": "Cambodia",
-        "formal_name": "Kingdom of Cambodia"
+        "code": "KH",
+        "title": "Cambodia",
+        "description": "Kingdom of Cambodia"
       },
       {
-        "topic_code": "KP",
-        "name": "North Korea",
-        "formal_name": "Democratic People's Republic of Korea"
+        "code": "KP",
+        "title": "North Korea",
+        "description": "Democratic People's Republic of Korea"
       },
       {
-        "topic_code": "KR",
-        "name": "South Korea",
-        "formal_name": "Republic of Korea"
+        "code": "KR",
+        "title": "South Korea",
+        "description": "Republic of Korea"
       },
       {
-        "topic_code": "KZ",
-        "name": "Kazakhstan",
-        "formal_name": "Republic of Kazakhstan"
+        "code": "KZ",
+        "title": "Kazakhstan",
+        "description": "Republic of Kazakhstan"
       },
       {
-        "topic_code": "LA",
-        "name": "Laos",
-        "formal_name": "Lao People's Democratic Republic"
+        "code": "LA",
+        "title": "Laos",
+        "description": "Lao People's Democratic Republic"
       },
       {
-        "topic_code": "LK",
-        "name": "Sri Lanka",
-        "formal_name": "Democratic Socialist Republic of Sri Lanka"
+        "code": "LK",
+        "title": "Sri Lanka",
+        "description": "Democratic Socialist Republic of Sri Lanka"
       },
       {
-        "topic_code": "MM",
-        "name": "Myanmar",
-        "formal_name": "Republic of the Union of Myanmar"
+        "code": "MM",
+        "title": "Myanmar",
+        "description": "Republic of the Union of Myanmar"
       },
       {
-        "topic_code": "MN",
-        "name": "Mongolia",
-        "formal_name": ""
+        "code": "MN",
+        "title": "Mongolia",
+        "description": ""
       },
       {
-        "topic_code": "MO",
-        "name": "Macau",
-        "formal_name": "Macau Special Administrative Region"
+        "code": "MO",
+        "title": "Macau",
+        "description": "Macau Special Administrative Region"
       },
       {
-        "topic_code": "MV",
-        "name": "Maldives",
-        "formal_name": "Republic of Maldives"
+        "code": "MV",
+        "title": "Maldives",
+        "description": "Republic of Maldives"
       },
       {
-        "topic_code": "MY",
-        "name": "Malaysia",
-        "formal_name": ""
+        "code": "MY",
+        "title": "Malaysia",
+        "description": ""
       },
       {
-        "topic_code": "NP",
-        "name": "Nepal",
-        "formal_name": "Federal Democratic Republic of Nepal"
+        "code": "NP",
+        "title": "Nepal",
+        "description": "Federal Democratic Republic of Nepal"
       },
       {
-        "topic_code": "PH",
-        "name": "Philippines",
-        "formal_name": "Republic of the Philippines"
+        "code": "PH",
+        "title": "Philippines",
+        "description": "Republic of the Philippines"
       },
       {
-        "topic_code": "PK",
-        "name": "Pakistan",
-        "formal_name": "Islamic Republic of Pakistan"
+        "code": "PK",
+        "title": "Pakistan",
+        "description": "Islamic Republic of Pakistan"
       },
       {
-        "topic_code": "SG",
-        "name": "Singapore",
-        "formal_name": "Republic of Singapore"
+        "code": "SG",
+        "title": "Singapore",
+        "description": "Republic of Singapore"
       },
       {
-        "topic_code": "TH",
-        "name": "Thailand",
-        "formal_name": "Kingdom of Thailand"
+        "code": "TH",
+        "title": "Thailand",
+        "description": "Kingdom of Thailand"
       },
       {
-        "topic_code": "TJ",
-        "name": "Tajikistan",
-        "formal_name": "Republic of Tajikistan"
+        "code": "TJ",
+        "title": "Tajikistan",
+        "description": "Republic of Tajikistan"
       },
       {
-        "topic_code": "TL",
-        "name": "East Timor / Timor-Leste",
-        "formal_name": "Democratic Republic of Timor-Leste"
+        "code": "TL",
+        "title": "East Timor / Timor-Leste",
+        "description": "Democratic Republic of Timor-Leste"
       },
       {
-        "topic_code": "TM",
-        "name": "Turkmenistan",
-        "formal_name": ""
+        "code": "TM",
+        "title": "Turkmenistan",
+        "description": ""
       },
       {
-        "topic_code": "TW",
-        "name": "Taiwan",
-        "formal_name": ""
+        "code": "TW",
+        "title": "Taiwan",
+        "description": ""
       },
       {
-        "topic_code": "UZ",
-        "name": "Uzbekistan",
-        "formal_name": "Republic of Uzbekistan"
+        "code": "UZ",
+        "title": "Uzbekistan",
+        "description": "Republic of Uzbekistan"
       },
       {
-        "topic_code": "VN",
-        "name": "Vietnam",
-        "formal_name": "Socialist Republic of Vietnam"
+        "code": "VN",
+        "title": "Vietnam",
+        "description": "Socialist Republic of Vietnam"
       }
     ]
   },
   {
-    "continent": "Central America",
-    "countries": [
+    "title": "Central America",
+    "topics": [
       {
-        "topic_code": "AG",
-        "name": "Antigua and Barbuda",
-        "formal_name": ""
+        "code": "AG",
+        "title": "Antigua and Barbuda",
+        "description": ""
       },
       {
-        "topic_code": "BZ",
-        "name": "Belize",
-        "formal_name": ""
+        "code": "BZ",
+        "title": "Belize",
+        "description": ""
       },
       {
-        "topic_code": "CR",
-        "name": "Costa Rica",
-        "formal_name": "Republic of Costa Rica"
+        "code": "CR",
+        "title": "Costa Rica",
+        "description": "Republic of Costa Rica"
       },
       {
-        "topic_code": "HN",
-        "name": "Honduras",
-        "formal_name": "Republic of Honduras"
+        "code": "HN",
+        "title": "Honduras",
+        "description": "Republic of Honduras"
       },
       {
-        "topic_code": "HT",
-        "name": "Haiti",
-        "formal_name": "Republic of Haiti"
+        "code": "HT",
+        "title": "Haiti",
+        "description": "Republic of Haiti"
       },
       {
-        "topic_code": "NI",
-        "name": "Nicaragua",
-        "formal_name": "Republic of Nicaragua"
+        "code": "NI",
+        "title": "Nicaragua",
+        "description": "Republic of Nicaragua"
       },
       {
-        "topic_code": "PA",
-        "name": "Panama",
-        "formal_name": "Republic of Panama"
+        "code": "PA",
+        "title": "Panama",
+        "description": "Republic of Panama"
       },
       {
-        "topic_code": "SV",
-        "name": "El Salvador",
-        "formal_name": "Republic of El Salvador"
+        "code": "SV",
+        "title": "El Salvador",
+        "description": "Republic of El Salvador"
       }
     ]
   },
   {
-    "continent": "Europe",
-    "countries": [
+    "title": "Europe",
+    "topics": [
       {
-        "topic_code": "AD",
-        "name": "Andorra",
-        "formal_name": "Principality of Andorra"
+        "code": "AD",
+        "title": "Andorra",
+        "description": "Principality of Andorra"
       },
       {
-        "topic_code": "AL",
-        "name": "Albania",
-        "formal_name": "Republic of Albania"
+        "code": "AL",
+        "title": "Albania",
+        "description": "Republic of Albania"
       },
       {
-        "topic_code": "AM",
-        "name": "Armenia",
-        "formal_name": "Republic of Armenia"
+        "code": "AM",
+        "title": "Armenia",
+        "description": "Republic of Armenia"
       },
       {
-        "topic_code": "AT",
-        "name": "Austria",
-        "formal_name": "Republic of Austria"
+        "code": "AT",
+        "title": "Austria",
+        "description": "Republic of Austria"
       },
       {
-        "topic_code": "AZ",
-        "name": "Azerbaijan",
-        "formal_name": "Republic of Azerbaijan"
+        "code": "AZ",
+        "title": "Azerbaijan",
+        "description": "Republic of Azerbaijan"
       },
       {
-        "topic_code": "BA",
-        "name": "Bosnia and Herzegovina",
-        "formal_name": ""
+        "code": "BA",
+        "title": "Bosnia and Herzegovina",
+        "description": ""
       },
       {
-        "topic_code": "BE",
-        "name": "Belgium",
-        "formal_name": "Kingdom of Belgium"
+        "code": "BE",
+        "title": "Belgium",
+        "description": "Kingdom of Belgium"
       },
       {
-        "topic_code": "BG",
-        "name": "Bulgaria",
-        "formal_name": "Republic of Bulgaria"
+        "code": "BG",
+        "title": "Bulgaria",
+        "description": "Republic of Bulgaria"
       },
       {
-        "topic_code": "BY",
-        "name": "Belarus",
-        "formal_name": "Republic of Belarus"
+        "code": "BY",
+        "title": "Belarus",
+        "description": "Republic of Belarus"
       },
       {
-        "topic_code": "CH",
-        "name": "Switzerland",
-        "formal_name": "Swiss Confederation"
+        "code": "CH",
+        "title": "Switzerland",
+        "description": "Swiss Confederation"
       },
       {
-        "topic_code": "CY",
-        "name": "Cyprus",
-        "formal_name": "Republic of Cyprus"
+        "code": "CY",
+        "title": "Cyprus",
+        "description": "Republic of Cyprus"
       },
       {
-        "topic_code": "CZ",
-        "name": "Czech Republic",
-        "formal_name": ""
+        "code": "CZ",
+        "title": "Czech Republic",
+        "description": ""
       },
       {
-        "topic_code": "DE",
-        "name": "Germany",
-        "formal_name": "Federal Republic of Germany"
+        "code": "DE",
+        "title": "Germany",
+        "description": "Federal Republic of Germany"
       },
       {
-        "topic_code": "DK",
-        "name": "Denmark",
-        "formal_name": "Kingdom of Denmark"
+        "code": "DK",
+        "title": "Denmark",
+        "description": "Kingdom of Denmark"
       },
       {
-        "topic_code": "EE",
-        "name": "Estonia",
-        "formal_name": "Republic of Estonia"
+        "code": "EE",
+        "title": "Estonia",
+        "description": "Republic of Estonia"
       },
       {
-        "topic_code": "ES",
-        "name": "Spain",
-        "formal_name": "Kingdom of Spain"
+        "code": "ES",
+        "title": "Spain",
+        "description": "Kingdom of Spain"
       },
       {
-        "topic_code": "FI",
-        "name": "Finland",
-        "formal_name": "Republic of Finland"
+        "code": "FI",
+        "title": "Finland",
+        "description": "Republic of Finland"
       },
       {
-        "topic_code": "FR",
-        "name": "France",
-        "formal_name": "French Republic"
+        "code": "FR",
+        "title": "France",
+        "description": "French Republic"
       },
       {
-        "topic_code": "GB",
-        "name": "United Kingdom",
-        "formal_name": "United Kingdom of Great Britain and Northern Ireland"
+        "code": "GB",
+        "title": "United Kingdom",
+        "description": "United Kingdom of Great Britain and Northern Ireland"
       },
       {
-        "topic_code": "GE",
-        "name": "Georgia",
-        "formal_name": ""
+        "code": "GE",
+        "title": "Georgia",
+        "description": ""
       },
       {
-        "topic_code": "GG",
-        "name": "Guernsey",
-        "formal_name": "Bailiwick of Guernsey"
+        "code": "GG",
+        "title": "Guernsey",
+        "description": "Bailiwick of Guernsey"
       },
       {
-        "topic_code": "GL",
-        "name": "Greenland",
-        "formal_name": ""
+        "code": "GL",
+        "title": "Greenland",
+        "description": ""
       },
       {
-        "topic_code": "GR",
-        "name": "Greece",
-        "formal_name": "Hellenic Republic"
+        "code": "GR",
+        "title": "Greece",
+        "description": "Hellenic Republic"
       },
       {
-        "topic_code": "HR",
-        "name": "Croatia",
-        "formal_name": "Republic of Croatia"
+        "code": "HR",
+        "title": "Croatia",
+        "description": "Republic of Croatia"
       },
       {
-        "topic_code": "HU",
-        "name": "Hungary",
-        "formal_name": ""
+        "code": "HU",
+        "title": "Hungary",
+        "description": ""
       },
       {
-        "topic_code": "IE",
-        "name": "Ireland",
-        "formal_name": "Republic of Ireland"
+        "code": "IE",
+        "title": "Ireland",
+        "description": "Republic of Ireland"
       },
       {
-        "topic_code": "IM",
-        "name": "Isle of Man",
-        "formal_name": ""
+        "code": "IM",
+        "title": "Isle of Man",
+        "description": ""
       },
       {
-        "topic_code": "IS",
-        "name": "Iceland",
-        "formal_name": "Republic of Iceland"
+        "code": "IS",
+        "title": "Iceland",
+        "description": "Republic of Iceland"
       },
       {
-        "topic_code": "IT",
-        "name": "Italy",
-        "formal_name": "Italian Republic"
+        "code": "IT",
+        "title": "Italy",
+        "description": "Italian Republic"
       },
       {
-        "topic_code": "JE",
-        "name": "Jersey",
-        "formal_name": "Bailiwick of Jersey"
+        "code": "JE",
+        "title": "Jersey",
+        "description": "Bailiwick of Jersey"
       },
       {
-        "topic_code": "KO",
-        "name": "Kosovo",
-        "formal_name": "Republic of Kosovo"
+        "code": "KO",
+        "title": "Kosovo",
+        "description": "Republic of Kosovo"
       },
       {
-        "topic_code": "LI",
-        "name": "Liechtenstein",
-        "formal_name": "Principality of Liechtenstein"
+        "code": "LI",
+        "title": "Liechtenstein",
+        "description": "Principality of Liechtenstein"
       },
       {
-        "topic_code": "LT",
-        "name": "Lithuania",
-        "formal_name": "Republic of Lithuania"
+        "code": "LT",
+        "title": "Lithuania",
+        "description": "Republic of Lithuania"
       },
       {
-        "topic_code": "LU",
-        "name": "Luxembourg",
-        "formal_name": "Grand Duchy of Luxembourg"
+        "code": "LU",
+        "title": "Luxembourg",
+        "description": "Grand Duchy of Luxembourg"
       },
       {
-        "topic_code": "LV",
-        "name": "Latvia",
-        "formal_name": "Republic of Latvia"
+        "code": "LV",
+        "title": "Latvia",
+        "description": "Republic of Latvia"
       },
       {
-        "topic_code": "MC",
-        "name": "Monaco",
-        "formal_name": "Principality of Monaco"
+        "code": "MC",
+        "title": "Monaco",
+        "description": "Principality of Monaco"
       },
       {
-        "topic_code": "MD",
-        "name": "Moldova",
-        "formal_name": "Republic of Moldova"
+        "code": "MD",
+        "title": "Moldova",
+        "description": "Republic of Moldova"
       },
       {
-        "topic_code": "ME",
-        "name": "Montenegro",
-        "formal_name": ""
+        "code": "ME",
+        "title": "Montenegro",
+        "description": ""
       },
       {
-        "topic_code": "MK",
-        "name": "Macedonia (the former Yugoslav Republic of)",
-        "formal_name": "Former Yugoslav Republic of Macedonia"
+        "code": "MK",
+        "title": "Macedonia (the former Yugoslav Republic of)",
+        "description": "Former Yugoslav Republic of Macedonia"
       },
       {
-        "topic_code": "MT",
-        "name": "Malta",
-        "formal_name": "Republic of Malta"
+        "code": "MT",
+        "title": "Malta",
+        "description": "Republic of Malta"
       },
       {
-        "topic_code": "NL",
-        "name": "Netherlands",
-        "formal_name": "Kingdom of the Netherlands"
+        "code": "NL",
+        "title": "Netherlands",
+        "description": "Kingdom of the Netherlands"
       },
       {
-        "topic_code": "NO",
-        "name": "Norway",
-        "formal_name": "Kingdom of Norway"
+        "code": "NO",
+        "title": "Norway",
+        "description": "Kingdom of Norway"
       },
       {
-        "topic_code": "PL",
-        "name": "Poland",
-        "formal_name": "Republic of Poland"
+        "code": "PL",
+        "title": "Poland",
+        "description": "Republic of Poland"
       },
       {
-        "topic_code": "PT",
-        "name": "Portugal",
-        "formal_name": "Portuguese Republic"
+        "code": "PT",
+        "title": "Portugal",
+        "description": "Portuguese Republic"
       },
       {
-        "topic_code": "RO",
-        "name": "Romania",
-        "formal_name": ""
+        "code": "RO",
+        "title": "Romania",
+        "description": ""
       },
       {
-        "topic_code": "RU",
-        "name": "Russia",
-        "formal_name": "Russian Federation"
+        "code": "RU",
+        "title": "Russia",
+        "description": "Russian Federation"
       },
       {
-        "topic_code": "SE",
-        "name": "Sweden",
-        "formal_name": "Kingdom of Sweden"
+        "code": "SE",
+        "title": "Sweden",
+        "description": "Kingdom of Sweden"
       },
       {
-        "topic_code": "SK",
-        "name": "Slovakia",
-        "formal_name": "Slovak Republic"
+        "code": "SK",
+        "title": "Slovakia",
+        "description": "Slovak Republic"
       },
       {
-        "topic_code": "SM",
-        "name": "San Marino",
-        "formal_name": "Republic of San Marino"
+        "code": "SM",
+        "title": "San Marino",
+        "description": "Republic of San Marino"
       },
       {
-        "topic_code": "SQ",
-        "name": "Slovenia",
-        "formal_name": "Republic of Slovenia"
+        "code": "SQ",
+        "title": "Slovenia",
+        "description": "Republic of Slovenia"
       },
       {
-        "topic_code": "TR",
-        "name": "Turkey",
-        "formal_name": "Republic of Turkey"
+        "code": "TR",
+        "title": "Turkey",
+        "description": "Republic of Turkey"
       },
       {
-        "topic_code": "UA",
-        "name": "Ukraine",
-        "formal_name": ""
+        "code": "UA",
+        "title": "Ukraine",
+        "description": ""
       },
       {
-        "topic_code": "VA",
-        "name": "Vatican City",
-        "formal_name": "Holy See (Vatican City)"
+        "code": "VA",
+        "title": "Vatican City",
+        "description": "Holy See (Vatican City)"
       },
       {
-        "topic_code": "GBE",
-        "name": "England",
-        "formal_name": ""
+        "code": "GBE",
+        "title": "England",
+        "description": ""
       },
       {
-        "topic_code": "GBS",
-        "name": "Scotland",
-        "formal_name": ""
+        "code": "GBS",
+        "title": "Scotland",
+        "description": ""
       },
       {
-        "topic_code": "GBW",
-        "name": "Wales",
-        "formal_name": ""
+        "code": "GBW",
+        "title": "Wales",
+        "description": ""
       },
       {
-        "topic_code": "SRB",
-        "name": "Serbia",
-        "formal_name": "Republic of Serbia"
+        "code": "SRB",
+        "title": "Serbia",
+        "description": "Republic of Serbia"
       },
       {
-        "topic_code": "GBNI",
-        "name": "Northern Ireland",
-        "formal_name": ""
+        "code": "GBNI",
+        "title": "Northern Ireland",
+        "description": ""
       }
     ]
   },
   {
-    "continent": "Middle East",
-    "countries": [
+    "title": "Middle East",
+    "topics": [
       {
-        "topic_code": "AE",
-        "name": "United Arab Emirates",
-        "formal_name": ""
+        "code": "AE",
+        "title": "United Arab Emirates",
+        "description": ""
       },
       {
-        "topic_code": "BH",
-        "name": "Bahrain",
-        "formal_name": "Kingdom of Bahrain"
+        "code": "BH",
+        "title": "Bahrain",
+        "description": "Kingdom of Bahrain"
       },
       {
-        "topic_code": "IL",
-        "name": "Israel",
-        "formal_name": "State of Israel"
+        "code": "IL",
+        "title": "Israel",
+        "description": "State of Israel"
       },
       {
-        "topic_code": "IQ",
-        "name": "Iraq",
-        "formal_name": "Republic of Iraq"
+        "code": "IQ",
+        "title": "Iraq",
+        "description": "Republic of Iraq"
       },
       {
-        "topic_code": "IR",
-        "name": "Iran",
-        "formal_name": "Islamic Republic of Iran"
+        "code": "IR",
+        "title": "Iran",
+        "description": "Islamic Republic of Iran"
       },
       {
-        "topic_code": "JO",
-        "name": "Jordan",
-        "formal_name": "Hashemite Kingdom of Jordan"
+        "code": "JO",
+        "title": "Jordan",
+        "description": "Hashemite Kingdom of Jordan"
       },
       {
-        "topic_code": "KW",
-        "name": "Kuwait",
-        "formal_name": "State of Kuwait"
+        "code": "KW",
+        "title": "Kuwait",
+        "description": "State of Kuwait"
       },
       {
-        "topic_code": "LB",
-        "name": "Lebanon",
-        "formal_name": "Lebanese Republic"
+        "code": "LB",
+        "title": "Lebanon",
+        "description": "Lebanese Republic"
       },
       {
-        "topic_code": "OM",
-        "name": "Oman",
-        "formal_name": "Sultanate of Oman"
+        "code": "OM",
+        "title": "Oman",
+        "description": "Sultanate of Oman"
       },
       {
-        "topic_code": "PS",
-        "name": "Palestinian Territories",
-        "formal_name": ""
+        "code": "PS",
+        "title": "Palestinian Territories",
+        "description": ""
       },
       {
-        "topic_code": "QA",
-        "name": "Qatar",
-        "formal_name": "State of Qatar"
+        "code": "QA",
+        "title": "Qatar",
+        "description": "State of Qatar"
       },
       {
-        "topic_code": "SA",
-        "name": "Saudi Arabia",
-        "formal_name": "Kingdom of Saudi Arabia"
+        "code": "SA",
+        "title": "Saudi Arabia",
+        "description": "Kingdom of Saudi Arabia"
       },
       {
-        "topic_code": "SY",
-        "name": "Syria",
-        "formal_name": "Syrian Arab Republic"
+        "code": "SY",
+        "title": "Syria",
+        "description": "Syrian Arab Republic"
       },
       {
-        "topic_code": "YE",
-        "name": "Yemen",
-        "formal_name": "Republic of Yemen"
+        "code": "YE",
+        "title": "Yemen",
+        "description": "Republic of Yemen"
       }
     ]
   },
   {
-    "continent": "North America",
-    "countries": [
+    "title": "North America",
+    "topics": [
       {
-        "topic_code": "AW",
-        "name": "Aruba",
-        "formal_name": ""
+        "code": "AW",
+        "title": "Aruba",
+        "description": ""
       },
       {
-        "topic_code": "BM",
-        "name": "Bermuda",
-        "formal_name": ""
+        "code": "BM",
+        "title": "Bermuda",
+        "description": ""
       },
       {
-        "topic_code": "CA",
-        "name": "Canada",
-        "formal_name": ""
+        "code": "CA",
+        "title": "Canada",
+        "description": ""
       },
       {
-        "topic_code": "MX",
-        "name": "Mexico",
-        "formal_name": "United Mexican States"
+        "code": "MX",
+        "title": "Mexico",
+        "description": "United Mexican States"
       },
       {
-        "topic_code": "PM",
-        "name": "Saint Pierre and Miquelon",
-        "formal_name": "Territorial Collectivity of Saint Pierre and Miquelon"
+        "code": "PM",
+        "title": "Saint Pierre and Miquelon",
+        "description": "Territorial Collectivity of Saint Pierre and Miquelon"
       },
       {
-        "topic_code": "US",
-        "name": "United States",
-        "formal_name": "United States of America"
+        "code": "US",
+        "title": "United States",
+        "description": "United States of America"
       },
       {
-        "topic_code": "USAAK",
-        "name": "Alaska",
-        "formal_name": ""
+        "code": "USAAK",
+        "title": "Alaska",
+        "description": ""
       },
       {
-        "topic_code": "USAAL",
-        "name": "Alabama",
-        "formal_name": ""
+        "code": "USAAL",
+        "title": "Alabama",
+        "description": ""
       },
       {
-        "topic_code": "USAAR",
-        "name": "Arkansas",
-        "formal_name": ""
+        "code": "USAAR",
+        "title": "Arkansas",
+        "description": ""
       },
       {
-        "topic_code": "USAAZ",
-        "name": "Arizona",
-        "formal_name": ""
+        "code": "USAAZ",
+        "title": "Arizona",
+        "description": ""
       },
       {
-        "topic_code": "USACA",
-        "name": "California",
-        "formal_name": ""
+        "code": "USACA",
+        "title": "California",
+        "description": ""
       },
       {
-        "topic_code": "USACO",
-        "name": "Colorado",
-        "formal_name": ""
+        "code": "USACO",
+        "title": "Colorado",
+        "description": ""
       },
       {
-        "topic_code": "USACT",
-        "name": "Connecticut",
-        "formal_name": ""
+        "code": "USACT",
+        "title": "Connecticut",
+        "description": ""
       },
       {
-        "topic_code": "USADC",
-        "name": "Washington DC",
-        "formal_name": ""
+        "code": "USADC",
+        "title": "Washington DC",
+        "description": ""
       },
       {
-        "topic_code": "USADE",
-        "name": "Delaware",
-        "formal_name": ""
+        "code": "USADE",
+        "title": "Delaware",
+        "description": ""
       },
       {
-        "topic_code": "USAFL",
-        "name": "Florida",
-        "formal_name": ""
+        "code": "USAFL",
+        "title": "Florida",
+        "description": ""
       },
       {
-        "topic_code": "USAGA",
-        "name": "Georgia",
-        "formal_name": ""
+        "code": "USAGA",
+        "title": "Georgia",
+        "description": ""
       },
       {
-        "topic_code": "USAHI",
-        "name": "Hawaii",
-        "formal_name": ""
+        "code": "USAHI",
+        "title": "Hawaii",
+        "description": ""
       },
       {
-        "topic_code": "USAIA",
-        "name": "Iowa",
-        "formal_name": ""
+        "code": "USAIA",
+        "title": "Iowa",
+        "description": ""
       },
       {
-        "topic_code": "USAID",
-        "name": "Idaho",
-        "formal_name": ""
+        "code": "USAID",
+        "title": "Idaho",
+        "description": ""
       },
       {
-        "topic_code": "USAIL",
-        "name": "Illinois",
-        "formal_name": ""
+        "code": "USAIL",
+        "title": "Illinois",
+        "description": ""
       },
       {
-        "topic_code": "USAIN",
-        "name": "Indiana",
-        "formal_name": ""
+        "code": "USAIN",
+        "title": "Indiana",
+        "description": ""
       },
       {
-        "topic_code": "USAKS",
-        "name": "Kansas",
-        "formal_name": ""
+        "code": "USAKS",
+        "title": "Kansas",
+        "description": ""
       },
       {
-        "topic_code": "USAKY",
-        "name": "Kentucky",
-        "formal_name": ""
+        "code": "USAKY",
+        "title": "Kentucky",
+        "description": ""
       },
       {
-        "topic_code": "USALA",
-        "name": "Louisiana",
-        "formal_name": ""
+        "code": "USALA",
+        "title": "Louisiana",
+        "description": ""
       },
       {
-        "topic_code": "USAMA",
-        "name": "Massachusetts",
-        "formal_name": ""
+        "code": "USAMA",
+        "title": "Massachusetts",
+        "description": ""
       },
       {
-        "topic_code": "USAMD",
-        "name": "Maryland",
-        "formal_name": ""
+        "code": "USAMD",
+        "title": "Maryland",
+        "description": ""
       },
       {
-        "topic_code": "USAME",
-        "name": "Maine",
-        "formal_name": ""
+        "code": "USAME",
+        "title": "Maine",
+        "description": ""
       },
       {
-        "topic_code": "USAMI",
-        "name": "Michigan",
-        "formal_name": ""
+        "code": "USAMI",
+        "title": "Michigan",
+        "description": ""
       },
       {
-        "topic_code": "USAMN",
-        "name": "Minnesota",
-        "formal_name": ""
+        "code": "USAMN",
+        "title": "Minnesota",
+        "description": ""
       },
       {
-        "topic_code": "USAMO",
-        "name": "Missouri",
-        "formal_name": ""
+        "code": "USAMO",
+        "title": "Missouri",
+        "description": ""
       },
       {
-        "topic_code": "USAMS",
-        "name": "Mississippi",
-        "formal_name": ""
+        "code": "USAMS",
+        "title": "Mississippi",
+        "description": ""
       },
       {
-        "topic_code": "USAMT",
-        "name": "Montana",
-        "formal_name": ""
+        "code": "USAMT",
+        "title": "Montana",
+        "description": ""
       },
       {
-        "topic_code": "USANC",
-        "name": "North Carolina",
-        "formal_name": ""
+        "code": "USANC",
+        "title": "North Carolina",
+        "description": ""
       },
       {
-        "topic_code": "USAND",
-        "name": "North Dakota",
-        "formal_name": ""
+        "code": "USAND",
+        "title": "North Dakota",
+        "description": ""
       },
       {
-        "topic_code": "USANE",
-        "name": "Nebraska",
-        "formal_name": ""
+        "code": "USANE",
+        "title": "Nebraska",
+        "description": ""
       },
       {
-        "topic_code": "USANH",
-        "name": "New Hampshire",
-        "formal_name": ""
+        "code": "USANH",
+        "title": "New Hampshire",
+        "description": ""
       },
       {
-        "topic_code": "USANJ",
-        "name": "New Jersey",
-        "formal_name": ""
+        "code": "USANJ",
+        "title": "New Jersey",
+        "description": ""
       },
       {
-        "topic_code": "USANM",
-        "name": "New Mexico",
-        "formal_name": ""
+        "code": "USANM",
+        "title": "New Mexico",
+        "description": ""
       },
       {
-        "topic_code": "USANV",
-        "name": "Nevada",
-        "formal_name": ""
+        "code": "USANV",
+        "title": "Nevada",
+        "description": ""
       },
       {
-        "topic_code": "USANY",
-        "name": "New York",
-        "formal_name": ""
+        "code": "USANY",
+        "title": "New York",
+        "description": ""
       },
       {
-        "topic_code": "USAOH",
-        "name": "Ohio",
-        "formal_name": ""
+        "code": "USAOH",
+        "title": "Ohio",
+        "description": ""
       },
       {
-        "topic_code": "USAOK",
-        "name": "Oklahoma",
-        "formal_name": ""
+        "code": "USAOK",
+        "title": "Oklahoma",
+        "description": ""
       },
       {
-        "topic_code": "USAOR",
-        "name": "Oregon",
-        "formal_name": ""
+        "code": "USAOR",
+        "title": "Oregon",
+        "description": ""
       },
       {
-        "topic_code": "USAPA",
-        "name": "Pennsylvania",
-        "formal_name": ""
+        "code": "USAPA",
+        "title": "Pennsylvania",
+        "description": ""
       },
       {
-        "topic_code": "USARI",
-        "name": "Rhode Island",
-        "formal_name": ""
+        "code": "USARI",
+        "title": "Rhode Island",
+        "description": ""
       },
       {
-        "topic_code": "USASC",
-        "name": "South Carolina",
-        "formal_name": ""
+        "code": "USASC",
+        "title": "South Carolina",
+        "description": ""
       },
       {
-        "topic_code": "USASD",
-        "name": "South Dakota",
-        "formal_name": ""
+        "code": "USASD",
+        "title": "South Dakota",
+        "description": ""
       },
       {
-        "topic_code": "USATN",
-        "name": "Tennessee",
-        "formal_name": ""
+        "code": "USATN",
+        "title": "Tennessee",
+        "description": ""
       },
       {
-        "topic_code": "USATX",
-        "name": "Texas",
-        "formal_name": ""
+        "code": "USATX",
+        "title": "Texas",
+        "description": ""
       },
       {
-        "topic_code": "USAUT",
-        "name": "Utah",
-        "formal_name": ""
+        "code": "USAUT",
+        "title": "Utah",
+        "description": ""
       },
       {
-        "topic_code": "USAVA",
-        "name": "Virginia",
-        "formal_name": ""
+        "code": "USAVA",
+        "title": "Virginia",
+        "description": ""
       },
       {
-        "topic_code": "USAVT",
-        "name": "Vermont",
-        "formal_name": ""
+        "code": "USAVT",
+        "title": "Vermont",
+        "description": ""
       },
       {
-        "topic_code": "USAWA",
-        "name": "Washington",
-        "formal_name": ""
+        "code": "USAWA",
+        "title": "Washington",
+        "description": ""
       },
       {
-        "topic_code": "USAWI",
-        "name": "Wisconsin",
-        "formal_name": ""
+        "code": "USAWI",
+        "title": "Wisconsin",
+        "description": ""
       },
       {
-        "topic_code": "USAWV",
-        "name": "West Virginia",
-        "formal_name": ""
+        "code": "USAWV",
+        "title": "West Virginia",
+        "description": ""
       },
       {
-        "topic_code": "USAWY",
-        "name": "Wyoming",
-        "formal_name": ""
+        "code": "USAWY",
+        "title": "Wyoming",
+        "description": ""
       }
     ]
   },
   {
-    "continent": "Oceania",
-    "countries": [
+    "title": "Oceania",
+    "topics": [
       {
-        "topic_code": "AS",
-        "name": "American Samoa",
-        "formal_name": "Territory of American Samoa"
+        "code": "AS",
+        "title": "American Samoa",
+        "description": "Territory of American Samoa"
       },
       {
-        "topic_code": "AU",
-        "name": "Australia",
-        "formal_name": "Commonwealth of Australia"
+        "code": "AU",
+        "title": "Australia",
+        "description": "Commonwealth of Australia"
       },
       {
-        "topic_code": "CC",
-        "name": "Cocos (Keeling) Islands",
-        "formal_name": "Territory of Cocos (Keeling) Islands"
+        "code": "CC",
+        "title": "Cocos (Keeling) Islands",
+        "description": "Territory of Cocos (Keeling) Islands"
       },
       {
-        "topic_code": "CK",
-        "name": "Cook Islands",
-        "formal_name": ""
+        "code": "CK",
+        "title": "Cook Islands",
+        "description": ""
       },
       {
-        "topic_code": "CX",
-        "name": "Christmas Island",
-        "formal_name": "Territory of Christmas Island"
+        "code": "CX",
+        "title": "Christmas Island",
+        "description": "Territory of Christmas Island"
       },
       {
-        "topic_code": "FJ",
-        "name": "Fiji",
-        "formal_name": "Republic of Fiji"
+        "code": "FJ",
+        "title": "Fiji",
+        "description": "Republic of Fiji"
       },
       {
-        "topic_code": "FM",
-        "name": "Micronesia",
-        "formal_name": "Federated States of Micronesia"
+        "code": "FM",
+        "title": "Micronesia",
+        "description": "Federated States of Micronesia"
       },
       {
-        "topic_code": "FO",
-        "name": "Faroe Islands",
-        "formal_name": ""
+        "code": "FO",
+        "title": "Faroe Islands",
+        "description": ""
       },
       {
-        "topic_code": "GU",
-        "name": "Guam",
-        "formal_name": "Territory of Guam"
+        "code": "GU",
+        "title": "Guam",
+        "description": "Territory of Guam"
       },
       {
-        "topic_code": "HM",
-        "name": "Heard and McDonald Islands",
-        "formal_name": "Territory of Heard Island and McDonald Islands"
+        "code": "HM",
+        "title": "Heard and McDonald Islands",
+        "description": "Territory of Heard Island and McDonald Islands"
       },
       {
-        "topic_code": "KI",
-        "name": "Kiribati",
-        "formal_name": "Republic of Kiribati"
+        "code": "KI",
+        "title": "Kiribati",
+        "description": "Republic of Kiribati"
       },
       {
-        "topic_code": "MH",
-        "name": "Marshall Islands",
-        "formal_name": "Republic of the Marshall Islands"
+        "code": "MH",
+        "title": "Marshall Islands",
+        "description": "Republic of the Marshall Islands"
       },
       {
-        "topic_code": "NC",
-        "name": "New Caledonia",
-        "formal_name": "Territory of New Caledonia and Dependencies"
+        "code": "NC",
+        "title": "New Caledonia",
+        "description": "Territory of New Caledonia and Dependencies"
       },
       {
-        "topic_code": "NF",
-        "name": "Norfolk Island",
-        "formal_name": "Territory of Norfolk Island"
+        "code": "NF",
+        "title": "Norfolk Island",
+        "description": "Territory of Norfolk Island"
       },
       {
-        "topic_code": "NR",
-        "name": "Nauru",
-        "formal_name": "Republic of Nauru"
+        "code": "NR",
+        "title": "Nauru",
+        "description": "Republic of Nauru"
       },
       {
-        "topic_code": "NU",
-        "name": "Niue",
-        "formal_name": ""
+        "code": "NU",
+        "title": "Niue",
+        "description": ""
       },
       {
-        "topic_code": "NZ",
-        "name": "New Zealand",
-        "formal_name": ""
+        "code": "NZ",
+        "title": "New Zealand",
+        "description": ""
       },
       {
-        "topic_code": "PF",
-        "name": "French Polynesia",
-        "formal_name": "Territory of French Polynesia"
+        "code": "PF",
+        "title": "French Polynesia",
+        "description": "Territory of French Polynesia"
       },
       {
-        "topic_code": "PG",
-        "name": "Papua New Guinea",
-        "formal_name": "Independent State of Papua New Guinea"
+        "code": "PG",
+        "title": "Papua New Guinea",
+        "description": "Independent State of Papua New Guinea"
       },
       {
-        "topic_code": "PN",
-        "name": "Pitcairn",
-        "formal_name": "Pitcairn Islands"
+        "code": "PN",
+        "title": "Pitcairn",
+        "description": "Pitcairn Islands"
       },
       {
-        "topic_code": "PW",
-        "name": "Palau",
-        "formal_name": "Republic of Palau"
+        "code": "PW",
+        "title": "Palau",
+        "description": "Republic of Palau"
       },
       {
-        "topic_code": "SB",
-        "name": "Solomon Islands",
-        "formal_name": ""
+        "code": "SB",
+        "title": "Solomon Islands",
+        "description": ""
       },
       {
-        "topic_code": "TK",
-        "name": "Tokelau",
-        "formal_name": ""
+        "code": "TK",
+        "title": "Tokelau",
+        "description": ""
       },
       {
-        "topic_code": "TV",
-        "name": "Tuvalu",
-        "formal_name": ""
+        "code": "TV",
+        "title": "Tuvalu",
+        "description": ""
       },
       {
-        "topic_code": "UM",
-        "name": "United States Minor Outlying Islands",
-        "formal_name": ""
+        "code": "UM",
+        "title": "United States Minor Outlying Islands",
+        "description": ""
       },
       {
-        "topic_code": "VU",
-        "name": "Vanuatu",
-        "formal_name": "Republic of Vanuatu"
+        "code": "VU",
+        "title": "Vanuatu",
+        "description": "Republic of Vanuatu"
       },
       {
-        "topic_code": "WF",
-        "name": "Wallis and Futuna",
-        "formal_name": "Territory of the Wallis and Futuna Islands"
+        "code": "WF",
+        "title": "Wallis and Futuna",
+        "description": "Territory of the Wallis and Futuna Islands"
       },
       {
-        "topic_code": "WS",
-        "name": "Samoa",
-        "formal_name": "Independent State of Samoa"
+        "code": "WS",
+        "title": "Samoa",
+        "description": "Independent State of Samoa"
       }
     ]
   },
   {
-    "continent": "Other",
-    "countries": [
+    "title": "Other",
+    "topics": [
       {
-        "topic_code": "AQ",
-        "name": "Antarctica",
-        "formal_name": ""
+        "code": "AQ",
+        "title": "Antarctica",
+        "description": ""
       },
       {
-        "topic_code": "MDS",
-        "name": "Mid-Sea",
-        "formal_name": "A maritime location on or below the surface of a sea or ocean."
+        "code": "MDS",
+        "title": "Mid-Sea",
+        "description": "A maritime location on or below the surface of a sea or ocean."
       },
       {
-        "topic_code": "SPC",
-        "name": "Outer Space",
-        "formal_name": "A location outside the Earth's atmosphere."
+        "code": "SPC",
+        "title": "Outer Space",
+        "description": "A location outside the Earth's atmosphere."
       },
       {
-        "topic_code": "AIRB",
-        "name": "Airborne",
-        "formal_name": "A location above the Earth's surface but within the atmosphere."
+        "code": "AIRB",
+        "title": "Airborne",
+        "description": "A location above the Earth's surface but within the atmosphere."
       }
     ]
   },
   {
-    "continent": "South America",
-    "countries": [
+    "title": "South America",
+    "topics": [
       {
-        "topic_code": "AI",
-        "name": "Anguilla",
-        "formal_name": ""
+        "code": "AI",
+        "title": "Anguilla",
+        "description": ""
       },
       {
-        "topic_code": "AR",
-        "name": "Argentina",
-        "formal_name": "Argentine Republic"
+        "code": "AR",
+        "title": "Argentina",
+        "description": "Argentine Republic"
       },
       {
-        "topic_code": "BB",
-        "name": "Barbados",
-        "formal_name": ""
+        "code": "BB",
+        "title": "Barbados",
+        "description": ""
       },
       {
-        "topic_code": "BO",
-        "name": "Bolivia",
-        "formal_name": "Plurinational State of Bolivia"
+        "code": "BO",
+        "title": "Bolivia",
+        "description": "Plurinational State of Bolivia"
       },
       {
-        "topic_code": "BR",
-        "name": "Brazil",
-        "formal_name": "Federative Republic of Brazil"
+        "code": "BR",
+        "title": "Brazil",
+        "description": "Federative Republic of Brazil"
       },
       {
-        "topic_code": "BS",
-        "name": "Bahamas",
-        "formal_name": "Commonwealth of the Bahamas"
+        "code": "BS",
+        "title": "Bahamas",
+        "description": "Commonwealth of the Bahamas"
       },
       {
-        "topic_code": "CL",
-        "name": "Chile",
-        "formal_name": "Republic of Chile"
+        "code": "CL",
+        "title": "Chile",
+        "description": "Republic of Chile"
       },
       {
-        "topic_code": "CO",
-        "name": "Colombia",
-        "formal_name": "Republic of Colombia"
+        "code": "CO",
+        "title": "Colombia",
+        "description": "Republic of Colombia"
       },
       {
-        "topic_code": "CU",
-        "name": "Cuba",
-        "formal_name": "Republic of Cuba"
+        "code": "CU",
+        "title": "Cuba",
+        "description": "Republic of Cuba"
       },
       {
-        "topic_code": "DM",
-        "name": "Dominica",
-        "formal_name": "Commonwealth of Dominica"
+        "code": "DM",
+        "title": "Dominica",
+        "description": "Commonwealth of Dominica"
       },
       {
-        "topic_code": "DO",
-        "name": "Dominican Republic",
-        "formal_name": ""
+        "code": "DO",
+        "title": "Dominican Republic",
+        "description": ""
       },
       {
-        "topic_code": "EC",
-        "name": "Ecuador",
-        "formal_name": "Republic of Ecuador"
+        "code": "EC",
+        "title": "Ecuador",
+        "description": "Republic of Ecuador"
       },
       {
-        "topic_code": "FK",
-        "name": "Falkland Islands",
-        "formal_name": ""
+        "code": "FK",
+        "title": "Falkland Islands",
+        "description": ""
       },
       {
-        "topic_code": "GD",
-        "name": "Grenada",
-        "formal_name": ""
+        "code": "GD",
+        "title": "Grenada",
+        "description": ""
       },
       {
-        "topic_code": "GF",
-        "name": "French Guiana",
-        "formal_name": "Department of Guiana"
+        "code": "GF",
+        "title": "French Guiana",
+        "description": "Department of Guiana"
       },
       {
-        "topic_code": "GP",
-        "name": "Guadeloupe",
-        "formal_name": "Department of Guadeloupe"
+        "code": "GP",
+        "title": "Guadeloupe",
+        "description": "Department of Guadeloupe"
       },
       {
-        "topic_code": "GS",
-        "name": "South Georgia and South Sandwich Islands",
-        "formal_name": ""
+        "code": "GS",
+        "title": "South Georgia and South Sandwich Islands",
+        "description": ""
       },
       {
-        "topic_code": "GT",
-        "name": "Guatemala",
-        "formal_name": "Republic of Guatemala"
+        "code": "GT",
+        "title": "Guatemala",
+        "description": "Republic of Guatemala"
       },
       {
-        "topic_code": "GW",
-        "name": "Guinea-Bissau",
-        "formal_name": "Republic of Guinea-Bissau"
+        "code": "GW",
+        "title": "Guinea-Bissau",
+        "description": "Republic of Guinea-Bissau"
       },
       {
-        "topic_code": "JM",
-        "name": "Jamaica",
-        "formal_name": ""
+        "code": "JM",
+        "title": "Jamaica",
+        "description": ""
       },
       {
-        "topic_code": "KN",
-        "name": "Saint Kitts and Nevis",
-        "formal_name": "Federation of Saint Kitts and Nevis"
+        "code": "KN",
+        "title": "Saint Kitts and Nevis",
+        "description": "Federation of Saint Kitts and Nevis"
       },
       {
-        "topic_code": "KY",
-        "name": "Cayman Islands",
-        "formal_name": ""
+        "code": "KY",
+        "title": "Cayman Islands",
+        "description": ""
       },
       {
-        "topic_code": "LC",
-        "name": "Saint Lucia",
-        "formal_name": ""
+        "code": "LC",
+        "title": "Saint Lucia",
+        "description": ""
       },
       {
-        "topic_code": "MQ",
-        "name": "Martinique",
-        "formal_name": "Department of Martinique"
+        "code": "MQ",
+        "title": "Martinique",
+        "description": "Department of Martinique"
       },
       {
-        "topic_code": "MS",
-        "name": "Montserrat",
-        "formal_name": ""
+        "code": "MS",
+        "title": "Montserrat",
+        "description": ""
       },
       {
-        "topic_code": "PE",
-        "name": "Peru",
-        "formal_name": "Republic of Peru"
+        "code": "PE",
+        "title": "Peru",
+        "description": "Republic of Peru"
       },
       {
-        "topic_code": "PR",
-        "name": "Puerto Rico",
-        "formal_name": "Commonwealth of Puerto Rico"
+        "code": "PR",
+        "title": "Puerto Rico",
+        "description": "Commonwealth of Puerto Rico"
       },
       {
-        "topic_code": "PY",
-        "name": "Paraguay",
-        "formal_name": "Republic of Paraguay"
+        "code": "PY",
+        "title": "Paraguay",
+        "description": "Republic of Paraguay"
       },
       {
-        "topic_code": "SR",
-        "name": "Suriname",
-        "formal_name": "Republic of Suriname"
+        "code": "SR",
+        "title": "Suriname",
+        "description": "Republic of Suriname"
       },
       {
-        "topic_code": "ST",
-        "name": "Sao Tome and Principe",
-        "formal_name": "Democratic Republic of Sao Tome and Principe"
+        "code": "ST",
+        "title": "Sao Tome and Principe",
+        "description": "Democratic Republic of Sao Tome and Principe"
       },
       {
-        "topic_code": "TC",
-        "name": "Turks and Caicos Islands",
-        "formal_name": ""
+        "code": "TC",
+        "title": "Turks and Caicos Islands",
+        "description": ""
       },
       {
-        "topic_code": "TT",
-        "name": "Trinidad and Tobago",
-        "formal_name": "Republic of Trinidad and Tobago"
+        "code": "TT",
+        "title": "Trinidad and Tobago",
+        "description": "Republic of Trinidad and Tobago"
       },
       {
-        "topic_code": "UY",
-        "name": "Uruguay",
-        "formal_name": "Oriental Republic of Uruguay"
+        "code": "UY",
+        "title": "Uruguay",
+        "description": "Oriental Republic of Uruguay"
       },
       {
-        "topic_code": "VC",
-        "name": "Saint Vincent and the Grenadines",
-        "formal_name": ""
+        "code": "VC",
+        "title": "Saint Vincent and the Grenadines",
+        "description": ""
       },
       {
-        "topic_code": "VE",
-        "name": "Venezuela",
-        "formal_name": "Bolivarian Republic of Venezuela"
+        "code": "VE",
+        "title": "Venezuela",
+        "description": "Bolivarian Republic of Venezuela"
       },
       {
-        "topic_code": "VG",
-        "name": "British Virgin Islands",
-        "formal_name": ""
+        "code": "VG",
+        "title": "British Virgin Islands",
+        "description": ""
       },
       {
-        "topic_code": "VI",
-        "name": "U.S. Virgin Islands",
-        "formal_name": "United States Virgin Islands"
+        "code": "VI",
+        "title": "U.S. Virgin Islands",
+        "description": "United States Virgin Islands"
       }
     ]
   }

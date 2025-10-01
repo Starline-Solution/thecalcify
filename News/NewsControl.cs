@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -56,6 +57,15 @@ namespace thecalcify.News
             UpdatePageInfo(1, pageSize);
             lastPageSize = pageSize;
             _cts = new CancellationTokenSource();
+
+            // Smooth scrolling
+            typeof(DataGridView).InvokeMember(
+                "DoubleBuffered",
+                BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.SetProperty,
+                null,
+                dgvNews,
+                new object[] { true }
+            );
 
         }
 
@@ -357,11 +367,88 @@ namespace thecalcify.News
                     .ToList();
 
 
-                // Update DataGridView on UI thread
-                _ = Invoke((Action)(() =>
+                if (this.InvokeRequired)
+                {
+                    // Update DataGridView on UI thread
+                    _ = Invoke((Action)(() =>
+                    {
+                        try
+                        {
+                            if (this.IsDisposed || !this.IsHandleCreated || dgvNews.IsDisposed)
+                            {
+                                _cts?.Cancel(); // stop previous periodic fetch
+                                                // Restart periodic fetch after reload
+                                _cts = new CancellationTokenSource();
+                                _ = Task.Run(() => PeriodicFetchAsync(_cts.Token));
+                                ApplicationLogger.Log("[FetchNewsDataAndUpdateGrid] News Restarted.");
+                            }
+
+
+                            dgvNews.Rows.Clear();
+                            foreach (var item in newsItems)
+                            {
+                                // Convert date format (assuming FirstCreated is a valid datetime string)
+                                DateTimeOffset dto = DateTimeOffset.Parse(item.SortTimestamp);
+                                DateTimeOffset istTime = dto.ToOffset(TimeSpan.FromHours(5.5)); // Convert to IST time
+                                string formattedTime = istTime.ToString("dd/MM/yyyy HH:mm:ss");
+
+                                // Get the selected category and subcategory names
+                                var selectedCategory = cmbCategory.SelectedItem as Category;
+                                string categoryName = "N/A";
+                                if (selectedCategory?.Literal != null && buttonClicked && categoryLiteral != null)
+                                    categoryName = categoryLiteral;
+
+                                var selectedSubCategory = cmbSubCategory.SelectedItem as Category;
+                                string subcategoryName = "N/A";
+                                if (selectedSubCategory?.Literal != null && buttonClicked && subcategoryLiteral != null)
+                                    subcategoryName = subcategoryLiteral;
+
+                                if (dgvNews.Columns.Count == 0)
+                                {
+                                    dgvNews.Columns.Add("Time", "Time");
+                                    dgvNews.Columns.Add("Title", "Title");
+                                    dgvNews.Columns.Add("Category", "Category");
+                                    dgvNews.Columns.Add("SubCategory", "SubCategory");
+                                }
+
+                                dgvNews.Rows.Insert(0,
+                                formattedTime,    // Time
+                                item.HeadLine,    // Title
+                                categoryName,     // Category
+                                subcategoryName   // SubCategory
+                            );
+
+                                // Tag the row with the news item for future reference
+                                dgvNews.Rows[0].Tag = item;
+                            }
+
+                            // Set specific column widths
+                            dgvNews.Columns[0].Width = 145;  // Time column width
+                            dgvNews.Columns[1].Width = 835;  // Title column width
+                            dgvNews.Columns[2].Width = 250;  // Category column width
+                            dgvNews.Columns[3].Width = 250;  // SubCategory column width
+                        }
+                        catch (Exception ex)
+                        {
+                            ApplicationLogger.Log($"[FetchNewsDataAndUpdateGrid_Invoke] Error: {ex.Message}");
+                            ApplicationLogger.LogException(ex);
+                        }
+                    }));
+                }
+                else
                 {
                     try
                     {
+
+                        if (this.IsDisposed || !this.IsHandleCreated || dgvNews.IsDisposed)
+                        {
+                            _cts?.Cancel(); // stop previous periodic fetch
+                            // Restart periodic fetch after reload
+                            _cts = new CancellationTokenSource();
+                            _ = Task.Run(() => PeriodicFetchAsync(_cts.Token));
+                            ApplicationLogger.Log("[FetchNewsDataAndUpdateGrid] News Restarted.");
+                        }
+
                         dgvNews.Rows.Clear();
                         foreach (var item in newsItems)
                         {
@@ -381,17 +468,24 @@ namespace thecalcify.News
                             if (selectedSubCategory?.Literal != null && buttonClicked && subcategoryLiteral != null)
                                 subcategoryName = subcategoryLiteral;
 
-                            
 
-                                dgvNews.Rows.Insert(0,
-                                    formattedTime,    // Time
-                                    item.HeadLine,    // Title
-                                    categoryName,     // Category
-                                    subcategoryName   // SubCategory
-                                );
+                            if (dgvNews.Columns.Count == 0)
+                            {
+                                dgvNews.Columns.Add("Time", "Time");
+                                dgvNews.Columns.Add("Title", "Title");
+                                dgvNews.Columns.Add("Category", "Category");
+                                dgvNews.Columns.Add("SubCategory", "SubCategory");
+                            }
 
-                                // Tag the row with the news item for future reference
-                                dgvNews.Rows[0].Tag = item;
+                            dgvNews.Rows.Insert(0,
+                            formattedTime,    // Time
+                            item.HeadLine,    // Title
+                            categoryName,     // Category
+                            subcategoryName   // SubCategory
+                        );
+
+                            // Tag the row with the news item for future reference
+                            dgvNews.Rows[0].Tag = item;
                         }
 
                         // Set specific column widths
@@ -403,8 +497,9 @@ namespace thecalcify.News
                     catch (Exception ex)
                     {
                         ApplicationLogger.Log($"[FetchNewsDataAndUpdateGrid_Invoke] Error: {ex.Message}");
+                        ApplicationLogger.LogException(ex);
                     }
-                }));
+                }
 
             }
             catch (Exception ex)

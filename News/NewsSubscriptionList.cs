@@ -15,13 +15,11 @@ namespace thecalcify.News
     public partial class NewsSubscriptionList : Form
     {
         private string jsonData;
-        private string dataType; // "category" or "region"
 
         public NewsSubscriptionList(string json, string type)
         {
             InitializeComponent();
             jsonData = json;
-            dataType = type.ToLower();
             Load += NewsSubscriptionList_Load;
             this.Text = type.Equals("region", StringComparison.OrdinalIgnoreCase) ? "News Regions" : "News Categories";
         }
@@ -31,7 +29,7 @@ namespace thecalcify.News
             LoadData();
         }
 
-        private void LoadData()
+        private async Task LoadData()
         {
             try
             {
@@ -39,11 +37,13 @@ namespace thecalcify.News
                 {
                     PropertyNameCaseInsensitive = true
                 };
-                var categories = System.Text.Json.JsonSerializer.Deserialize<List<NewsCategory>>(jsonData, options);
+                var categories = await Task.Run(() =>
+                    System.Text.Json.JsonSerializer.Deserialize<List<NewsCategory>>(jsonData, options)
+                );
 
                 if (categories != null && categories.Any())
                 {
-                    Console.WriteLine($"Deserialized {categories.Count} categories");
+                    //Console.WriteLine($"Deserialized {categories.Count} categories");
                     DisplayCategories(categories);
                 }
                 else
@@ -59,11 +59,10 @@ namespace thecalcify.News
 
         private void DisplayCategories(List<NewsCategory> categories)
         {
-            Console.WriteLine($"Start At {DateTime.Now:HH:mm:ss:fff}");
+            //Console.WriteLine($"Start At {DateTime.Now:HH:mm:ss:fff}");
 
             userpanel.SuspendLayout();
             userpanel.Controls.Clear();
-
             userpanel.FlowDirection = FlowDirection.TopDown;
             userpanel.WrapContents = false;
             userpanel.AutoScroll = true;
@@ -165,16 +164,9 @@ namespace thecalcify.News
                     }
                 }
 
+                // Create topic checkboxes
                 foreach (var topic in category.topics)
                 {
-                    var topicContainer = new FlowLayoutPanel
-                    {
-                        AutoSize = true,
-                        FlowDirection = FlowDirection.TopDown,
-                        WrapContents = false,
-                        Margin = new Padding(0, 5, 0, 5)
-                    };
-
                     var topicCheckBox = new CheckBox
                     {
                         Text = topic.title,
@@ -194,10 +186,8 @@ namespace thecalcify.News
                         TextAlign = ContentAlignment.TopLeft
                     };
 
-                    topicContainer.Controls.Add(topicCheckBox);
-                    topicContainer.Controls.Add(descriptionLabel);
-
-                    topicsPanel.Controls.Add(topicContainer);
+                    topicsPanel.Controls.Add(topicCheckBox);
+                    topicsPanel.Controls.Add(descriptionLabel);
                     topicCheckBoxes.Add(topicCheckBox);
 
                     topicCheckBox.CheckedChanged += TopicCheckBox_CheckedChanged;
@@ -235,16 +225,8 @@ namespace thecalcify.News
 
             userpanel.ResumeLayout();
 
-            Console.WriteLine($"Stop At {DateTime.Now:HH:mm:ss:fff}");
+            //Console.WriteLine($"Stop At {DateTime.Now:HH:mm:ss:fff}");
         }
-
-
-
-
-
-
-
-
     }
 
 
