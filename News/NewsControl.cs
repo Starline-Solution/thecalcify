@@ -381,6 +381,7 @@ namespace thecalcify.News
                                 _cts = new CancellationTokenSource();
                                 _ = Task.Run(() => PeriodicFetchAsync(_cts.Token));
                                 ApplicationLogger.Log("[FetchNewsDataAndUpdateGrid] News Restarted.");
+                                return;
                             }
 
 
@@ -447,6 +448,7 @@ namespace thecalcify.News
                             _cts = new CancellationTokenSource();
                             _ = Task.Run(() => PeriodicFetchAsync(_cts.Token));
                             ApplicationLogger.Log("[FetchNewsDataAndUpdateGrid] News Restarted.");
+                            return;
                         }
 
                         dgvNews.Rows.Clear();
