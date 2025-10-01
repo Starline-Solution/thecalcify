@@ -150,38 +150,7 @@ namespace thecalcify
                                 {
                                     var dataElement = root.GetProperty("data");
                                     token = dataElement.GetProperty("token").GetString();
-                                    string expireTimeStr = dataElement.GetProperty("expireTime").GetString();
-
-                                    try
-                                    {
-
-                                        if (!string.IsNullOrEmpty(expireTimeStr) &&
-                                                                        DateTime.TryParse(expireTimeStr, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.RoundtripKind, out DateTime expireDate))
-                                        {
-                                            licenceDate = expireDate.ToString("dd/MM/yyyy");
-                                            DateTime txtlicenceDate = Common.ParseToDate(licenceDate);
-                                            DateTime currentDate = DateTime.Now.Date;
-                                            TimeSpan diff = txtlicenceDate - currentDate;
-                                            int RemainingDays = diff.Days;
-                                            if (RemainingDays < 0)
-                                            {
-                                                MessageBox.Show("Expired Subscription. Admin assistance required.", "Subscription Expired", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                                                loginbutton.Enabled = true;
-                                                return;
-                                            }
-
-                                        }
-                                        else
-                                        {
-                                            MessageBox.Show("You are unauthorized");
-                                            loginbutton.Enabled = true;
-                                        }
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        ApplicationLogger.Log("Error parsing rate value at Login_Click: " + ex.Message);
-                                    }
-                                    // Decode JWT token
+                                    
 
                                     // Decode JWT and get all the data as a dictionary
                                     var jwtData = DecodeJwtData(token);
