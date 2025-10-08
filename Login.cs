@@ -1,4 +1,8 @@
-﻿using System;
+﻿using DocumentFormat.OpenXml.EMMA;
+using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Drawing;
@@ -6,6 +10,7 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using thecalcify.Helper;
 
@@ -90,6 +95,8 @@ namespace thecalcify
 
         private async void Login_Click(object sender, EventArgs e)
         {
+            // Show the splash screen
+            SplashManager.Show(this, "Loading", "You'll log in shortly...");
 
             loginbutton.Enabled = false;
 
@@ -101,6 +108,9 @@ namespace thecalcify
 
                 if (string.IsNullOrEmpty(uname) || string.IsNullOrEmpty(password))
                 {
+                    // Hide the splash after UI update
+                    SplashManager.Hide();
+
                     MessageBox.Show("Please enter both username and password.",
                                            "Authentication Failed",
                                            MessageBoxButtons.OK,
@@ -119,6 +129,8 @@ namespace thecalcify
                     password
                 };
 
+                await SignalREvent(username);
+
                 using (HttpClient client = new HttpClient())
                 {
                     try
@@ -132,6 +144,9 @@ namespace thecalcify
 
                         if (response.StatusCode == HttpStatusCode.ServiceUnavailable)
                         {
+                            // Hide the splash after UI update
+                            SplashManager.Hide();
+
                             MessageBox.Show("Temporary Upgrading Server. Login after sometime", "Upgrade Server", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                             ApplicationLogger.Log($"{responseContent},{DateTime.Now:dd/MM/yyyy HH:mm:ss:ff}");
                             loginbutton.Enabled = true;
@@ -150,7 +165,7 @@ namespace thecalcify
                                 {
                                     var dataElement = root.GetProperty("data");
                                     token = dataElement.GetProperty("token").GetString();
-                                    
+
 
                                     // Decode JWT and get all the data as a dictionary
                                     var jwtData = DecodeJwtData(token);
@@ -178,27 +193,39 @@ namespace thecalcify
                                         LoginInfo.NewsExpiredDate = LoginInfo.NewsExpiredDate.Date;
                                     }
 
-
-                                    if (!LoginInfo.IsNews && !LoginInfo.IsRate &&
-                                        LoginInfo.RateExpiredDate < DateTime.Today.Date &&
-                                        LoginInfo.NewsExpiredDate < DateTime.Today.Date)
+                                    if ((LoginInfo.IsRate && LoginInfo.RateExpiredDate >= DateTime.Today.Date) || (LoginInfo.IsNews && LoginInfo.NewsExpiredDate >= DateTime.Today.Date))
                                     {
-                                        MessageBox.Show("Please contact the Administrator", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                        // Hide the splash after UI update
+                                        SplashManager.Hide();
+
+                                        ApplicationLogger.Log($"User Logged In", "Logon");
+
+                                        thecalcify homeForm = new thecalcify();
+                                        homeForm.Show();
+
+                                        SaveCredential(); // Presumably saves token or login info
+                                        this.Hide();
+                                    }
+                                    else
+                                    {
+                                        // Hide the splash after UI update
+                                        SplashManager.Hide();
+
+                                        MessageBox.Show("Please contact the Administrator, Required Admin Assitance", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                        ApplicationLogger.Log($"User is Logged Out Due to :- " +
+                                                                    $"Rate = {LoginInfo.IsRate}" +
+                                                                    $"News = {LoginInfo.IsNews}" +
+                                                                    $"rateExpirydate = {LoginInfo.RateExpiredDate}" +
+                                                                    $"newsExpiryDate = {LoginInfo.NewsExpiredDate}");
                                         loginbutton.Enabled = true;
                                         return;
                                     }
-
-
-                                    ApplicationLogger.Log($"User Logged In", "Logon");
-
-                                    thecalcify homeForm = new thecalcify();
-                                    homeForm.Show();
-
-                                    SaveCredential(); // Presumably saves token or login info
-                                    this.Hide();
                                 }
                                 else
                                 {
+                                    // Hide the splash after UI update
+                                    SplashManager.Hide();
+
                                     string message = root.GetProperty("message").GetString();
                                     MessageBox.Show(message ?? "Login failed.",
                                         "Authentication Failed",
@@ -209,6 +236,9 @@ namespace thecalcify
                             }
                             else
                             {
+                                // Hide the splash after UI update
+                                SplashManager.Hide();
+
                                 string message = root.GetProperty("message").GetString();
                                 MessageBox.Show(message ?? "Login failed.",
                                     "Authentication Failed",
@@ -220,6 +250,9 @@ namespace thecalcify
                     }
                     catch (Exception ex)
                     {
+                        // Hide the splash after UI update
+                        SplashManager.Hide();
+
                         MessageBox.Show("Login failed: " + ex.Message);
                         loginbutton.Enabled = true;
                         ApplicationLogger.LogException(ex);
@@ -230,6 +263,9 @@ namespace thecalcify
             }
             else
             {
+                // Hide the splash after UI update
+                SplashManager.Hide();
+
                 MessageBox.Show("Check your internet connection and try again.",
                           "No Internet",
                           MessageBoxButtons.OK,
@@ -423,6 +459,66 @@ namespace thecalcify
                 System.Windows.Forms.Application.Exit(); // Terminate the application
 
             }
+        }
+
+        public static async Task SignalREvent(string username)
+        {
+            //username = "raju"; // Temporary hardcoded username for testing
+
+            var connection = new HubConnectionBuilder()
+
+               .WithUrl("http://35.176.5.121:1008/excel?type=Desktop")
+               .WithAutomaticReconnect()
+               .WithStatefulReconnect()
+               .ConfigureLogging(logging =>
+               {
+                   logging.AddConsole();
+                   logging.SetMinimumLevel(LogLevel.Error);
+               })
+               .Build();
+
+            connection.Reconnected += async (connectionId) =>
+            {
+
+                await connection.InvokeAsync("client", username);
+
+            };
+            connection.On<object>("ReceiveMessage", (base64) =>
+            {
+                try
+                {
+                    // Convert object to string
+                    string base64String = base64?.ToString();
+
+                    if (string.IsNullOrWhiteSpace(base64String))
+                    {
+                        ApplicationLogger.Log("Received empty message.");
+                        return;
+                    }
+
+                    var root = JObject.Parse(base64String);
+                    bool status = root.Value<bool>("status");
+
+                    if (status)
+                    {
+
+                        // Get flattened JSON string
+                        string resultJson = Common.JsonExtractor(base64String);
+
+                        UserDto userDto = JsonSerializer.Deserialize<UserDto>(resultJson);
+                        ApplicationLogger.Log($"Received SignalR message for User: {userDto?.username}, Action: {userDto?.newsExpireDate} && {userDto?.rateExpireDate}");
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    ApplicationLogger.Log("Error decompressing message: " + ex.Message);
+                    ApplicationLogger.LogException(ex);
+                }
+            });
+
+            await connection.StartAsync();
+            await connection.InvokeAsync("client", username);
         }
     }
 }

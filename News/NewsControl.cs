@@ -11,6 +11,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reflection;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -22,31 +23,82 @@ namespace thecalcify.News
 {
     public partial class NewsControl : UserControl
     {
-        private readonly string _username, _password;
+        private readonly string _username, _password, _type;
         private static readonly string apiUrl = ConfigurationManager.AppSettings["ReutersApiBaseUrl"];
         private static readonly HttpClient client = new HttpClient();
-        public string _token;
+        private string _token;
         private CancellationTokenSource _cts;
-        public int pageSize = 100;
-        public int lastPageSize = 0;
-        public int pageRefreshDelay = 60000;
-        public string PrevCursor = string.Empty;
-        private bool checkItem = true;
+        private int pageSize = 30;
+        private int lastPageSize = 0;
+        private int pageRefreshDelay = 60000;
+        private string PrevCursor = string.Empty;
         private bool buttonClicked = false;
         private string categoryLiteral = string.Empty;
         private string subcategoryLiteral = string.Empty;
         private string categoryCode = string.Empty;
         private string subcategoryCode = string.Empty;
         private string cursor = string.Empty;
-        private int totalRecords = 0;
-        public NewsControl(string username, string password, string token)
+        private int currentPage = 1; // Start from page 1
+        private int totalLoadedItems = 0;
+
+
+        public NewsControl(string username, string password, string token,string type)
         {
             InitializeComponent();
 
             _username = username;
             _password = password;
             _token = token;
+            _type = type;
+
             this.Load += NewsControl_Load;
+
+            if (type == "history")
+            {
+                lblCategory.Visible = true;
+                cmbCategory.Visible = true;
+                lblSubCategory.Visible = true;
+                cmbSubCategory.Visible = true;
+                btnSearchNews.Visible = true;
+                btnRefresh.Visible = false;
+                btnNextPage.Visible = true;
+                btnPrevPage.Visible = true;
+
+
+                if (dgvNews.Columns.Contains("DVGCategory"))
+                    dgvNews.Columns["DVGCategory"].Visible = !string.IsNullOrEmpty(_type);
+
+                if (dgvNews.Columns.Contains("DVGSubCategory"))
+                    dgvNews.Columns["DVGSubCategory"].Visible = !string.IsNullOrEmpty(_type);
+
+
+            }
+            else
+            {
+                lblPageInfo.Visible = false;
+                btnRefresh.Visible = true;
+
+                if (dgvNews.Columns.Contains("DVGCategory"))
+                    dgvNews.Columns["DVGCategory"].Visible = !string.IsNullOrEmpty(_type);
+
+                if (dgvNews.Columns.Contains("DVGSubCategory"))
+                    dgvNews.Columns["DVGSubCategory"].Visible = !string.IsNullOrEmpty(_type);
+
+            }
+
+            // Loop through all columns and disable sorting
+            foreach (DataGridViewColumn column in dgvNews.Columns)
+            {
+                column.SortMode = DataGridViewColumnSortMode.NotSortable;
+            }
+
+            dgvNews.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+
+            // Explicitly set column FillWeights again
+            dgvNews.Columns[0].FillWeight = 10;  // Time
+            dgvNews.Columns[1].FillWeight = 60;  // Title
+            dgvNews.Columns[2].FillWeight = 15;  // Category
+            dgvNews.Columns[3].FillWeight = 15;  // SubCategory
 
             // Configure HttpClient once
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
@@ -54,7 +106,7 @@ namespace thecalcify.News
 
             cmbCategory.SelectedIndexChanged += CmbCategory_SelectedIndexChanged;
             btnSearchNews.Click += BtnSearchNews_Click;
-            UpdatePageInfo(1, pageSize);
+            //UpdatePageInfo(1, pageSize);
             lastPageSize = pageSize;
             _cts = new CancellationTokenSource();
 
@@ -149,8 +201,11 @@ namespace thecalcify.News
                 // Load categories on form load
                 await LoadCategoriesAsync();
 
-                // Start periodic fetch
-                _ = PeriodicFetchAsync(_cts.Token);
+                if (string.IsNullOrEmpty(_type))
+                {
+                    // Start periodic fetch
+                    _ = PeriodicFetchAsync(_cts.Token); 
+                }
             }
             catch (Exception ex)
             {
@@ -225,6 +280,13 @@ namespace thecalcify.News
             try
             {
                 btnNextPage.Enabled = true;
+                btnPrevPage.Enabled = true;
+                lblPageInfo.Visible = true;
+
+                currentPage = 1;
+                totalLoadedItems = 0;
+                lastPageSize = pageSize;
+
 
                 // Example category/subcategory selection
                 Category category = cmbCategory.SelectedItem as Category;
@@ -258,7 +320,7 @@ namespace thecalcify.News
                 // Fetch news data and update grid
                 await FetchNewsDataAndUpdateGrid(categoryCode ?? string.Empty, subcategoryCode ?? string.Empty, pageSize, string.Empty);
 
-                UpdatePageInfo(1, pageSize);
+                UpdatePageInfo(currentPage, pageSize);
             }
             catch (Exception ex)
             {
@@ -277,10 +339,21 @@ namespace thecalcify.News
                     // Fetch periodically and update cursor
                     await FetchNewsDataAndUpdateGrid(categoryCode, subcategoryCode, pageSize, string.Empty);
 
-                    newsUpdateLable.Visible = true; 
-                    newsUpdateLable.Text = $"Last News Updated At: {DateTime.Now:dd/MM/yyyy HH:mm:ss}";
-
-                    UpdatePageInfo(1, pageSize);
+                    if (this.InvokeRequired)
+                    {
+                        this.Invoke(new Action(() =>
+                        {
+                            newsUpdateLable.Visible = true;
+                            newsUpdateLable.Text = $"Last News Updated At: {DateTime.Now:dd/MM/yyyy HH:mm:ss}";
+                        }));
+                    }
+                    else
+                    {
+                        newsUpdateLable.Visible = true;
+                        newsUpdateLable.Text = $"Last News Updated At: {DateTime.Now:dd/MM/yyyy HH:mm:ss}";
+                    }
+                    
+                    //UpdatePageInfo(1, pageSize);
                     //lastPageSize = 1;
 
 
@@ -314,11 +387,8 @@ namespace thecalcify.News
 
         private async Task FetchNewsDataAndUpdateGrid(string category, string subcategory, int pageSize, string cursorValue)
         {
-            int rowCount = 0;
-            if(dgvNews.Rows.Count > 0)
-            {
-                rowCount = dgvNews.Rows.Count;
-            }
+            newsSearch.Clear();
+
             try
             {
                 // Build API URL
@@ -342,8 +412,7 @@ namespace thecalcify.News
                     string innerJson = System.Text.Json.JsonSerializer.Deserialize<string>(json);
                     result = System.Text.Json.JsonSerializer.Deserialize<ReutersResponse>(innerJson);
                     cursor = result.Data.Search.PageInfo.EndCursor;
-                    totalRecords = result.Data.Search.TotalHits;
-                    if (result.Data.Search.PageInfo.HasNextPage == false)
+                    if (!result.Data.Search.PageInfo.HasNextPage)
                      btnNextPage.Enabled = false;   
 
                 }
@@ -356,15 +425,52 @@ namespace thecalcify.News
                 {
                     MessageBox.Show("No related data found.....","News Alert",MessageBoxButtons.OK,MessageBoxIcon.Warning);
                     cmbCategory.SelectedItem = "All";
+
+                    currentPage = 1;
+                    totalLoadedItems = 0;
+                    UpdatePageInfo(currentPage, pageSize);
+
                     // Call search button again with new category
                     BtnSearchNews_Click(this, EventArgs.Empty);
                     ApplicationLogger.Log("[FetchNewsDataAndUpdateGrid] No items found.");
                 }
 
-                // ✅ Sort by IST time (descending)
+                // Define IST timezone offset
+                var istOffset = TimeSpan.FromHours(5.5);
+
+                // Get current IST date
+                var currentIstDate = DateTimeOffset.UtcNow.ToOffset(istOffset).Date;
+
+                // Filter and sort items that are from today (IST)
                 var newsItems = result.Data.Search.Items
-                    .OrderBy(item => DateTimeOffset.Parse(item.SortTimestamp).ToOffset(TimeSpan.FromHours(5.5)))
+                    .Select(item => new
+                    {
+                        Item = item,
+                        ISTDateTime = DateTimeOffset.Parse(item.SortTimestamp).ToOffset(istOffset)
+                    })
+                    .Where(x => x.ISTDateTime.Date == currentIstDate)
+                    .OrderBy(x => x.ISTDateTime)
+                    .Select(x => x.Item)
                     .ToList();
+
+
+                // If no items for today, do not display and disable pagination
+                if (newsItems.Count == 0)
+                {
+                    btnNextPage.Enabled = false;
+                    // Optional: clear any UI bindings or lists, if needed
+                    // listView.Items.Clear(); or similar
+                    return;
+                }
+                else
+                {
+
+                    lastPageSize = newsItems.Count;
+                }
+
+                // Proceed with displaying `newsItems`...
+
+
 
 
                 if (this.InvokeRequired)
@@ -376,11 +482,14 @@ namespace thecalcify.News
                         {
                             if (this.IsDisposed || !this.IsHandleCreated || dgvNews.IsDisposed)
                             {
-                                _cts?.Cancel(); // stop previous periodic fetch
-                                                // Restart periodic fetch after reload
-                                _cts = new CancellationTokenSource();
-                                _ = Task.Run(() => PeriodicFetchAsync(_cts.Token));
-                                ApplicationLogger.Log("[FetchNewsDataAndUpdateGrid] News Restarted.");
+                                if (string.IsNullOrEmpty(_type))
+                                {
+                                    _cts?.Cancel(); // stop previous periodic fetch
+                                                    // Restart periodic fetch after reload
+                                    _cts = new CancellationTokenSource();
+                                    _ = Task.Run(() => PeriodicFetchAsync(_cts.Token));
+                                }
+                                //ApplicationLogger.Log("[FetchNewsDataAndUpdateGrid] News Restarted.");
                                 return;
                             }
 
@@ -422,12 +531,6 @@ namespace thecalcify.News
                                 // Tag the row with the news item for future reference
                                 dgvNews.Rows[0].Tag = item;
                             }
-
-                            // Set specific column widths
-                            dgvNews.Columns[0].Width = 145;  // Time column width
-                            dgvNews.Columns[1].Width = 835;  // Title column width
-                            dgvNews.Columns[2].Width = 250;  // Category column width
-                            dgvNews.Columns[3].Width = 250;  // SubCategory column width
                         }
                         catch (Exception ex)
                         {
@@ -443,11 +546,14 @@ namespace thecalcify.News
 
                         if (this.IsDisposed || !this.IsHandleCreated || dgvNews.IsDisposed)
                         {
-                            _cts?.Cancel(); // stop previous periodic fetch
-                            // Restart periodic fetch after reload
-                            _cts = new CancellationTokenSource();
-                            _ = Task.Run(() => PeriodicFetchAsync(_cts.Token));
-                            ApplicationLogger.Log("[FetchNewsDataAndUpdateGrid] News Restarted.");
+                            if (string.IsNullOrEmpty(_type))
+                            {
+                                _cts?.Cancel(); // stop previous periodic fetch
+                                                // Restart periodic fetch after reload
+                                _cts = new CancellationTokenSource();
+                                _ = Task.Run(() => PeriodicFetchAsync(_cts.Token));
+                                //ApplicationLogger.Log("[FetchNewsDataAndUpdateGrid] News Restarted."); 
+                            }
                             return;
                         }
 
@@ -489,17 +595,15 @@ namespace thecalcify.News
                             // Tag the row with the news item for future reference
                             dgvNews.Rows[0].Tag = item;
                         }
-
-                        // Set specific column widths
-                        dgvNews.Columns[0].Width = 145;  // Time column width
-                        dgvNews.Columns[1].Width = 835;  // Title column width
-                        dgvNews.Columns[2].Width = 250;  // Category column width
-                        dgvNews.Columns[3].Width = 250;  // SubCategory column width
                     }
                     catch (Exception ex)
                     {
                         ApplicationLogger.Log($"[FetchNewsDataAndUpdateGrid_Invoke] Error: {ex.Message}");
                         ApplicationLogger.LogException(ex);
+                    }
+                    finally
+                    {
+
                     }
                 }
 
@@ -523,12 +627,13 @@ namespace thecalcify.News
                 if (selected == null) return;
 
                 // Fetch full news details by VersionGuid
-                ItemDto fullNews = await GetNewsByVersionGuidAsync(selected.VersionedGuid);
+                NewsCategoryItem fullNews = await GetNewsItemAsync(selected.VersionedGuid);
+                //ItemDto fullNews = await GetNewsByVersionGuidAsync(selected.VersionedGuid);
 
                 // Show the details in a new form if available
                 if (fullNews != null)
                 {
-                    using (var frm = new NewsDescription(fullNews))
+                    using (var frm = new NewsDescription(fullNews)) // NewsDescription constructor should accept NewsCategoryItem
                     {
                         frm.ShowDialog();
                     }
@@ -538,6 +643,34 @@ namespace thecalcify.News
             {
                 ApplicationLogger.Log($"[dgvNews_CellDoubleClick] Error: {ex.Message}");
             }
+        }
+
+        public async Task<NewsCategoryItem> GetNewsItemAsync(string id)
+        {
+            string url = $"http://35.176.5.121:1008/Client/Reuters/NewsDescription?id={Uri.EscapeDataString(id)}";
+
+            // Set up request
+            var request = new HttpRequestMessage(HttpMethod.Get, url);
+            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _token);
+
+            var response = await client.SendAsync(request);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new Exception($"Request failed with status code {response.StatusCode}");
+            }
+
+            var jsonString = await response.Content.ReadAsStringAsync();
+
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+
+            var newsResponse = System.Text.Json.JsonSerializer.Deserialize<NewsCategoryResponse>(jsonString, options);
+            return newsResponse?.Data?.Item;
+
         }
 
         private async Task<ItemDto> GetNewsByVersionGuidAsync(string versionGuid)
@@ -575,6 +708,7 @@ namespace thecalcify.News
             }
         }
 
+
         // Event handlers for pagination
         private async void BtnNextPage_Click(object sender, System.EventArgs e)
         {
@@ -582,12 +716,15 @@ namespace thecalcify.News
 
             try
             {
+                currentPage++;
+                totalLoadedItems += pageSize;
+
+
                 // Fetch next set of news using PrevCursor
                 await FetchNewsDataAndUpdateGrid(categoryCode, subcategoryCode, pageSize, cursor);
 
                 // Update page info label
-                UpdatePageInfo(lastPageSize, lastPageSize + pageSize);
-                lastPageSize = lastPageSize + pageSize;
+                UpdatePageInfo(currentPage, pageSize);
             }
             catch (Exception ex)
             {
@@ -601,16 +738,16 @@ namespace thecalcify.News
             {
                 btnNextPage.Enabled = true;
 
-                // Reset pagination variables
-                PrevCursor = string.Empty;
+                currentPage = 1;
+                totalLoadedItems = 0;
                 lastPageSize = 0;
+                PrevCursor = string.Empty;
 
                 // Fetch first page of data again
                 await FetchNewsDataAndUpdateGrid(categoryCode, subcategoryCode, pageSize, PrevCursor);
 
                 // Reset page info starting from 0
-                UpdatePageInfo(1, pageSize);
-                lastPageSize = pageSize;
+                UpdatePageInfo(currentPage, pageSize);
             }
             catch (Exception ex)
             {
@@ -618,50 +755,81 @@ namespace thecalcify.News
             }
         }
 
-
-        // Method to update page information
-        public void UpdatePageInfo(int currentPage, int totalPages)
+        private void UpdatePageInfo(int pageNumber, int pageSize)
         {
-            try
+            if (this.InvokeRequired)
             {
-                // Check if we need to invoke the update to the UI thread
-                if (this.InvokeRequired)
+                this.Invoke(new Action(() =>
                 {
-                    this.Invoke(new Action(() =>
-                    {
-                        try
-                        {
-                            if (totalPages > totalRecords)
-                                totalPages = totalRecords;
+                    int start = ((pageNumber - 1) * pageSize) + 1;
+                    int end = start + pageSize - 1;
 
-                            lblPageInfo.Text = $"Records {currentPage} To {totalPages} Out of {totalRecords}";
-                        }
-                        catch (Exception innerEx)
-                        {
-                            ApplicationLogger.Log($"[UpdatePageInfo] Error in Invoke: {innerEx.Message}");
-                        }
-                    }));
-                }
-                else
-                {
-                    try
-                    {
-                        if (totalPages > totalRecords)
-                            totalPages = totalRecords;
-
-                        lblPageInfo.Text = $"Records {currentPage} To {totalPages} Out of {totalRecords}";
-                    }
-                    catch (Exception innerEx)
-                    {
-                        ApplicationLogger.Log($"[UpdatePageInfo] Error: {innerEx.Message}");
-                    }
-                }
+                    lblPageInfo.Text = $"Showing {start} - {end}";
+                }));
             }
-            catch (Exception ex)
+            else
             {
-                ApplicationLogger.Log($"[UpdatePageInfo] Error: {ex.Message}");
+                int start = ((pageNumber - 1) * pageSize) + 1;
+                int end = start + pageSize - 1;
+
+                lblPageInfo.Text = $"Showing {start} - {end}";
             }
         }
+
+
+        // Method to update page information
+        //public void UpdatePageInfo(int currentPage, int totalPages)
+        //{
+        //    try
+        //    {
+        //        // Check if we need to invoke the update to the UI thread
+        //        if (this.InvokeRequired)
+        //        {
+        //            this.Invoke(new Action(() =>
+        //            {
+        //                try
+        //                {
+        //                    if (!string.IsNullOrEmpty(_type))
+        //                    {
+
+        //                        lblPageInfo.Text = $"Records :- 30";
+        //                    }
+        //                    else
+        //                    {
+        //                        lblPageInfo.Text = $"Records :- 30";
+        //                    }
+        //                }
+        //                catch (Exception innerEx)
+        //                {
+        //                    ApplicationLogger.Log($"[UpdatePageInfo] Error in Invoke: {innerEx.Message}");
+        //                }
+        //            }));
+        //        }
+        //        else
+        //        {
+        //            try
+        //            {
+        //                if (!string.IsNullOrEmpty(_type))
+        //                {
+
+        //                    lblPageInfo.Text = $"Records :- 30";
+        //                }
+        //                else
+        //                {
+        //                    lblPageInfo.Text = $"Records :- 30";
+        //                }
+        //            }
+        //            catch (Exception innerEx)
+        //            {
+        //                ApplicationLogger.Log($"[UpdatePageInfo] Error: {innerEx.Message}");
+        //            }
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        ApplicationLogger.Log($"[UpdatePageInfo] Error: {ex.Message}");
+        //    }
+        //}
 
         // Utility method to build Reuters API URL with query parameters
         public static string BuildReutersApiUrl(string baseUrl, int pageSize, string category = null, string subCategory = null, string cursorToken = null)

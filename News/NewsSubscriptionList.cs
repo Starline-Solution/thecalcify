@@ -9,6 +9,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using thecalcify.Helper;
 
 namespace thecalcify.News
 {
@@ -59,188 +60,213 @@ namespace thecalcify.News
 
         private void DisplayCategories(List<NewsCategory> categories)
         {
-            //Console.WriteLine($"Start At {DateTime.Now:HH:mm:ss:fff}");
+            // Show the splash screen
+            SplashManager.Show(this, "Loading", $"Working on {this.Text}...");
 
-            userpanel.SuspendLayout();
-            userpanel.Controls.Clear();
-            userpanel.FlowDirection = FlowDirection.TopDown;
-            userpanel.WrapContents = false;
-            userpanel.AutoScroll = true;
-            userpanel.AutoSize = true;
-
-            int groupBoxMargin = 10;
-            int panelWidth = userpanel.ClientSize.Width - 25;
-
-            Font categoryFont = new Font("Microsoft Sans Serif", 14F, FontStyle.Bold);
-            Font topicFont = new Font("Microsoft Sans Serif", 9F, FontStyle.Bold);
-            Font descriptionFont = new Font("Microsoft Sans Serif", 8F, FontStyle.Italic);
-
-            foreach (var category in categories)
+            Task.Run(new Action(() =>
             {
-                var groupBox = new GroupBox
+                // Collect controls on background thread
+                List<GroupBox> groupBoxes = new List<GroupBox>();
+
+                int panelWidth = 0;
+
+                // Get panel width from UI thread
+                this.Invoke(new MethodInvoker(() =>
                 {
-                    Text = "",
-                    AutoSize = true,
-                    AutoSizeMode = AutoSizeMode.GrowAndShrink,
-                    Width = panelWidth,
-                    Font = categoryFont,
-                    Margin = new Padding(groupBoxMargin),
-                    Padding = new Padding(10),
-                };
+                    panelWidth = userpanel.ClientSize.Width - 25;
+                }));
 
-                groupBox.SuspendLayout();
+                int groupBoxMargin = 10;
 
-                var mainContainer = new TableLayoutPanel
+                Font categoryFont = new Font("Microsoft Sans Serif", 14F, FontStyle.Bold);
+                Font topicFont = new Font("Microsoft Sans Serif", 9F, FontStyle.Bold);
+                Font descriptionFont = new Font("Microsoft Sans Serif", 8F, FontStyle.Italic);
+
+                foreach (NewsCategory category in categories)
                 {
-                    Dock = DockStyle.Fill,
-                    AutoSize = true,
-                    ColumnCount = 1,
-                };
-
-                // Header: Main Checkbox + Expand Button
-                var headerPanel = new TableLayoutPanel
-                {
-                    AutoSize = true,
-                    ColumnCount = 2,
-                    Dock = DockStyle.Top,
-                    Margin = new Padding(0),
-                };
-                headerPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-                headerPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 40F));
-
-                var mainCheckBox = new CheckBox
-                {
-                    Text = category.title,
-                    AutoSize = true,
-                    MaximumSize = new Size(panelWidth - 50, 0),
-                    Font = categoryFont,
-                    ForeColor = Color.Black,
-                    Margin = new Padding(25, 0, 3, 0),
-                    TextAlign = ContentAlignment.TopLeft,
-                    ThreeState = true
-                };
-
-                var expandButton = new Button
-                {
-                    Text = "▼",
-                    Width = 30,
-                    Height = 30,
-                    BackColor = Color.LightGray,
-                    ForeColor = Color.Black,
-                    Dock = DockStyle.Fill
-                };
-
-                headerPanel.Controls.Add(mainCheckBox, 0, 0);
-                headerPanel.Controls.Add(expandButton, 1, 0);
-
-                // Topics Panel
-                var topicsPanel = new FlowLayoutPanel
-                {
-                    AutoSize = true,
-                    Dock = DockStyle.Top,
-                    Visible = false,
-                    FlowDirection = FlowDirection.TopDown,
-                    WrapContents = false,
-                    Margin = new Padding(30, 0, 0, 10)
-                };
-
-                List<CheckBox> topicCheckBoxes = new List<CheckBox>();
-
-                void TopicCheckBox_CheckedChanged(object sender, EventArgs e)
-                {
-                    int checkedCount = topicCheckBoxes.Count(cb => cb.Checked);
-
-                    if (checkedCount == 0)
+                    GroupBox groupBox = new GroupBox
                     {
-                        mainCheckBox.CheckState = CheckState.Unchecked;
-                    }
-                    else if (checkedCount == topicCheckBoxes.Count)
-                    {
-                        mainCheckBox.CheckState = CheckState.Checked;
-                    }
-                    else
-                    {
-                        mainCheckBox.CheckState = CheckState.Indeterminate;
-                    }
-                }
-
-                // Create topic checkboxes
-                foreach (var topic in category.topics)
-                {
-                    var topicCheckBox = new CheckBox
-                    {
-                        Text = topic.title,
+                        Text = "",
                         AutoSize = true,
-                        Font = topicFont,
-                        Margin = new Padding(3, 3, 3, 0)
+                        AutoSizeMode = AutoSizeMode.GrowAndShrink,
+                        Width = panelWidth,
+                        Font = categoryFont,
+                        Margin = new Padding(groupBoxMargin),
+                        Padding = new Padding(10),
                     };
 
-                    var descriptionLabel = new Label
+                    groupBox.SuspendLayout();
+
+                    TableLayoutPanel mainContainer = new TableLayoutPanel
                     {
-                        Text = topic.description,
+                        Dock = DockStyle.Fill,
+                        AutoSize = true,
+                        ColumnCount = 1,
+                    };
+
+                    TableLayoutPanel headerPanel = new TableLayoutPanel
+                    {
+                        AutoSize = true,
+                        ColumnCount = 2,
+                        Dock = DockStyle.Top,
+                        Margin = new Padding(0),
+                    };
+
+                    headerPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+                    headerPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 40F));
+
+                    CheckBox mainCheckBox = new CheckBox
+                    {
+                        Text = category.title,
                         AutoSize = true,
                         MaximumSize = new Size(panelWidth - 50, 0),
-                        Font = descriptionFont,
-                        ForeColor = Color.Gray,
+                        Font = categoryFont,
+                        ForeColor = Color.Black,
                         Margin = new Padding(25, 0, 3, 0),
-                        TextAlign = ContentAlignment.TopLeft
+                        TextAlign = ContentAlignment.TopLeft,
+                        ThreeState = true
                     };
 
-                    topicsPanel.Controls.Add(topicCheckBox);
-                    topicsPanel.Controls.Add(descriptionLabel);
-                    topicCheckBoxes.Add(topicCheckBox);
-
-                    topicCheckBox.CheckedChanged += TopicCheckBox_CheckedChanged;
-                }
-
-                // Main Checkbox Click => Toggle all
-                mainCheckBox.Click += (s, e) =>
-                {
-                    bool newCheckedState = topicCheckBoxes.Any(cb => !cb.Checked);
-
-                    foreach (var cb in topicCheckBoxes)
+                    Button expandButton = new Button
                     {
-                        cb.CheckedChanged -= TopicCheckBox_CheckedChanged;
-                        cb.Checked = newCheckedState;
-                        cb.CheckedChanged += TopicCheckBox_CheckedChanged;
+                        Text = "▼",
+                        Width = 30,
+                        Height = 30,
+                        BackColor = Color.LightGray,
+                        ForeColor = Color.Black,
+                        Dock = DockStyle.Fill
+                    };
+
+                    headerPanel.Controls.Add(mainCheckBox, 0, 0);
+                    headerPanel.Controls.Add(expandButton, 1, 0);
+
+                    FlowLayoutPanel topicsPanel = new FlowLayoutPanel
+                    {
+                        AutoSize = true,
+                        Dock = DockStyle.Top,
+                        Visible = false,
+                        FlowDirection = FlowDirection.TopDown,
+                        WrapContents = false,
+                        Margin = new Padding(30, 0, 0, 10)
+                    };
+
+                    List<CheckBox> topicCheckBoxes = new List<CheckBox>();
+
+                    foreach (var topic in category.topics)
+                    {
+                        CheckBox topicCheckBox = new CheckBox
+                        {
+                            Text = topic.title,
+                            AutoSize = true,
+                            Font = topicFont,
+                            Margin = new Padding(3, 3, 3, 0)
+                        };
+
+                        Label descriptionLabel = new Label
+                        {
+                            Text = topic.description,
+                            AutoSize = true,
+                            MaximumSize = new Size(panelWidth - 50, 0),
+                            Font = descriptionFont,
+                            ForeColor = Color.Gray,
+                            Margin = new Padding(25, 0, 3, 0),
+                            TextAlign = ContentAlignment.TopLeft
+                        };
+
+                        topicCheckBoxes.Add(topicCheckBox);
+
+                        topicCheckBox.CheckedChanged += delegate (object sender, EventArgs e)
+                        {
+                            int checkedCount = 0;
+                            foreach (CheckBox cb in topicCheckBoxes)
+                            {
+                                if (cb.Checked) checkedCount++;
+                            }
+
+                            if (checkedCount == 0)
+                                mainCheckBox.CheckState = CheckState.Unchecked;
+                            else if (checkedCount == topicCheckBoxes.Count)
+                                mainCheckBox.CheckState = CheckState.Checked;
+                            else
+                                mainCheckBox.CheckState = CheckState.Indeterminate;
+                        };
+
+                        topicsPanel.Controls.Add(topicCheckBox);
+                        topicsPanel.Controls.Add(descriptionLabel);
                     }
 
-                    mainCheckBox.CheckState = newCheckedState ? CheckState.Checked : CheckState.Unchecked;
-                };
+                    mainCheckBox.Click += delegate (object sender, EventArgs e)
+                    {
+                        bool newCheckedState = false;
 
-                // Expand/collapse toggle
-                expandButton.Click += (s, e) =>
+                        foreach (CheckBox cb in topicCheckBoxes)
+                        {
+                            if (!cb.Checked)
+                            {
+                                newCheckedState = true;
+                                break;
+                            }
+                        }
+
+                        foreach (CheckBox cb in topicCheckBoxes)
+                        {
+                            cb.CheckedChanged -= delegate { };
+                            cb.Checked = newCheckedState;
+                            cb.CheckedChanged += delegate { };
+                        }
+
+                        mainCheckBox.CheckState = newCheckedState ? CheckState.Checked : CheckState.Unchecked;
+                    };
+
+                    expandButton.Click += delegate (object sender, EventArgs e)
+                    {
+                        topicsPanel.Visible = !topicsPanel.Visible;
+                        expandButton.Text = topicsPanel.Visible ? "▲" : "▼";
+                    };
+
+                    mainContainer.Controls.Add(headerPanel, 0, 0);
+                    mainContainer.Controls.Add(topicsPanel, 0, 1);
+                    groupBox.Controls.Add(mainContainer);
+                    groupBox.ResumeLayout();
+
+                    groupBoxes.Add(groupBox);
+                }
+
+                // Update UI on UI thread
+                this.Invoke(new MethodInvoker(delegate
                 {
-                    topicsPanel.Visible = !topicsPanel.Visible;
-                    expandButton.Text = topicsPanel.Visible ? "▲" : "▼";
-                };
+                    userpanel.SuspendLayout();
+                    userpanel.Controls.Clear();
+                    userpanel.FlowDirection = FlowDirection.TopDown;
+                    userpanel.WrapContents = false;
+                    userpanel.AutoScroll = true;
+                    userpanel.AutoSize = true;
 
-                mainContainer.Controls.Add(headerPanel, 0, 0);
-                mainContainer.Controls.Add(topicsPanel, 0, 1);
-                groupBox.Controls.Add(mainContainer);
+                    foreach (GroupBox gb in groupBoxes)
+                    {
+                        userpanel.Controls.Add(gb);
+                    }
 
-                groupBox.ResumeLayout();
-                userpanel.Controls.Add(groupBox);
-            }
+                    userpanel.ResumeLayout();
 
-            userpanel.ResumeLayout();
-
-            //Console.WriteLine($"Stop At {DateTime.Now:HH:mm:ss:fff}");
+                    // Hide the splash after UI update
+                    SplashManager.Hide();
+                }));
+            }));
         }
-    }
 
 
+        public class NewsCategory
+        {
+            public string title { get; set; }
+            public List<NewsTopic> topics { get; set; }
+        }
 
-    public class NewsCategory
-    {
-        public string title { get; set; }
-        public List<NewsTopic> topics { get; set; }
-    }
-
-    public class NewsTopic
-    {
-        public string code { get; set; }
-        public string title { get; set; }
-        public string description { get; set; }
+        public class NewsTopic
+        {
+            public string code { get; set; }
+            public string title { get; set; }
+            public string description { get; set; }
+        }
     }
 }

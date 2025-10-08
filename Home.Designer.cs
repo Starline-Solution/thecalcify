@@ -59,7 +59,9 @@ namespace thecalcify
             this.viewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.newsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.newswatchListToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.newsListToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.newsHistoryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.newsSettingsToolStrip = new System.Windows.Forms.ToolStripMenuItem();
             this.newsNotification = new System.Windows.Forms.ToolStripMenuItem();
             this.newsSubscriptionListToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -274,18 +276,34 @@ namespace thecalcify
             // newsToolStripMenuItem
             // 
             this.newsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.newsListToolStripMenuItem,
+            this.newswatchListToolStripMenuItem,
             this.newsSettingsToolStrip});
             this.newsToolStripMenuItem.Name = "newsToolStripMenuItem";
             this.newsToolStripMenuItem.Size = new System.Drawing.Size(65, 24);
             this.newsToolStripMenuItem.Text = "News";
             // 
+            // newswatchListToolStripMenuItem
+            // 
+            this.newswatchListToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.newsListToolStripMenuItem,
+            this.newsHistoryToolStripMenuItem});
+            this.newswatchListToolStripMenuItem.Name = "newswatchListToolStripMenuItem";
+            this.newswatchListToolStripMenuItem.Size = new System.Drawing.Size(200, 26);
+            this.newswatchListToolStripMenuItem.Text = "News";
+            // 
             // newsListToolStripMenuItem
             // 
             this.newsListToolStripMenuItem.Name = "newsListToolStripMenuItem";
-            this.newsListToolStripMenuItem.Size = new System.Drawing.Size(200, 26);
+            this.newsListToolStripMenuItem.Size = new System.Drawing.Size(193, 26);
             this.newsListToolStripMenuItem.Text = "News List";
-            this.newsListToolStripMenuItem.Click += new System.EventHandler(this.NewsListToolStripMenuItem_Click);
+            this.newsListToolStripMenuItem.Click += new System.EventHandler(this.NewsListToolStripMenuItem_Click_1);
+            // 
+            // newsHistoryToolStripMenuItem
+            // 
+            this.newsHistoryToolStripMenuItem.Name = "newsHistoryToolStripMenuItem";
+            this.newsHistoryToolStripMenuItem.Size = new System.Drawing.Size(193, 26);
+            this.newsHistoryToolStripMenuItem.Text = "News History";
+            this.newsHistoryToolStripMenuItem.Click += new System.EventHandler(this.NewsHistoryToolStripMenuItem_Click);
             // 
             // newsSettingsToolStrip
             // 
@@ -667,11 +685,13 @@ namespace thecalcify
         private ToolStripMenuItem newsToolStripMenuItem;
         private ToolStripMenuItem alertToolStripMenuItem;
         private ToolStripMenuItem refreshMarketWatchHost;
-        private ToolStripMenuItem newsListToolStripMenuItem;
+        private ToolStripMenuItem newswatchListToolStripMenuItem;
         private ToolStripMenuItem newsSettingsToolStrip;
         private ToolStripMenuItem newsNotification;
         private ToolStripMenuItem newsSubscriptionListToolStripMenuItem;
         private ToolStripMenuItem CategorywiseSubscriptionToolStripMenuItem;
         private ToolStripMenuItem RegionwiseSubscriptionToolStripMenuItem;
+        private ToolStripMenuItem newsListToolStripMenuItem;
+        private ToolStripMenuItem newsHistoryToolStripMenuItem;
     }
 }

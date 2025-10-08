@@ -38,7 +38,7 @@ namespace thecalcify.Helper
         private void UpdateButton_Click(object sender, EventArgs e)
         {
             updateButton.Enabled = false;
-            UpdateAgent updateAgent = new UpdateAgent(token);
+            _ = new UpdateAgent(token,this);
             updateButton.Enabled = true;
         }
     }

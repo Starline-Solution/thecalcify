@@ -64,20 +64,103 @@ namespace thecalcify.Helper
             if (string.IsNullOrWhiteSpace(input))
                 throw new ArgumentException("Input date string is null or empty.");
 
-            string[] formats =
-            {
-                "dd/MM/yyyy", "d/M/yyyy",
-                "MM/dd/yyyy", "M/d/yyyy",
-                "yyyy-MM-dd", "yyyy/MM/dd",
-                "dd-MM-yyyy", "d-M-yyyy",
+            string[] formats = {
+                // Basic date formats
+                "dd/MM/yyyy", "d/M/yyyy", "dd/MM/yy", "d/M/yy",
+                "MM/dd/yyyy", "M/d/yyyy", "yyyy-MM-dd", "yyyy/MM/dd",
+                "dd-MM-yyyy", "d-M-yyyy", "dd-MM-yy", "d-M-yy",
                 "dd.MM.yyyy", "d.M.yyyy",
-                 // Add formats with time
+                "dd MMM yyyy", "d MMM yyyy",
+                "ddd, dd MMM yyyy", "ddd, d MMM yyyy",
+                "yyyyMMdd", "MMMyy",
+
+                // Date + time (24-hour format)
                 "dd/MM/yyyy HH:mm:ss", "d/M/yyyy HH:mm:ss",
                 "MM/dd/yyyy HH:mm:ss", "M/d/yyyy HH:mm:ss",
                 "yyyy-MM-dd HH:mm:ss", "yyyy/MM/dd HH:mm:ss",
                 "dd-MM-yyyy HH:mm:ss", "d-M-yyyy HH:mm:ss",
-                "dd.MM.yyyy HH:mm:ss", "d.M.yyyy HH:mm:ss"
+                "dd.MM.yyyy HH:mm:ss", "d.M.yyyy HH:mm:ss",
+                "dd MMM yyyy HH:mm:ss", "d MMM yyyy HH:mm:ss",
+                "ddd, dd MMM yyyy HH:mm:ss", "ddd, d MMM yyyy HH:mm:ss",
+                "yyyyMMdd HH:mm:ss", "MMMyy HH:mm:ss",
+
+                // Date + time (12-hour format)
+                "dd/MM/yyyy hh:mm:ss", "d/M/yyyy hh:mm:ss",
+                "MM/dd/yyyy hh:mm:ss", "M/d/yyyy hh:mm:ss",
+                "yyyy-MM-dd hh:mm:ss", "yyyy/MM/dd hh:mm:ss",
+                "dd-MM-yyyy hh:mm:ss", "d-M-yyyy hh:mm:ss",
+                "dd.MM.yyyy hh:mm:ss", "d.M.yyyy hh:mm:ss",
+                "dd MMM yyyy hh:mm:ss", "d MMM yyyy hh:mm:ss",
+                "ddd, dd MMM yyyy hh:mm:ss", "ddd, d MMM yyyy hh:mm:ss",
+                "yyyyMMdd hh:mm:ss", "MMMyy hh:mm:ss",
+
+                // With AM/PM
+                "dd/MM/yyyy hh:mm:ss tt", "d/M/yyyy hh:mm:ss tt",
+                "MM/dd/yyyy hh:mm:ss tt", "M/d/yyyy hh:mm:ss tt",
+                "yyyy-MM-dd hh:mm:ss tt", "yyyy/MM/dd hh:mm:ss tt",
+                "dd-MM-yyyy hh:mm:ss tt", "d-M-yyyy hh:mm:ss tt",
+                "dd.MM.yyyy hh:mm:ss tt", "d.M.yyyy hh:mm:ss tt",
+                "dd MMM yyyy hh:mm:ss tt", "d MMM yyyy hh:mm:ss tt",
+                "ddd, dd MMM yyyy hh:mm:ss tt", "ddd, d MMM yyyy hh:mm:ss tt",
+                "yyyyMMdd hh:mm:ss tt", "MMMyy hh:mm:ss tt",
+
+                // Date + short time (12-hour)
+                "dd/MM/yyyy hh:mm", "d/M/yyyy hh:mm",
+                "MM/dd/yyyy hh:mm", "M/d/yyyy hh:mm",
+                "yyyy-MM-dd hh:mm", "yyyy/MM/dd hh:mm",
+                "dd-MM-yyyy hh:mm", "d-M-yyyy hh:mm",
+                "dd.MM.yyyy hh:mm", "d.M.yyyy hh:mm",
+                "dd MMM yyyy hh:mm", "d MMM yyyy hh:mm",
+                "ddd, dd MMM yyyy hh:mm", "ddd, d MMM yyyy hh:mm",
+                "yyyyMMdd hh:mm", "MMMyy hh:mm",
+
+                // Short time + AM/PM
+                "dd/MM/yyyy hh:mm tt", "d/M/yyyy hh:mm tt",
+                "MM/dd/yyyy hh:mm tt", "M/d/yyyy hh:mm tt",
+                "yyyy-MM-dd hh:mm tt", "yyyy/MM/dd hh:mm tt",
+                "dd-MM-yyyy hh:mm tt", "d-M-yyyy hh:mm tt",
+                "dd.MM.yyyy hh:mm tt", "d.M.yyyy hh:mm tt",
+                "dd MMM yyyy hh:mm tt", "d MMM yyyy hh:mm tt",
+                "ddd, dd MMM yyyy hh:mm tt", "ddd, d MMM yyyy hh:mm tt",
+                "yyyyMMdd hh:mm tt", "MMMyy hh:mm tt",
+
+                // Mixed formats (custom, edge cases)
+                "dd-MM-yyyy H:mm:ss", "dd-MM-yyyy h.mm.ss tt", "dd-MM-yyyy hh:mm:tt",
+                "dd-MM-yyyy HH:mm", "dd-MM-yyyy H:mm",
+                "dd-MM-yy hh:mm tt", "dd-MM-yy hh:mm:ss tt", "dd-MM-yy HH:mm:ss",
+                "dd-MM-yy H:mm:ss", "dd-MM-yy h.mm.ss tt", "dd-MM-yy hh:mm:tt",
+                "dd-MM-yy HH:mm", "dd-MM-yy H:mm",
+
+                // More variations with d/M/yy etc.
+                "d-M-yy hh:mm tt", "d-M-yy hh:mm:ss tt", "d-M-yy HH:mm:ss",
+                "d-M-yy H:mm:ss", "d-M-yy h.mm.ss tt", "d-M-yy hh:mm:tt",
+                "d-M-yy HH:mm", "d-M-yy H:mm",
+
+                "d.M.yy hh:mm tt", "d.M.yy hh:mm:ss tt", "d.M.yy HH:mm:ss",
+                "d.M.yy H:mm:ss", "d.M.yy h.mm.ss tt", "d.M.yy hh:mm:tt",
+                "d.M.yy HH:mm", "d.M.yy H:mm",
+
+                "yyyy-MM-dd H:mm:ss", "yyyy-MM-dd h.mm.ss tt", "yyyy-MM-dd hh:mm:tt",
+                "yyyy-MM-dd HH:mm", "yyyy-MM-dd H:mm",
+
+                // Long month names and day names
+                "dd MMMM yyyy hh:mm tt", "dd MMMM yyyy hh:mm:ss tt", "dd MMMM yyyy HH:mm:ss",
+                "dd MMMM yyyy H:mm:ss", "dd MMMM yyyy h.mm.ss tt", "dd MMMM yyyy hh:mm:tt",
+                "dd MMMM yyyy HH:mm", "dd MMMM yyyy H:mm",
+
+                "d MMMM yyyy hh:mm tt", "d MMMM yyyy hh:mm:ss tt", "d MMMM yyyy HH:mm:ss",
+                "d MMMM yyyy H:mm:ss", "d MMMM yyyy h.mm.ss tt", "d MMMM yyyy hh:mm:tt",
+                "d MMMM yyyy HH:mm", "d MMMM yyyy H:mm",
+
+                "dddd, d MMMM yyyy hh:mm tt", "dddd, d MMMM yyyy hh:mm:ss tt",
+                "dddd, d MMMM yyyy HH:mm:ss", "dddd, d MMMM yyyy H:mm:ss",
+                "dddd, d MMMM yyyy h.mm.ss tt", "dddd, d MMMM yyyy hh:mm:tt",
+                "dddd, d MMMM yyyy HH:mm", "dddd, d MMMM yyyy H:mm"
             };
+
+
+            formats = formats.Distinct().ToArray();
+
 
             if (DateTime.TryParseExact(
                     input,
@@ -259,6 +342,17 @@ namespace thecalcify.Helper
 
             return flattened.ToString(Newtonsoft.Json.Formatting.Indented);
         }
+
+        public static void SetBrowserFeatureControl()
+        {
+            string appName = System.IO.Path.GetFileName(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName);
+            using (var key = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(
+                @"Software\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_BROWSER_EMULATION"))
+            {
+                key?.SetValue(appName, 11001, Microsoft.Win32.RegistryValueKind.DWord); // 11001 = IE11
+            }
+        }
+
     }
 
 
@@ -430,6 +524,27 @@ namespace thecalcify.Helper
         [JsonPropertyName("hasNextPage")]
         public bool HasNextPage { get; set; }
     }
+    public class NewsCategoryResponse
+    {
+        public NewsCategoryData Data { get; set; }
+    }
+
+    public class NewsCategoryData
+    {
+        public NewsCategoryItem Item { get; set; }
+    }
+
+    public class NewsCategoryItem
+    {
+        public string VersionedGuid { get; set; }
+        public string HeadLine { get; set; }
+        public string Fragment { get; set; }
+        public string BodyXhtmlRich { get; set; }
+        public DateTime FirstCreated { get; set; }
+        public DateTime SortTimestamp { get; set; }
+        public DateTime ContentTimestamp { get; set; }
+    }
+
 
     public class RootDto
     {
@@ -495,4 +610,23 @@ namespace thecalcify.Helper
         public static DateTime RateExpiredDate { get; set; } = DateTime.MinValue;
         public static DateTime NewsExpiredDate { get; set; } = DateTime.MinValue;
     }
+
+    public class UserDto
+    {
+        public bool status { get; set; }
+        public int id { get; set; }
+        public string username { get; set; }
+        public bool isActive { get; set; }
+        public DateTime newsExpireDate { get; set; }
+        public DateTime rateExpireDate { get; set; }
+        public string topics { get; set; }
+        public string keywords { get; set; }
+        public string deviceToken { get; set; }
+        public string deviceType { get; set; }
+        public string deviceId { get; set; }
+        public bool isDND { get; set; }
+        public bool hasNewsAccess { get; set; }
+        public bool hasRateAccess { get; set; }
+    }
+
 }

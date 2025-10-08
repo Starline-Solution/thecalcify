@@ -20,6 +20,7 @@ using System.Net.Http.Headers;
 using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Security.RightsManagement;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -61,11 +62,12 @@ namespace thecalcify
         // ======================
         // 📌 Flags / States
         // ======================
-        private bool isConnectionDisposed = false;
+        private bool isConnectionDisposed = false, licenceTimerInitialized = false;
 
-        public bool isLoadedSymbol = false;
-        public bool isEdit = false;
-        public bool isGrid = true, reloadGrid = true;
+
+        private bool isLoadedSymbol = false;
+        private bool isEdit = false;
+        private bool isGrid = true, reloadGrid = true;
         public bool isdeleted = false;
         private bool isRunning = true;
         private bool isFullScreen = false;
@@ -74,7 +76,7 @@ namespace thecalcify
         // ======================
         // 📌 Runtime State / Data
         // ======================
-        public int fontSize = 12, RemainingDays;
+        private int fontSize = 12, RemainingDays;
         private ConcurrentDictionary<string, MarketDataDto> _latestUpdates = new ConcurrentDictionary<string, MarketDataDto>();
 
         private DateTime _lastReconnectAttempt = DateTime.MinValue;
@@ -82,17 +84,17 @@ namespace thecalcify
         private Rectangle prevBounds;
         private FormWindowState prevState;
         private FormBorderStyle prevStyle;
-        public string saveFileName;
-        public string lastOpenMarketWatch = string.Empty;
+        private string saveFileName;
+        private string lastOpenMarketWatch = string.Empty;
 
         // ======================
         // 📌 Core Data Collections
         // ======================
         public List<string> identifiers;
 
-        public List<string> selectedSymbols = new List<string>();
-        public List<MarketDataDto> pastRateTickDTO = new List<MarketDataDto>();
-        public List<string> symbolMaster = new List<string>();
+        private List<string> selectedSymbols = new List<string>();
+        private List<MarketDataDto> pastRateTickDTO = new List<MarketDataDto>();
+        private List<string> symbolMaster = new List<string>();
         public List<string> columnPreferences;
 
         public List<string> columnPreferencesDefault = new List<string>()
@@ -102,7 +104,7 @@ namespace thecalcify
             "Volume","Open Interest","Last Size"
         };
 
-        public List<string> FileLists = new List<string>();
+        private List<string> FileLists = new List<string>();
         public List<(string Symbol, string SymbolName)> SymbolName = new List<(string Symbol, string SymbolName)>();
 
         // ======================
@@ -116,7 +118,7 @@ namespace thecalcify
         // ======================
         // 📌 Arrays
         // ======================
-        public string[] numericColumns = new[]
+        private string[] numericColumns = new[]
         {
             "Bid","Ask","LTP","High","Low","Open","Close","Net Chng","ATP",
             "Bid Size","Total Bid Size","Ask Size","Total Ask Size","Volume",
@@ -132,7 +134,6 @@ namespace thecalcify
         private bool _eventHandlersAttached = false;
 
         public Common commonClass;
-        //private ConcurrentQueue<MarketDataDto> _updateQueue = new ConcurrentQueue<MarketDataDto>();
         private readonly object _tableLock = new object();
         private readonly object _reconnectLock = new object();
 
@@ -142,7 +143,6 @@ namespace thecalcify
         private System.Threading.Timer _updateTimer;
 
         private System.Windows.Forms.Timer signalRTimer;
-        private Thread licenceThread;
 
         // ======================
         // 📌 Excel Interop
@@ -306,7 +306,7 @@ namespace thecalcify
                 {
                     licenceDate = LoginInfo.NewsExpiredDate.ToString("dd/MM/yyyy");
 
-                    this.NewsListToolStripMenuItem_Click(this, EventArgs.Empty);
+                    this.NewsListToolStripMenuItem_Click_1(this, EventArgs.Empty);
                     newCTRLNToolStripMenuItem.Visible = false;
                     toolsToolStripMenuItem.Enabled = true;
 
@@ -350,7 +350,7 @@ namespace thecalcify
         private Task CheckLicenceLoop()
         {
             RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
-            if (RemainingDays <= 7)
+            if (RemainingDays <= 7 && !licenceTimerInitialized)
             {
                 // Start a timer instead of thread
                 var licenceTimer = new System.Windows.Forms.Timer
@@ -370,6 +370,8 @@ namespace thecalcify
                     int licenceRemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
                     await UpdateLicenceLabel(licenceRemainingDays);
                 };
+
+                licenceTimerInitialized = true;
             }
             else
             {
@@ -433,6 +435,12 @@ namespace thecalcify
                     licenceExpire.Text = $"⚠ Licence expires in {licenceRemainingDays} days!";
                     licenceExpire.ForeColor = Color.Red;
                     licenceExpire.Visible = !licenceExpire.Visible; // blink
+                }
+                else if(licenceRemainingDays > 7)
+                {
+                    licenceExpire.Visible = true;
+                    licenceExpire.Text = $"Licence Expired :- {licenceDate}";
+                    licenceExpire.ForeColor = Color. Black;
                 }
                 else
                 {
@@ -1944,20 +1952,9 @@ namespace thecalcify
         {
             try
             {
-                //Console.WriteLine($"Start At {DateTime.Now}");
-                // 🔄 Reuse connection if already exists
-                if (connection == null)
+               if (connection == null)
                 {
                     connection = BuildConnection();
-
-                    //Console.WriteLine($"Connection Info: {connection}");
-
-                    // Log the connection state
-                    //Console.WriteLine($"Connection State: {connection.State}");
-
-                    // Log the connection string (URL)
-                    //Console.WriteLine($"Connection URL: {connection.ConnectionId}");
-
 
                     if (!_eventHandlersAttached)
                     {
@@ -3391,90 +3388,9 @@ namespace thecalcify
             }
         }
 
-        private async void NewsListToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                // 1. Clean up existing NewsControl if already present
-                var existingNews = this.Controls.Find("newsControlView", true).FirstOrDefault();
-                if (existingNews != null)
-                {
-                    this.Controls.Remove(existingNews);
-                    existingNews.Dispose();
-                }
-
-                EditableMarketWatchGrid editableMarketWatchGrid = EditableMarketWatchGrid.CurrentInstance;
-                if (editableMarketWatchGrid != null)
-                {
-                    if (editableMarketWatchGrid.IsCurrentCellInEditMode)
-                    {
-                        editableMarketWatchGrid.EndEdit();
-                    }
-
-                    editableMarketWatchGrid.EditableDispose(); // Dispose the grid
-                    editableMarketWatchGrid.Dispose();
-                }
-
-
-                // 2. Create new NewsControl
-                var newsControl = new NewsControl(username, password, token)
-                {
-                    Name = "newsControlView",
-                    Dock = DockStyle.Fill
-                };
-
-                //DisposeSignalRConnection();
-                saveMarketWatchHost.Visible = false;
-                fontSizeComboBox.Visible = false;
-                searchTextLabel.Visible = false;
-                txtsearch.Visible = false;
-                refreshMarketWatchHost.Visible = false;
-                // Update status label
-
-                // Update title based on edit mode
-                titleLabel.Text = "News";
-
-                // 3. Add it to main form
-                this.Controls.Add(newsControl);
-                newsControl.BringToFront();
-                newsControl.Focus();
-
-                licenceDate = LoginInfo.NewsExpiredDate.ToString("dd/MM/yyyy");
-
-                RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
-                if (RemainingDays <= 7)
-                {
-                    await CheckLicenceLoop();
-                }
-                else
-                {
-                    licenceExpire.Text = $"Licence Expired :- {licenceDate}";
-                }
-
-            }
-            catch (Exception ex)
-            {
-                ApplicationLogger.LogException(ex);
-                MessageBox.Show($"Error loading News view: {ex.Message}");
-            }
-            finally 
-            {
-                if (this.InvokeRequired)
-                {
-                    this.Invoke(new Action(() =>
-                    {
-                        newsSettingsToolStrip.Visible = true;
-                    }));
-                }
-                else
-                {
-                    newsSettingsToolStrip.Visible = true;
-                }
-            }
-        }
-
         private void CategorywiseSubscriptionToolStripMenuItem_Click(object sender, EventArgs e)
         {
+
             string jsonCategoriesFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Categories.json");
             //string jsonRegionsFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Regions.json");
             string jsonContent = File.ReadAllText(jsonCategoriesFilePath);
@@ -3493,6 +3409,7 @@ namespace thecalcify
                     NewsSubscribeForm.ShowDialog();
                 }
             }
+
         }
 
         private void RegionwiseSubscriptionToolStripMenuItem1_Click(object sender, EventArgs e)
@@ -3558,6 +3475,170 @@ namespace thecalcify
                     newsNotification.Checked = false; // Keep it unchecked if user clicks No
                 }
                 // If user clicks No, do nothing and keep the button unchecked
+            }
+        }
+
+        private async void NewsListToolStripMenuItem_Click_1(object sender, EventArgs e)
+        {
+            try
+            {
+                // 1. Clean up existing NewsControl if already present
+                var existingNews = this.Controls.Find("newsControlView", true).FirstOrDefault();
+                if (existingNews != null)
+                {
+                    this.Controls.Remove(existingNews);
+                    existingNews.Dispose();
+                }
+
+                EditableMarketWatchGrid editableMarketWatchGrid = EditableMarketWatchGrid.CurrentInstance;
+                if (editableMarketWatchGrid != null)
+                {
+                    if (editableMarketWatchGrid.IsCurrentCellInEditMode)
+                    {
+                        editableMarketWatchGrid.EndEdit();
+                    }
+
+                    editableMarketWatchGrid.EditableDispose(); // Dispose the grid
+                    editableMarketWatchGrid.Dispose();
+                }
+
+
+                // 2. Create new NewsControl
+                var newsControl = new NewsControl(username, password, token, string.Empty)
+                {
+                    Name = "newsControlView",
+                    Dock = DockStyle.Fill
+                };
+
+                //DisposeSignalRConnection();
+                saveMarketWatchHost.Visible = false;
+                fontSizeComboBox.Visible = false;
+                searchTextLabel.Visible = false;
+                txtsearch.Visible = false;
+                refreshMarketWatchHost.Visible = false;
+                // Update status label
+
+                // Update title based on edit mode
+                titleLabel.Text = "News";
+
+                // 3. Add it to main form
+                this.Controls.Add(newsControl);
+                newsControl.BringToFront();
+                newsControl.Focus();
+
+                licenceDate = LoginInfo.NewsExpiredDate.ToString("dd/MM/yyyy");
+
+                RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
+                if (RemainingDays <= 7)
+                {
+                    await CheckLicenceLoop();
+                }
+                else
+                {
+                    licenceExpire.Text = $"Licence Expired :- {licenceDate}";
+                }
+
+            }
+            catch (Exception ex)
+            {
+                ApplicationLogger.LogException(ex);
+                MessageBox.Show($"Error loading News view: {ex.Message}");
+            }
+            finally
+            {
+                if (this.InvokeRequired)
+                {
+                    this.Invoke(new Action(() =>
+                    {
+                        newsSettingsToolStrip.Visible = true;
+                    }));
+                }
+                else
+                {
+                    newsSettingsToolStrip.Visible = true;
+                }
+            }
+        }
+
+        private async void NewsHistoryToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // 1. Clean up existing NewsControl if already present
+                var existingNews = this.Controls.Find("newsControlView", true).FirstOrDefault();
+                if (existingNews != null)
+                {
+                    this.Controls.Remove(existingNews);
+                    existingNews.Dispose();
+                }
+
+                EditableMarketWatchGrid editableMarketWatchGrid = EditableMarketWatchGrid.CurrentInstance;
+                if (editableMarketWatchGrid != null)
+                {
+                    if (editableMarketWatchGrid.IsCurrentCellInEditMode)
+                    {
+                        editableMarketWatchGrid.EndEdit();
+                    }
+
+                    editableMarketWatchGrid.EditableDispose(); // Dispose the grid
+                    editableMarketWatchGrid.Dispose();
+                }
+
+
+                // 2. Create new NewsControl
+                var newsControl = new NewsControl(username, password, token, "history")
+                {
+                    Name = "newsControlView",
+                    Dock = DockStyle.Fill
+                };
+
+                //DisposeSignalRConnection();
+                saveMarketWatchHost.Visible = false;
+                fontSizeComboBox.Visible = false;
+                searchTextLabel.Visible = false;
+                txtsearch.Visible = false;
+                refreshMarketWatchHost.Visible = false;
+                // Update status label
+
+                // Update title based on edit mode
+                titleLabel.Text = "News History";
+
+                // 3. Add it to main form
+                this.Controls.Add(newsControl);
+                newsControl.BringToFront();
+                newsControl.Focus();
+
+                licenceDate = LoginInfo.NewsExpiredDate.ToString("dd/MM/yyyy");
+
+                RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
+                if (RemainingDays <= 7)
+                {
+                    await CheckLicenceLoop();
+                }
+                else
+                {
+                    licenceExpire.Text = $"Licence Expired :- {licenceDate}";
+                }
+
+            }
+            catch (Exception ex)
+            {
+                ApplicationLogger.LogException(ex);
+                MessageBox.Show($"Error loading News view: {ex.Message}");
+            }
+            finally
+            {
+                if (this.InvokeRequired)
+                {
+                    this.Invoke(new Action(() =>
+                    {
+                        newsSettingsToolStrip.Visible = true;
+                    }));
+                }
+                else
+                {
+                    newsSettingsToolStrip.Visible = true;
+                }
             }
         }
 
