@@ -264,7 +264,7 @@ namespace thecalcify
                     }
                     else
                     {
-                        licenceExpire.Text = $"Licence Expire At:- {licenceDate.Replace("0:00:00", "")}";
+                        licenceExpire.Text = $"Licence Expire At:- {licenceDate.Replace("0:00:00", "").Replace("12:00:00 AM", "").Replace("00:00:00", "").Replace("00:00", "").Replace("00:00 AM", "").TrimEnd('0').Trim()}";
                     }
 
                 }
@@ -297,7 +297,7 @@ namespace thecalcify
                     }
                     else
                     {
-                        licenceExpire.Text = $"Licence Expire At:- {licenceDate.Replace("0:00:00", "")}";
+                        licenceExpire.Text = $"Licence Expire At:- {licenceDate.Replace("0:00:00", "").Replace("12:00:00 AM", "").Replace("00:00:00", "").Replace("00:00", "").Replace("00:00 AM", "").TrimEnd('0').Trim()}";
                     }
 
 
@@ -318,7 +318,7 @@ namespace thecalcify
                     }
                     else
                     {
-                        licenceExpire.Text = $"Licence Expire At:- {licenceDate.Replace("0:00:00", "")}";
+                        licenceExpire.Text = $"Licence Expire At:- {licenceDate.Replace("0:00:00", "").Replace("12:00:00 AM", "").Replace("00:00:00", "").Replace("00:00", "").Replace("00:00 AM", "").TrimEnd('0').Trim()}";
                     }
 
                 }
@@ -375,7 +375,7 @@ namespace thecalcify
             }
             else
             {
-                licenceExpire.Text = $"Licence Expire At:- {licenceDate.Replace("0:00:00", "")}";
+                licenceExpire.Text = $"Licence Expire At:- {licenceDate.Replace("0:00:00", "").Replace("12:00:00 AM", "").Replace("00:00:00", "").Replace("00:00", "").Replace("00:00 AM", "").TrimEnd('0').Trim()}";
             }
 
             return Task.CompletedTask;
@@ -439,7 +439,7 @@ namespace thecalcify
                 else if(licenceRemainingDays > 7)
                 {
                     licenceExpire.Visible = true;
-                    licenceExpire.Text = $"Licence Expire At:- {licenceDate.Replace("0:00:00", "")}";
+                    licenceExpire.Text = $"Licence Expire At:- {licenceDate.Replace("0:00:00", "").Replace("12:00:00 AM", "").Replace("00:00:00", "").Replace("00:00", "").Replace("00:00 AM", "").TrimEnd('0').Trim()}";
                     licenceExpire.ForeColor = Color. Black;
                 }
                 else
@@ -642,7 +642,7 @@ namespace thecalcify
                         }
                         else
                         {
-                            licenceExpire.Text = $"Licence Expire At:- {licenceDate.Replace("0:00:00", "")}";
+                            licenceExpire.Text = $"Licence Expire At:- {licenceDate.Replace("0:00:00", "").Replace("12:00:00 AM", "").Replace("00:00:00", "").Replace("00:00", "").Replace("00:00 AM", "").TrimEnd('0').Trim()}";
                         }
                     }));
                 }
@@ -658,7 +658,7 @@ namespace thecalcify
                     }
                     else
                     {
-                        licenceExpire.Text = $"Licence Expire At:- {licenceDate.Replace("0:00:00", "")}";
+                        licenceExpire.Text = $"Licence Expire At:- {licenceDate.Replace("0:00:00", "").Replace("12:00:00 AM", "").Replace("00:00:00", "").Replace("00:00", "").Replace("00:00 AM", "").TrimEnd('0').Trim()}";
                     }
                 }
             }
@@ -953,7 +953,7 @@ namespace thecalcify
                         }
                         else
                         {
-                            licenceExpire.Text = $"Licence Expire At:- {licenceDate.Replace("0:00:00", "")}";
+                            licenceExpire.Text = $"Licence Expire At:- {licenceDate.Replace("0:00:00", "").Replace("12:00:00 AM", "").Replace("00:00:00", "").Replace("00:00", "").Replace("00:00 AM", "").TrimEnd('0').Trim()}";
                         }
                     }));
                 }
@@ -969,7 +969,7 @@ namespace thecalcify
                     }
                     else
                     {
-                        licenceExpire.Text = $"Licence Expire At:- {licenceDate.Replace("0:00:00", "")}";
+                        licenceExpire.Text = $"Licence Expire At:- {licenceDate.Replace("0:00:00", "").Replace("12:00:00 AM", "").Replace("00:00:00", "").Replace("00:00", "").Replace("00:00 AM", "").TrimEnd('0').Trim()}";
                     }
                 }
             }
@@ -2738,7 +2738,7 @@ namespace thecalcify
                         }
                         else
                         {
-                            licenceExpire.Text = $"Licence Expire At:- {licenceDate.Replace("0:00:00", "")}";
+                            licenceExpire.Text = $"Licence Expire At:- {licenceDate.Replace("0:00:00", "").Replace("12:00:00 AM", "").Replace("00:00:00", "").Replace("00:00", "").Replace("00:00 AM", "").TrimEnd('0').Trim()}";
                         }
                     }));
                 }
@@ -2754,7 +2754,7 @@ namespace thecalcify
                     }
                     else
                     {
-                        licenceExpire.Text = $"Licence Expire At:- {licenceDate.Replace("0:00:00", "")}";
+                        licenceExpire.Text = $"Licence Expire At:- {licenceDate.Replace("0:00:00", "").Replace("12:00:00 AM", "").Replace("00:00:00", "").Replace("00:00", "").Replace("00:00 AM", "").TrimEnd('0').Trim()}";
                     }
                 }
 
@@ -3535,7 +3535,7 @@ namespace thecalcify
                 }
                 else
                 {
-                    licenceExpire.Text = $"Licence Expire At:- {licenceDate.Replace("0:00:00", "")}";
+                    licenceExpire.Text = $"Licence Expire At:- {licenceDate.Replace("0:00:00", "").Replace("12:00:00 AM", "").Replace("00:00:00", "").Replace("00:00", "").Replace("00:00 AM", "").TrimEnd('0').Trim()}";
                 }
 
             }
@@ -3617,7 +3617,7 @@ namespace thecalcify
                 }
                 else
                 {
-                    licenceExpire.Text = $"Licence Expire At:- {licenceDate.Replace("0:00:00", "")}";
+                    licenceExpire.Text = $"Licence Expire At:- {licenceDate.Replace("0:00:00", "").Replace("12:00:00 AM", "").Replace("00:00:00", "").Replace("00:00", "").Replace("00:00 AM", "").TrimEnd('0').Trim()}";
                 }
 
             }
