@@ -25,8 +25,7 @@ namespace thecalcify
             {
                 ApplicationLogger.Log($"Unable to set process priority: {ex.Message}");
             }
-
-            Common.SetBrowserFeatureControl(); // ← Important
+            
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new Login());
