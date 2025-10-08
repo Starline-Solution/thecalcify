@@ -264,14 +264,14 @@ namespace thecalcify
                     }
                     else
                     {
-                        licenceExpire.Text = $"Licence Expired :- {licenceDate}";
+                        licenceExpire.Text = $"Licence Expire At:- {licenceDate.Replace("0:00:00", "")}";
                     }
 
                 }
                 else if (LoginInfo.IsRate && LoginInfo.RateExpiredDate >= DateTime.Today.Date)
                 {
 
-                    licenceDate = LoginInfo.RateExpiredDate.ToString("dd/MM/yyyy");
+                    licenceDate = LoginInfo.RateExpiredDate.ToString().Replace("0:00:00","");
 
                     MenuLoad();
                     newsToolStripMenuItem.Visible = false;
@@ -297,14 +297,14 @@ namespace thecalcify
                     }
                     else
                     {
-                        licenceExpire.Text = $"Licence Expired :- {licenceDate}";
+                        licenceExpire.Text = $"Licence Expire At:- {licenceDate.Replace("0:00:00", "")}";
                     }
 
 
                 }
                 else if (LoginInfo.IsNews && LoginInfo.NewsExpiredDate >= DateTime.Today.Date)
                 {
-                    licenceDate = LoginInfo.NewsExpiredDate.ToString("dd/MM/yyyy");
+                    licenceDate = LoginInfo.NewsExpiredDate.ToString().Replace("0:00:00", "");
 
                     this.NewsListToolStripMenuItem_Click_1(this, EventArgs.Empty);
                     newCTRLNToolStripMenuItem.Visible = false;
@@ -318,7 +318,7 @@ namespace thecalcify
                     }
                     else
                     {
-                        licenceExpire.Text = $"Licence Expired :- {licenceDate}";
+                        licenceExpire.Text = $"Licence Expire At:- {licenceDate.Replace("0:00:00", "")}";
                     }
 
                 }
@@ -375,7 +375,7 @@ namespace thecalcify
             }
             else
             {
-                licenceExpire.Text = $"Licence Expired :- {licenceDate}";
+                licenceExpire.Text = $"Licence Expire At:- {licenceDate.Replace("0:00:00", "")}";
             }
 
             return Task.CompletedTask;
@@ -439,7 +439,7 @@ namespace thecalcify
                 else if(licenceRemainingDays > 7)
                 {
                     licenceExpire.Visible = true;
-                    licenceExpire.Text = $"Licence Expired :- {licenceDate}";
+                    licenceExpire.Text = $"Licence Expire At:- {licenceDate.Replace("0:00:00", "")}";
                     licenceExpire.ForeColor = Color. Black;
                 }
                 else
@@ -633,7 +633,7 @@ namespace thecalcify
                     this.Invoke(new Action(async () =>
                     {
                         newsSettingsToolStrip.Visible = false;
-                        licenceDate = LoginInfo.RateExpiredDate.ToString("dd/MM/yyyy");
+                        licenceDate = LoginInfo.RateExpiredDate.ToString();
 
                         RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
                         if (RemainingDays <= 7)
@@ -642,14 +642,14 @@ namespace thecalcify
                         }
                         else
                         {
-                            licenceExpire.Text = $"Licence Expired :- {licenceDate}";
+                            licenceExpire.Text = $"Licence Expire At:- {licenceDate.Replace("0:00:00", "")}";
                         }
                     }));
                 }
                 else
                 {
                     newsSettingsToolStrip.Visible = false;
-                    licenceDate = LoginInfo.RateExpiredDate.ToString("dd/MM/yyyy");
+                    licenceDate = LoginInfo.RateExpiredDate.ToString();
 
                     RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
                     if (RemainingDays <= 7)
@@ -658,7 +658,7 @@ namespace thecalcify
                     }
                     else
                     {
-                        licenceExpire.Text = $"Licence Expired :- {licenceDate}";
+                        licenceExpire.Text = $"Licence Expire At:- {licenceDate.Replace("0:00:00", "")}";
                     }
                 }
             }
@@ -944,7 +944,7 @@ namespace thecalcify
                     this.Invoke(new Action(async () =>
                     {
                         newsSettingsToolStrip.Visible = false;
-                        licenceDate = LoginInfo.RateExpiredDate.ToString("dd/MM/yyyy");
+                        licenceDate = LoginInfo.RateExpiredDate.ToString();
 
                         RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
                         if (RemainingDays <= 7)
@@ -953,14 +953,14 @@ namespace thecalcify
                         }
                         else
                         {
-                            licenceExpire.Text = $"Licence Expired :- {licenceDate}";
+                            licenceExpire.Text = $"Licence Expire At:- {licenceDate.Replace("0:00:00", "")}";
                         }
                     }));
                 }
                 else
                 {
                     newsSettingsToolStrip.Visible = false;
-                    licenceDate = LoginInfo.RateExpiredDate.ToString("dd/MM/yyyy");
+                    licenceDate = LoginInfo.RateExpiredDate.ToString();
 
                     RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
                     if (RemainingDays <= 7)
@@ -969,7 +969,7 @@ namespace thecalcify
                     }
                     else
                     {
-                        licenceExpire.Text = $"Licence Expired :- {licenceDate}";
+                        licenceExpire.Text = $"Licence Expire At:- {licenceDate.Replace("0:00:00", "")}";
                     }
                 }
             }
@@ -2729,7 +2729,7 @@ namespace thecalcify
                     this.Invoke(new Action(async () =>
                     {
                         newsSettingsToolStrip.Visible = false;
-                        licenceDate = LoginInfo.RateExpiredDate.ToString("dd/MM/yyyy");
+                        licenceDate = LoginInfo.RateExpiredDate.ToString();
 
                         RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
                         if (RemainingDays <= 7)
@@ -2738,14 +2738,14 @@ namespace thecalcify
                         }
                         else
                         {
-                            licenceExpire.Text = $"Licence Expired :- {licenceDate}";
+                            licenceExpire.Text = $"Licence Expire At:- {licenceDate.Replace("0:00:00", "")}";
                         }
                     }));
                 }
                 else
                 {
                     newsSettingsToolStrip.Visible = false;
-                    licenceDate = LoginInfo.RateExpiredDate.ToString("dd/MM/yyyy");
+                    licenceDate = LoginInfo.RateExpiredDate.ToString();
 
                     RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
                     if (RemainingDays <= 7)
@@ -2754,7 +2754,7 @@ namespace thecalcify
                     }
                     else
                     {
-                        licenceExpire.Text = $"Licence Expired :- {licenceDate}";
+                        licenceExpire.Text = $"Licence Expire At:- {licenceDate.Replace("0:00:00", "")}";
                     }
                 }
 
@@ -3526,7 +3526,7 @@ namespace thecalcify
                 newsControl.BringToFront();
                 newsControl.Focus();
 
-                licenceDate = LoginInfo.NewsExpiredDate.ToString("dd/MM/yyyy");
+                licenceDate = LoginInfo.NewsExpiredDate.ToString();
 
                 RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
                 if (RemainingDays <= 7)
@@ -3535,7 +3535,7 @@ namespace thecalcify
                 }
                 else
                 {
-                    licenceExpire.Text = $"Licence Expired :- {licenceDate}";
+                    licenceExpire.Text = $"Licence Expire At:- {licenceDate.Replace("0:00:00", "")}";
                 }
 
             }
@@ -3608,7 +3608,7 @@ namespace thecalcify
                 newsControl.BringToFront();
                 newsControl.Focus();
 
-                licenceDate = LoginInfo.NewsExpiredDate.ToString("dd/MM/yyyy");
+                licenceDate = LoginInfo.NewsExpiredDate.ToString();
 
                 RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
                 if (RemainingDays <= 7)
@@ -3617,7 +3617,7 @@ namespace thecalcify
                 }
                 else
                 {
-                    licenceExpire.Text = $"Licence Expired :- {licenceDate}";
+                    licenceExpire.Text = $"Licence Expire At:- {licenceDate.Replace("0:00:00", "")}";
                 }
 
             }

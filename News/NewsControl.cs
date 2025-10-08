@@ -344,13 +344,13 @@ namespace thecalcify.News
                         this.Invoke(new Action(() =>
                         {
                             newsUpdateLable.Visible = true;
-                            newsUpdateLable.Text = $"Last News Updated At: {DateTime.Now:dd/MM/yyyy HH:mm:ss}";
+                            newsUpdateLable.Text = $"Last News Updated At: {Common.ParseToDate(DateTime.Now.ToString()).ToString()}";
                         }));
                     }
                     else
                     {
                         newsUpdateLable.Visible = true;
-                        newsUpdateLable.Text = $"Last News Updated At: {DateTime.Now:dd/MM/yyyy HH:mm:ss}";
+                        newsUpdateLable.Text = $"Last News Updated At: {Common.ParseToDate(DateTime.Now.ToString()).ToString()}";
                     }
                     
                     //UpdatePageInfo(1, pageSize);
@@ -500,7 +500,7 @@ namespace thecalcify.News
                                 // Convert date format (assuming FirstCreated is a valid datetime string)
                                 DateTimeOffset dto = DateTimeOffset.Parse(item.SortTimestamp);
                                 DateTimeOffset istTime = dto.ToOffset(TimeSpan.FromHours(5.5)); // Convert to IST time
-                                string formattedTime = istTime.ToString("dd/MM/yyyy HH:mm:ss");
+                                string formattedTime = Common.ParseToDate(istTime.ToString()).ToString();
 
                                 // Get the selected category and subcategory names
                                 var selectedCategory = cmbCategory.SelectedItem as Category;
@@ -563,7 +563,7 @@ namespace thecalcify.News
                             // Convert date format (assuming FirstCreated is a valid datetime string)
                             DateTimeOffset dto = DateTimeOffset.Parse(item.SortTimestamp);
                             DateTimeOffset istTime = dto.ToOffset(TimeSpan.FromHours(5.5)); // Convert to IST time
-                            string formattedTime = istTime.ToString("dd/MM/yyyy HH:mm:ss");
+                            string formattedTime = Common.ParseToDate(istTime.ToString()).ToString();
 
                             // Get the selected category and subcategory names
                             var selectedCategory = cmbCategory.SelectedItem as Category;

@@ -12,6 +12,7 @@ using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
 namespace thecalcify.Helper
@@ -155,9 +156,43 @@ namespace thecalcify.Helper
                 "dddd, d MMMM yyyy hh:mm tt", "dddd, d MMMM yyyy hh:mm:ss tt",
                 "dddd, d MMMM yyyy HH:mm:ss", "dddd, d MMMM yyyy H:mm:ss",
                 "dddd, d MMMM yyyy h.mm.ss tt", "dddd, d MMMM yyyy hh:mm:tt",
-                "dddd, d MMMM yyyy HH:mm", "dddd, d MMMM yyyy H:mm"
+                "dddd, d MMMM yyyy HH:mm", "dddd, d MMMM yyyy H:mm",
+
+                "dddd, d MMMM, yyyy hh:mm tt", "dddd, d MMMM, yyyy hh:mm:ss tt",
+                "dddd, d MMMM, yyyy HH:mm:ss", "dddd, d MMMM, yyyy H:mm:ss",
+                "dddd, d MMMM, yyyy h.mm.ss tt", "dddd, d MMMM, yyyy hh:mm:tt",
+                "dddd, d MMMM, yyyy HH:mm", "dddd, d MMMM, yyyy H:mm",
+
+                 // Long month names and day names
+                "dd MMMM yyyy hh:mm tt", "dd MMMM yyyy hh:mm:ss tt", "dd MMMM yyyy HH:mm:ss", "dd MMMM yyyy H:mm:ss",
+                "dd MMMM yyyy h.mm.ss tt", "dd MMMM yyyy hh:mm:tt", "dd MMMM yyyy HH:mm", "dd MMMM yyyy H:mm",
+
+                "d MMMM yyyy hh:mm tt", "d MMMM yyyy hh:mm:ss tt", "d MMMM yyyy HH:mm:ss", "d MMMM yyyy H:mm:ss",
+                "d MMMM yyyy h.mm.ss tt", "d MMMM yyyy hh:mm:tt", "d MMMM yyyy HH:mm", "d MMMM yyyy H:mm",
+
+                "dddd, d MMMM yyyy hh:mm tt", "dddd, d MMMM yyyy hh:mm:ss tt", "dddd, d MMMM yyyy HH:mm:ss",
+                "dddd, d MMMM yyyy H:mm:ss", "dddd, d MMMM yyyy h.mm.ss tt", "dddd, d MMMM yyyy hh:mm:tt",
+                "dddd, d MMMM yyyy HH:mm", "dddd, d MMMM yyyy H:mm",
+
+                "dddd, d MMMM, yyyy hh:mm tt", "dddd, d MMMM, yyyy hh:mm:ss tt", "dddd, d MMMM, yyyy HH:mm:ss",
+                "dddd, d MMMM, yyyy H:mm:ss", "dddd, d MMMM, yyyy h.mm.ss tt", "dddd, d MMMM, yyyy hh:mm:tt",
+                "dddd, d MMMM, yyyy HH:mm", "dddd, d MMMM, yyyy H:mm",
+
+                "dddd, dd MMMM yyyy hh:mm tt", "dddd, dd MMMM yyyy hh:mm:ss tt", "dddd, dd MMMM yyyy hh:mm:tt",
+                "dddd, dd MMMM yyyy h:mm tt", "dddd, dd MMMM yyyy h:mm:ss tt", "dddd, dd MMMM yyyy h.mm.ss tt",
+                "dddd, dd MMMM yyyy HH:mm", "dddd, dd MMMM yyyy HH:mm:ss", "dddd, dd MMMM yyyy H:mm", "dddd, dd MMMM yyyy H:mm:ss",
+
+                "dd MMMM yyyy hh:mm", "dd MMMM yyyy hh:mm tt", "dd MMMM yyyy hh:mm:ss", "dd MMMM yyyy hh:mm:tt",
+    
+                // New Mixed time formats
+                "dd MMMM yyyy HH:mm:ss tt", "dd MMMM yyyy H:mm:ss tt", "d MMMM yyyy hh:mm tt", "d MMMM yyyy HH:mm tt",
+
+                "dd MMMM yyyy H:mm", "dd MMMM yyyy H:mm:ss", "d MMMM yyyy HH:mm", "d MMMM yyyy HH:mm:ss",
+                "d MMMM yyyy hh:mm:ss tt", "d MMMM yyyy hh:mm:tt"
             };
 
+            string pattern = @"\s[+\-]\d{2}:\d{2}$";  // Matches '+00:00' or '-05:30'
+            input = Regex.Replace(input, pattern, "");
 
             formats = formats.Distinct().ToArray();
 
@@ -169,7 +204,7 @@ namespace thecalcify.Helper
                     DateTimeStyles.None,
                     out DateTime parsedDate))
             {
-                return parsedDate.Date; // ✅ return DateTime (no string conversion)
+                return parsedDate; // ✅ return DateTime (no string conversion)
             }
 
             throw new FormatException($"Invalid date format: {input}");
@@ -226,6 +261,7 @@ namespace thecalcify.Helper
         {
             try
             {
+                // If the value is invalid or not a valid timestamp, return "--"
                 if (string.IsNullOrWhiteSpace(value) || value == "--" || value == "N/A")
                     return "--";
 
@@ -241,18 +277,26 @@ namespace thecalcify.Helper
                     ApplicationLogger.LogException(ex);
                 }
 
-                long timestamp = long.Parse(value);
+                long timestamp = long.Parse(value); // Parse the value to a long for timestamp
 
                 DateTimeOffset dateTimeOffset = DateTimeOffset.FromUnixTimeMilliseconds(timestamp);
-                string formattedDate = dateTimeOffset.ToLocalTime().ToString("dd/MM/yyyy HH:mm:ss:fff");
+
+                // If the original time zone is UTC (+00:00), convert it to IST (+05:30)
+                if (dateTimeOffset.Offset == TimeSpan.Zero)
+                {
+                    dateTimeOffset = dateTimeOffset.ToOffset(TimeSpan.FromHours(5).Add(TimeSpan.FromMinutes(30))); // IST offset: UTC +5:30
+                }
+
+                // Pass the converted DateTimeOffset to ParseToDate method for further formatting
+                string formattedDate = ParseToDate(dateTimeOffset.ToString()).ToString();
 
                 return formattedDate;
             }
             catch (Exception ex)
             {
-                ApplicationLogger.Log(value);
-                ApplicationLogger.LogException(ex);
-                return null;
+                ApplicationLogger.Log(value); // Log the input value for troubleshooting
+                ApplicationLogger.LogException(ex); // Log the exception details
+                return null; // Return null if any error occurs
             }
         }
 

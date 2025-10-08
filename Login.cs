@@ -148,7 +148,7 @@ namespace thecalcify
                             SplashManager.Hide();
 
                             MessageBox.Show("Temporary Upgrading Server. Login after sometime", "Upgrade Server", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                            ApplicationLogger.Log($"{responseContent},{DateTime.Now:dd/MM/yyyy HH:mm:ss:ff}");
+                            ApplicationLogger.Log($"{responseContent},{Common.ParseToDate(DateTime.Now.ToString()).ToString()}");
                             loginbutton.Enabled = true;
                             return;
                         }

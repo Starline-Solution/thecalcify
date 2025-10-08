@@ -1350,7 +1350,7 @@ namespace thecalcify.MarketWatch
                     //    UpdateRowCells(gridRow, dataRow);
 
                     //}
-                    if (IsRowDataDifferent(gridRow, dto))
+                    if (!IsRowDataDifferent(gridRow, dto))
                     {
                         // Update from DTO
                         gridRow.Cells["Name"].Value = dto.n;
@@ -1509,7 +1509,7 @@ namespace thecalcify.MarketWatch
 
                         cell.Style = new DataGridViewCellStyle
                         {
-                            Format = "HH:mm:ss:fff",
+                            Format = "dd/MM/yyyy HH:mm:ss:fff",
                             FormatProvider = CultureInfo.InvariantCulture,
                             Font = new Font("Microsoft Sans Serif", fontSize, FontStyle.Regular),
                             ForeColor = Color.Black,
