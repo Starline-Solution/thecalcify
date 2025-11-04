@@ -273,20 +273,20 @@ namespace thecalcify.Helper
     // DTO to map JSON data
     public class MarketDataDto
     {
-        public string i { get; set; }
-        public string n { get; set; }
-        public string b { get; set; }
-        public string a { get; set; }
-        public string ltp { get; set; }
-        public string h { get; set; }
-        public string l { get; set; }
-        public string o { get; set; }
-        public string c { get; set; }
+        public string i { get; set; } // Identifier
+        public string n { get; set; } // Name
+        public string b { get; set; } // Bid
+        public string a { get; set; } // Ask
+        public string ltp { get; set; } // Last Traded Price
+        public string h { get; set; } // High
+        public string l { get; set; } // Low
+        public string o { get; set; } // Open
+        public string c { get; set; } // Close
 
         //[JsonConverter(typeof(StringOrNumberConverter))]
-        public string d { get; set; } = "--";
-        public string v { get; set; }
-        public string t { get; set; }
+        public string d { get; set; } = "--"; // Change
+        public string v { get; set; } // Volume
+        public string t { get; set; } // Timestamp
         public string atp { get; set; } = "--";   // Ask traded price "98695.47"
         public string bq { get; set; } = "--";   // Bid quantity "1"
         public string tbq { get; set; } = "--";    // Total bid quantity "486"

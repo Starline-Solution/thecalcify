@@ -24,9 +24,9 @@ namespace thecalcify.News
             this.Text = type.Equals("region", StringComparison.OrdinalIgnoreCase) ? "News Regions" : "News Categories";
         }
 
-        private void NewsSubscriptionList_Load(object sender, EventArgs e)
+        private async void NewsSubscriptionList_Load(object sender, EventArgs e)
         {
-            LoadData();
+            await LoadData();
         }
 
         private async Task LoadData()

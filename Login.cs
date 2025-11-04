@@ -179,9 +179,9 @@ namespace thecalcify
                                     }
 
 
-                                    if (!LoginInfo.IsNews && !LoginInfo.IsRate &&
-                                        LoginInfo.RateExpiredDate < DateTime.Today.Date &&
-                                        LoginInfo.NewsExpiredDate < DateTime.Today.Date)
+                                    if ((!LoginInfo.IsNews || LoginInfo.NewsExpiredDate < DateTime.Today.Date ) && (!LoginInfo.IsRate ||
+                                        LoginInfo.RateExpiredDate < DateTime.Today.Date
+                                        ))
                                     {
                                         MessageBox.Show("Please contact the Administrator", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
                                         loginbutton.Enabled = true;

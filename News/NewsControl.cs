@@ -31,7 +31,6 @@ namespace thecalcify.News
         public int lastPageSize = 0;
         public int pageRefreshDelay = 60000;
         public string PrevCursor = string.Empty;
-        private bool checkItem = true;
         private bool buttonClicked = false;
         private string categoryLiteral = string.Empty;
         private string subcategoryLiteral = string.Empty;
