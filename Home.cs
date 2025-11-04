@@ -2212,41 +2212,42 @@ namespace thecalcify
 
         private async Task ApplyBatchUpdatesParallelAsync(List<MarketDataDto> updates)
         {
-            var tasks = updates.Select(newData =>
-                Task.Run(() =>
+            var nonUiTasks = updates.Select(newData => Task.Run(() =>
+            {
+                var dict = CreateFieldDictionary(newData);
+                if (dict != null && dict.Count > 0)
+                    ExcelNotifier.NotifyExcel(newData.i, dict);
+            }));
+
+            await Task.WhenAll(nonUiTasks);
+
+            // 👇 Batch all UI updates together
+            if (defaultGrid.IsHandleCreated)
+            {
+                defaultGrid.BeginInvoke(new Action(() =>
                 {
-                    // Notify Excel
-                    var dict = CreateFieldDictionary(newData);
-                    if (dict != null && dict.Count > 0)
-                        ExcelNotifier.NotifyExcel(newData.i, dict);
-
-                    if (!identifiers.Contains(newData.i)) return;
-
-                    // Ensure row exists
-                    if (!symbolRowMap.TryGetValue(newData.i, out int rowIndex))
+                    try
                     {
-                        var dto = pastRateTickDTO?.FirstOrDefault(x => x.i == newData.i);
-                        if (dto != null) AddRowFromDTO(dto);
+                        defaultGrid.SuspendLayout();
 
-                        if (!symbolRowMap.TryGetValue(newData.i, out rowIndex)) return;
-                    }
-
-                    // Minimal UI update
-                    if (defaultGrid.InvokeRequired)
-                    {
-                        defaultGrid.Invoke(new Action(() =>
+                        foreach (var newData in updates)
                         {
-                            UpdateRow(defaultGrid.Rows[rowIndex], newData);
-                        }));
-                    }
-                    else
-                    {
-                        UpdateRow(defaultGrid.Rows[rowIndex], newData);
-                    }
-                })
-            );
+                            if (!symbolRowMap.TryGetValue(newData.i, out int rowIndex))
+                                continue;
 
-            await Task.WhenAll(tasks);
+                            UpdateRow(defaultGrid.Rows[rowIndex], newData);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        ApplicationLogger.LogException(ex);
+                    }
+                    finally
+                    {
+                        defaultGrid.ResumeLayout();
+                    }
+                }));
+            }
         }
 
         private static Dictionary<string, object> CreateFieldDictionary(MarketDataDto data)
