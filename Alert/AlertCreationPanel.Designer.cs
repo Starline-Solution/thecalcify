@@ -25,6 +25,13 @@ namespace thecalcify.Alert
             this.btnOpenAlert = new System.Windows.Forms.ToolStripButton();
             this.btnAlertHistory = new System.Windows.Forms.ToolStripButton();
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
+            
+            // Create AlertId column first
+            this.AlertId = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.AlertId.HeaderText = "ID";
+            this.AlertId.Name = "AlertId";
+            this.AlertId.Visible = false;
+
             this.Symbol = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Rate = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -105,7 +112,8 @@ namespace thecalcify.Alert
             this.Rate,
             this.CreationTime,
             this.TriggerTime,
-            this.Edit});
+            this.Edit,
+            this.AlertId});
             this.dataGridView1.EnableHeadersVisualStyles = false;
             this.dataGridView1.GridColor = System.Drawing.Color.FromArgb(((int)(((byte)(230)))), ((int)(((byte)(230)))), ((int)(((byte)(230)))));
             this.dataGridView1.Location = new System.Drawing.Point(20, 80);
@@ -117,6 +125,13 @@ namespace thecalcify.Alert
             this.dataGridView1.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.CellSelect;
             this.dataGridView1.Size = new System.Drawing.Size(882, 320);
             this.dataGridView1.TabIndex = 1;
+            ////
+            ////Id
+            ////
+            //this.AlertId = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            //this.AlertId.HeaderText = "ID";
+            //this.AlertId.Name = "AlertId";
+            //this.AlertId.Visible = false;
             // 
             // Symbol
             // 
@@ -209,6 +224,7 @@ namespace thecalcify.Alert
         private System.Windows.Forms.ToolStripButton btnAlertHistory;
         private System.Windows.Forms.DataGridView dataGridView1;
         private System.Windows.Forms.Button btnAddAlert;
+        private DataGridViewTextBoxColumn AlertId;
         private DataGridViewTextBoxColumn Symbol;
         private DataGridViewTextBoxColumn Rate;
         private DataGridViewTextBoxColumn Column;
