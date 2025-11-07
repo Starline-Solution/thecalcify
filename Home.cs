@@ -1,6 +1,4 @@
-﻿using DocumentFormat.OpenXml.EMMA;
-using Microsoft.AspNetCore.Http.Connections;
-using Microsoft.AspNetCore.SignalR.Client;
+﻿using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Win32;
@@ -142,7 +140,6 @@ namespace thecalcify
         private System.Threading.Timer _updateTimer;
 
         private System.Windows.Forms.Timer signalRTimer;
-        private Thread licenceThread;
 
         // ======================
         // 📌 Excel Interop
@@ -1806,7 +1803,7 @@ namespace thecalcify
             int _connectingRetryCount = 0;
             int MaxConnectingRetries = 5;
 
-            _watchdogTimer = new System.Timers.Timer(15000); // check every 15 seconds
+            _watchdogTimer = new System.Timers.Timer(5000); // check every 5 seconds
             _watchdogTimer.Elapsed += async (s, e) =>
             {
                 try
@@ -1856,6 +1853,40 @@ namespace thecalcify
             _watchdogTimer.Start();
         }
 
+        private void SetupUpdateTimer()
+        {
+            try
+            {
+                // Purana timer dispose karo
+                if (_updateTimer != null)
+                {
+                    _updateTimer.Dispose();
+                    _updateTimer = null;
+                }
+
+                // Background timer setup (100ms interval)
+                _updateTimer = new System.Threading.Timer(
+                    callback: state =>
+                    {
+                        try
+                        {
+                            UpdateTimer_Tick(null, EventArgs.Empty);
+                        }
+                        catch (Exception ex)
+                        {
+                            ApplicationLogger.LogException(ex);
+                        }
+                    },
+                    state: null,
+                    dueTime: 0,        // start immediately
+                    period: 100        // repeat every 100ms
+                );
+            }
+            catch (Exception ex)
+            {
+                ApplicationLogger.LogException(ex);
+            }
+        }
         #endregion Form Method
 
         #region SignalR Methods
@@ -1919,7 +1950,7 @@ namespace thecalcify
 
         private HubConnection BuildConnection()
         {
-            
+
             return new HubConnectionBuilder()
                 .WithUrl($"http://api.thecalcify.com/excel?user={username}&auth=Starline@1008&type=desktop")
                 .WithAutomaticReconnect()
@@ -1933,9 +1964,9 @@ namespace thecalcify
                     };
                 })
                 .ConfigureLogging(logging =>
-                 {
-                     logging.AddConsole();  // Add logging for debugging
-                 })
+                {
+                    logging.AddConsole();  // Add logging for debugging
+                })
                 .Build();
 
         }
@@ -1962,7 +1993,10 @@ namespace thecalcify
                     if (!_eventHandlersAttached)
                     {
                         // Attach event handlers only once
-                        connection.On<string>("excelRate", OnExcelRateReceived);
+                        connection.On<string>("excelRate", base64 =>
+                        {
+                            Task.Run(() => OnExcelRateReceived(base64));
+                        });
 
                         connection.Closed += async (error) =>
                         {
@@ -2012,7 +2046,7 @@ namespace thecalcify
                                 ApplicationLogger.LogException(ex);
                             }
 
-                            };
+                        };
 
                         _eventHandlersAttached = true;
                     }
@@ -2109,41 +2143,6 @@ namespace thecalcify
             //Console.WriteLine($"End At {DateTime.Now}");
         }
 
-        private void SetupUpdateTimer()
-        {
-            try
-            {
-                // Purana timer dispose karo
-                if (_updateTimer != null)
-                {
-                    _updateTimer.Dispose();
-                    _updateTimer = null;
-                }
-
-                // Background timer setup (100ms interval)
-                _updateTimer = new System.Threading.Timer(
-                    callback: state =>
-                    {
-                        try
-                        {
-                            UpdateTimer_Tick(null, EventArgs.Empty);
-                        }
-                        catch (Exception ex)
-                        {
-                            ApplicationLogger.LogException(ex);
-                        }
-                    },
-                    state: null,
-                    dueTime: 0,        // start immediately
-                    period: 100        // repeat every 100ms
-                );
-            }
-            catch (Exception ex)
-            {
-                ApplicationLogger.LogException(ex);
-            }
-        }
-
         private void OnExcelRateReceived(string base64)
         {
             try
@@ -2165,51 +2164,6 @@ namespace thecalcify
             }
             catch (Exception ex)
             {
-                ApplicationLogger.LogException(ex);
-            }
-        }
-
-        private void AddRowFromDTO(MarketDataDto dto)
-        {
-            try
-            {
-                object[] rowData = new object[]
-                    {
-                dto.i,                                // symbol
-                dto.n ?? "--",                        // Name
-                dto.b ?? "--",                        // Bid
-                dto.a ?? "--",                        // Ask
-                dto.ltp ?? "--",                      // LTP
-                dto.h ?? "--",                        // High
-                dto.l ?? "--",                        // Low
-                dto.o ?? "--",                        // Open
-                dto.c ?? "--",                        // Close
-                dto.d ?? "--",                        // Net Chng
-                dto.atp ?? "--",                      // ATP
-                dto.bq ?? "--",                       // Bid Size
-                dto.tbq ?? "--",                      // Total Bid Size
-                dto.sq ?? "--",                       // Ask Size
-                dto.tsq ?? "--",                      // Total Ask Size
-                dto.vt ?? "--",                       // Volume
-                dto.oi ?? "--",                       // Open Interest
-                dto.ltq ?? "--",                      // Last Size
-                dto.v ?? "--",                        // V
-                Common.TimeStampConvert(dto.t)   // Time
-                    };
-
-                if (defaultGrid.Columns.Count == 0)
-                {
-                    InitializeDataGridView(); // or any custom setup that defines columns
-                }
-
-                int newRowIdx = defaultGrid.Rows.Add(rowData);
-
-                // Update symbolRowMap with new row index
-                symbolRowMap[dto.i] = newRowIdx;
-            }
-            catch (Exception ex)
-            {
-
                 ApplicationLogger.LogException(ex);
             }
         }
@@ -2247,7 +2201,7 @@ namespace thecalcify
 
                 if (updates != null)
                 {
-                    SafeInvoke(() => ApplyBatchUpdates(updates));
+                    SafeInvoke(async () => await ApplyBatchUpdatesParallelAsync(updates));
                 }
             }
             catch (Exception ex)
@@ -2256,72 +2210,43 @@ namespace thecalcify
             }
         }
 
-        private void ApplyBatchUpdates(List<MarketDataDto> updates)
+        private async Task ApplyBatchUpdatesParallelAsync(List<MarketDataDto> updates)
         {
-            if (updates == null || updates.Count == 0)
-                return;
-
-            try
+            var nonUiTasks = updates.Select(newData => Task.Run(() =>
             {
-                defaultGrid.SuspendLayout();
-                if (connection != null)
-                {
+                var dict = CreateFieldDictionary(newData);
+                if (dict != null && dict.Count > 0)
+                    ExcelNotifier.NotifyExcel(newData.i, dict);
+            }));
 
-                    lock (_tableLock)
+            await Task.WhenAll(nonUiTasks);
+
+            // 👇 Batch all UI updates together
+            if (defaultGrid.IsHandleCreated)
+            {
+                defaultGrid.BeginInvoke(new Action(() =>
+                {
+                    try
                     {
-                        var now = DateTime.Now;
+                        defaultGrid.SuspendLayout();
 
                         foreach (var newData in updates)
                         {
-                            if (newData == null || string.IsNullOrEmpty(newData.i))
+                            if (!symbolRowMap.TryGetValue(newData.i, out int rowIndex))
                                 continue;
 
-                            // Prepare dictionary and notify Excel
-                            var symbol = newData.i;
-                            var dict = CreateFieldDictionary(newData);
-                            if (dict != null || dict.Count != 0)
-                            {
-                                ExcelNotifier.NotifyExcel(symbol, dict);
-
-                            }
-                            if (!identifiers.Contains(symbol))
-                                continue;
-
-                            if (!symbolRowMap.TryGetValue(symbol, out int rowIndex))
-                            {
-                                var dto = pastRateTickDTO?.FirstOrDefault(x => x.i == symbol);
-                                if (dto != null)
-                                    AddRowFromDTO(dto);
-
-                                if (!symbolRowMap.TryGetValue(symbol, out rowIndex))
-                                    continue;
-                            }
-
-                            var row = defaultGrid.Rows[rowIndex];
-                            UpdateRow(row, newData);
+                            UpdateRow(defaultGrid.Rows[rowIndex], newData);
                         }
-
-                        // Throttle font refresh (once per batch)
-                        if ((now - lastUiUpdate).TotalMilliseconds > 120)
-                        {
-                            var font = new Font("Microsoft Sans Serif", fontSize);
-                            defaultGrid.DefaultCellStyle.Font = font;
-                            defaultGrid.RowHeadersDefaultCellStyle.Font = new Font(font.FontFamily, fontSize + 1.5f, FontStyle.Bold);
-                            lastUiUpdate = now;
-                        }
-                    } 
-                }
-            }
-            catch (Exception ex)
-            {
-                if(connection == null)
-                    updates.Clear();
-
-                ApplicationLogger.Log($"Error during batch update: {ex} && {ex.Message} && {ex.StackTrace}");
-            }
-            finally
-            {
-                defaultGrid.ResumeLayout();
+                    }
+                    catch (Exception ex)
+                    {
+                        ApplicationLogger.LogException(ex);
+                    }
+                    finally
+                    {
+                        defaultGrid.ResumeLayout();
+                    }
+                }));
             }
         }
 
@@ -2507,94 +2432,6 @@ namespace thecalcify
             }
         }
 
-        private async void DisconnectESCToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                // 1️⃣ Stop background processes
-                await StopBackgroundTasks(); // You define this method
-
-                // 2️⃣ Unsubscribe event handlers
-                UnsubscribeAllEvents(); // Optional, but recommended if you manually subscribed
-
-                // 3️⃣ Show Login Form
-                Login loginForm = new Login();
-                loginForm.Show();
-
-                // 4️⃣ Dispose current form
-                this.Hide();      // optional: avoid flicker before dispose
-                this.Dispose();   // frees unmanaged resources
-                this.Close();   // frees unmanaged resources
-
-                // 5️⃣ Kill extra processes if needed (use with caution)
-                KillProcess();    // Only if you're absolutely sure it's safe to kill processes
-                //await DisconnectESCToolStripMenuItem_ClickAsync();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error during disconnect: " + ex.Message);
-            }
-            finally
-            {
-                await StopBackgroundTasks();
-            }
-        }
-
-        private void UnsubscribeAllEvents()
-        {
-            NetworkChange.NetworkAvailabilityChanged -= OnNetworkAvailabilityChanged;
-            NetworkChange.NetworkAddressChanged -= OnNetworkAddressChanged;
-            SystemEvents.PowerModeChanged -= OnPowerModeChanged;
-            System.Windows.Forms.Application.ThreadException -= Application_ThreadException;
-            AppDomain.CurrentDomain.UnhandledException -= CurrentDomain_UnhandledException;
-        }
-
-        private async Task StopBackgroundTasks()
-        {
-            try
-            {
-                if (connection != null && !isConnectionDisposed)
-                {
-                    if (connection.State != HubConnectionState.Disconnected)
-                    {
-                        await connection.StopAsync(); // ✅ Only stop if not already disconnected
-                    }
-
-                    await connection.DisposeAsync(); // ✅ Dispose safely
-                    isConnectionDisposed = true;
-                }
-
-                if (signalRTimer != null)
-                {
-                    signalRTimer.Stop();
-                    signalRTimer.Dispose();
-                    signalRTimer = null;
-                }
-            }
-            catch (ObjectDisposedException)
-            {
-                // Already disposed, safe to ignore or log once
-                ApplicationLogger.Log("SignalR connection was already disposed.");
-            }
-            catch (Exception ex)
-            {
-                // Catch other unexpected issues
-                //Console.WriteLine("Error stopping background tasks: " + ex.Message);
-                ApplicationLogger.LogException(ex);
-            }
-        }
-
-        private void BuildSymbolRowMap()
-        {
-            symbolRowMap.Clear();
-            for (int i = 0; i < defaultGrid.Rows.Count; i++)
-            {
-                string symbol = defaultGrid.Rows[i].Cells["symbol"].Value?.ToString();
-                if (!string.IsNullOrEmpty(symbol))
-                    symbolRowMap[symbol] = i;
-            }
-        }
-
         private static string DecompressGzip(byte[] compressed)
         {
             using (var input = new MemoryStream(compressed))
@@ -2640,7 +2477,7 @@ namespace thecalcify
                         {
                             if (!this.IsDisposed && this.IsHandleCreated)
                             {
-                                this.BeginInvoke((MethodInvoker)delegate
+                                this.BeginInvoke((MethodInvoker)async delegate 
                                 {
                                     pastRateTickDTO = resultdefault.data;
 
@@ -2673,7 +2510,7 @@ namespace thecalcify
                                         .Where(x => identifiers != null && identifiers.Contains(x.i))
                                         .ToList();
 
-                                    ApplyBatchUpdates(resultdefault.data);
+                                    await ApplyBatchUpdatesParallelAsync(resultdefault.data);
                                 });
                             }
                         }
@@ -2710,12 +2547,12 @@ namespace thecalcify
                                 .Where(x => identifiers != null && identifiers.Contains(x.i))
                                 .ToList();
 
-                            ApplyBatchUpdates(resultdefault.data);
+                            await ApplyBatchUpdatesParallelAsync(resultdefault.data);
                         }
                     }
                 }
             }
-            catch (WebException webEx)
+            catch (WebException)
             {
                 connection = null;
                 _eventHandlersAttached = false;
@@ -2847,7 +2684,7 @@ namespace thecalcify
             }
         }
 
-        private void InitializeDataGridView()
+        private async void InitializeDataGridView()
         {
             defaultGrid.SuspendLayout();
 
@@ -2870,7 +2707,7 @@ namespace thecalcify
                 resultdefault.data = resultdefault.data
                     .Where(x => identifiers.Contains(x.i))
                     .ToList();
-                ApplyBatchUpdates(resultdefault.data);
+                await ApplyBatchUpdatesParallelAsync(resultdefault.data);
             }
 
             defaultGrid.DefaultCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", fontSize, FontStyle.Regular);
@@ -2930,6 +2767,61 @@ namespace thecalcify
             }
         }
 
+        private void AddRowFromDTO(MarketDataDto dto)
+        {
+            try
+            {
+                object[] rowData = new object[]
+                    {
+                dto.i,                                // symbol
+                dto.n ?? "--",                        // Name
+                dto.b ?? "--",                        // Bid
+                dto.a ?? "--",                        // Ask
+                dto.ltp ?? "--",                      // LTP
+                dto.h ?? "--",                        // High
+                dto.l ?? "--",                        // Low
+                dto.o ?? "--",                        // Open
+                dto.c ?? "--",                        // Close
+                dto.d ?? "--",                        // Net Chng
+                dto.atp ?? "--",                      // ATP
+                dto.bq ?? "--",                       // Bid Size
+                dto.tbq ?? "--",                      // Total Bid Size
+                dto.sq ?? "--",                       // Ask Size
+                dto.tsq ?? "--",                      // Total Ask Size
+                dto.vt ?? "--",                       // Volume
+                dto.oi ?? "--",                       // Open Interest
+                dto.ltq ?? "--",                      // Last Size
+                dto.v ?? "--",                        // V
+                Common.TimeStampConvert(dto.t)   // Time
+                    };
+
+                if (defaultGrid.Columns.Count == 0)
+                {
+                    InitializeDataGridView(); // or any custom setup that defines columns
+                }
+
+                int newRowIdx = defaultGrid.Rows.Add(rowData);
+
+                // Update symbolRowMap with new row index
+                symbolRowMap[dto.i] = newRowIdx;
+            }
+            catch (Exception ex)
+            {
+
+                ApplicationLogger.LogException(ex);
+            }
+        }
+
+        private void BuildSymbolRowMap()
+        {
+            symbolRowMap.Clear();
+            for (int i = 0; i < defaultGrid.Rows.Count; i++)
+            {
+                string symbol = defaultGrid.Rows[i].Cells["symbol"].Value?.ToString();
+                if (!string.IsNullOrEmpty(symbol))
+                    symbolRowMap[symbol] = i;
+            }
+        }
         #endregion SignalR Helper Method
 
         #region Other Methods
@@ -3276,8 +3168,7 @@ namespace thecalcify
                 ApplicationLogger.LogException(ex);
             }
         }
-
-
+        
         public static void KillProcess()
         {
             // Kill any EXCEL processes without a main window (ghost/background instances)
@@ -3561,6 +3452,82 @@ namespace thecalcify
             }
         }
 
+        private async void DisconnectESCToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // 1️⃣ Stop background processes
+                await StopBackgroundTasks(); // You define this method
+
+                // 2️⃣ Unsubscribe event handlers
+                UnsubscribeAllEvents(); // Optional, but recommended if you manually subscribed
+
+                // 3️⃣ Show Login Form
+                Login loginForm = new Login();
+                loginForm.Show();
+
+                // 4️⃣ Dispose current form
+                this.Hide();      // optional: avoid flicker before dispose
+                this.Dispose();   // frees unmanaged resources
+                this.Close();   // frees unmanaged resources
+
+                // 5️⃣ Kill extra processes if needed (use with caution)
+                KillProcess();    // Only if you're absolutely sure it's safe to kill processes
+                //await DisconnectESCToolStripMenuItem_ClickAsync();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error during disconnect: " + ex.Message);
+            }
+            finally
+            {
+                await StopBackgroundTasks();
+            }
+        }
+
+        private void UnsubscribeAllEvents()
+        {
+            NetworkChange.NetworkAvailabilityChanged -= OnNetworkAvailabilityChanged;
+            NetworkChange.NetworkAddressChanged -= OnNetworkAddressChanged;
+            SystemEvents.PowerModeChanged -= OnPowerModeChanged;
+            System.Windows.Forms.Application.ThreadException -= Application_ThreadException;
+            AppDomain.CurrentDomain.UnhandledException -= CurrentDomain_UnhandledException;
+        }
+
+        private async Task StopBackgroundTasks()
+        {
+            try
+            {
+                if (connection != null && !isConnectionDisposed)
+                {
+                    if (connection.State != HubConnectionState.Disconnected)
+                    {
+                        await connection.StopAsync(); // ✅ Only stop if not already disconnected
+                    }
+
+                    await connection.DisposeAsync(); // ✅ Dispose safely
+                    isConnectionDisposed = true;
+                }
+
+                if (signalRTimer != null)
+                {
+                    signalRTimer.Stop();
+                    signalRTimer.Dispose();
+                    signalRTimer = null;
+                }
+            }
+            catch (ObjectDisposedException)
+            {
+                // Already disposed, safe to ignore or log once
+                ApplicationLogger.Log("SignalR connection was already disposed.");
+            }
+            catch (Exception ex)
+            {
+                // Catch other unexpected issues
+                //Console.WriteLine("Error stopping background tasks: " + ex.Message);
+                ApplicationLogger.LogException(ex);
+            }
+        }
         #endregion Other Methods
 
         #region Excel Export
@@ -3666,12 +3633,12 @@ namespace thecalcify
                 {
                     try
                     {
-                        ws = wb.Sheets["Sheet1"];
+                        ws = (Microsoft.Office.Interop.Excel.Worksheet)wb.Sheets["Sheet1"];
                         ws.Cells.Clear();
                     }
                     catch
                     {
-                        ws = wb.Sheets.Add();
+                        ws = (Microsoft.Office.Interop.Excel.Worksheet)wb.Sheets.Add();
                         ws.Name = "Sheet1";
                     }
                 }
@@ -3679,12 +3646,12 @@ namespace thecalcify
                 {
                     try
                     {
-                        ws = wb.Sheets[saveFileName];
+                        ws = (Microsoft.Office.Interop.Excel.Worksheet)wb.Sheets[saveFileName];
                         ws.Cells.Clear();
                     }
                     catch
                     {
-                        ws = wb.Sheets.Add();
+                        ws = (Microsoft.Office.Interop.Excel.Worksheet)wb.Sheets.Add();
                         ws.Name = saveFileName;
                     }
                 }
@@ -3713,8 +3680,8 @@ namespace thecalcify
                 }
 
                 // ✅ Dump in one shot to Excel Range
-                Microsoft.Office.Interop.Excel.Range startCell = ws.Cells[1, 1];
-                Microsoft.Office.Interop.Excel.Range endCell = ws.Cells[maxRow, maxCol];
+                Microsoft.Office.Interop.Excel.Range startCell = (Microsoft.Office.Interop.Excel.Range)ws.Cells[1, 1];
+                Microsoft.Office.Interop.Excel.Range endCell = (Microsoft.Office.Interop.Excel.Range)ws.Cells[maxRow, maxCol];
                 Microsoft.Office.Interop.Excel.Range writeRange = ws.Range[startCell, endCell];
 
                 const int MAX_RETRIES = 10;

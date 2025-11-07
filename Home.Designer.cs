@@ -335,7 +335,6 @@ namespace thecalcify
             this.alertToolStripMenuItem.Name = "alertToolStripMenuItem";
             this.alertToolStripMenuItem.Size = new System.Drawing.Size(58, 24);
             this.alertToolStripMenuItem.Text = "Alert";
-            this.alertToolStripMenuItem.Visible = false;
             this.alertToolStripMenuItem.Click += new System.EventHandler(this.AlertToolStripMenuItem_Click);
             // 
             // aboutToolStripMenuItem

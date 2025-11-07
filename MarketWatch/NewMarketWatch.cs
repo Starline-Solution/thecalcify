@@ -102,12 +102,17 @@ namespace thecalcify.MarketWatch
             _uiContext = SynchronizationContext.Current;
             CommonClass = new Helper.Common(this);
             CurrentInstance = this;
-            LoadIdentifier();
+            InitializeEditableMarketWatchGridAsync();
             InitializeDataTable();
             InitializeGrid();
             InitializeAddSymbolPanel();
             this.KeyDown += EditableMarketWatchGrid_KeyDown;
             InitializeToolTip();
+        }
+
+        public async void InitializeEditableMarketWatchGridAsync()
+        {
+            await LoadIdentifier();
         }
 
         public void EditableDispose()
@@ -1416,7 +1421,7 @@ namespace thecalcify.MarketWatch
                 }
                 catch (Exception ex)
                 {
-                    //Console.WriteLine("Error parsing rate value at UpdateRowCells: " + ex.Message);
+                    ApplicationLogger.Log("Error parsing rate value at UpdateRowCells: " + ex.Message);
                 }
             }
 

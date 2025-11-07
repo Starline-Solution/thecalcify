@@ -1,12 +1,11 @@
-﻿namespace thecalcify.News
+﻿namespace thecalcify.Home
 {
-    partial class NewsSubscriptionList
+    partial class HomeUserControlForm
     {
         /// <summary>
         /// Required designer variable.
         /// </summary>
         private System.ComponentModel.IContainer components = null;
-        private System.Windows.Forms.FlowLayoutPanel userpanel;
 
         /// <summary>
         /// Clean up any resources being used.
@@ -29,35 +28,31 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(NewsSubscriptionList));
-            this.userpanel = new System.Windows.Forms.FlowLayoutPanel();
+            this.home_Usercontrol1 = new Home_Usercontrol();
             this.SuspendLayout();
             // 
-            // userpanel
+            // home_Usercontrol1
             // 
-            this.userpanel.AutoScroll = true;
-            this.userpanel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.userpanel.Location = new System.Drawing.Point(0, 0);
-            this.userpanel.Name = "userpanel";
-            this.userpanel.Size = new System.Drawing.Size(829, 681);
-            this.userpanel.TabIndex = 0;
-            this.userpanel.WrapContents = false;
+            this.home_Usercontrol1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.home_Usercontrol1.Location = new System.Drawing.Point(0, 0);
+            this.home_Usercontrol1.Name = "home_Usercontrol1";
+            this.home_Usercontrol1.Size = new System.Drawing.Size(800, 450);
+            this.home_Usercontrol1.TabIndex = 0;
             // 
-            // NewsSubscriptionList
+            // HomeUserControlForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(829, 681);
-            this.Controls.Add(this.userpanel);
-            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.MaximizeBox = false;
-            this.MinimizeBox = false;
-            this.Name = "NewsSubscriptionList";
-            this.Text = "NewsSubscriptionList";
+            this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.home_Usercontrol1);
+            this.Name = "HomeUserControlForm";
+            this.Text = "HomeUserControlForm";
             this.ResumeLayout(false);
 
         }
 
         #endregion
+
+        private Home_Usercontrol home_Usercontrol1;
     }
 }
