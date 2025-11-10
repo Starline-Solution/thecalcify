@@ -1,21 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
 namespace thecalcify.Helper
 {
     public partial class About : Form
     {
-        public string username, password, licenceExpiryDate,token;
+        public string username, password, licenceExpiryDate, token;
 
-        public About(string username, string password, string licenceExpired,string token)
+        public About(string username, string password, string licenceExpired, string token)
         {
             InitializeComponent();
             this.username = username;
@@ -38,7 +31,7 @@ namespace thecalcify.Helper
         private void UpdateButton_Click(object sender, EventArgs e)
         {
             updateButton.Enabled = false;
-            UpdateAgent updateAgent = new UpdateAgent(token);
+            _ = new UpdateAgent(token, this);
             updateButton.Enabled = true;
         }
     }

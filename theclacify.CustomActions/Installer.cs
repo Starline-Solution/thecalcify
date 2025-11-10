@@ -1,13 +1,9 @@
-﻿using Microsoft.Win32;
-using System;
+﻿using System;
 using System.Collections;
 using System.ComponentModel;
 using System.Configuration.Install;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Security.Principal;
 using thecalcify.Helper;
 
 namespace thecalcify.CustomActions

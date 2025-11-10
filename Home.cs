@@ -3,12 +3,15 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Win32;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Data;
 using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -19,7 +22,6 @@ using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -27,6 +29,7 @@ using thecalcify.Alert;
 using thecalcify.Helper;
 using thecalcify.MarketWatch;
 using thecalcify.News;
+using Windows.Media.Protection.PlayReady;
 using Button = System.Windows.Forms.Button;
 using Label = System.Windows.Forms.Label;
 using TextBox = System.Windows.Forms.TextBox;
@@ -39,6 +42,7 @@ namespace thecalcify
 
         [DllImport("user32.dll")]
         private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out int lpdwProcessId);
+        //private string[] args;
 
         // ======================
         // 📌 Config / Constants
@@ -99,6 +103,7 @@ namespace thecalcify
             "V","Time","ATP","Bid Size","Total Bid Size","Ask Size","Total Ask Size",
             "Volume","Open Interest","Last Size"
         };
+        private static readonly string APIPath = APIUrl.ProdUrl; // Change as needed
 
         public List<string> FileLists = new List<string>();
         public List<(string Symbol, string SymbolName)> SymbolName = new List<(string Symbol, string SymbolName)>();
@@ -140,6 +145,8 @@ namespace thecalcify
         private System.Threading.Timer _updateTimer;
 
         private System.Windows.Forms.Timer signalRTimer;
+        public event EventHandler LogoutRequested;
+
 
         // ======================
         // 📌 Excel Interop
@@ -178,6 +185,9 @@ namespace thecalcify
         // 📌 API Responses
         // ======================
         private MarketApiResponse resultdefault;
+        public string keywords = string.Empty, topics =string.Empty;
+        public bool isDND = false;
+        private int userId;
 
 
         private readonly JsonSerializerSettings _jsonSettings = new JsonSerializerSettings
@@ -193,6 +203,7 @@ namespace thecalcify
         public thecalcify()
         {
             InitializeComponent();
+            //this.args = args;
         }
 
         private async void Home_Load(object sender, EventArgs e)
@@ -237,7 +248,7 @@ namespace thecalcify
                 app.Quit();
 
                 // --- MENU SETUP ---
-                if (LoginInfo.IsRate && LoginInfo.IsNews && LoginInfo.RateExpiredDate.Date >= DateTime.Today.Date && LoginInfo.NewsExpiredDate >= DateTime.Today.Date )
+                if (LoginInfo.IsRate && LoginInfo.IsNews && LoginInfo.RateExpiredDate.Date >= DateTime.Today.Date && LoginInfo.NewsExpiredDate >= DateTime.Today.Date)
                 {
                     MenuLoad();
 
@@ -261,14 +272,35 @@ namespace thecalcify
                     }
                     else
                     {
-                        licenceExpire.Text = $"Licence Expired :- {licenceDate}";
+                        licenceExpire.Text = $"License Expired On :- {licenceDate}";
                     }
+
+                    //if (args != null)
+                    //{
+                    //    licenceDate = LoginInfo.NewsExpiredDate.ToString().Replace("0:00:00", "");
+
+                    //    this.NewsListToolStripMenuItem_Click_1(this, EventArgs.Empty);
+                    //    newCTRLNToolStripMenuItem.Visible = false;
+                    //    toolsToolStripMenuItem.Enabled = true;
+
+
+                    //    RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
+                    //    if (RemainingDays <= 7)
+                    //    {
+                    //        await CheckLicenceLoop();
+                    //    }
+                    //    else
+                    //    {
+                    //        licenceExpire.Text = $"Licence Expire At:- {licenceDate.Replace("0:00:00", "").Replace("12:00:00 AM", "").Replace("00:00:00", "").Replace("00:00", "").Replace("00:00 AM", "").TrimEnd('0').Trim()}";
+                    //    }
+
+                    //}
 
                 }
                 else if (LoginInfo.IsRate && LoginInfo.RateExpiredDate >= DateTime.Today.Date)
                 {
 
-                    licenceDate = LoginInfo.RateExpiredDate.ToString("dd/MM/yyyy");
+                    licenceDate = LoginInfo.RateExpiredDate.ToString("dd:MM:yyyy");
 
                     MenuLoad();
                     newsToolStripMenuItem.Visible = false;
@@ -294,17 +326,17 @@ namespace thecalcify
                     }
                     else
                     {
-                        licenceExpire.Text = $"Licence Expired :- {licenceDate}";
+                        licenceExpire.Text = $"License Expired On :- {licenceDate}";
                     }
-
 
                 }
                 else if (LoginInfo.IsNews && LoginInfo.NewsExpiredDate >= DateTime.Today.Date)
                 {
-                    licenceDate = LoginInfo.NewsExpiredDate.ToString("dd/MM/yyyy");
+                    licenceDate = LoginInfo.NewsExpiredDate.ToString("dd:MM:yyyy");
 
-                    this.NewsListToolStripMenuItem_Click(this, EventArgs.Empty);
+                    this.NewsListToolStripMenuItem_Click_1(this, EventArgs.Empty);
                     newCTRLNToolStripMenuItem.Visible = false;
+                    alertToolStripMenuItem.Visible = false;
                     toolsToolStripMenuItem.Enabled = true;
 
 
@@ -315,14 +347,34 @@ namespace thecalcify
                     }
                     else
                     {
-                        licenceExpire.Text = $"Licence Expired :- {licenceDate}";
+                        licenceExpire.Text = $"License Expired On :- {LoginInfo.NewsExpiredDate:dd:MM:yyyy}";
                     }
+
+                    //if (args != null)
+                    //{
+                    //    licenceDate = LoginInfo.NewsExpiredDate.ToString().Replace("0:00:00", "");
+
+                    //    this.NewsListToolStripMenuItem_Click_1(this, EventArgs.Empty);
+                    //    newCTRLNToolStripMenuItem.Visible = false;
+                    //    toolsToolStripMenuItem.Enabled = true;
+
+
+                    //    RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
+                    //    if (RemainingDays <= 7)
+                    //    {
+                    //        await CheckLicenceLoop();
+                    //    }
+                    //    else
+                    //    {
+                    //        licenceExpire.Text = $"Licence Expire At:- {licenceDate.Replace("0:00:00", "").Replace("12:00:00 AM", "").Replace("00:00:00", "").Replace("00:00", "").Replace("00:00 AM", "").TrimEnd('0').Trim()}";
+                    //    }
+
+                    //}
 
                 }
 
 
                 // --- FORM PROPERTIES ---
-                this.WindowState = FormWindowState.Maximized;
                 defaultGrid.Size = new Size(this.ClientSize.Width, this.ClientSize.Height);
 
                 CurrentInstance = this;
@@ -352,7 +404,7 @@ namespace thecalcify
                 // Start a timer instead of thread
                 var licenceTimer = new System.Windows.Forms.Timer
                 {
-                    Interval = 1000, // 1 second
+                    Interval = 2000, // 1 second
                     Enabled = true
                 };
                 licenceTimer.Tick += async (s, e2) =>
@@ -370,28 +422,29 @@ namespace thecalcify
             }
             else
             {
-                licenceExpire.Text = $"Licence Expired :- {licenceDate}";
+                licenceExpire.Text = $"License Expired On :- {licenceDate}";
             }
 
             return Task.CompletedTask;
         }
 
-        private void Home_FormClosed(object sender, FormClosedEventArgs e)
+        private async void Home_FormClosed(object sender, FormClosedEventArgs e)
         {
             isRunning = false;
 
             try
             {
+                await LogoutAsync();
                 KillProcess();
                 // Correct way to call the static method
-                CredentialManager.SaveMarketWatchWithColumns(lastOpenMarketWatch, columnPreferences.Count == 0 ? columnPreferencesDefault : columnPreferences);
+                CredentialManager.SaveMarketWatchWithColumns(lastOpenMarketWatch, (columnPreferences.Count == 0 || columnPreferences == null) ? columnPreferencesDefault : columnPreferences);
             }
             catch (Exception ex)
             {
                 ApplicationLogger.LogException(ex);
             }
 
-            System.Windows.Forms.Application.Exit();
+            Application.Exit();
         }
 
         private async Task UpdateLicenceLabel(int licenceRemainingDays)
@@ -412,7 +465,9 @@ namespace thecalcify
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show("Error during disconnect: " + ex.Message);
+                        MessageBox.Show("[UpdateLicenceLabel] Error during disconnect: " + ex.Message);
+                        ApplicationLogger.Log("[UpdateLicenceLabel] Error during disconnect: " + ex.Message);
+                        ApplicationLogger.LogException(ex);
                     }
                     finally
                     {
@@ -430,6 +485,12 @@ namespace thecalcify
                     licenceExpire.Text = $"⚠ Licence expires in {licenceRemainingDays} days!";
                     licenceExpire.ForeColor = Color.Red;
                     licenceExpire.Visible = !licenceExpire.Visible; // blink
+                }
+                else if (licenceRemainingDays > 7)
+                {
+                    licenceExpire.Visible = true;
+                    licenceExpire.Text = $"Licence Expire At:- {licenceDate.Replace("0:00:00", "").Replace("12:00:00 AM", "").Replace("00:00:00", "").Replace("00:00", "").Replace("00:00 AM", "").TrimEnd('0').Trim()}";
+                    licenceExpire.ForeColor = Color.Black;
                 }
                 else
                 {
@@ -475,7 +536,7 @@ namespace thecalcify
         {
             try
             {
-                using (var aboutForm = new About(username, password, licenceDate,token))
+                using (var aboutForm = new About(username, password, licenceDate, token))
                 {
                     if (isFullScreen)
                     {
@@ -588,9 +649,6 @@ namespace thecalcify
                 {
                     Name = "editableMarketWatchGridView",
                     Dock = DockStyle.Fill,
-                    columnPreferences = columnPreferences,
-                    columnPreferencesDefault = columnPreferencesDefault,
-                    fontSize = fontSize,
                     pastRateTickDTO = pastRateTickDTO,
                     isEditMarketWatch = true,
                     SymbolName = SymbolName,
@@ -615,14 +673,14 @@ namespace thecalcify
                 ApplicationLogger.LogException(ex);
                 MessageBox.Show($"Error switching to new market watch: {ex.Message}");
             }
-            finally 
+            finally
             {
                 if (this.InvokeRequired)
                 {
                     this.Invoke(new Action(async () =>
                     {
-                        newsSettingsToolStrip.Visible = false;
-                        licenceDate = LoginInfo.RateExpiredDate.ToString("dd/MM/yyyy");
+                        notificationSettings.Visible = false;
+                        licenceDate = LoginInfo.RateExpiredDate.ToString();
 
                         RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
                         if (RemainingDays <= 7)
@@ -631,14 +689,14 @@ namespace thecalcify
                         }
                         else
                         {
-                            licenceExpire.Text = $"Licence Expired :- {licenceDate}";
+                            licenceExpire.Text = $"License Expired On :- {licenceDate}";
                         }
                     }));
                 }
                 else
                 {
-                    newsSettingsToolStrip.Visible = false;
-                    licenceDate = LoginInfo.RateExpiredDate.ToString("dd/MM/yyyy");
+                    notificationSettings.Visible = false;
+                    licenceDate = LoginInfo.RateExpiredDate.ToString();
 
                     RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
                     if (RemainingDays <= 7)
@@ -647,7 +705,7 @@ namespace thecalcify
                     }
                     else
                     {
-                        licenceExpire.Text = $"Licence Expired :- {licenceDate}";
+                        licenceExpire.Text = $"License Expired On :- {licenceDate}";
                     }
                 }
             }
@@ -872,12 +930,12 @@ namespace thecalcify
                         {
                             this.Invoke(new Action(() =>
                             {
-                                newsSettingsToolStrip.Visible = false;
+                                notificationSettings.Visible = false;
                             }));
                         }
                         else
                         {
-                            newsSettingsToolStrip.Visible = false;
+                            notificationSettings.Visible = false;
                         }
 
                     };
@@ -932,8 +990,8 @@ namespace thecalcify
                 {
                     this.Invoke(new Action(async () =>
                     {
-                        newsSettingsToolStrip.Visible = false;
-                        licenceDate = LoginInfo.RateExpiredDate.ToString("dd/MM/yyyy");
+                        notificationSettings.Visible = false;
+                        licenceDate = LoginInfo.RateExpiredDate.ToString();
 
                         RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
                         if (RemainingDays <= 7)
@@ -942,14 +1000,14 @@ namespace thecalcify
                         }
                         else
                         {
-                            licenceExpire.Text = $"Licence Expired :- {licenceDate}";
+                            licenceExpire.Text = $"License Expired On :- {licenceDate}";
                         }
                     }));
                 }
                 else
                 {
-                    newsSettingsToolStrip.Visible = false;
-                    licenceDate = LoginInfo.RateExpiredDate.ToString("dd/MM/yyyy");
+                    notificationSettings.Visible = false;
+                    licenceDate = LoginInfo.RateExpiredDate.ToString();
 
                     RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
                     if (RemainingDays <= 7)
@@ -958,7 +1016,7 @@ namespace thecalcify
                     }
                     else
                     {
-                        licenceExpire.Text = $"Licence Expired :- {licenceDate}";
+                        licenceExpire.Text = $"License Expired On :- {licenceDate}";
                     }
                 }
             }
@@ -1148,7 +1206,6 @@ namespace thecalcify
             txtsearch.Clear();
         }
 
-
         private void AddEditColumnsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (panelAddSymbols != null && panelAddSymbols.Visible)
@@ -1300,7 +1357,7 @@ namespace thecalcify
                     bool check = !allChecked;
                     btnSelectAllColumns.Text = check ? "Unselect All" : "Select All";
 
-                    for (int i = 0; i < checkedListColumns.Items.Count; i++) 
+                    for (int i = 0; i < checkedListColumns.Items.Count; i++)
                     {
                         checkedListColumns.SetItemChecked(i, check);
                     }
@@ -1576,7 +1633,7 @@ namespace thecalcify
 
                         // Map checked names back to their symbols
                         var currentlyCheckedSymbols = SymbolName
-                            .Where(x => currentlyCheckedNames.Contains(x.SymbolName))
+                            .Where(x => currentlyCheckedNames.Contains(x.SymbolName.Trim()))
                             .Select(x => x.Symbol)
                             .ToList();
 
@@ -1621,7 +1678,7 @@ namespace thecalcify
                 {
                     if (identifiers.Contains(item.Symbol))
                     {
-                        checkedListSymbols.Items.Add(item.SymbolName, true); // Display symbol name
+                        checkedListSymbols.Items.Add(item.SymbolName.Trim(), true); // Display symbol name
                     }
                 }
 
@@ -1630,7 +1687,7 @@ namespace thecalcify
                 {
                     if (!identifiers.Contains(item.Symbol))
                     {
-                        checkedListSymbols.Items.Add(item.SymbolName, false);
+                        checkedListSymbols.Items.Add(item.SymbolName.Trim(), false);
                     }
                 }
 
@@ -1693,7 +1750,7 @@ namespace thecalcify
                 {
                     signalRTimer.Stop();
                 }
-                
+
 
                 _eventHandlersAttached = false;
 
@@ -1801,9 +1858,9 @@ namespace thecalcify
                 return;
 
             int _connectingRetryCount = 0;
-            int MaxConnectingRetries = 5;
+            int MaxConnectingRetries = 3;
 
-            _watchdogTimer = new System.Timers.Timer(5000); // check every 5 seconds
+            _watchdogTimer = new System.Timers.Timer(10000); // check every 5 seconds
             _watchdogTimer.Elapsed += async (s, e) =>
             {
                 try
@@ -1952,8 +2009,9 @@ namespace thecalcify
         {
 
             return new HubConnectionBuilder()
-                .WithUrl($"http://api.thecalcify.com/excel?user={username}&auth=Starline@1008&type=desktop")
-                .WithAutomaticReconnect()
+                //.WithUrl($"http://api.thecalcify.com/excel?user={username}&auth=Starline@1008&type=desktop")
+                .WithUrl($"{APIPath}excel?user={username}&auth=Starline@1008&type=Desktop")
+                .WithAutomaticReconnect(new[] { TimeSpan.Zero, TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(10) })
                 .AddNewtonsoftJsonProtocol(options =>
                 {
                     options.PayloadSerializerSettings = new JsonSerializerSettings
@@ -1975,8 +2033,6 @@ namespace thecalcify
         {
             try
             {
-                //Console.WriteLine($"Start At {DateTime.Now}");
-                // 🔄 Reuse connection if already exists
                 if (connection == null)
                 {
                     connection = BuildConnection();
@@ -2453,16 +2509,22 @@ namespace thecalcify
             {
                 using (var client = new HttpClient())
                 {
-                    var request = new HttpRequestMessage(HttpMethod.Get, "http://api.thecalcify.com/getInstrument");
+                    var request = new HttpRequestMessage(HttpMethod.Get, $"{APIPath}getInstrument");
                     request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
                     request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
                     // ✅ Async call
                     var response = await client.SendAsync(request).ConfigureAwait(false);
 
-                    if (!response.IsSuccessStatusCode)
+                    if (response.StatusCode == System.Net.HttpStatusCode.Forbidden ||
+                             response.StatusCode == System.Net.HttpStatusCode.Unauthorized ||
+                             response.StatusCode == HttpStatusCode.NotFound ||
+                             !response.IsSuccessStatusCode)
                     {
-                        ApplicationLogger.Log("Request failed with status code: " + response.StatusCode);
+                        thecalcify thecalcify = thecalcify.CurrentInstance;
+                        thecalcify.DisconnectESCToolStripMenuItem_Click(null, null);
+                        MessageBox.Show("Session expired. Please log in again.", "Session Expired", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        ApplicationLogger.Log($"Session expired or unauthorized access. due to {response.StatusCode} from Symbol Load API");
                         return;
                     }
 
@@ -2568,8 +2630,8 @@ namespace thecalcify
                 {
                     this.Invoke(new Action(async () =>
                     {
-                        newsSettingsToolStrip.Visible = false;
-                        licenceDate = LoginInfo.RateExpiredDate.ToString("dd/MM/yyyy");
+                        notificationSettings.Visible = false;
+                        licenceDate = LoginInfo.RateExpiredDate.ToString("dd:MM:yyyy");
 
                         RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
                         if (RemainingDays <= 7)
@@ -2578,14 +2640,14 @@ namespace thecalcify
                         }
                         else
                         {
-                            licenceExpire.Text = $"Licence Expired :- {licenceDate}";
+                            licenceExpire.Text = $"License Expired On :- {licenceDate}";
                         }
                     }));
                 }
                 else
                 {
-                    newsSettingsToolStrip.Visible = false;
-                    licenceDate = LoginInfo.RateExpiredDate.ToString("dd/MM/yyyy");
+                    notificationSettings.Visible = false;
+                    licenceDate = LoginInfo.RateExpiredDate.ToString();
 
                     RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
                     if (RemainingDays <= 7)
@@ -2594,7 +2656,7 @@ namespace thecalcify
                     }
                     else
                     {
-                        licenceExpire.Text = $"Licence Expired :- {licenceDate}";
+                        licenceExpire.Text = $"License Expired On :- {licenceDate}";
                     }
                 }
 
@@ -2693,7 +2755,7 @@ namespace thecalcify
             defaultGrid.Columns.Clear();
 
             defaultGrid.AllowUserToAddRows = false;
-            defaultGrid.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+            defaultGrid.ScrollBars = ScrollBars.Both;
             defaultGrid.AutoGenerateColumns = false;
 
             InitializeGridColumns();
@@ -2723,6 +2785,19 @@ namespace thecalcify
                 defaultGrid,
                 new object[] { true }
             );
+
+            // Update DataGridView column visibility
+            foreach (DataGridViewColumn column in defaultGrid.Columns)
+            {
+                if (column.Name.ToLower() == "symbol" || column.Name.ToLower() == "v")
+                {
+                    column.Visible = false;
+                }
+                else
+                {
+                    column.Visible = columnPreferences.Contains(column.Name);
+                }
+            }
 
             defaultGrid.ResumeLayout();
         }
@@ -2763,51 +2838,6 @@ namespace thecalcify
             }
             catch (Exception ex)
             {
-                ApplicationLogger.LogException(ex);
-            }
-        }
-
-        private void AddRowFromDTO(MarketDataDto dto)
-        {
-            try
-            {
-                object[] rowData = new object[]
-                    {
-                dto.i,                                // symbol
-                dto.n ?? "--",                        // Name
-                dto.b ?? "--",                        // Bid
-                dto.a ?? "--",                        // Ask
-                dto.ltp ?? "--",                      // LTP
-                dto.h ?? "--",                        // High
-                dto.l ?? "--",                        // Low
-                dto.o ?? "--",                        // Open
-                dto.c ?? "--",                        // Close
-                dto.d ?? "--",                        // Net Chng
-                dto.atp ?? "--",                      // ATP
-                dto.bq ?? "--",                       // Bid Size
-                dto.tbq ?? "--",                      // Total Bid Size
-                dto.sq ?? "--",                       // Ask Size
-                dto.tsq ?? "--",                      // Total Ask Size
-                dto.vt ?? "--",                       // Volume
-                dto.oi ?? "--",                       // Open Interest
-                dto.ltq ?? "--",                      // Last Size
-                dto.v ?? "--",                        // V
-                Common.TimeStampConvert(dto.t)   // Time
-                    };
-
-                if (defaultGrid.Columns.Count == 0)
-                {
-                    InitializeDataGridView(); // or any custom setup that defines columns
-                }
-
-                int newRowIdx = defaultGrid.Rows.Add(rowData);
-
-                // Update symbolRowMap with new row index
-                symbolRowMap[dto.i] = newRowIdx;
-            }
-            catch (Exception ex)
-            {
-
                 ApplicationLogger.LogException(ex);
             }
         }
@@ -2959,8 +2989,9 @@ namespace thecalcify
                 savelabel.Visible = false;
                 fontSizeComboBox.Visible = true;
 
-                searchTextLabel.Visible = false;
-                txtsearch.Visible = false;
+                searchTextLabel.Visible = true;
+                txtsearch.Clear();
+                txtsearch.Visible = true;
 
                 string finalPath = Path.Combine(AppFolder, username);
                 selectedSymbols.Clear();
@@ -3064,7 +3095,7 @@ namespace thecalcify
                 {
                     _watchdogTimer.Stop();
                     _watchdogTimer.Dispose();
-                    _watchdogTimer = null; 
+                    _watchdogTimer = null;
                 }
 
                 _updateTimer?.Dispose();
@@ -3123,7 +3154,7 @@ namespace thecalcify
                     finally
                     {
                         connection = null; // Crucial to reset connection
-                        _eventHandlersAttached = false; 
+                        _eventHandlersAttached = false;
                     }
                 }
             }
@@ -3282,177 +3313,7 @@ namespace thecalcify
             }
         }
 
-        private async void NewsListToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                // 1. Clean up existing NewsControl if already present
-                var existingNews = this.Controls.Find("newsControlView", true).FirstOrDefault();
-                if (existingNews != null)
-                {
-                    this.Controls.Remove(existingNews);
-                    existingNews.Dispose();
-                }
-
-                EditableMarketWatchGrid editableMarketWatchGrid = EditableMarketWatchGrid.CurrentInstance;
-                if (editableMarketWatchGrid != null)
-                {
-                    if (editableMarketWatchGrid.IsCurrentCellInEditMode)
-                    {
-                        editableMarketWatchGrid.EndEdit();
-                    }
-
-                    editableMarketWatchGrid.EditableDispose(); // Dispose the grid
-                    editableMarketWatchGrid.Dispose();
-                }
-
-
-                // 2. Create new NewsControl
-                var newsControl = new NewsControl(username, password, token)
-                {
-                    Name = "newsControlView",
-                    Dock = DockStyle.Fill
-                };
-
-                //DisposeSignalRConnection();
-                saveMarketWatchHost.Visible = false;
-                fontSizeComboBox.Visible = false;
-                searchTextLabel.Visible = false;
-                txtsearch.Visible = false;
-                refreshMarketWatchHost.Visible = false;
-                // Update status label
-
-                // Update title based on edit mode
-                titleLabel.Text = "News";
-
-                // 3. Add it to main form
-                this.Controls.Add(newsControl);
-                newsControl.BringToFront();
-                newsControl.Focus();
-
-                licenceDate = LoginInfo.NewsExpiredDate.ToString("dd/MM/yyyy");
-
-                RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
-                if (RemainingDays <= 7)
-                {
-                    await CheckLicenceLoop();
-                }
-                else
-                {
-                    licenceExpire.Text = $"Licence Expired :- {licenceDate}";
-                }
-
-            }
-            catch (Exception ex)
-            {
-                ApplicationLogger.LogException(ex);
-                MessageBox.Show($"Error loading News view: {ex.Message}");
-            }
-            finally 
-            {
-                if (this.InvokeRequired)
-                {
-                    this.Invoke(new Action(() =>
-                    {
-                        newsSettingsToolStrip.Visible = true;
-                    }));
-                }
-                else
-                {
-                    newsSettingsToolStrip.Visible = true;
-                }
-            }
-        }
-
-        private void CategorywiseSubscriptionToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            string jsonCategoriesFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Categories.json");
-            //string jsonRegionsFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Regions.json");
-            string jsonContent = File.ReadAllText(jsonCategoriesFilePath);
-
-
-            using (var NewsSubscribeForm = new NewsSubscriptionList(jsonContent, "category"))
-            {
-                if (isFullScreen)
-                {
-                    NewsSubscribeForm.StartPosition = FormStartPosition.CenterParent;
-                    NewsSubscribeForm.TopMost = true; // Ensures it stays above the full-screen window
-                    NewsSubscribeForm.ShowDialog(this); // Pass the main form as owner
-                }
-                else
-                {
-                    NewsSubscribeForm.ShowDialog();
-                }
-            }
-        }
-
-        private void RegionwiseSubscriptionToolStripMenuItem1_Click(object sender, EventArgs e)
-        {
-            string jsonRegionsFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Regions.json");
-            string jsonContent = File.ReadAllText(jsonRegionsFilePath);
-
-
-            using (var NewsSubscribeForm = new NewsSubscriptionList(jsonContent, "region"))
-            {
-                if (isFullScreen)
-                {
-                    NewsSubscribeForm.StartPosition = FormStartPosition.CenterParent;
-                    NewsSubscribeForm.TopMost = true; // Ensures it stays above the full-screen window
-                    NewsSubscribeForm.ShowDialog(this); // Pass the main form as owner
-                }
-                else
-                {
-                    NewsSubscribeForm.ShowDialog();
-                }
-            }
-        }
-
-        private void NewsNotification_Click(object sender, EventArgs e)
-        {
-            // Check if the button is checked
-            if (!newsNotification.Checked)
-            {
-                // If checked, prompt the user if they want to turn off notifications
-                var result = MessageBox.Show("Do you want to turn off notifications?",
-                                             "Turn off notifications",
-                                             MessageBoxButtons.YesNo,
-                                             MessageBoxIcon.Question);
-
-                // If user clicks Yes, uncheck the button
-                if (result == DialogResult.Yes)
-                {
-                    newsNotification.Checked = false;
-                    MessageBox.Show("Notifications have been turned off.", "Notification", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-                else                
-                {
-                    newsNotification.Checked = true; // Keep it checked if user clicks No
-                }
-                // If user clicks No, do nothing and keep the button checked
-            }
-            else
-            {
-                // If unchecked, ask the user if they want to start receiving notifications
-                var result = MessageBox.Show("Do you want to turn on notifications?",
-                                             "Turn on notifications",
-                                             MessageBoxButtons.YesNo,
-                                             MessageBoxIcon.Question);
-
-                // If user clicks Yes, check the button
-                if (result == DialogResult.Yes)
-                {
-                    newsNotification.Checked = true;
-                    MessageBox.Show("Notifications have been turned on.", "Notification", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-                else
-                {
-                    newsNotification.Checked = false; // Keep it unchecked if user clicks No
-                }
-                // If user clicks No, do nothing and keep the button unchecked
-            }
-        }
-
-        private async void DisconnectESCToolStripMenuItem_Click(object sender, EventArgs e)
+        public async void DisconnectESCToolStripMenuItem_Click(object sender, EventArgs e)
         {
             try
             {
@@ -3526,6 +3387,303 @@ namespace thecalcify
                 // Catch other unexpected issues
                 //Console.WriteLine("Error stopping background tasks: " + ex.Message);
                 ApplicationLogger.LogException(ex);
+            }
+        }
+
+        //private void NewsNotification_Click(object sender, EventArgs e)
+        //{
+        //    // Check if the button is checked
+        //    if (!newsNotification.Checked)
+        //    {
+        //        // If checked, prompt the user if they want to turn off notifications
+        //        var result = MessageBox.Show("Do you want to turn off notifications?",
+        //                                     "Turn off notifications",
+        //                                     MessageBoxButtons.YesNo,
+        //                                     MessageBoxIcon.Question);
+
+        //        // If user clicks Yes, uncheck the button
+        //        if (result == DialogResult.Yes)
+        //        {
+        //            newsNotification.Checked = false;
+        //            MessageBox.Show("Notifications have been turned off.", "Notification", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        //        }
+        //        else
+        //        {
+        //            newsNotification.Checked = true; // Keep it checked if user clicks No
+        //        }
+        //        // If user clicks No, do nothing and keep the button checked
+        //    }
+        //    else
+        //    {
+        //        // If unchecked, ask the user if they want to start receiving notifications
+        //        var result = MessageBox.Show("Do you want to turn on notifications?",
+        //                                     "Turn on notifications",
+        //                                     MessageBoxButtons.YesNo,
+        //                                     MessageBoxIcon.Question);
+
+        //        // If user clicks Yes, check the button
+        //        if (result == DialogResult.Yes)
+        //        {
+        //            newsNotification.Checked = true;
+        //            MessageBox.Show("Notifications have been turned on.", "Notification", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        //        }
+        //        else
+        //        {
+        //            newsNotification.Checked = false; // Keep it unchecked if user clicks No
+        //        }
+        //        // If user clicks No, do nothing and keep the button unchecked
+        //    }
+        //}
+
+        public async void NewsListToolStripMenuItem_Click_1(object sender, EventArgs e)
+        {
+            try
+            {
+                // 1. Clean up existing NewsControl if already present
+                var existingNews = this.Controls.Find("newsControlView", true).FirstOrDefault();
+                if (existingNews != null)
+                {
+                    this.Controls.Remove(existingNews);
+                    existingNews.Dispose();
+                }
+
+                EditableMarketWatchGrid editableMarketWatchGrid = EditableMarketWatchGrid.CurrentInstance;
+                if (editableMarketWatchGrid != null)
+                {
+                    if (editableMarketWatchGrid.IsCurrentCellInEditMode)
+                    {
+                        editableMarketWatchGrid.EndEdit();
+                    }
+
+                    editableMarketWatchGrid.EditableDispose(); // Dispose the grid
+                    editableMarketWatchGrid.Dispose();
+                }
+
+
+                // 2. Create new NewsControl
+                var newsControl = new NewsControl(username, password, token, string.Empty)
+                {
+                    Name = "newsControlView",
+                    Dock = DockStyle.Fill
+                };
+
+                //DisposeSignalRConnection();
+                saveMarketWatchHost.Visible = false;
+                fontSizeComboBox.Visible = false;
+                searchTextLabel.Visible = false;
+                txtsearch.Visible = false;
+                refreshMarketWatchHost.Visible = false;
+                newCTRLNToolStripMenuItem1.Enabled = true;
+                // Update status label
+
+                // Update title based on edit mode
+                titleLabel.Text = "News";
+
+                // 3. Add it to main form
+                this.Controls.Add(newsControl);
+                newsControl.BringToFront();
+                newsControl.Focus();
+
+                licenceDate = LoginInfo.NewsExpiredDate.ToString();
+
+                RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
+                if (RemainingDays <= 7)
+                {
+                    await CheckLicenceLoop();
+                }
+                else
+                {
+                    licenceExpire.Text = $"Licence Expire At:- {LoginInfo.NewsExpiredDate:dd:MM:yyyy}";
+                }
+
+            }
+            catch (Exception ex)
+            {
+                ApplicationLogger.LogException(ex);
+                MessageBox.Show($"Error loading News view: {ex.Message}");
+            }
+            finally
+            {
+                if (this.InvokeRequired)
+                {
+                    this.Invoke(new Action(() =>
+                    {
+                        notificationSettings.Visible = true;
+                    }));
+                }
+                else
+                {
+                    notificationSettings.Visible = true;
+                }
+            }
+        }
+
+        private async void NewsHistoryToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // 1. Clean up existing NewsControl if already present
+                var existingNews = this.Controls.Find("newsControlView", true).FirstOrDefault();
+                if (existingNews != null)
+                {
+                    this.Controls.Remove(existingNews);
+                    existingNews.Dispose();
+                }
+
+                EditableMarketWatchGrid editableMarketWatchGrid = EditableMarketWatchGrid.CurrentInstance;
+                if (editableMarketWatchGrid != null)
+                {
+                    if (editableMarketWatchGrid.IsCurrentCellInEditMode)
+                    {
+                        editableMarketWatchGrid.EndEdit();
+                    }
+
+                    editableMarketWatchGrid.EditableDispose(); // Dispose the grid
+                    editableMarketWatchGrid.Dispose();
+                }
+
+
+                // 2. Create new NewsControl
+                var newsControl = new NewsControl(username, password, token, "history")
+                {
+                    Name = "newsControlView",
+                    Dock = DockStyle.Fill
+                };
+
+                //DisposeSignalRConnection();
+                saveMarketWatchHost.Visible = false;
+                fontSizeComboBox.Visible = false;
+                searchTextLabel.Visible = false;
+                txtsearch.Visible = false;
+                refreshMarketWatchHost.Visible = false;
+                // Update status label
+
+                newCTRLNToolStripMenuItem1.Enabled = true;
+
+
+                // Update title based on edit mode
+                titleLabel.Text = "News History";
+
+                // 3. Add it to main form
+                this.Controls.Add(newsControl);
+                newsControl.BringToFront();
+                newsControl.Focus();
+
+                licenceDate = LoginInfo.NewsExpiredDate.ToString();
+
+                RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
+                if (RemainingDays <= 7)
+                {
+                    await CheckLicenceLoop();
+                }
+                else
+                {
+                    licenceExpire.Text = $"Licence Expire At:- {licenceDate.Replace("0:00:00", "").Replace("12:00:00 AM", "").Replace("00:00:00", "").Replace("00:00", "").Replace("00:00 AM", "").TrimEnd('0').Trim()}";
+                }
+
+            }
+            catch (Exception ex)
+            {
+                ApplicationLogger.LogException(ex);
+                MessageBox.Show($"Error loading News view: {ex.Message}");
+            }
+            finally
+            {
+                if (this.InvokeRequired)
+                {
+                    this.Invoke(new Action(() =>
+                    {
+                        notificationSettings.Visible = true;
+                    }));
+                }
+                else
+                {
+                    notificationSettings.Visible = true;
+                }
+            }
+        }
+
+        private async void NewsSettingsToolStrip_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // 1. Clean up existing NewsControl if already present
+                var existingNews = this.Controls.Find("NewsSettingView", true).FirstOrDefault();
+                if (existingNews != null)
+                {
+                    this.Controls.Remove(existingNews);
+                    existingNews.Dispose();
+                }
+
+                EditableMarketWatchGrid editableMarketWatchGrid = EditableMarketWatchGrid.CurrentInstance;
+                if (editableMarketWatchGrid != null)
+                {
+                    if (connection.State != HubConnectionState.Disconnected)
+                    {
+                        await connection.StopAsync(); // ✅ Only stop if not already disconnected
+                    }
+
+                    await connection.DisposeAsync(); // ✅ Dispose safely
+                    isConnectionDisposed = true;
+                }
+
+
+                // 2. Create new NewsControl
+                var newsControl = new NewsSetting(userId, keywords, topics, isDND, token)
+                {
+                    Name = "NewsSettingView",
+                    Dock = DockStyle.Fill
+                };
+
+                //DisposeSignalRConnection();
+                saveMarketWatchHost.Visible = false;
+                fontSizeComboBox.Visible = false;
+                searchTextLabel.Visible = false;
+                txtsearch.Visible = false;
+                refreshMarketWatchHost.Visible = false;
+                // Update status label
+
+                // Update title based on edit mode
+                titleLabel.Text = "News Settings";
+
+                // 3. Add it to main form
+                this.Controls.Add(newsControl);
+                newsControl.BringToFront();
+                newsControl.Focus();
+
+                licenceDate = LoginInfo.NewsExpiredDate.ToString();
+
+                RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
+                if (RemainingDays <= 7)
+                {
+                    await CheckLicenceLoop();
+                }
+                else
+                {
+                    licenceExpire.Text = $"Licence Expire At:- {licenceDate.Replace("0:00:00", "").Replace("12:00:00 AM", "").Replace("00:00:00", "").Replace("00:00", "").Replace("00:00 AM", "").TrimEnd('0').Trim()}";
+                }
+
+            }
+            catch (Exception ex)
+            {
+                // Catch other unexpected issues
+                //Console.WriteLine("Error stopping background tasks: " + ex.Message);
+                ApplicationLogger.LogException(ex);
+                MessageBox.Show($"Error loading News view: {ex.Message}");
+            }
+            finally
+            {
+                if (this.InvokeRequired)
+                {
+                    this.Invoke(new Action(() =>
+                    {
+                        notificationSettings.Visible = true;
+                    }));
+                }
+                else
+                {
+                    notificationSettings.Visible = true;
+                }
             }
         }
         #endregion Other Methods
@@ -3700,7 +3858,7 @@ namespace thecalcify
                         retries++;
                         System.Threading.Thread.Sleep(100); // Wait 100ms before retry
                     }
-                }   
+                }
                 ws.Activate();
                 excelApp.Visible = true;
             }
@@ -3982,5 +4140,283 @@ namespace thecalcify
         }
 
         #endregion Excel Export
+
+        #region User Activity Moniter
+
+        public async Task UserInfoSignalREvent(string username)
+        {
+
+            bool hasPrevNews = LoginInfo.IsNews;
+            bool hasPrevRate = LoginInfo.IsRate;
+
+            var userconnection = new HubConnectionBuilder()
+                .WithUrl($"{APIPath}excel?type=Desktop")
+                .WithAutomaticReconnect()
+                .WithStatefulReconnect()
+                .ConfigureLogging(logging =>
+                {
+                    logging.AddConsole();
+                    logging.SetMinimumLevel(LogLevel.Error);
+                })
+                .Build();
+
+            userconnection.Reconnected += async (connectionId) =>
+            {
+                await userconnection.InvokeAsync("client", username);
+            };
+
+            userconnection.On<object>("ReceiveMessage", async (base64) =>
+            {
+                try
+                {
+                    string base64String = base64?.ToString();
+                    if (string.IsNullOrWhiteSpace(base64String))
+                    {
+                        ApplicationLogger.Log("Received empty message.");
+                        return;
+                    }
+
+                    var root = JObject.Parse(base64String);
+                    bool status = root.Value<bool>("status");
+
+                    if (!status)
+                    {
+                        await HandleLogoutAsync("Don't Have Active Status");
+                        return;
+                    }
+                    UserDto userDto = new UserDto();
+
+                    try
+                    {
+                        string resultJson = Common.JsonExtractor(base64String);
+                        userDto = System.Text.Json.JsonSerializer.Deserialize<UserDto>(resultJson);
+
+                    }
+                    catch (Exception ex)
+                    {
+                        ApplicationLogger.LogException(ex);
+                    }
+
+
+
+                    if (userDto == null)
+                    {
+                        ApplicationLogger.Log("Received null UserDto.");
+                        return;
+                    }
+
+                    if (!userDto.isActive || (!userDto.hasNewsAccess && !userDto.hasRateAccess))
+                    {
+                        await HandleLogoutAsync("Logged out due to Session Limit.");
+                        return;
+                    }
+
+                    await UpdateUIBasedOnUserDto(userDto);
+
+                    if (!string.IsNullOrEmpty(userDto.keywords) || !string.IsNullOrEmpty(userDto.topics))
+                    {
+                        topics = userDto.topics == "string" ? string.Empty : userDto.topics;
+                        keywords = userDto.keywords == "string" ? string.Empty : userDto.keywords;
+                        isDND = userDto.isDND;
+                    }
+                    userId = userDto.id;
+                    if (notificationSettings.Enabled == false)
+                    {
+                        if (this.InvokeRequired)
+                        {
+                            this.Invoke(new Action(() =>
+                            {
+                                notificationSettings.Enabled = true;
+                            }));
+                        }
+                        else
+                        {
+                            notificationSettings.Enabled = true;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ApplicationLogger.Log("Error processing SignalR message: " + ex.Message);
+                    ApplicationLogger.LogException(ex);
+                }
+            });
+
+            userconnection.On<object>("ReceiveNewsNotification", async (data) =>
+            {
+                try
+                {
+                    //Console.Clear();
+
+                    string json = data?.ToString();
+                    //Console.WriteLine("Received JSON string: " + json);
+
+                    if (!string.IsNullOrWhiteSpace(json) && !isDND)
+                    {
+                        var news = System.Text.Json.JsonSerializer.Deserialize<NewsNotificationDTO>(json);
+
+                        Common.ShowWindowsToast(news.headLine, Common.TimeStampConvert(news.sortTimestamp));
+                        //ApplicationLogger.Log($"News Notification Received at: {DateTime.Now:HH:mm:ss}");
+                    }
+                    else
+                    {
+                        ApplicationLogger.Log("Warning: Received empty or null data.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ApplicationLogger.Log("Exception: " + ex.Message);
+                }
+            });
+
+            await userconnection.StartAsync();
+            await userconnection.InvokeAsync("client", username);
+
+            // Helper to marshal UI updates safely
+            async Task InvokeOnUIThread(Func<Task> action)
+            {
+                if (this.InvokeRequired)
+                    this.Invoke(new Func<Task>(() => action()));
+                else
+                    await action();
+            }
+
+            async Task UpdateUIBasedOnUserDto(UserDto userDto)
+            {
+                // Combination of flags for clearer logic
+                bool hasNews = userDto.hasNewsAccess;
+                bool hasRate = userDto.hasRateAccess;
+                bool active = userDto.isActive;
+
+                if (!active)
+                {
+                    await HandleLogoutAsync("Account Deactivated By Admin.");
+                    return;
+                }
+
+                if (hasNews && !hasRate && hasPrevRate)
+                {
+                    await InvokeOnUIThread(() =>
+                    {
+                        newCTRLNToolStripMenuItem.Visible = false;
+                        newsToolStripMenuItem.Visible = true;
+                        NewsListToolStripMenuItem_Click_1(this, EventArgs.Empty);
+                        hasPrevNews = hasNews;
+                        hasPrevRate = hasRate;
+                        return Task.CompletedTask;
+                    });
+                }
+                else if (!hasNews && hasRate && hasPrevNews)
+                {
+                    await InvokeOnUIThread(async () =>
+                    {
+                        newCTRLNToolStripMenuItem.Visible = true;
+                        newsToolStripMenuItem.Visible = false;
+                        hasPrevNews = hasNews;
+                        hasPrevRate = hasRate;
+                        await DefaultToolStripMenuItem_Click(this, EventArgs.Empty);
+                    });
+                }
+                else if (hasNews && hasRate && (!hasPrevNews || !hasPrevRate))
+                {
+                    await InvokeOnUIThread(async () =>
+                    {
+                        newCTRLNToolStripMenuItem.Visible = true;
+                        newsToolStripMenuItem.Visible = true;
+                        hasPrevNews = hasNews;
+                        hasPrevRate = hasRate;
+                        await DefaultToolStripMenuItem_Click(this, EventArgs.Empty);
+                    });
+                }
+            }
+
+            async Task HandleLogoutAsync(string Reason)
+            {
+                ApplicationLogger.Log("User Logged Out From SignalR...");
+
+                try
+                {
+                    await InvokeOnUIThread(async () =>
+                    {
+                        await StopBackgroundTasks();
+
+                        UnsubscribeAllEvents();
+
+                        var loginForm = new Login();
+                        loginForm.Show();
+
+
+                        this.Hide();
+                        this.Dispose();
+                        this.Close();
+
+                        await userconnection.StopAsync();
+                        await userconnection.DisposeAsync();
+                        userconnection = null;
+
+                        await LogoutAsync();
+
+                        MessageBox.Show("You have been logged out. " + Reason, "Logged Out", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                        KillProcess();
+                    });
+                }
+                catch (Exception ex)
+                {
+                    ApplicationLogger.LogException(ex);
+                    MessageBox.Show("[HandleLogoutAsync] Error during disconnect: " + ex.Message);
+                }
+                finally
+                {
+                    await StopBackgroundTasks();
+                }
+            }
+        }
+
+        public async Task LogoutAsync()
+        {
+            var payload = new
+            {
+                userId,
+                deviceId = Common.UUIDExtractor()
+            };
+
+            var jsonPayload = System.Text.Json.JsonSerializer.Serialize(payload);
+            var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+
+            using (var client = new HttpClient())
+            {
+                client.DefaultRequestHeaders.Authorization =
+                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+                try
+                {
+                    var response = await client.PostAsync($"{APIPath}logout", content);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        Console.WriteLine("✅ Logout successful.");
+                    }
+                    else if (response.StatusCode == System.Net.HttpStatusCode.Forbidden ||
+                             response.StatusCode == System.Net.HttpStatusCode.Unauthorized ||
+                             response.StatusCode == HttpStatusCode.NotFound)
+                    {
+                        thecalcify thecalcify = thecalcify.CurrentInstance;
+                        thecalcify.DisconnectESCToolStripMenuItem_Click(null, null);
+                        MessageBox.Show("Session expired. Please log in again.", "Session Expired", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    else
+                    {
+                        string responseText = await response.Content.ReadAsStringAsync();
+                        Console.WriteLine($"❌ Logout failed. Status: {response.StatusCode}, Response: {responseText}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"❗ Error during logout: {ex.Message}");
+                }
+            }
+        }
+        #endregion
     }
 }

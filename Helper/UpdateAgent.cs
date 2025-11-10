@@ -44,8 +44,11 @@ namespace thecalcify.Helper
         /// <summary>
         /// Create UpdateAgent Constructor
         /// </summary>
-        public UpdateAgent(string token)
+        public UpdateAgent(string token, Form ParentForm)
         {
+            SplashManager.Show(ParentForm, "Loading", "" +
+                "Working on Upgrade...");
+
             try
             {
                 string tempBasePath = Path.Combine(Path.GetTempPath(), "thecalcify");
@@ -74,6 +77,9 @@ namespace thecalcify.Helper
                     }
                     else
                     {
+                        // Hide the splash after UI update
+                        SplashManager.Hide();
+
                         MessageBox.Show($"You Are already to our Upgraded Version", "Version Upgrade", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
                 }
@@ -101,20 +107,30 @@ namespace thecalcify.Helper
 
                         if (Version.Parse(currentveriosn) > Version.Parse(displayversion))
                         {
+                            // Hide the splash after UI update
+                            SplashManager.Hide();
+
                             var result = MessageBox.Show("Application Has Newer Version Want to Upgrade", "Update Version", MessageBoxButtons.OKCancel);
                             if (result == DialogResult.OK)
-                                if (SystemInformation.PowerStatus.PowerLineStatus == PowerLineStatus.Online)
-                                    UninstallOldVersion("thecalcify", displayversion);
-                                else
-                                {
-                                    MessageBox.Show(
-                                        "The process cannot continue while the system is running on battery power.\n\nPlease connect your device to a power source and restart the process.",
-                                        "Power Supply Disconnected",
-                                        MessageBoxButtons.OK,
-                                        MessageBoxIcon.Warning
-                                    );
-                                    return;
-                                }
+                            //if (SystemInformation.PowerStatus.PowerLineStatus == PowerLineStatus.Online)
+                            //{
+                            {
+                                SplashManager.Show(ParentForm, "Loading", "We are Upgrading Ourselves");
+                                UninstallOldVersion("thecalcify", displayversion);
+                                SplashManager.Hide();
+                            }
+                            //}
+                            //else
+                            //{
+
+                            //    MessageBox.Show(
+                            //        "The process cannot continue while the system is running on battery power.\n\nPlease connect your device to a power source and restart the process.",
+                            //        "Power Supply Disconnected",
+                            //        MessageBoxButtons.OK,
+                            //        MessageBoxIcon.Warning
+                            //    );
+                            //    return;
+                            //}
                             else
                                 return;
                         }
@@ -127,37 +143,48 @@ namespace thecalcify.Helper
 
                             if (olddateModified < newdateModified)
                             {
+                                // Hide the splash after UI update
+                                SplashManager.Hide();
+
                                 var result = MessageBox.Show("Application Has Newer Version Want to Upgrade", "Update Version", MessageBoxButtons.OKCancel);
                                 ApplicationLogger.Log("User selected: " + result.ToString());
 
                                 if (result == DialogResult.OK)
-                                    if (SystemInformation.PowerStatus.PowerLineStatus == PowerLineStatus.Online)
-                                        UninstallOldVersion("thecalcify", displayversion);
-                                    else
-                                    {
-                                        MessageBox.Show(
-                                            "The process cannot continue while the system is running on battery power.\n\nPlease connect your device to a power source and restart the process.",
-                                            "Power Supply Disconnected",
-                                            MessageBoxButtons.OK,
-                                            MessageBoxIcon.Warning
-                                        );
-                                        return;
-                                    }
+                                //if (SystemInformation.PowerStatus.PowerLineStatus == PowerLineStatus.Online)
+                                {
+                                    SplashManager.Show(ParentForm, "Loading", "We are Upgrading Ourselves");
+                                    UninstallOldVersion("thecalcify", displayversion);
+                                    SplashManager.Hide();
+                                }
+                                //else
+                                //{
+                                //    // Hide the splash after UI update
+                                //    SplashManager.Hide();
+
+                                //    MessageBox.Show(
+                                //        "The process cannot continue while the system is running on battery power.\n\nPlease connect your device to a power source and restart the process.",
+                                //        "Power Supply Disconnected",
+                                //        MessageBoxButtons.OK,
+                                //        MessageBoxIcon.Warning
+                                //    );
+                                //    return;
+                                //}
                                 else
                                     return;
                             }
                             else
+                            {
+                                // Hide the splash after UI update
+                                SplashManager.Hide();
+
                                 MessageBox.Show($"You Are already to our Upgraded Version, Which is {currentveriosn}", "Version Upgrade", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            }
                         }
                     }
                     catch (Exception ex)
                     {
                         ApplicationLogger.LogException(ex);
                     }
-                }
-                else
-                {
-                    InstallNewVersion(newInstallerPath);
                 }
             }
             catch (Exception ex)
@@ -388,60 +415,86 @@ namespace thecalcify.Helper
         {
             try
             {
-                string taskAName = "Clacify_UninstallTask";
-                string taskBName = "Clacify_InstallTask";
-                string uninstallCmd = Path.Combine(tempDir, "uninstall.cmd");
+                //string taskAName = "Clacify_UninstallTask";
+                //string taskBName = "Clacify_InstallTask";
+                //string uninstallCmd = Path.Combine(tempDir, "uninstall.cmd");
+                //string installerExe = Path.Combine(tempDir, "thecalcify.exe");
+                //string currentExe = @"C:\Program Files\thecalcify\thecalcify\thecalcify.exe";
+
+                //var sb = new StringBuilder();
+
+                //sb.AppendLine("@echo off");
+                //sb.AppendLine("echo Uninstalling existing version...");
+                //sb.AppendLine($"{uninstallString} /quiet");
+                //sb.AppendLine();
+                //sb.AppendLine("timeout /t 5");
+                //sb.AppendLine();
+                //sb.AppendLine(":: Create Task Scheduler B to install new version");
+                //sb.AppendLine($"schtasks /Create /TN {taskBName} /TR \"\\\"{installerExe}\\\" /quiet\" /SC ONCE /ST {DateTime.Now.AddMinutes(1):HH:mm:ss} /RL HIGHEST /F /NP");
+                //sb.AppendLine();
+                //sb.AppendLine(":: Run install task");
+                //sb.AppendLine($"schtasks /Run /TN {taskBName}");
+                //sb.AppendLine();
+                //sb.AppendLine("timeout /t 5");
+                //sb.AppendLine();
+                //sb.AppendLine(":: Delete both tasks");
+                //sb.AppendLine($"schtasks /Delete /TN {taskAName} /F");
+                //sb.AppendLine($"schtasks /Delete /TN {taskBName} /F");
+                //sb.AppendLine();
+                //sb.AppendLine(":: start thecalcify");
+                //sb.AppendLine($"start \"\" \"{currentExe}\"");
+                //sb.AppendLine();
+                //sb.AppendLine("exit");
+
+                //File.WriteAllText(uninstallCmd, sb.ToString(), new UTF8Encoding(false));
+
+                //ApplicationLogger.Log($"Uninstall script created at {sb.ToString()}");
+
+                //// Step 2: Create Task Scheduler A to run uninstall.cmd
+                //Process.Start(new ProcessStartInfo
+                //{
+                //    FileName = "schtasks",
+                //    Arguments = $"/Create /TN {taskAName} /TR \"cmd.exe /c \"\"{uninstallCmd}\"\"\" /SC ONCE /ST {DateTime.Now.AddMinutes(1):HH:mm:ss} /RL HIGHEST /F /NP",
+                //    UseShellExecute = true,
+                //    Verb = "runas", // Triggers UAC
+                //})?.WaitForExit();
+
+                //// Step 3: Run Task A immediately
+                //Process.Start(new ProcessStartInfo
+                //{
+                //    FileName = "schtasks",
+                //    Arguments = $"/Run /TN {taskAName}",
+                //    UseShellExecute = true,
+                //    Verb = "runas", // Triggers UAC
+                //})?.WaitForExit();
+
                 string installerExe = Path.Combine(tempDir, "thecalcify.exe");
                 string currentExe = @"C:\Program Files\thecalcify\thecalcify\thecalcify.exe";
 
-                var sb = new StringBuilder();
+                // Command sequence:
+                // 1. Uninstall quietly
+                // 2. Wait 5 seconds
+                // 3. Run installer quietly
+                // 4. Wait 5 seconds
+                // 5. Start installed exe
+                string commandScript = string.Format(
+                    "{0} /quiet && timeout /t 5 && \"{1}\" /quiet && timeout /t 5 && start \"\" \"{2}\"",
+                    uninstallString,               // uninstall command (e.g. MsiExec.exe /x {GUID})
+                    installerExe.Replace("\"", "\\\""),  // installer path with escaped quotes
+                    currentExe.Replace("\"", "\\\"")     // installed app exe to start
+                );
 
-                sb.AppendLine("@echo off");
-                sb.AppendLine("echo Uninstalling existing version...");
-                sb.AppendLine($"{uninstallString} /quiet");
-                sb.AppendLine();
-                sb.AppendLine("timeout /t 5");
-                sb.AppendLine();
-                sb.AppendLine(":: Create Task Scheduler B to install new version");
-                sb.AppendLine($"schtasks /Create /TN {taskBName} /TR \"\\\"{installerExe}\\\" /quiet\" /SC ONCE /ST {DateTime.Now.AddMinutes(1):HH:mm:ss} /RL HIGHEST /F /NP");
-                sb.AppendLine();
-                sb.AppendLine(":: Run install task");
-                sb.AppendLine($"schtasks /Run /TN {taskBName}");
-                sb.AppendLine();
-                sb.AppendLine("timeout /t 5");
-                sb.AppendLine();
-                sb.AppendLine(":: Delete both tasks");
-                sb.AppendLine($"schtasks /Delete /TN {taskAName} /F");
-                sb.AppendLine($"schtasks /Delete /TN {taskBName} /F");
-                sb.AppendLine();
-                sb.AppendLine(":: start thecalcify");
-                sb.AppendLine($"start \"\" \"{currentExe}\"");
-                sb.AppendLine();
-                sb.AppendLine("exit");
-
-                File.WriteAllText(uninstallCmd, sb.ToString(), new UTF8Encoding(false));
-
-                ApplicationLogger.Log($"Uninstall script created at {sb.ToString()}");
-
-                // Step 2: Create Task Scheduler A to run uninstall.cmd
-                Process.Start(new ProcessStartInfo
+                var psi = new ProcessStartInfo
                 {
-                    FileName = "schtasks",
-                    Arguments = $"/Create /TN {taskAName} /TR \"cmd.exe /c \"\"{uninstallCmd}\"\"\" /SC ONCE /ST {DateTime.Now.AddMinutes(1):HH:mm:ss} /RL HIGHEST /F /NP",
-                    UseShellExecute = true,
-                    Verb = "runas", // Triggers UAC
-                })?.WaitForExit();
+                    FileName = "cmd.exe",
+                    Arguments = $"/c \"{commandScript}\"",
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                };
 
-                // Step 3: Run Task A immediately
-                Process.Start(new ProcessStartInfo
-                {
-                    FileName = "schtasks",
-                    Arguments = $"/Run /TN {taskAName}",
-                    UseShellExecute = true,
-                    Verb = "runas", // Triggers UAC
-                })?.WaitForExit();
+                Process.Start(psi)?.WaitForExit();
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 ApplicationLogger.LogException(ex);
             }

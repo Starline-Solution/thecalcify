@@ -39,6 +39,7 @@
             this.appVersionLabel = new System.Windows.Forms.Label();
             this.versionLabel = new System.Windows.Forms.Label();
             this.updateButton = new System.Windows.Forms.Button();
+            this.label2 = new System.Windows.Forms.Label();
             this.userGroupBox.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -150,12 +151,22 @@
             this.updateButton.UseVisualStyleBackColor = false;
             this.updateButton.Click += new System.EventHandler(this.UpdateButton_Click);
             // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(12, 368);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(291, 23);
+            this.label2.TabIndex = 3;
+            this.label2.Text = "© 2025 thecalcify. All rights reserved.";
+            // 
             // About
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 23F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(600, 400);
+            this.Controls.Add(this.label2);
             this.Controls.Add(this.userGroupBox);
             this.Controls.Add(this.updateButton);
             this.Font = new System.Drawing.Font("Segoe UI", 10F);
@@ -169,6 +180,7 @@
             this.userGroupBox.ResumeLayout(false);
             this.userGroupBox.PerformLayout();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -184,5 +196,6 @@
         private System.Windows.Forms.Label versionLabel;
         private System.Windows.Forms.Label appVersionLabel;
         private System.Windows.Forms.Button updateButton;
+        private System.Windows.Forms.Label label2;
     }
 }

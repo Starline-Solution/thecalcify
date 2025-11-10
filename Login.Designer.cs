@@ -142,7 +142,7 @@ namespace thecalcify
             this.exitLabelButton.Cursor = System.Windows.Forms.Cursors.Arrow;
             this.exitLabelButton.ForeColor = System.Drawing.Color.White;
             this.exitLabelButton.Name = "exitLabelButton";
-            this.exitLabelButton.Click += new System.EventHandler(this.exitLabelButton_Click);
+            this.exitLabelButton.Click += new System.EventHandler(this.ExitLabelButton_Click);
             // 
             // saveCredential
             // 

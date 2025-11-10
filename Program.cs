@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using thecalcify.Helper;
 using thecalcify.Home;
@@ -29,7 +26,18 @@ namespace thecalcify
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
+            //// Check if launched from toast activation
+            //if (args != null && args.Any(arg => arg.Contains("action=thecaclcifyNotification")))
+            //{
+
+            //    // App launched by toast click — open main form or do something special
+            //    Application.Run(new thecalcify(args));  // Or any other form you want to show
+            //}
+            //else
+            //{
+            //    // Normal app startup
             Application.Run(new Login());
+            //}
         }
     }
 }

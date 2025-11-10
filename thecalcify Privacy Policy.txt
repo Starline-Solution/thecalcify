@@ -1,0 +1,145 @@
+Effective Date: October, 1 2025
+Application: thecalcify (Desktop Software)
+Developer: thecalcify Team
+________________________________________
+1. Introduction
+The thecalcify team respects your privacy and is committed to protecting your personal information.
+This Privacy Policy explains how we collect, use, and protect data when you use our desktop application to view real-time metal prices and related news.
+By installing or using thecalcify, you agree to the practices described in this policy.
+________________________________________
+2. Information We Collect
+2.1 Personal Information
+thecalcify does not require user registration or login.
+However, in certain cases, we may collect minimal personal information such as:
+•	Email address: Only if you contact our support team or subscribe to updates.
+•	Name or company name: When voluntarily provided for support or business communication.
+2.2 Non-Personal Information
+The application may automatically collect limited non-identifiable information to ensure optimal functionality, including:
+•	Device information (Windows version, system configuration)
+•	Application usage logs (for performance monitoring)
+•	Internet connection status (to check live price updates)
+•	Error or crash reports (for debugging and app improvement)
+2.3 Market & News Data
+All live metal prices and news updates are fetched from verified third-party data providers.
+No personal information is transmitted to these sources from your system.
+________________________________________
+3. How We Use Collected Information
+We use the collected information to:
+•	Provide real-time price updates and news feeds.
+•	Improve the application’s performance, reliability, and usability.
+•	Respond to user inquiries or support requests.
+•	Monitor and fix technical issues or bugs.
+•	Send important updates or notifications (only if you opt-in).
+We do not sell, rent, or share your personal data with any third-party organizations for marketing purposes.
+________________________________________
+4. Data Storage and Security
+•	All information is stored locally on your device unless you choose to export data (e.g., Market Watch to Excel).
+•	Exported data files are saved only to locations you select.
+•	We use encryption and secure communication protocols where applicable to protect data integrity.
+•	Our servers (if used for news or pricing feeds) follow strict security and access control standards.
+________________________________________
+5. Third-Party Services
+thecalcify may integrate with third-party data providers or APIs for:
+•	Live price updates (gold, silver, etc.)
+•	Financial and commodity news
+Each third-party source has its own privacy practices, and we recommend reviewing their respective privacy policies. thecalcify ensures that no personal user data is shared with these services.
+________________________________________
+6. Cookies and Tracking
+thecalcify is a Windows desktop application and does not use cookies or online tracking mechanisms.
+However, if you visit our official website for updates or support, standard web cookies may apply there (subject to the website’s cookie policy).
+________________________________________
+7. User Rights and Choices
+As a user, you have the right to:
+•	Access or delete any personal data you’ve shared voluntarily.
+•	Disable notifications or data updates at any time.
+•	Uninstall the application if you no longer wish to use it.
+To request deletion of personal data or for privacy-related inquiries, contact our support team (details below).
+________________________________________
+8. Data Retention
+We retain collected data only for as long as necessary:
+•	Support inquiries: Up to 90 days after resolution.
+•	Application logs: Automatically cleared or anonymized periodically.
+________________________________________
+9. Updates to This Policy
+We may update this Privacy Policy periodically to reflect changes in our application or data practices.
+All updates will be posted within the app’s About section or on our official website.
+ 
+Terms & Conditions / End-User License Agreement (EULA)
+1. Introduction
+This End-User License Agreement (EULA) is a legal agreement between you (“User” or “Licensee”) and the thecalcify Team (“Developer,” “Publisher,” or “Licensor”) for the use of the thecalcify Windows desktop application (“Software”).
+By installing, copying, or using this Software, you agree to be bound by the terms of this EULA.
+If you do not agree to these terms, do not install or use the Software.
+________________________________________
+2. License Grant
+•	The Developer grants you a non-exclusive, non-transferable, limited license to install and use the Software on a single Windows computer or device.
+•	This license is granted solely for personal or business use in accordance with this EULA.
+•	You may make one copy of the Software for backup or archival purposes only.
+________________________________________
+3. Restrictions
+You may not:
+1.	Reverse-engineer, decompile, or disassemble the Software, except as permitted by applicable law.
+2.	Modify, alter, or create derivative works based on the Software.
+3.	Rent, lease, sublicense, sell, or distribute the Software or any portion thereof.
+4.	Use the Software for any unlawful purpose or in violation of applicable laws and regulations.
+5.	Circumvent or disable any security features or licensing mechanisms.
+________________________________________
+4. Ownership and Intellectual Property
+•	The Software and all associated materials (including graphics, logos, text, and data) are the exclusive property of the thecalcify Team.
+•	The Software is licensed, not sold. Ownership remains with the Developer.
+•	All rights not expressly granted under this EULA are reserved by the Developer.
+________________________________________
+5. Data and Content
+•	The Software provides real-time market data and news from third-party sources.
+•	The Developer does not guarantee the accuracy, completeness, or timeliness of this information.
+•	All price data is provided for informational purposes only and should not be relied upon for trading, financial, or investment decisions.
+________________________________________
+6. Privacy and Data Handling
+Your privacy is important to us. The Software collects minimal data to function properly.
+For detailed information, please refer to our [Privacy Policy], which explains how we collect, store, and protect data.
+________________________________________
+7. Updates and Modifications
+•	The Developer may provide periodic updates, bug fixes, or feature enhancements.
+•	Updates may be applied automatically or manually, depending on your system settings.
+•	The Developer reserves the right to modify or discontinue the Software (in part or whole) at any time without notice.
+________________________________________
+8. Support and Maintenance
+•	Standard support is available via support@thecalcify.com.
+•	The Developer will make reasonable efforts to fix reported issues but does not guarantee resolution times.
+•	Support for older versions may be discontinued after a certain period.
+________________________________________
+9. Disclaimer of Warranties
+The Software is provided “as is” and “as available” without warranties of any kind, either express or implied, including but not limited to:
+•	Fitness for a particular purpose
+•	Accuracy of market or price data
+•	Reliability, performance, or compatibility
+You assume all risks associated with the use or performance of the Software.
+________________________________________
+10. Limitation of Liability
+To the maximum extent permitted by law:
+•	The Developer shall not be liable for any direct, indirect, incidental, consequential, or special damages (including financial losses, data loss, or business interruption) arising from the use or inability to use the Software.
+•	In no event shall the Developer’s total liability exceed the amount paid (if any) for the Software.
+________________________________________
+11. Third-Party Services
+The Software may display or integrate with third-party content providers (e.g., market data and news APIs).
+The Developer is not responsible for the accuracy, reliability, or content of third-party data.
+Use of third-party services is governed by their own terms and policies.
+________________________________________
+12. Termination
+This EULA is effective until terminated.
+Your rights under this license will automatically terminate if you fail to comply with any terms herein.
+Upon termination, you must immediately cease use and uninstall the Software.
+________________________________________
+13. Governing Law and Jurisdiction
+This EULA shall be governed by and construed under the laws of [Your Country/Region], without regard to its conflict of laws principles.
+All disputes arising under this EULA shall be subject to the exclusive jurisdiction of the courts in [City, Country].
+________________________________________
+14. Entire Agreement
+This EULA constitutes the entire agreement between the user and the Developer regarding this Software and supersedes any prior agreements or understandings.
+________________________________________
+15. Contact Information
+For support, legal inquiries, or additional information, contact:
+📧 support@thecalcify.com 
+________________________________________
+✅ Acknowledgment
+By installing or using thecalcify, you acknowledge that you have read, understood, and agreed to the terms of this EULA.
+
