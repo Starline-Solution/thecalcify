@@ -17,6 +17,8 @@ namespace thecalcify
         private bool passwordVisible = false; // Track password visibility state
         public string token, licenceDate, username, userpassword;
         public static Login CurrentInstance { get; private set; }
+        private static readonly string APIPath = APIUrl.ProdUrl;
+
         public Login()
         {
             CurrentInstance = this; // Set the instance for later use
@@ -90,6 +92,8 @@ namespace thecalcify
 
         private async void Login_Click(object sender, EventArgs e)
         {
+            // Show the splash screen
+            SplashManager.Show(this, "Loading", "You'll log in shortly...");
 
             loginbutton.Enabled = false;
 
@@ -101,6 +105,9 @@ namespace thecalcify
 
                 if (string.IsNullOrEmpty(uname) || string.IsNullOrEmpty(password))
                 {
+                    // Hide the splash after UI update
+                    SplashManager.Hide();
+
                     MessageBox.Show("Please enter both username and password.",
                                            "Authentication Failed",
                                            MessageBoxButtons.OK,
@@ -116,24 +123,31 @@ namespace thecalcify
                 var loginData = new
                 {
                     username = uname,
-                    password
+                    password,
+                    deviceId = Common.UUIDExtractor(),
+                    deviceToken = "string",
+                    deviceType = "desktop"
                 };
+
 
                 using (HttpClient client = new HttpClient())
                 {
                     try
                     {
-                        string apiUrl = $"{ConfigurationManager.AppSettings["thecalcify"]}login";
+                        string apiUrl = $"{APIPath}login";
                         string jsonData = JsonSerializer.Serialize(loginData);
                         var content = new StringContent(jsonData, Encoding.UTF8, "application/json");
 
                         HttpResponseMessage response = await client.PostAsync(apiUrl, content);
                         string responseContent = await response.Content.ReadAsStringAsync();
 
-                        if (response.StatusCode == HttpStatusCode.ServiceUnavailable)
+                        if (response.StatusCode == HttpStatusCode.ServiceUnavailable || response.StatusCode == HttpStatusCode.NotFound)
                         {
+                            // Hide the splash after UI update
+                            SplashManager.Hide();
+
                             MessageBox.Show("Temporary Upgrading Server. Login after sometime", "Upgrade Server", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                            ApplicationLogger.Log($"{responseContent},{DateTime.Now:dd/MM/yyyy HH:mm:ss:ff}");
+                            ApplicationLogger.Log($"{responseContent},{Common.ParseToDate(DateTime.Now.ToString()).ToString()}");
                             loginbutton.Enabled = true;
                             return;
                         }
@@ -150,7 +164,7 @@ namespace thecalcify
                                 {
                                     var dataElement = root.GetProperty("data");
                                     token = dataElement.GetProperty("token").GetString();
-                                    
+
 
                                     // Decode JWT and get all the data as a dictionary
                                     var jwtData = DecodeJwtData(token);
@@ -178,27 +192,41 @@ namespace thecalcify
                                         LoginInfo.NewsExpiredDate = LoginInfo.NewsExpiredDate.Date;
                                     }
 
-
-                                    if ((!LoginInfo.IsNews || LoginInfo.NewsExpiredDate < DateTime.Today.Date ) && (!LoginInfo.IsRate ||
-                                        LoginInfo.RateExpiredDate < DateTime.Today.Date
-                                        ))
+                                    if ((LoginInfo.IsRate && LoginInfo.RateExpiredDate >= DateTime.Today.Date) || (LoginInfo.IsNews && LoginInfo.NewsExpiredDate >= DateTime.Today.Date))
                                     {
-                                        MessageBox.Show("Please contact the Administrator", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                        // Hide the splash after UI update
+                                        SplashManager.Hide();
+
+                                        ApplicationLogger.Log($"User Logged In", "Logon");
+
+                                        thecalcify homeForm = new thecalcify();
+                                        homeForm.Show();
+
+                                        await homeForm.UserInfoSignalREvent(username);
+
+                                        SaveCredential(); // Presumably saves token or login info
+                                        this.Hide();
+                                    }
+                                    else
+                                    {
+                                        // Hide the splash after UI update
+                                        SplashManager.Hide();
+
+                                        MessageBox.Show("Please contact the Administrator, Required Admin Assitance", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                        ApplicationLogger.Log($"User is Logged Out Due to :- " +
+                                                                    $"Rate = {LoginInfo.IsRate}" +
+                                                                    $"News = {LoginInfo.IsNews}" +
+                                                                    $"rateExpirydate = {LoginInfo.RateExpiredDate}" +
+                                                                    $"newsExpiryDate = {LoginInfo.NewsExpiredDate}");
                                         loginbutton.Enabled = true;
                                         return;
                                     }
-
-
-                                    ApplicationLogger.Log($"User Logged In", "Logon");
-
-                                    thecalcify homeForm = new thecalcify();
-                                    homeForm.Show();
-
-                                    SaveCredential(); // Presumably saves token or login info
-                                    this.Hide();
                                 }
                                 else
                                 {
+                                    // Hide the splash after UI update
+                                    SplashManager.Hide();
+
                                     string message = root.GetProperty("message").GetString();
                                     MessageBox.Show(message ?? "Login failed.",
                                         "Authentication Failed",
@@ -209,6 +237,9 @@ namespace thecalcify
                             }
                             else
                             {
+                                // Hide the splash after UI update
+                                SplashManager.Hide();
+
                                 string message = root.GetProperty("message").GetString();
                                 MessageBox.Show(message ?? "Login failed.",
                                     "Authentication Failed",
@@ -220,6 +251,9 @@ namespace thecalcify
                     }
                     catch (Exception ex)
                     {
+                        // Hide the splash after UI update
+                        SplashManager.Hide();
+
                         MessageBox.Show("Login failed: " + ex.Message);
                         loginbutton.Enabled = true;
                         ApplicationLogger.LogException(ex);
@@ -230,6 +264,9 @@ namespace thecalcify
             }
             else
             {
+                // Hide the splash after UI update
+                SplashManager.Hide();
+
                 MessageBox.Show("Check your internet connection and try again.",
                           "No Internet",
                           MessageBoxButtons.OK,
@@ -302,7 +339,6 @@ namespace thecalcify
 
             return result; // Return the parsed data as a dictionary
         }
-
 
         private void Login_FormClosed(object sender, FormClosedEventArgs e)
         {
@@ -414,7 +450,7 @@ namespace thecalcify
             CredentialManager.SaveCredentials(unameTextBox.Text, passwordtextBox.Text, saveCredential.Checked ? true : false);
         }
 
-        private void exitLabelButton_Click(object sender, EventArgs e)
+        private void ExitLabelButton_Click(object sender, EventArgs e)
         {
             var result = MessageBox.Show("Do you want to Exit Application?", "Exit Application", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
             if (result == DialogResult.Yes)
@@ -424,5 +460,6 @@ namespace thecalcify
 
             }
         }
+
     }
 }

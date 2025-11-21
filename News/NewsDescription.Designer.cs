@@ -7,7 +7,6 @@ namespace thecalcify.MarketWatch
         private System.ComponentModel.IContainer components = null;
         private System.Windows.Forms.Label lblHeadline;
         private System.Windows.Forms.Label lblDateSource;
-        private System.Windows.Forms.RichTextBox txtDescription;
         private System.Windows.Forms.Button btnClose;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
         private System.Windows.Forms.Panel panelBottom;
@@ -31,9 +30,9 @@ namespace thecalcify.MarketWatch
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.lblHeadline = new System.Windows.Forms.Label();
             this.lblDateSource = new System.Windows.Forms.Label();
-            this.txtDescription = new System.Windows.Forms.RichTextBox();
             this.panelBottom = new System.Windows.Forms.Panel();
             this.btnClose = new System.Windows.Forms.Button();
+            this.webBrowserDescription = new System.Windows.Forms.WebBrowser();
             this.tableLayoutPanel1.SuspendLayout();
             this.panelBottom.SuspendLayout();
             this.SuspendLayout();
@@ -45,8 +44,8 @@ namespace thecalcify.MarketWatch
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel1.Controls.Add(this.lblHeadline, 0, 0);
             this.tableLayoutPanel1.Controls.Add(this.lblDateSource, 0, 1);
-            this.tableLayoutPanel1.Controls.Add(this.txtDescription, 0, 2);
             this.tableLayoutPanel1.Controls.Add(this.panelBottom, 0, 4);
+            this.tableLayoutPanel1.Controls.Add(this.webBrowserDescription, 0, 2);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
@@ -87,24 +86,6 @@ namespace thecalcify.MarketWatch
             this.lblDateSource.TabIndex = 1;
             this.lblDateSource.Text = "Time";
             // 
-            // txtDescription
-            // 
-            this.txtDescription.BackColor = System.Drawing.Color.White;
-            this.txtDescription.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.txtDescription.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.txtDescription.Font = new System.Drawing.Font("Segoe UI", 11F);
-            this.txtDescription.Location = new System.Drawing.Point(23, 97);
-            this.txtDescription.Margin = new System.Windows.Forms.Padding(3, 0, 3, 10);
-            this.txtDescription.Name = "txtDescription";
-            this.txtDescription.ReadOnly = true;
-            this.txtDescription.Size = new System.Drawing.Size(612, 361);
-            this.txtDescription.TabIndex = 2;
-            this.txtDescription.TabStop = false;
-            this.txtDescription.Text = "Description";
-            this.txtDescription.Click += new System.EventHandler(this.txtDescription_Enter);
-            this.txtDescription.Enter += new System.EventHandler(this.txtDescription_Enter);
-            this.txtDescription.MouseDown += new System.Windows.Forms.MouseEventHandler(this.txtDescription_Enter);
-            // 
             // panelBottom
             // 
             this.panelBottom.BackColor = System.Drawing.Color.White;
@@ -125,6 +106,15 @@ namespace thecalcify.MarketWatch
             this.btnClose.Text = "Close";
             this.btnClose.UseVisualStyleBackColor = true;
             this.btnClose.Click += new System.EventHandler(this.btnClose_Click);
+            // 
+            // webBrowserDescription
+            // 
+            this.webBrowserDescription.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.webBrowserDescription.Location = new System.Drawing.Point(23, 100);
+            this.webBrowserDescription.MinimumSize = new System.Drawing.Size(20, 20);
+            this.webBrowserDescription.Name = "webBrowserDescription";
+            this.webBrowserDescription.Size = new System.Drawing.Size(612, 365);
+            this.webBrowserDescription.TabIndex = 5;
             // 
             // NewsDescription
             // 
@@ -150,7 +140,7 @@ namespace thecalcify.MarketWatch
             btnClose.Focus();
 
             // Hide caret using Windows API
-            HideCaret(txtDescription.Handle);
+            HideCaret(webBrowserDescription.Handle);
         }
 
         private void btnClose_Click(object sender, EventArgs e)
@@ -163,6 +153,8 @@ namespace thecalcify.MarketWatch
             // Set initial focus to close button to prevent cursor in textbox
             btnClose.Focus();
         }
+
+        private System.Windows.Forms.WebBrowser webBrowserDescription;
     }
 
 }

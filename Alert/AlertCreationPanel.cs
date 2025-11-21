@@ -36,6 +36,7 @@ namespace thecalcify.Alert
         private readonly Color TextColor = Color.FromArgb(64, 64, 64);
         private readonly Font ModernFont = new Font("Microsoft Sans Serif", 10);
         private readonly Font ModernFontBold = new Font("Microsoft Sans Serif Semibold", 10);
+        private string baseUrl = APIUrl.ProdUrl;
 
         #endregion
 
@@ -286,7 +287,6 @@ namespace thecalcify.Alert
 
         private async Task<HttpResponseMessage> SendApiRequestAsync(string endpoint, HttpMethod method, object payload = null)
         {
-            string baseUrl = ConfigurationManager.AppSettings["thecalcify"];
             using (var client = new HttpClient())
             {
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);

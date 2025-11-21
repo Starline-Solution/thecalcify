@@ -31,7 +31,7 @@ namespace thecalcify.Helper
             // Spinner
             spinner = new PictureBox
             {
-                Size = new Size(24, 24), 
+                Size = new Size(24, 24),
                 SizeMode = PictureBoxSizeMode.Zoom,
                 Location = new Point(15, 15),
                 BackColor = Color.Transparent
@@ -84,7 +84,8 @@ namespace thecalcify.Helper
             this.Controls.Add(lblMessage);
 
             // Add rounded corners and shadow
-            this.Paint += (s, e) => {
+            this.Paint += (s, e) =>
+            {
                 e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
 
                 // Draw shadow
@@ -181,7 +182,8 @@ namespace thecalcify.Helper
         {
             if (lblTitle.InvokeRequired || lblMessage.InvokeRequired)
             {
-                this.Invoke(new Action(() => {
+                this.Invoke(new Action(() =>
+                {
                     lblTitle.Text = title;
                     lblMessage.Text = message;
                 }));

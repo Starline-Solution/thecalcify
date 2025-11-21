@@ -9,7 +9,6 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Text;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -36,7 +35,7 @@ namespace thecalcify.MarketWatch
         // ======================
         public readonly DataTable marketWatchDatatable = new DataTable();
 
-        private List<string> symbolMaster = new List<string>();
+        //private List<string> symbolMaster = new List<string>();
         public List<(string Symbol, string SymbolName)> SymbolName = new List<(string Symbol, string SymbolName)>();
         private bool isSymbolMasterInitialized = false;
         public List<string> selectedSymbols = new List<string>();
@@ -64,7 +63,7 @@ namespace thecalcify.MarketWatch
         // ======================
         // 📌 Services / Helpers
         // ======================
-        private readonly Helper.Common CommonClass;
+        //private readonly Helper.Common CommonClass;
 
         private HubConnection connection;
         private SynchronizationContext _uiContext;
@@ -99,8 +98,14 @@ namespace thecalcify.MarketWatch
         // Constructor, identifier loading, datatable/grid initialization, tooltip & add-symbol panel
         public EditableMarketWatchGrid()
         {
+
+            // Initialize identifiers from Live_Rate
+            thecalcify live_Rate = thecalcify.CurrentInstance;
+            columnPreferences = live_Rate.columnPreferences ?? new List<string>();
+            columnPreferencesDefault = live_Rate.columnPreferencesDefault ?? new List<string>();
+
             _uiContext = SynchronizationContext.Current;
-            CommonClass = new Helper.Common(this);
+            //CommonClass = new Helper.Common(this);
             CurrentInstance = this;
             InitializeEditableMarketWatchGridAsync();
             InitializeDataTable();
@@ -139,7 +144,7 @@ namespace thecalcify.MarketWatch
 
                 // Dispose of UI controls (DataGridView, Panels, Buttons, etc.)
                 editableMarketWatchGridView?.Dispose(); // Dispose DataGridView
-             
+
                 // Flags or metadata should be reset
                 isEditMarketWatch = false;
                 isDelete = false;
@@ -160,7 +165,7 @@ namespace thecalcify.MarketWatch
         {
             thecalcify live_Rate = thecalcify.CurrentInstance;
             identifiers = live_Rate?.identifiers;
-            symbolMaster = identifiers;
+            //symbolMaster = identifiers;
             //identifiers.Clear();
             await SignalREventAsync();
             AddManualEditableRow();
@@ -486,7 +491,7 @@ namespace thecalcify.MarketWatch
 
                                     if (!isSymbolMasterInitialized)
                                     {
-                                        symbolMaster = identifiers;
+                                        //symbolMaster = identifiers;
                                         AddManualEditableRow();
                                         isSymbolMasterInitialized = true;
                                     }
@@ -724,7 +729,7 @@ namespace thecalcify.MarketWatch
 
                 // Convert symbol names back to symbols
                 var newSymbols = SymbolName
-                    .Where(sn => selectedSymbolNames.Contains(sn.SymbolName))
+                    .Where(sn => selectedSymbolNames.Contains(sn.SymbolName.Trim()))
                     .Select(sn => sn.Symbol)
                     .ToList();
 
@@ -825,7 +830,7 @@ namespace thecalcify.MarketWatch
                 foreach (var symbolInfo in SymbolName)
                 {
                     bool isChecked = currentSymbols.Contains(symbolInfo.Symbol);
-                    checkedListSymbols.Items.Add(symbolInfo.SymbolName, isChecked);
+                    checkedListSymbols.Items.Add(symbolInfo.SymbolName.Trim(), isChecked);
                 }
 
                 // Update the Select All button state
@@ -1594,6 +1599,12 @@ namespace thecalcify.MarketWatch
                 Columns.Add(gridColumn);
             }
 
+            foreach (DataGridViewColumn dgCol in editableMarketWatchGridView.Columns)
+            {
+                dgCol.Visible = columnPreferences.Contains(dgCol.Name, StringComparer.OrdinalIgnoreCase);
+            }
+
+
             // 3️⃣ Add the hidden backend "symbol" column
             var hiddenSymbolColumn = new DataGridViewTextBoxColumn
             {
@@ -1642,7 +1653,7 @@ namespace thecalcify.MarketWatch
 
                 // Find the corresponding Symbol object
                 var symbolInfo = SymbolName.FirstOrDefault(sn =>
-                    string.Equals(sn.SymbolName, symbolName, StringComparison.OrdinalIgnoreCase));
+                    string.Equals(sn.SymbolName.Trim(), symbolName, StringComparison.OrdinalIgnoreCase));
 
                 if (symbolInfo.SymbolName != null)
                 {
