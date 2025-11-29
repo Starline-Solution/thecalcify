@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using System.Windows.Forms;
 using thecalcify.Helper;
-using thecalcify.Home;
 
 namespace thecalcify
 {

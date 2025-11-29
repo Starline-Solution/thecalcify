@@ -100,91 +100,105 @@ namespace thecalcify.News
             // -------------------------------
             // 2. Regular Topic Chips
             // -------------------------------
+            //foreach (string topic in _selectedSubTopics.Values)
+            //{
+            //    var chipPanel = new Panel
+            //    {
+            //        BackColor = Color.Transparent,
+            //        AutoSize = true,
+            //        Margin = new Padding(6, 4, 6, 4),
+            //        Padding = new Padding(10, 6, 10, 6),
+            //        Height = 32
+            //    };
+
+            //    var label = new Label
+            //    {
+            //        Text = topic,
+            //        AutoSize = true,
+            //        ForeColor = Color.FromArgb(50, 50, 50),
+            //        Font = new Font("Segoe UI", 9.5f, FontStyle.Regular),
+            //        Margin = new Padding(0, 0, 4, 0),
+            //        TextAlign = ContentAlignment.MiddleLeft
+            //    };
+
+            //    var closeButton = new Button
+            //    {
+            //        Text = "×",
+            //        FlatStyle = FlatStyle.Flat,
+            //        Size = new Size(22, 22),
+            //        Margin = new Padding(5, 0, 0, 0),
+            //        BackColor = Color.Transparent,
+            //        ForeColor = Color.DimGray,
+            //        Cursor = Cursors.Hand,
+            //        Font = new Font("Segoe UI", 9, FontStyle.Bold),
+            //        TabStop = false
+            //    };
+
+            //    closeButton.FlatAppearance.BorderSize = 0;
+            //    closeButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(220, 0, 0);
+            //    closeButton.FlatAppearance.MouseDownBackColor = Color.FromArgb(180, 0, 0);
+
+            //    closeButton.Click += async (s, e) =>
+            //    {
+            //        flowTopics.Controls.Remove(chipPanel);
+            //        string[] updatedTopics = _selectedSubTopics.Where(t => t.Value != topic).Select(t => t.Key).ToArray();
+            //        var keyToRemove = _selectedSubTopics.FirstOrDefault(t => t.Value == topic).Key;
+            //        if (!string.IsNullOrEmpty(keyToRemove))
+            //        {
+            //            _selectedSubTopics.Remove(keyToRemove);
+            //            await UpdateTopicOrKeywordAsync(true, string.Join(",", _selectedSubTopics.Keys));
+            //        }
+            //    };
+
+            //    chipPanel.Controls.Add(label);
+            //    chipPanel.Controls.Add(closeButton);
+
+            //    label.Location = new Point(6, (chipPanel.Height - label.Height) / 2);
+            //    closeButton.Location = new Point(label.Right + 8, (chipPanel.Height - closeButton.Height) / 2);
+            //    chipPanel.Width = label.Width + closeButton.Width + 28;
+
+            //    chipPanel.Paint += (s, e) =>
+            //    {
+            //        var g = e.Graphics;
+            //        g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+            //        var rect = chipPanel.ClientRectangle;
+            //        rect.Inflate(-1, -1);
+
+            //        var path = RoundedRect(rect, 14);
+            //        chipPanel.Region = new Region(path);
+
+            //        using (var brush = new System.Drawing.Drawing2D.LinearGradientBrush(
+            //                   rect,
+            //                   Color.FromArgb(240, 240, 240),
+            //                   Color.FromArgb(220, 220, 220),
+            //                   45F))
+            //        {
+            //            g.FillPath(brush, path);
+            //        }
+
+            //        using (var pen = new Pen(Color.LightGray, 1))
+            //        {
+            //            g.DrawPath(pen, path);
+            //        }
+
+            //        path.Dispose();
+            //    };
+
+            //    flowTopics.Controls.Add(chipPanel);
+            //}
+
             foreach (string topic in _selectedSubTopics.Values)
             {
-                var chipPanel = new Panel
+                var chip = new Chip(topic);
+                chip.OnDelete += async (value) =>
                 {
-                    BackColor = Color.Transparent,
-                    AutoSize = true,
-                    Margin = new Padding(6, 4, 6, 4),
-                    Padding = new Padding(10, 6, 10, 6),
-                    Height = 32
+                    var key = _selectedSubTopics.First(x => x.Value == value).Key;
+                    _selectedSubTopics.Remove(key);
+                    flowTopics.Controls.Remove(chip);
+                    await UpdateTopicOrKeywordAsync(true, string.Join(",", _selectedSubTopics.Keys));
                 };
 
-                var label = new Label
-                {
-                    Text = topic,
-                    AutoSize = true,
-                    ForeColor = Color.FromArgb(50, 50, 50),
-                    Font = new Font("Segoe UI", 9.5f, FontStyle.Regular),
-                    Margin = new Padding(0, 0, 4, 0),
-                    TextAlign = ContentAlignment.MiddleLeft
-                };
-
-                var closeButton = new Button
-                {
-                    Text = "×",
-                    FlatStyle = FlatStyle.Flat,
-                    Size = new Size(22, 22),
-                    Margin = new Padding(5, 0, 0, 0),
-                    BackColor = Color.Transparent,
-                    ForeColor = Color.DimGray,
-                    Cursor = Cursors.Hand,
-                    Font = new Font("Segoe UI", 9, FontStyle.Bold),
-                    TabStop = false
-                };
-
-                closeButton.FlatAppearance.BorderSize = 0;
-                closeButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(220, 0, 0);
-                closeButton.FlatAppearance.MouseDownBackColor = Color.FromArgb(180, 0, 0);
-
-                closeButton.Click += async (s, e) =>
-                {
-                    flowTopics.Controls.Remove(chipPanel);
-                    string[] updatedTopics = _selectedSubTopics.Where(t => t.Value != topic).Select(t => t.Key).ToArray();
-                    var keyToRemove = _selectedSubTopics.FirstOrDefault(t => t.Value == topic).Key;
-                    if (!string.IsNullOrEmpty(keyToRemove))
-                    {
-                        _selectedSubTopics.Remove(keyToRemove);
-                        await UpdateTopicOrKeywordAsync(true, string.Join(",", _selectedSubTopics.Keys));
-                    }
-                };
-
-                chipPanel.Controls.Add(label);
-                chipPanel.Controls.Add(closeButton);
-
-                label.Location = new Point(6, (chipPanel.Height - label.Height) / 2);
-                closeButton.Location = new Point(label.Right + 8, (chipPanel.Height - closeButton.Height) / 2);
-                chipPanel.Width = label.Width + closeButton.Width + 28;
-
-                chipPanel.Paint += (s, e) =>
-                {
-                    var g = e.Graphics;
-                    g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-                    var rect = chipPanel.ClientRectangle;
-                    rect.Inflate(-1, -1);
-
-                    var path = RoundedRect(rect, 14);
-                    chipPanel.Region = new Region(path);
-
-                    using (var brush = new System.Drawing.Drawing2D.LinearGradientBrush(
-                               rect,
-                               Color.FromArgb(240, 240, 240),
-                               Color.FromArgb(220, 220, 220),
-                               45F))
-                    {
-                        g.FillPath(brush, path);
-                    }
-
-                    using (var pen = new Pen(Color.LightGray, 1))
-                    {
-                        g.DrawPath(pen, path);
-                    }
-
-                    path.Dispose();
-                };
-
-                flowTopics.Controls.Add(chipPanel);
+                flowTopics.Controls.Add(chip);
             }
 
             InitializeOverlayPanel(); // Ensure overlay is ready
@@ -312,7 +326,7 @@ namespace thecalcify.News
             // Add existing keyword chips
             foreach (var keyword in keywords)
             {
-                var chip = CreateChip(keyword);
+                var chip = CreateChipFast(keyword);
                 flowKeywords.Controls.Add(chip);
             }
         }
@@ -354,7 +368,7 @@ namespace thecalcify.News
                     keywords = newKeywordsList.ToArray();
 
                     // Add new chip to flowKeywords panel
-                    var chip = CreateChip(newKeyword);
+                    var chip = CreateChipFast(newKeyword);
                     flowKeywords.Controls.Add(chip);
 
                     // Clear input box
@@ -372,107 +386,17 @@ namespace thecalcify.News
             }
         }
 
-        private Panel CreateChip(string text)
+        private Chip CreateChipFast(string text)
         {
-            var chipPanel = new Panel
+            var chip = new Chip(text);
+            chip.OnDelete += async (value) =>
             {
-                BackColor = Color.Transparent, // Light pastel tone
-                AutoSize = true,
-                Margin = new Padding(6, 4, 6, 4),
-                Padding = new Padding(10, 6, 10, 6),
-                Height = 32,
+                keywords = keywords.Where(k => !k.Equals(value, StringComparison.OrdinalIgnoreCase)).ToArray();
+                flowKeywords.Controls.Remove(chip);
+                await UpdateTopicOrKeywordAsync(false, string.Join(",", keywords));
             };
 
-            var label = new Label
-            {
-                Text = text,
-                AutoSize = true,
-                ForeColor = Color.FromArgb(50, 50, 50),
-                Font = new Font("Segoe UI", 9.5f, FontStyle.Regular),
-                Margin = new Padding(0, 0, 4, 0),
-                TextAlign = ContentAlignment.MiddleLeft
-            };
-
-            var closeButton = new Button
-            {
-                Text = "×",
-                FlatStyle = FlatStyle.Flat,
-                Size = new Size(22, 22),
-                Margin = new Padding(5, 0, 0, 0),
-                BackColor = Color.Transparent,
-                ForeColor = Color.DimGray,
-                Cursor = Cursors.Hand,
-                Font = new Font("Segoe UI", 9, FontStyle.Bold),
-                TabStop = false
-            };
-
-            closeButton.FlatAppearance.BorderSize = 0;
-            closeButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(220, 0, 0);
-            closeButton.FlatAppearance.MouseDownBackColor = Color.FromArgb(180, 0, 0);
-            closeButton.Click += async (s, e) =>
-            {
-                flowKeywords.Controls.Remove(chipPanel);
-                // Update keywords array by removing the keyword
-                keywords = keywords.Where(k => !k.Equals(text, StringComparison.OrdinalIgnoreCase)).ToArray();
-
-
-                // Update server
-                await UpdateTopicOrKeywordAsync(false, String.Join(",", keywords));
-            };
-
-            chipPanel.Controls.Add(label);
-            chipPanel.Controls.Add(closeButton);
-
-            // Layout inside chipPanel
-            label.Location = new Point(6, (chipPanel.Height - label.Height) / 2);
-            closeButton.Location = new Point(label.Right + 8, (chipPanel.Height - closeButton.Height) / 2);
-            chipPanel.Width = label.Width + closeButton.Width + 28;
-
-            chipPanel.Paint += (s, e) =>
-            {
-                var g = e.Graphics;
-                g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-                var rect = chipPanel.ClientRectangle;
-                rect.Inflate(-1, -1); // shrink to prevent edge clipping
-
-                var path = RoundedRect(rect, 14);
-
-                // Set rounded clip region so the panel itself looks rounded
-                chipPanel.Region = new Region(path);
-
-                using (var brush = new System.Drawing.Drawing2D.LinearGradientBrush(
-                    rect,
-                    Color.FromArgb(240, 240, 240),
-                    Color.FromArgb(220, 220, 220),
-                    45F))
-                {
-                    g.FillPath(brush, path); // Fills only the rounded area
-                }
-
-                using (var pen = new Pen(Color.LightGray, 1))
-                {
-                    g.DrawPath(pen, path); // Optional border
-                }
-
-                path.Dispose();
-            };
-
-            return chipPanel;
-        }
-
-        private static System.Drawing.Drawing2D.GraphicsPath RoundedRect(Rectangle bounds, int radius)
-        {
-            int diameter = radius * 2;
-            var path = new System.Drawing.Drawing2D.GraphicsPath();
-
-            path.StartFigure();
-            path.AddArc(bounds.Left, bounds.Top, diameter, diameter, 180, 90);
-            path.AddArc(bounds.Right - diameter, bounds.Top, diameter, diameter, 270, 90);
-            path.AddArc(bounds.Right - diameter, bounds.Bottom - diameter, diameter, diameter, 0, 90);
-            path.AddArc(bounds.Left, bounds.Bottom - diameter, diameter, diameter, 90, 90);
-            path.CloseFigure();
-
-            return path;
+            return chip;
         }
 
         private async void UpdateDNDStatus(object sender, EventArgs e)
@@ -619,12 +543,14 @@ namespace thecalcify.News
 
         public async Task UpdateSelectedSubTopics(Dictionary<string, string> selectedSubTopics)
         {
+            SplashManager.Show(thecalcify.CurrentInstance, "Updating Subscriptions", "Please wait while we update your topic...");
             _selectedSubTopics = selectedSubTopics;
 
             await UpdateTopicOrKeywordAsync(true, string.Join(",", selectedSubTopics.Keys));
 
             //InitializeSelectedSubTopics();
             GenerateTopicChips();
+            SplashManager.Hide();
         }
 
         private void InitializeSelectedSubTopics()

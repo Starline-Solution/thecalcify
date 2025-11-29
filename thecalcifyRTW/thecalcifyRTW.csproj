@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
+
+		<!-- Make it FULLY self-contained -->
+		<SelfContained>true</SelfContained>
+
+		<!-- Bundle runtime and DLLs -->
+		<PublishSingleFile>true</PublishSingleFile>
+
+		<!-- Enable native-like performance -->
+		<PublishReadyToRun>true</PublishReadyToRun>
+
+		<!-- DO NOT trim background service apps -->
+		<PublishTrimmed>false</PublishTrimmed>
+
+		<!-- Required for Windows Service -->
+		<UseWindowsService>true</UseWindowsService>
+
+		<OutputType>Exe</OutputType>
+		<ApplicationManifest>app.manifest</ApplicationManifest>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="8.0.1" />
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Reference Include="thecalcify.Shared">
+	    <HintPath>..\thecalcify.Shared\bin\Debug\netstandard2.0\thecalcify.Shared.dll</HintPath>
+	  </Reference>
+	</ItemGroup>
+
+</Project>

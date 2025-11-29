@@ -380,33 +380,6 @@ namespace thecalcify.Helper
         }
 
         /// <summary>
-        /// Install New Version
-        /// </summary>
-        /// <param name="installerPath"></param>
-        public static void InstallNewVersion(string installerPath)
-        {
-            try
-            {
-                ApplicationLogger.Log($"Starting installation of new version from {installerPath}...");
-                ApplicationLogger.Log("Installing new version...");
-
-                Process installProcess = new Process();
-                installProcess.StartInfo.FileName = installerPath;
-                installProcess.StartInfo.Arguments = "/quiet";  // silent install
-                installProcess.StartInfo.UseShellExecute = true;
-                installProcess.StartInfo.CreateNoWindow = true;
-                installProcess.Start();
-                installProcess.WaitForExit();
-
-                ApplicationLogger.Log("New version installed successfully.");
-            }
-            catch (Exception ex)
-            {
-                ApplicationLogger.LogException(ex);
-            }
-        }
-
-        /// <summary>
         /// Create Task Scheduler For Uninstall And Install New Version
         /// </summary>
         /// <param name="uninstallString"></param>

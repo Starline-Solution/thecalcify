@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNet.SignalR.Client.Http;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Drawing;
@@ -146,6 +147,7 @@ namespace thecalcify.Alert
 
                 ShowAlertPanel(new AlertInfo
                 {
+                    id = alert.Id,
                     identifier = alert.identifier,
                     type = ConvertTypeCodeToLabel(alert.Type),
                     rate = alert.rate,
@@ -295,7 +297,15 @@ namespace thecalcify.Alert
 
                 string json = JsonSerializer.Serialize(payload);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
-                return await client.PostAsync(baseUrl + endpoint, content);
+                var clientResponse = await client.PostAsync(baseUrl + endpoint, content);
+                // Throw if not 2xx
+                clientResponse.EnsureSuccessStatusCode();
+
+                // 📦 Return the response body as string
+                string responseBody1 = await clientResponse.Content.ReadAsStringAsync();
+                //return responseBody1;
+
+                return clientResponse;
             }
         }
 
@@ -352,7 +362,8 @@ namespace thecalcify.Alert
             string symbol = cmbSymbol.SelectedItem.ToString();
             string column = cmbColumn.SelectedItem.ToString();
             int columnIndex = cmbColumn.SelectedIndex;
-            string currentValue = "200"; // stub for real value
+            thecalcify thecalcify = thecalcify.CurrentInstance;
+            string currentValue = thecalcify.GetCellValue(symbol,column); // stub for real value
 
             decimal currentVal, targetVal;
             if (!decimal.TryParse(currentValue, NumberStyles.Any, CultureInfo.InvariantCulture, out currentVal) ||
@@ -548,7 +559,7 @@ namespace thecalcify.Alert
 
         #region Helpers
 
-        private string ConvertTypeCodeToLabel(string code)
+        public static string ConvertTypeCodeToLabel(string code)
         {
             switch (code)
             {

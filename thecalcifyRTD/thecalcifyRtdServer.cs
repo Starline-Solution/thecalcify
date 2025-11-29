@@ -13,7 +13,6 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 
-
 namespace thecalcifyRTD
 {
     [ComVisible(true)]
@@ -26,6 +25,13 @@ namespace thecalcifyRTD
         private ConcurrentDictionary<int, (string Symbol, string Field)> _topics;
         private readonly object _callbackLock = new object();
         private static readonly string marketInitDataPath = GetInitDataPath();
+
+        // 🔹 What to show when there is no data at all (only used when we really have nothing)
+        private const string NO_DATA_PLACEHOLDER = "--";
+
+        // 🔹 Last value per Excel topic (cell). This is what Excel sees on every RefreshData.
+        private readonly ConcurrentDictionary<int, object> _lastTopicValues =
+            new ConcurrentDictionary<int, object>();
 
         // Use concurrent collections for thread safety
         private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, object>> _liveData =
@@ -129,9 +135,12 @@ namespace thecalcifyRTD
                     }
                 }
 
-                // Update live data
+                if (fields.Count == 0)
+                    return; // nothing useful, ignore
+
+                // Update live data snapshot
                 _liveData.AddOrUpdate(symbol,
-                    key => new ConcurrentDictionary<string, object>(fields),
+                    key => new ConcurrentDictionary<string, object>(fields, StringComparer.OrdinalIgnoreCase),
                     (key, existing) =>
                     {
                         foreach (var kv in fields)
@@ -141,7 +150,22 @@ namespace thecalcifyRTD
                         return existing;
                     });
 
-                // Throttled notification
+                // 🔹 Update last values for all active topics for this symbol
+                foreach (var topic in _topics)
+                {
+                    if (!string.Equals(topic.Value.Symbol, symbol, StringComparison.OrdinalIgnoreCase))
+                        continue;
+
+                    string fieldName = topic.Value.Field;
+                    if (fields.TryGetValue(fieldName, out var newVal) &&
+                        newVal != null &&
+                        !IsEmptyString(newVal))
+                    {
+                        _lastTopicValues[topic.Key] = newVal;
+                    }
+                }
+
+                // Throttled notification to Excel
                 long currentTime = DateTime.UtcNow.Ticks / TimeSpan.TicksPerMillisecond;
                 if (currentTime - _lastUpdateTime > UPDATE_THROTTLE_MS)
                 {
@@ -172,26 +196,51 @@ namespace thecalcifyRTD
 
         public object ConnectData(int topicId, ref Array strings, ref bool newValues)
         {
-            if (strings.Length < 2) return "N/A";
+            // Topic format: =RTD("thecalcify",,"SYMBOL","FIELD")
+            if (strings == null || strings.Length < 2)
+            {
+                _lastTopicValues[topicId] = NO_DATA_PLACEHOLDER;
+                return NO_DATA_PLACEHOLDER;
+            }
 
             string symbol = Convert.ToString(strings.GetValue(0))?.Trim();
             string field = Convert.ToString(strings.GetValue(1))?.Trim();
 
+            if (string.IsNullOrEmpty(symbol) || string.IsNullOrEmpty(field))
+            {
+                _lastTopicValues[topicId] = NO_DATA_PLACEHOLDER;
+                return NO_DATA_PLACEHOLDER;
+            }
+
             _topics[topicId] = (symbol, field);
 
-            return GetCurrentValue(symbol, field);
+            // Initial value from live / default store
+            var initial = GetCurrentValue(symbol, field);
+            _lastTopicValues[topicId] = initial;
+
+            return initial;
         }
 
         public Array RefreshData(ref int topicCount)
         {
-            var sw = Stopwatch.StartNew();
+            // IMPORTANT: we DO NOT recompute from pipe here.
+            // We just return the last value stored for each topic.
             var results = new object[2, _topics.Count];
             int index = 0;
 
             foreach (var topic in _topics)
             {
-                results[0, index] = topic.Key;
-                results[1, index] = GetCurrentValue(topic.Value.Symbol, topic.Value.Field);
+                int topicId = topic.Key;
+                results[0, index] = topicId;
+
+                if (!_lastTopicValues.TryGetValue(topicId, out var val))
+                {
+                    // If somehow no last value, compute once using current stores
+                    val = GetCurrentValue(topic.Value.Symbol, topic.Value.Field);
+                    _lastTopicValues[topicId] = val;
+                }
+
+                results[1, index] = val;
                 index++;
             }
 
@@ -201,26 +250,52 @@ namespace thecalcifyRTD
 
         private object GetCurrentValue(string symbol, string field)
         {
-            // Check live data first
+            if (string.IsNullOrWhiteSpace(symbol) || string.IsNullOrWhiteSpace(field))
+                return NO_DATA_PLACEHOLDER;
+
+            // 1️⃣ Check live data first (last known from pipe/SignalR)
             if (_liveData.TryGetValue(symbol, out var liveDict) &&
-                liveDict.TryGetValue(field, out var liveValue))
+                liveDict != null &&
+                liveDict.TryGetValue(field, out var liveValue) &&
+                liveValue != null &&
+                !IsEmptyString(liveValue))
             {
-                return liveValue ?? "N/A";
+                return liveValue;
             }
 
-            // Fall back to default data
+            // 2️⃣ Fall back to default snapshot (initdata.dat)
             if (_defaultData.TryGetValue(symbol, out var defaultDict) &&
-                defaultDict.TryGetValue(field, out var defaultValue))
+                defaultDict != null &&
+                defaultDict.TryGetValue(field, out var defaultValue) &&
+                defaultValue != null &&
+                !IsEmptyString(defaultValue))
             {
-                return defaultValue ?? "N/A";
+                return defaultValue;
             }
 
-            return "N/A";
+            // 3️⃣ If absolutely nothing, show placeholder
+            return NO_DATA_PLACEHOLDER;
+        }
+
+        private static bool IsEmptyString(object value)
+        {
+            if (value == null) return true;
+
+            var s = value.ToString().Trim();
+            if (string.IsNullOrEmpty(s)) return true;
+
+            // Treat these also as "empty" / no data
+            if (string.Equals(s, "N/A", StringComparison.OrdinalIgnoreCase)) return true;
+            if (string.Equals(s, "NA", StringComparison.OrdinalIgnoreCase)) return true;
+            if (string.Equals(s, "-", StringComparison.OrdinalIgnoreCase)) return true;
+
+            return false;
         }
 
         public void DisconnectData(int topicId)
         {
             _topics.TryRemove(topicId, out _);
+            _lastTopicValues.TryRemove(topicId, out _);
         }
 
         public int Heartbeat()
@@ -234,6 +309,7 @@ namespace thecalcifyRTD
             _pipeListenerThread?.Join(1000);
 
             _topics?.Clear();
+            _lastTopicValues.Clear();
             _liveData.Clear();
             _defaultData.Clear();
         }
@@ -254,12 +330,16 @@ namespace thecalcifyRTD
                     {
                         _defaultData.Clear();
                         foreach (var kvp in dict)
-                            _defaultData[kvp.Key] = new ConcurrentDictionary<string, object>(kvp.Value, StringComparer.OrdinalIgnoreCase);
+                        {
+                            _defaultData[kvp.Key] =
+                                new ConcurrentDictionary<string, object>(kvp.Value, StringComparer.OrdinalIgnoreCase);
+                        }
                     }
                 }
             }
             catch
             {
+                // Ignore errors in init load to avoid breaking RTD
             }
         }
 
@@ -276,14 +356,10 @@ namespace thecalcifyRTD
                 ICryptoTransform decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
 
                 using (MemoryStream memoryStream = new MemoryStream(buffer))
+                using (CryptoStream cryptoStream = new CryptoStream(memoryStream, decryptor, CryptoStreamMode.Read))
+                using (StreamReader streamReader = new StreamReader(cryptoStream))
                 {
-                    using (CryptoStream cryptoStream = new CryptoStream(memoryStream, decryptor, CryptoStreamMode.Read))
-                    {
-                        using (StreamReader streamReader = new StreamReader(cryptoStream))
-                        {
-                            return streamReader.ReadToEnd();
-                        }
-                    }
+                    return streamReader.ReadToEnd();
                 }
             }
         }

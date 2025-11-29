@@ -559,7 +559,6 @@ namespace thecalcify
             }
         }
 
-
         private void FontSizeComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             ApplyFontSizeFromComboBox();
@@ -618,18 +617,41 @@ namespace thecalcify
 
         }
 
+        public string GetCellValue(string symbol, string columnName)
+        {
+            string cleanSymbol = symbol
+                .Replace("▲", "")
+                .Replace("▼", "")
+                .Trim();
+
+            foreach (DataGridViewRow row in this.defaultGrid.Rows)
+            {
+                string rowSymbol = row.Cells["name"].Value?.ToString()
+                    .Replace("▲", "")
+                    .Replace("▼", "")
+                    .Trim();
+
+                if (rowSymbol == cleanSymbol)
+                    return row.Cells[columnName].Value?.ToString();
+            }
+
+            return string.Empty;
+        }
+
+
+
         #endregion
 
-        private DataGridView defaultGrid;
-        private MenuStrip menuStrip1;
-        private ToolStripMenuItem toolsToolStripMenuItem;
-        private ToolStripMenuItem disconnectESCToolStripMenuItem;
-        private Label licenceExpire;
-        private Panel bottomPanel;
-        private ContextMenuStrip Tools;
-        private ToolStripMenuItem ExportToExcelToolStripMenuItem;
-        private ToolStripMenuItem addEditSymbolsToolStripMenuItem;
-        private ToolStripMenuItem addEditColumnsToolStripMenuItem;
+        public DataGridView defaultGrid;
+        public MenuStrip menuStrip1;
+        public ToolStripMenuItem toolsToolStripMenuItem;
+        public ToolStripMenuItem disconnectESCToolStripMenuItem;
+        public Label licenceExpire;
+        public Panel bottomPanel;
+        public ContextMenuStrip Tools;
+        public ToolStripMenuItem ExportToExcelToolStripMenuItem;
+        public ToolStripMenuItem addEditSymbolsToolStripMenuItem;
+        public ToolStripMenuItem addEditColumnsToolStripMenuItem;
         private ToolStripMenuItem fullScreenF11ToolStripMenuItem;
         private ToolStripMenuItem aboutToolStripMenuItem;
         private Panel panelAddColumns;

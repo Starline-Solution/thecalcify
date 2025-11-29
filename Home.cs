@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Win32;
 using Newtonsoft.Json;
@@ -7,11 +6,9 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Data;
 using System.Diagnostics;
 using System.Drawing;
-using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -21,6 +18,7 @@ using System.Net.Http.Headers;
 using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.ServiceProcess;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -29,7 +27,8 @@ using thecalcify.Alert;
 using thecalcify.Helper;
 using thecalcify.MarketWatch;
 using thecalcify.News;
-using Windows.Media.Protection.PlayReady;
+using thecalcify.RTDWorker;
+using thecalcify.Shared;
 using Button = System.Windows.Forms.Button;
 using Label = System.Windows.Forms.Label;
 using TextBox = System.Windows.Forms.TextBox;
@@ -51,20 +50,12 @@ namespace thecalcify
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "thecalcify");
 
-        private readonly TimeSpan _reconnectThrottle = TimeSpan.FromSeconds(10); // prevent spam
-        private DateTime _lastExcelRateTime = DateTime.MinValue;
-        private System.Timers.Timer _watchdogTimer = null;
-
-        // ======================
-        // 📌 User / Credentials
-        // ======================
         public string token, licenceDate, username, password;
 
         // ======================
         // 📌 Flags / States
         // ======================
-        private bool isConnectionDisposed = false;
-
+        
         public bool isLoadedSymbol = false;
         public bool isEdit = false;
         public bool isGrid = true, reloadGrid = true;
@@ -79,8 +70,6 @@ namespace thecalcify
         public int fontSize = 12, RemainingDays;
         private ConcurrentDictionary<string, MarketDataDto> _latestUpdates = new ConcurrentDictionary<string, MarketDataDto>();
 
-        private DateTime _lastReconnectAttempt = DateTime.MinValue;
-        private DateTime lastUiUpdate = DateTime.MinValue;
         private Rectangle prevBounds;
         private FormWindowState prevState;
         private FormBorderStyle prevStyle;
@@ -96,14 +85,14 @@ namespace thecalcify
         public List<MarketDataDto> pastRateTickDTO = new List<MarketDataDto>();
         public List<string> symbolMaster = new List<string>();
         public List<string> columnPreferences;
-
+        //private HubConnection connection; 
         public List<string> columnPreferencesDefault = new List<string>()
         {
             "symbol","Name","Bid","Ask","High","Low","Open","Close","LTP","Net Chng",
             "V","Time","ATP","Bid Size","Total Bid Size","Ask Size","Total Ask Size",
             "Volume","Open Interest","Last Size"
         };
-        private static readonly string APIPath = APIUrl.ProdUrl; // Change as needed
+        private static readonly string APIPath = APIUrl.ProdUrl;
 
         public List<string> FileLists = new List<string>();
         public List<(string Symbol, string SymbolName)> SymbolName = new List<(string Symbol, string SymbolName)>();
@@ -112,9 +101,6 @@ namespace thecalcify
         // 📌 Dictionaries / Maps
         // ======================
         private readonly Dictionary<string, int> symbolRowMap = new Dictionary<string, int>();
-
-        private Dictionary<string, double> previousAskMap = new Dictionary<string, double>();
-        private readonly Dictionary<string, decimal> previousAsks = new Dictionary<string, decimal>();
 
         // ======================
         // 📌 Arrays
@@ -129,22 +115,19 @@ namespace thecalcify
         // ======================
         // 📌 Services / External Connections
         // ======================
-        public HubConnection connection { get; set; }
-        private bool isReconnectTimerRunning = false;
-        private bool _isReconnectInProgress = false;
-        private bool _eventHandlersAttached = false;
+        //public HubConnection connection { get; set; }
+        //private bool isReconnectTimerRunning = false;
+        //private bool _isReconnectInProgress = false;
+        //private bool _eventHandlersAttached = false;
 
         public Common commonClass;
-        //private ConcurrentQueue<MarketDataDto> _updateQueue = new ConcurrentQueue<MarketDataDto>();
-        private readonly object _tableLock = new object();
-        private readonly object _reconnectLock = new object();
 
         // ======================
         // 📌 Timers / Threads
         // ======================
-        private System.Threading.Timer _updateTimer;
+        //private System.Threading.Timer _updateTimer;
 
-        private System.Windows.Forms.Timer signalRTimer;
+        //private System.Windows.Forms.Timer signalRTimer;
         public event EventHandler LogoutRequested;
 
 
@@ -190,12 +173,23 @@ namespace thecalcify
         private int userId;
 
 
-        private readonly JsonSerializerSettings _jsonSettings = new JsonSerializerSettings
-        {
-            NullValueHandling = NullValueHandling.Ignore,
-            MissingMemberHandling = MissingMemberHandling.Ignore,
-            Formatting = Formatting.None
-        };
+        private readonly Dictionary<string, long> _rowLastUpdate = new Dictionary<string, long>();
+        private readonly Dictionary<string, double> _prevAskMap = new Dictionary<string, double>();
+
+
+        private SharedMemoryQueue _queue;
+        private CancellationTokenSource _cts;
+        private Task _consumerTask;
+        //private readonly ConcurrentQueue<MarketDataDto> _uiUpdateBuffer = new ConcurrentQueue<MarketDataDto>();
+        private System.Windows.Forms.Timer _uiTimer;
+        private readonly string RtwConfigPath = APIUrl.RtwConfigPath;
+        private readonly ConcurrentDictionary<string, MarketDataDto> _latestTicks = new ConcurrentDictionary<string, MarketDataDto>(StringComparer.OrdinalIgnoreCase);
+        private bool _isGridBuilding = false;
+
+
+        //private ExcelUpdateQueue _excelQueue;
+        //private ExcelWorker _excelWorker;
+
 
         #endregion Declaration and Initialization
 
@@ -247,6 +241,9 @@ namespace thecalcify
                 var app = new Microsoft.Office.Interop.Excel.Application();
                 app.Quit();
 
+                startRTWService();
+                ExcelNotifier.StartExcelMonitor();
+
                 // --- MENU SETUP ---
                 if (LoginInfo.IsRate && LoginInfo.IsNews && LoginInfo.RateExpiredDate.Date >= DateTime.Today.Date && LoginInfo.NewsExpiredDate >= DateTime.Today.Date)
                 {
@@ -260,9 +257,38 @@ namespace thecalcify
                     // Initialize Grid on UI thread
                     SafeInvoke(InitializeDataGridView);
 
+
+                    // AFTER: await LoadInitialMarketDataAsync(); HandleLastOpenedMarketWatch();
+                    // AFTER: SafeInvoke(InitializeDataGridView);
+
+                    _queue = new SharedMemoryQueue("thecalcifyQueue");
+
+                    ApplicationLogger.Log("[RTW] Shared memory queue ready.");
+
+                    // optional but recommended
+                    _queue.Reset();
+
+                    // drain old messages if any
+                    byte[] old;
+                    while (_queue.Read(0, out old)) { }
+
+                    // start consumer
+                    _cts = new CancellationTokenSource();
+                    _consumerTask = Task.Run(() => ConsumeTicks(_cts.Token));
+
+                    // start UI timer
+                    _uiTimer = new System.Windows.Forms.Timer();
+                    _uiTimer.Interval = 20;
+                    _uiTimer.Tick += UiTimer_Tick;
+                    _uiTimer.Start();
+
+
+
+                    //pageSwitched = true;
+
                     // Start SignalR
-                    SignalRTimer();
-                    await SignalREvent();
+                    //SignalRTimer();
+                    //await EnsureSignalRConnectedAndSubscribedAsync();
 
 
                     RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
@@ -314,9 +340,39 @@ namespace thecalcify
                     // Initialize Grid on UI thread
                     SafeInvoke(InitializeDataGridView);
 
+
+                    // AFTER: await LoadInitialMarketDataAsync(); HandleLastOpenedMarketWatch();
+                    // AFTER: SafeInvoke(InitializeDataGridView);
+
+                    _queue = new SharedMemoryQueue("thecalcifyQueue");
+
+                    ApplicationLogger.Log("[RTW] Shared memory queue ready.");
+
+                    // optional but recommended
+                    _queue.Reset();
+
+                    // drain old messages if any
+                    byte[] old;
+                    while (_queue.Read(0, out old)) { }
+
+                    // start consumer
+                    _cts = new CancellationTokenSource();
+                    _consumerTask = Task.Run(() => ConsumeTicks(_cts.Token));
+
+                    // start UI timer
+                    _uiTimer = new System.Windows.Forms.Timer();
+                    _uiTimer.Interval = 20;
+                    _uiTimer.Tick += UiTimer_Tick;
+                    _uiTimer.Start();
+
+
+
+
+                    //pageSwitched = true;
+
                     // Start SignalR
-                    SignalRTimer();
-                    await SignalREvent();
+                    //SignalRTimer();
+                    //await EnsureSignalRConnectedAndSubscribedAsync();
 
 
                     RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
@@ -332,6 +388,8 @@ namespace thecalcify
                 }
                 else if (LoginInfo.IsNews && LoginInfo.NewsExpiredDate >= DateTime.Today.Date)
                 {
+                    //pageSwitched = true;
+
                     licenceDate = LoginInfo.NewsExpiredDate.ToString("dd:MM:yyyy");
 
                     this.NewsListToolStripMenuItem_Click_1(this, EventArgs.Empty);
@@ -380,10 +438,11 @@ namespace thecalcify
                 CurrentInstance = this;
 
 
+
                 // --- GLOBAL EVENTS ---
-                NetworkChange.NetworkAvailabilityChanged += OnNetworkAvailabilityChanged;
-                NetworkChange.NetworkAddressChanged += OnNetworkAddressChanged;
-                SystemEvents.PowerModeChanged += OnPowerModeChanged;
+                //NetworkChange.NetworkAvailabilityChanged += OnNetworkAvailabilityChanged;
+                //NetworkChange.NetworkAddressChanged += OnNetworkAddressChanged;
+                //SystemEvents.PowerModeChanged += OnPowerModeChanged;
                 Application.ThreadException += Application_ThreadException;
                 AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
 
@@ -434,6 +493,8 @@ namespace thecalcify
 
             try
             {
+
+                //_cancellationTokenSource?.Cancel();
                 await LogoutAsync();
                 KillProcess();
                 // Correct way to call the static method
@@ -455,7 +516,7 @@ namespace thecalcify
                 {
                     try
                     {
-                        await StopBackgroundTasks();
+                         await StopBackgroundTasks();
                         UnsubscribeAllEvents();
 
                         new Login().Show();
@@ -503,7 +564,6 @@ namespace thecalcify
                 ApplicationLogger.LogException(ex);
             }
         }
-
 
         public void thecalcifyGrid()
         {
@@ -570,61 +630,74 @@ namespace thecalcify
         {
             try
             {
-                if (connection != null)
-                {
-                    try
-                    {
-                        // Dispose the old connection first if any
-                        connection.StopAsync().Wait();
-                        connection.DisposeAsync().AsTask().Wait();
-                        connection = null;  // Clear the existing connection
-                        _eventHandlersAttached = false;
-                    }
-                    catch (Exception ex)
-                    {
-                        ApplicationLogger.LogException(ex);
-                    }
-                }
-
+                // ---------------------------------------------
+                // UI cleanup (safe)
+                // ---------------------------------------------
                 fontSizeComboBox.Visible = true;
                 savelabel.Visible = false;
 
-
                 searchTextLabel.Visible = true;
                 txtsearch.Visible = true;
+                txtsearch.Text = string.Empty;
 
-                EditableMarketWatchGrid editableMarketWatchGrid = EditableMarketWatchGrid.CurrentInstance;
-                if (editableMarketWatchGrid != null)
+                // Close editable grid if open
+                var editable = EditableMarketWatchGrid.CurrentInstance;
+                if (editable != null)
                 {
-                    if (editableMarketWatchGrid.IsCurrentCellInEditMode)
-                    {
-                        editableMarketWatchGrid.EndEdit();
-                    }
+                    if (editable.IsCurrentCellInEditMode)
+                        editable.EndEdit();
 
-                    editableMarketWatchGrid.EditableDispose(); // Dispose the grid
-                    editableMarketWatchGrid.Dispose();
+                    editable.EditableDispose();
+                    editable.Dispose();
                 }
+
                 toolsToolStripMenuItem.Enabled = true;
                 isLoadedSymbol = false;
-                thecalcifyGrid();
-                txtsearch.Text = string.Empty;
-                saveFileName = null;
-                await LoadInitialMarketDataAsync();
 
-                MenuLoad();
+                // Switch UI to main grid panel
+                thecalcifyGrid();
+
+                saveFileName = null;
                 titleLabel.Text = "DEFAULT";
                 saveMarketWatchHost.Visible = false;
                 refreshMarketWatchHost.Visible = true;
                 isEdit = false;
-                identifiers = symbolMaster;
-                InitializeDataGridView();          // Configure the grid
-                await SignalREvent();
+
+                // ---------------------------------------------
+                // STEP 1: Load initial snapshot from API
+                // ---------------------------------------------
+                await LoadInitialMarketDataAsync();   // fills resultdefault and pastRateTickDTO
+
+                // ---------------------------------------------
+                // STEP 2: Prepare identifiers for default screen
+                // ---------------------------------------------
+                identifiers = symbolMaster?.ToList() ?? new List<string>();
+
+                // ---------------------------------------------
+                // STEP 3: Rebuild full grid with 0 data
+                // ---------------------------------------------
+                InitializeDataGridView(); // Creates rows & applies column prefs
+
+                // ---------------------------------------------
+                // STEP 4: Update menu (files)
+                // ---------------------------------------------
+                MenuLoad();
+
+                // ---------------------------------------------
+                // STEP 5: ENSURE SIGNALR IS CONNECTED
+                // ---------------------------------------------
+                //await EnsureSignalRConnectedAndSubscribedAsync();
+
+                // ---------------------------------------------
+                // STEP 6: APPEAR: Consumer + Grid now continue flowing live ticks
+                // ---------------------------------------------
             }
             catch (Exception ex)
             {
                 ApplicationLogger.LogException(ex);
             }
         }
+
 
         private async void NewCTRLNToolStripMenuItem1_Click(object sender, EventArgs e)
         {
@@ -1406,6 +1479,8 @@ namespace thecalcify
                         }
                     }
 
+                    CredentialManager.SaveMarketWatchWithColumns(lastOpenMarketWatch, (columnPreferences.Count == 0 || columnPreferences == null) ? columnPreferencesDefault : columnPreferences);
+
                     panelAddColumns.Visible = false;
                 };
 
@@ -1576,16 +1651,16 @@ namespace thecalcify
                     btnCancelAddSymbols.Location = new System.Drawing.Point(310, 35);
 
                     titleLabel.Dock = DockStyle.Top;
-                    checkedListSymbols.Dock = DockStyle.Fill; // So it takes remaining space
+                    checkedListSymbols.Dock = DockStyle.Fill;
                     buttonPanel.Dock = DockStyle.Bottom;
 
                     buttonPanel.Controls.Add(btnSelectAllSymbols);
                     buttonPanel.Controls.Add(btnConfirmAddSymbols);
                     buttonPanel.Controls.Add(btnCancelAddSymbols);
 
-                    panelAddSymbols.Controls.Add(buttonPanel);  // bottom first
-                    panelAddSymbols.Controls.Add(checkedListSymbols); // middle
-                    panelAddSymbols.Controls.Add(titleLabel);   // top last
+                    panelAddSymbols.Controls.Add(buttonPanel);
+                    panelAddSymbols.Controls.Add(checkedListSymbols);
+                    panelAddSymbols.Controls.Add(titleLabel);
 
                     this.Controls.Add(panelAddSymbols);
 
@@ -1597,7 +1672,7 @@ namespace thecalcify
                         );
                     };
 
-                    // Hook up events
+                    // Select All click
                     btnSelectAllSymbols.Click += (s, e2) =>
                     {
                         bool allChecked = true;
@@ -1619,15 +1694,16 @@ namespace thecalcify
                         }
                     };
 
+                    // Save click
                     btnConfirmAddSymbols.Click += async (s, e2) =>
                     {
                         // Get the checked display names (SymbolName)
                         var currentlyCheckedNames = checkedListSymbols.CheckedItems.Cast<string>().ToList();
 
-                        // If nothing is selected
                         if (!currentlyCheckedNames.Any())
                         {
-                            MessageBox.Show("Please select at least one symbol to confirm.", "No Selection", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            MessageBox.Show("Please select at least one symbol to confirm.", "No Selection",
+                                MessageBoxButtons.OK, MessageBoxIcon.Warning);
                             return;
                         }
 
@@ -1637,7 +1713,6 @@ namespace thecalcify
                             .Select(x => x.Symbol)
                             .ToList();
 
-                        // Compare with previous selection
                         var previouslySelected = selectedSymbols;
 
                         var addedSymbols = currentlyCheckedSymbols.Except(previouslySelected).ToList();
@@ -1650,16 +1725,22 @@ namespace thecalcify
                         }
 
                         // Save changes
-                        EditableMarketWatchGrid editableMarketWatchGrid = EditableMarketWatchGrid.CurrentInstance ?? new EditableMarketWatchGrid();
+                        EditableMarketWatchGrid editableMarketWatchGrid =
+                            EditableMarketWatchGrid.CurrentInstance ?? new EditableMarketWatchGrid();
+
                         editableMarketWatchGrid.isGrid = false;
                         editableMarketWatchGrid.saveFileName = saveFileName;
                         editableMarketWatchGrid.username = username;
+
                         selectedSymbols = currentlyCheckedSymbols;
                         editableMarketWatchGrid.SaveSymbols(selectedSymbols);
+
+                        // identifiers drives the grid; SignalR still uses symbolMaster
                         identifiers = selectedSymbols;
+
                         SafeInvoke(InitializeDataGridView);
                         await LoadInitialMarketDataAsync();
-                        await SignalREvent();
+                        //await EnsureSignalRConnectedAndSubscribedAsync();
 
                         panelAddSymbols.Visible = false;
                     };
@@ -1678,7 +1759,7 @@ namespace thecalcify
                 {
                     if (identifiers.Contains(item.Symbol))
                     {
-                        checkedListSymbols.Items.Add(item.SymbolName.Trim(), true); // Display symbol name
+                        checkedListSymbols.Items.Add(item.SymbolName.Trim(), true);
                     }
                 }
 
@@ -1719,11 +1800,11 @@ namespace thecalcify
         {
             if (e.IsAvailable)
             {
-                connection = null;
-                _eventHandlersAttached = false;
+                //connection = null;
+                //_eventHandlersAttached = false;
 
-                SignalRTimer();
-                await SignalREvent();
+                //SignalRTimer();
+                //await EnsureSignalRConnectedAndSubscribedAsync();
                 if (this.InvokeRequired)
                 {
                     this.Invoke(new Action(() =>
@@ -1743,16 +1824,16 @@ namespace thecalcify
             else
             {
                 ApplicationLogger.Log("Network unavailable.");
-                connection = null;
-                _eventHandlersAttached = false;
+                //connection = null;
+                //_eventHandlersAttached = false;
 
-                if (signalRTimer != null)
-                {
-                    signalRTimer.Stop();
-                }
+                //if (signalRTimer != null)
+                //{
+                //    signalRTimer.Stop();
+                //}
 
 
-                _eventHandlersAttached = false;
+                //_eventHandlersAttached = false;
 
                 if (this.InvokeRequired)
                 {
@@ -1773,29 +1854,31 @@ namespace thecalcify
 
         }
 
-
         private void OnNetworkAddressChanged(object sender, EventArgs e)
         {
-            _ = AttemptReconnectAsync("Network address changed.");
+            ApplicationLogger.Log("Network address changed.");
         }
 
         private async void OnPowerModeChanged(object sender, PowerModeChangedEventArgs e)
         {
             if (e.Mode == PowerModes.Resume)
-                await SignalREvent();
+                ApplicationLogger.Log("Power Resume");
+                //await EnsureSignalRConnectedAndSubscribedAsync();
         }
+
 
         private async void RefreshMarketWatchHost_Click(object sender, EventArgs e)
         {
             try
             {
+                _isGridBuilding = true;
+
                 // 🚫 Disable refresh button while refreshing
                 refreshMarketWatchHost.Enabled = false;
 
                 // 🔄 Reset state
                 selectedSymbols.Clear();
                 identifiers.Clear();
-                //_updateQueue = new ConcurrentQueue<MarketDataDto>();
                 isEdit = false;
                 isGrid = true;
                 reloadGrid = true;
@@ -1823,6 +1906,7 @@ namespace thecalcify
                     editableMarketWatchGrid.EditableDispose(); // Dispose the grid
                     editableMarketWatchGrid.Dispose();
                 }
+
                 saveMarketWatchHost.Visible = false;
                 refreshMarketWatchHost.Visible = true;
 
@@ -1830,676 +1914,25 @@ namespace thecalcify
                 await DefaultToolStripMenuItem_Click(sender, e);
                 titleLabel.Text = "DEFAULT";
 
-                // 🔄 Reload market data & reconnect SignalR
+                // 🔄 Reload market data & ensure SignalR
                 InitializeDataGridView();
                 await LoadInitialMarketDataAsync();
-                await SignalREvent();
+                //await EnsureSignalRConnectedAndSubscribedAsync();
 
                 ApplicationLogger.Log("Refresh: Switched back to DEFAULT Market Watch.");
             }
             catch (Exception ex)
             {
                 ApplicationLogger.LogException(ex);
-                //MessageBox.Show("Failed to refresh and reset to Default view. Please try again.",
-                //                "Refresh Error",
-                //                MessageBoxButtons.OK,
-                //                MessageBoxIcon.Error);
             }
             finally
             {
                 // ✅ Re-enable refresh button after process
                 refreshMarketWatchHost.Enabled = true;
-            }
-        }
-
-        private void StartWatchdogTimer()
-        {
-            if (_watchdogTimer != null)
-                return;
-
-            int _connectingRetryCount = 0;
-            int MaxConnectingRetries = 3;
-
-            _watchdogTimer = new System.Timers.Timer(10000); // check every 5 seconds
-            _watchdogTimer.Elapsed += async (s, e) =>
-            {
-                try
-                {
-                    if (connection == null)
-                    { return; }
-
-                    if (connection.State == HubConnectionState.Connecting)
-                    {
-                        _connectingRetryCount++;
-                        ApplicationLogger.Log($"SignalR still connecting... Attempt {_connectingRetryCount}");
-
-                        if (_connectingRetryCount >= MaxConnectingRetries)
-                        {
-                            ApplicationLogger.Log("SignalR stuck in connecting state. Forcing hard reconnect.");
-                            connection = null;
-                            _eventHandlersAttached = false;
-
-                            SignalRTimer();
-                            await SignalREvent();
-                            _connectingRetryCount = 0;
-                        }
-
-                        return;
-                    }
-
-                    var secondsSinceLastMessage = (DateTime.UtcNow - _lastExcelRateTime).TotalSeconds;
-
-                    if (secondsSinceLastMessage > 30) // 💀 No data in 30 seconds
-                    {
-                        ApplicationLogger.Log("No SignalR data in 30s — forcing reconnect.");
-
-                        connection = null;
-                        _eventHandlersAttached = false;
-
-                        SignalRTimer();
-                        await SignalREvent();
-                    }
-                }
-                catch (Exception ex)
-                {
-                    ApplicationLogger.LogException(ex);
-                }
-            };
-
-            _watchdogTimer.AutoReset = true;
-            _watchdogTimer.Start();
-        }
-
-        private void SetupUpdateTimer()
-        {
-            try
-            {
-                // Purana timer dispose karo
-                if (_updateTimer != null)
-                {
-                    _updateTimer.Dispose();
-                    _updateTimer = null;
-                }
-
-                // Background timer setup (100ms interval)
-                _updateTimer = new System.Threading.Timer(
-                    callback: state =>
-                    {
-                        try
-                        {
-                            UpdateTimer_Tick(null, EventArgs.Empty);
-                        }
-                        catch (Exception ex)
-                        {
-                            ApplicationLogger.LogException(ex);
-                        }
-                    },
-                    state: null,
-                    dueTime: 0,        // start immediately
-                    period: 100        // repeat every 100ms
-                );
-            }
-            catch (Exception ex)
-            {
-                ApplicationLogger.LogException(ex);
+                _isGridBuilding = false;
             }
         }
         #endregion Form Method
-
-        #region SignalR Methods
-        public void SignalRTimer()
-        {
-            if (signalRTimer != null) return; // prevent multiple timers
-
-            signalRTimer = new System.Windows.Forms.Timer { Interval = 10_000 };
-            signalRTimer.Tick += async (s, e) =>
-            {
-                try
-                {
-                    if (!isReconnectTimerRunning && connection?.State == HubConnectionState.Disconnected)
-                    {
-                        isReconnectTimerRunning = true;
-                        await TryReconnectAsync().ConfigureAwait(false);
-                        isReconnectTimerRunning = false;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    ApplicationLogger.LogException(ex);
-                    isReconnectTimerRunning = false;
-                }
-            };
-            signalRTimer.Start();
-        }
-
-        private async Task TryReconnectAsync()
-        {
-            if (_isReconnectInProgress) return; // prevent parallel reconnects
-            if (connection?.State != HubConnectionState.Disconnected) return;
-
-            try
-            {
-                _isReconnectInProgress = true;
-                await SignalREvent().ConfigureAwait(false);
-            }
-            catch (Exception ex) when (
-                ex is OperationCanceledException ||
-                ex is ObjectDisposedException ||
-                ex is TargetInvocationException ||
-                ex is InvalidOperationException)
-            {
-                ApplicationLogger.LogException(ex);
-
-                // 🔄 Instead of immediate retry → small backoff
-                await Task.Delay(2000);
-                await SignalREvent().ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                // Unexpected errors
-                ApplicationLogger.LogException(ex);
-            }
-            finally
-            {
-                _isReconnectInProgress = false;
-            }
-        }
-
-        private HubConnection BuildConnection()
-        {
-
-            return new HubConnectionBuilder()
-                //.WithUrl($"http://api.thecalcify.com/excel?user={username}&auth=Starline@1008&type=desktop")
-                .WithUrl($"{APIPath}excel?user={username}&auth=Starline@1008&type=Desktop")
-                .WithAutomaticReconnect(new[] { TimeSpan.Zero, TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(10) })
-                .AddNewtonsoftJsonProtocol(options =>
-                {
-                    options.PayloadSerializerSettings = new JsonSerializerSettings
-                    {
-                        NullValueHandling = NullValueHandling.Ignore,
-                        MissingMemberHandling = MissingMemberHandling.Ignore,
-                        Formatting = Formatting.None
-                    };
-                })
-                .ConfigureLogging(logging =>
-                {
-                    logging.AddConsole();  // Add logging for debugging
-                })
-                .Build();
-
-        }
-
-        public async Task SignalREvent()
-        {
-            try
-            {
-                if (connection == null)
-                {
-                    connection = BuildConnection();
-
-                    //Console.WriteLine($"Connection Info: {connection}");
-
-                    // Log the connection state
-                    //Console.WriteLine($"Connection State: {connection.State}");
-
-                    // Log the connection string (URL)
-                    //Console.WriteLine($"Connection URL: {connection.ConnectionId}");
-
-
-                    if (!_eventHandlersAttached)
-                    {
-                        // Attach event handlers only once
-                        connection.On<string>("excelRate", base64 =>
-                        {
-                            Task.Run(() => OnExcelRateReceived(base64));
-                        });
-
-                        connection.Closed += async (error) =>
-                        {
-                            ApplicationLogger.Log("Connection closed");
-
-                            await Task.Delay(2000); // backoff instead of random
-                            await TryReconnectAsync(); // safe reconnect
-
-                        };
-
-                        connection.Reconnected += async (connectionId) =>
-                        {
-                            ApplicationLogger.Log("Reconnected to SignalR hub");
-                            try
-                            {
-                                if (selectedSymbols.Count > 0)
-                                    identifiers = new List<string>(selectedSymbols);
-
-                                using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5)))
-                                {
-                                    await connection.InvokeAsync("SubscribeSymbols", symbolMaster, cts.Token);
-                                }
-                                ApplicationLogger.Log("Resubscribed after reconnect.");
-                            }
-                            catch (Exception ex) when (ex is TaskCanceledException || ex is OperationCanceledException)
-                            {
-                                ApplicationLogger.Log("SignalR Reconnecting/subscribe timeout/canceled.");
-
-                                if (savelabel.InvokeRequired)
-                                {
-                                    savelabel.Invoke(new Action(() =>
-                                    {
-                                        savelabel.Visible = true;
-                                        savelabel.Text = "Client is offline, switch network.";
-                                    }));
-                                }
-                                else
-                                {
-                                    savelabel.Visible = true;
-                                    savelabel.Text = "Client is offline, switch network.";
-                                }
-                                connection = null;
-                                _eventHandlersAttached = false;
-                            }
-                            catch (Exception ex)
-                            {
-                                ApplicationLogger.LogException(ex);
-                            }
-
-                        };
-
-                        _eventHandlersAttached = true;
-                    }
-                }
-
-                if (connection.State == HubConnectionState.Disconnected)
-                    await connection.StartAsync().ConfigureAwait(false);
-
-                if (connection.State == HubConnectionState.Connected)
-                {
-
-
-                    // Log the connection string (URL)
-                    //Console.WriteLine($"Connection URL: {connection.ConnectionId}");
-
-                    if (symbolMaster == null || symbolMaster.Count == 0)
-                    {
-                        //Console.WriteLine("symbolmaster is null/empty");
-                        ApplicationLogger.Log("Symbol list is empty, cannot subscribe.");
-                        connection = null;
-                        _eventHandlersAttached = false;
-                        _lastExcelRateTime = DateTime.MinValue;
-                        return;
-                    }
-
-                    try
-                    {
-                        //Console.WriteLine($"Connection Time Symbols Count is {symbolMaster.Count}");
-                        await connection.InvokeAsync("SubscribeSymbols", symbolMaster).ConfigureAwait(false);
-
-                        if (savelabel.InvokeRequired)
-                        {
-                            savelabel.Invoke(new Action(() =>
-                            {
-                                savelabel.Visible = false;
-                                savelabel.Text = string.Empty;
-                            }));
-                        }
-                        else
-                        {
-                            savelabel.Visible = false;
-                            savelabel.Text = string.Empty;
-                        }
-
-                        SetupUpdateTimer();
-                        StartWatchdogTimer();
-                    }
-                    catch (Exception ex) when (ex is TaskCanceledException || ex is OperationCanceledException)
-                    {
-                        ApplicationLogger.Log("SignalR subscribe timeout/canceled.");
-
-                        if (savelabel.InvokeRequired)
-                        {
-                            savelabel.Invoke(new Action(() =>
-                            {
-                                savelabel.Visible = true;
-                                savelabel.Text = "Client is offline, switch network.";
-                            }));
-                        }
-                        else
-                        {
-                            savelabel.Visible = true;
-                            savelabel.Text = "Client is offline, switch network.";
-                        }
-                        connection = null;
-                        _eventHandlersAttached = false;
-                    }
-                }
-            }
-            catch (Exception ex) when (ex is TaskCanceledException || ex is OperationCanceledException)
-            {
-                ApplicationLogger.Log("SignalR subscribe timeout/canceled.");
-
-                if (savelabel.InvokeRequired)
-                {
-                    savelabel.Invoke(new Action(() =>
-                    {
-                        savelabel.Visible = true;
-                        savelabel.Text = "Client is offline, switch network.";
-                    }));
-                }
-                else
-                {
-                    savelabel.Visible = true;
-                    savelabel.Text = "Client is offline, switch network.";
-                }
-                connection = null;
-                _eventHandlersAttached = false;
-            }
-            catch (Exception ex)
-            {
-                ApplicationLogger.LogException(ex);
-            }
-            //Console.WriteLine($"End At {DateTime.Now}");
-        }
-
-        private void OnExcelRateReceived(string base64)
-        {
-            try
-            {
-                _lastExcelRateTime = DateTime.UtcNow; // ⏱️ Update timestamp
-
-                if (!string.IsNullOrEmpty(base64))
-                {
-
-                    byte[] bytes = Convert.FromBase64String(base64);
-                    string json = DecompressGzip(bytes);
-                    var data = JsonConvert.DeserializeObject<MarketDataDto>(json, _jsonSettings);
-
-                    if (data == null || string.IsNullOrEmpty(data.i))
-                        return;
-
-                    _latestUpdates[data.i] = data; // replace latest update for each symbol 
-                }
-            }
-            catch (Exception ex)
-            {
-                ApplicationLogger.LogException(ex);
-            }
-        }
-
-        private void UpdateTimer_Tick(object sender, EventArgs e)
-        {
-            try
-            {
-                if (_latestUpdates.IsEmpty) return;
-
-                var updates = _latestUpdates.Values.ToList();
-                _latestUpdates.Clear(); // clear for next batch
-
-
-                if (updates.Count == 0) return;
-
-                // If queue has too many records, keep only the newest 1000
-                if (updates.Count > 1000)
-                {
-                    // Sort by Time (assuming MarketDataDto has a Time property)
-                    updates = updates
-                        .OrderByDescending(x => x.t)  // Newest first
-                        .Take(1000)                     // Keep only 1000 newest
-                        .OrderBy(x => x.t)           // Restore original order if needed
-                        .ToList();
-                }
-
-                try
-                {
-                    updates = updates.Where(x => long.TryParse(x.t, out _)).OrderByDescending(x => DateTimeOffset.FromUnixTimeMilliseconds(long.Parse(x.t)).LocalDateTime).ToList();
-                }
-                catch (Exception)
-                {
-                }
-
-                if (updates != null)
-                {
-                    SafeInvoke(async () => await ApplyBatchUpdatesParallelAsync(updates));
-                }
-            }
-            catch (Exception ex)
-            {
-                ApplicationLogger.LogException(ex);
-            }
-        }
-
-        private async Task ApplyBatchUpdatesParallelAsync(List<MarketDataDto> updates)
-        {
-            var nonUiTasks = updates.Select(newData => Task.Run(() =>
-            {
-                var dict = CreateFieldDictionary(newData);
-                if (dict != null && dict.Count > 0)
-                    ExcelNotifier.NotifyExcel(newData.i, dict);
-            }));
-
-            await Task.WhenAll(nonUiTasks);
-
-            // 👇 Batch all UI updates together
-            if (defaultGrid.IsHandleCreated)
-            {
-                defaultGrid.BeginInvoke(new Action(() =>
-                {
-                    try
-                    {
-                        defaultGrid.SuspendLayout();
-
-                        foreach (var newData in updates)
-                        {
-                            if (!symbolRowMap.TryGetValue(newData.i, out int rowIndex))
-                                continue;
-
-                            UpdateRow(defaultGrid.Rows[rowIndex], newData);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        ApplicationLogger.LogException(ex);
-                    }
-                    finally
-                    {
-                        defaultGrid.ResumeLayout();
-                    }
-                }));
-            }
-        }
-
-        private static Dictionary<string, object> CreateFieldDictionary(MarketDataDto data)
-        {
-            try
-            {
-                return new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
-                {
-                    ["Name"] = data.i,
-                    ["Bid"] = data.b,
-                    ["Ask"] = data.a,
-                    ["LTP"] = data.ltp,
-                    ["High"] = data.h,
-                    ["Low"] = data.l,
-                    ["Open"] = data.o,
-                    ["Close"] = data.c,
-                    ["Net Chng"] = data.d,
-                    ["V"] = data.v,
-                    ["ATP"] = data.atp,
-                    ["Bid Size"] = data.bq,
-                    ["Total Bid Size"] = data.tbq,
-                    ["Ask Size"] = data.sq,
-                    ["Total Ask Size"] = data.tsq,
-                    ["Volume"] = data.vt,
-                    ["Open Interest"] = data.oi,
-                    ["Last Size"] = data.ltq,
-                    ["Time"] = Common.TimeStampConvert(data.t)
-                };
-            }
-            catch (Exception ex)
-            {
-                ApplicationLogger.LogException(ex);
-                return new Dictionary<string, object>();
-            }
-        }
-
-        private void UpdateRow(DataGridViewRow row, MarketDataDto data)
-        {
-            try
-            {
-                var symbol = data.i;
-                var previousValues = new Dictionary<string, string>();
-
-                foreach (var col in numericColumns)
-                {
-                    if (defaultGrid.Columns.Contains(col))
-                        previousValues[col] = row.Cells[col].Value?.ToString() ?? "";
-                }
-
-                // Update all values
-                SetCellValue(row, "Bid", data.b);
-                SetCellValue(row, "Ask", data.a);
-                SetCellValue(row, "LTP", data.ltp);
-                SetCellValue(row, "High", data.h);
-                SetCellValue(row, "Low", data.l);
-                SetCellValue(row, "Open", data.o);
-                SetCellValue(row, "Close", data.c);
-                SetCellValue(row, "Net Chng", data.d);
-                SetCellValue(row, "V", data.v);
-                SetCellValue(row, "ATP", data.atp);
-                SetCellValue(row, "Bid Size", data.bq);
-                SetCellValue(row, "Total Bid Size", data.tbq);
-                SetCellValue(row, "Ask Size", data.sq);
-                SetCellValue(row, "Total Ask Size", data.tsq);
-                SetCellValue(row, "Volume", data.vt);
-                SetCellValue(row, "Open Interest", data.oi);
-                SetCellValue(row, "Last Size", data.ltq);
-                SetCellValue(row, "Time", Common.TimeStampConvert(data.t));
-
-                // Name cell update
-                var nameCell = row.Cells["Name"];
-                if ((nameCell.Value?.ToString() ?? "N/A") == "N/A")
-                    nameCell.Value = pastRateTickDTO?.FirstOrDefault(x => x.i == symbol)?.n ?? "--";
-
-                // Ask price arrow logic
-                string askStr = data.a;
-                int askDirection = 0;
-                bool hasAskChange = false;
-
-                if (!string.IsNullOrEmpty(askStr) && double.TryParse(askStr, out double newAsk))
-                {
-                    if (previousAskMap.TryGetValue(symbol, out double prevAsk))
-                    {
-                        if (newAsk > prevAsk)
-                        {
-                            askDirection = 1;
-                            hasAskChange = true;
-                        }
-                        else if (newAsk < prevAsk)
-                        {
-                            askDirection = -1;
-                            hasAskChange = true;
-                        }
-                    }
-
-                    previousAskMap[symbol] = newAsk;
-                }
-
-                // Highlight changed numeric columns
-                foreach (string col in numericColumns)
-                {
-                    if (!defaultGrid.Columns.Contains(col)) continue;
-
-                    var cell = row.Cells[col];
-                    var prev = previousValues.TryGetValue(col, out string prevVal) ? prevVal : "";
-                    var curr = cell.Value?.ToString() ?? "";
-
-                    if (IsNumericChange(prev, curr, out int direction))
-                    {
-                        cell.Style.ForeColor = direction == 1 ? Color.Green :
-                                               direction == -1 ? Color.Red :
-                                               cell.Style.ForeColor;
-                    }
-                }
-
-                // Arrow in name
-                if (hasAskChange)
-                {
-                    string baseName = (nameCell.Value?.ToString() ?? "").Replace(" ▲", "").Replace(" ▼", "").Trim();
-                    nameCell.Value = askDirection == 1 ? baseName + " ▲" :
-                                     askDirection == -1 ? baseName + " ▼" : baseName;
-                    nameCell.Style.ForeColor = askDirection == 1 ? Color.Green :
-                                               askDirection == -1 ? Color.Red : nameCell.Style.ForeColor;
-                }
-            }
-            catch (Exception ex)
-            {
-                ApplicationLogger.LogException(ex);
-            }
-        }
-
-        private void SetCellValue(DataGridViewRow row, string columnName, object value)
-        {
-            try
-            {
-                if (!defaultGrid.Columns.Contains(columnName)) return;
-
-                var cell = row.Cells[columnName];
-                var newVal = value ?? "--";
-                if ((cell.Value?.ToString() ?? "--") != newVal.ToString())
-                {
-                    cell.Value = newVal;
-                }
-            }
-            catch (Exception ex)
-            {
-                ApplicationLogger.LogException(ex);
-            }
-        }
-
-        private static bool IsNumericChange(object oldVal, object newVal, out int direction)
-        {
-            direction = 0;
-
-            try
-            {
-                if (oldVal == null || newVal == null) return false;
-
-                string oldStr = oldVal.ToString();
-                string newStr = newVal.ToString();
-
-                if (double.TryParse(oldStr, out double oldNum) && double.TryParse(newStr, out double newNum))
-                {
-                    if (newNum > oldNum)
-                    {
-                        direction = 1;
-                        return true;
-                    }
-                    else if (newNum < oldNum)
-                    {
-                        direction = -1;
-                        return true;
-                    }
-                }
-
-                return false;
-            }
-            catch (Exception ex)
-            {
-                ApplicationLogger.LogException(ex);
-                return false;
-            }
-        }
-
-        private static string DecompressGzip(byte[] compressed)
-        {
-            using (var input = new MemoryStream(compressed))
-            using (var gzip = new GZipStream(input, CompressionMode.Decompress))
-            using (var output = new MemoryStream())
-            {
-                gzip.CopyTo(output);
-                return Encoding.UTF8.GetString(output.ToArray());
-            }
-        }
-
-        #endregion SignalR Methods
 
         #region SignalR Helper Method
 
@@ -2555,7 +1988,6 @@ namespace thecalcify
                                             .Where(x => !string.IsNullOrEmpty(x.i) && !string.IsNullOrEmpty(x.n))
                                             .Select(x => (Symbol: x.i, SymbolName: x.n)) // ✅ works in C# 7.3
                                             .ToList();
-
                                     }
 
                                     // ✅ Initialize symbolMaster only once
@@ -2565,6 +1997,8 @@ namespace thecalcify
                                             .Where(x => !string.IsNullOrEmpty(x.i))
                                             .Select(x => x.i)
                                             .ToList();
+
+                                        UpdateRtwConfig();
                                     }
 
                                     // ✅ Filter with identifiers
@@ -2572,7 +2006,7 @@ namespace thecalcify
                                         .Where(x => identifiers != null && identifiers.Contains(x.i))
                                         .ToList();
 
-                                    await ApplyBatchUpdatesParallelAsync(resultdefault.data);
+                                    await ApplyInitialSnapshotToGrid(resultdefault.data);
                                 });
                             }
                         }
@@ -2602,6 +2036,8 @@ namespace thecalcify
                                     .Where(x => !string.IsNullOrEmpty(x.i))
                                     .Select(x => x.i)
                                     .ToList();
+
+                                UpdateRtwConfig();
                             }
 
                             // ✅ Filter with identifiers
@@ -2609,15 +2045,15 @@ namespace thecalcify
                                 .Where(x => identifiers != null && identifiers.Contains(x.i))
                                 .ToList();
 
-                            await ApplyBatchUpdatesParallelAsync(resultdefault.data);
+                            await ApplyInitialSnapshotToGrid(resultdefault.data);
                         }
                     }
                 }
             }
             catch (WebException)
             {
-                connection = null;
-                _eventHandlersAttached = false;
+                //connection = null;
+                //_eventHandlersAttached = false;
             }
             catch (Exception ex)
             {
@@ -2769,7 +2205,7 @@ namespace thecalcify
                 resultdefault.data = resultdefault.data
                     .Where(x => identifiers.Contains(x.i))
                     .ToList();
-                await ApplyBatchUpdatesParallelAsync(resultdefault.data);
+                await ApplyInitialSnapshotToGrid(resultdefault.data);
             }
 
             defaultGrid.DefaultCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", fontSize, FontStyle.Regular);
@@ -2802,56 +2238,109 @@ namespace thecalcify
             defaultGrid.ResumeLayout();
         }
 
-        private async Task AttemptReconnectAsync(string reason)
-        {
-            try
-            {
-                lock (_reconnectLock)
-                {
-                    if (DateTime.Now - _lastReconnectAttempt < _reconnectThrottle)
-                        return;
-
-                    _lastReconnectAttempt = DateTime.Now;
-                }
-
-                ApplicationLogger.Log($"Attempting reconnect due to: {reason}");
-
-                try
-                {
-                    //if (connection == null)
-                    //{
-                    //    connection = BuildConnection();
-                    //    connection.On<string>("excelRate", OnExcelRateReceived);
-                    //}
-
-                    if (connection != null && connection.State == HubConnectionState.Disconnected)
-                    {
-                        await connection.StartAsync();
-                        await connection.InvokeAsync("SubscribeSymbols", symbolMaster);
-                        ApplicationLogger.Log("Reconnected and resubscribed.");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    ApplicationLogger.Log($"Reconnect failed: {ex.Message}");
-                }
-            }
-            catch (Exception ex)
-            {
-                ApplicationLogger.LogException(ex);
-            }
-        }
+        //private Task AttemptReconnectAsync(string reason)
+        //{
+        //    _ = SafeReconnectAsync(reason);
+        //    return Task.CompletedTask;
+        //}
 
         private void BuildSymbolRowMap()
         {
             symbolRowMap.Clear();
             for (int i = 0; i < defaultGrid.Rows.Count; i++)
             {
-                string symbol = defaultGrid.Rows[i].Cells["symbol"].Value?.ToString();
+                string symbol = defaultGrid.Rows[i].Cells["symbol"].Value?.ToString().Replace(" ▲", "").Replace(" ▼", "").Trim();
                 if (!string.IsNullOrEmpty(symbol))
                     symbolRowMap[symbol] = i;
             }
         }
+
+        private async Task ApplyInitialSnapshotToGrid(List<MarketDataDto> snapshot)
+        {
+            if (snapshot == null || snapshot.Count == 0)
+                return;
+
+            // Prevent timer/DTO updates during initial snapshot
+            _isGridBuilding = true;
+
+            if (defaultGrid.IsDisposed || !defaultGrid.IsHandleCreated)
+                return;
+
+            try
+            {
+                defaultGrid.SuspendLayout();
+
+                foreach (var dto in snapshot)
+                {
+                    if (dto == null)
+                        continue;
+
+                    // Grid may be rebuilding → stop applying snapshot immediately
+                    if (defaultGrid.Rows.Count == 0)
+                        break;
+
+                    // Symbol missing → skip
+                    if (!symbolRowMap.TryGetValue(dto.i, out int rowIndex))
+                        continue;
+
+                    // Row index no longer exists
+                    if (rowIndex < 0 || rowIndex >= defaultGrid.Rows.Count)
+                        continue;
+
+
+                    LastTickStore.ExcelPublish(dto);
+
+                    DataGridViewRow row;
+
+                    try
+                    {
+                        row = defaultGrid.Rows[rowIndex];
+                    }
+                    catch
+                    {
+                        continue;   // Grid refreshing / replaced → skip safely
+                    }
+
+                    // SAFE cell updates
+                    SafeSet(row, "Name", dto.n ?? "--");
+                    SafeSet(row, "Bid", dto.b);
+                    SafeSet(row, "Ask", dto.a);
+                    SafeSet(row, "LTP", dto.ltp);
+                    SafeSet(row, "High", dto.h);
+                    SafeSet(row, "Low", dto.l);
+                    SafeSet(row, "Open", dto.o);
+                    SafeSet(row, "Close", dto.c);
+                    SafeSet(row, "Net Chng", dto.d);
+                    SafeSet(row, "ATP", dto.atp);
+                    SafeSet(row, "Bid Size", dto.bq);
+                    SafeSet(row, "Total Bid Size", dto.tbq);
+                    SafeSet(row, "Ask Size", dto.sq);
+                    SafeSet(row, "Total Ask Size", dto.tsq);
+                    SafeSet(row, "Volume", dto.vt);
+                    SafeSet(row, "Open Interest", dto.oi);
+                    SafeSet(row, "Last Size", dto.ltq);
+                    SafeSet(row, "Time", Common.TimeStampConvert(dto.t));
+
+                    // Track timestamp
+                    if (long.TryParse(dto.t, out long ts))
+                        _rowLastUpdate[dto.i] = ts;
+                }
+            }
+            finally
+            {
+                defaultGrid.ResumeLayout();
+                _isGridBuilding = false;
+            }
+        }
+
+        private void SafeSet(DataGridViewRow row, string col, object value)
+        {
+            if (row == null) return;
+            var cell = row.Cells[col];
+            if (cell != null) cell.Value = value;
+        }
+
+
         #endregion SignalR Helper Method
 
         #region Other Methods
@@ -3005,7 +2494,10 @@ namespace thecalcify
                 marketWatchViewMode = MarketWatchViewMode.Default;
                 titleLabel.Text = Path.GetFileNameWithoutExtension(Filename).ToUpper();
                 InitializeDataGridView();          // Configure the grid
-                await SignalREvent();
+
+                //pageSwitched = true;
+
+                //await EnsureSignalRConnectedAndSubscribedAsync();
             }
             catch (Exception ex)
             {
@@ -3031,7 +2523,7 @@ namespace thecalcify
                     symbolRowMap.Clear();
                 }
 
-                previousAsks.Clear();
+                _prevAskMap.Clear();
             }
             catch (Exception ex)
             {
@@ -3083,23 +2575,23 @@ namespace thecalcify
             try
             {
                 // 1. Dispose SignalR connection properly
-                DisposeSignalRConnection();
+                //DisposeSignalRConnection();
 
-                // 2. Stop and dispose timers
-                signalRTimer?.Stop();
-                signalRTimer?.Dispose();
-                signalRTimer = null;
+                // //2.Stop and dispose timers
+                //signalRTimer?.Stop();
+                //signalRTimer?.Dispose();
+                //signalRTimer = null;
 
 
-                if (_watchdogTimer != null)
-                {
-                    _watchdogTimer.Stop();
-                    _watchdogTimer.Dispose();
-                    _watchdogTimer = null;
-                }
+                //if (_watchdogTimer != null)
+                //{
+                //    _watchdogTimer.Stop();
+                //    _watchdogTimer.Dispose();
+                //    _watchdogTimer = null;
+                //}
 
-                _updateTimer?.Dispose();
-                _updateTimer = null;
+                //_updateTimer?.Dispose();
+                //_updateTimer = null;
                 _latestUpdates.Clear();
                 txtsearch.Text = string.Empty;
                 // 3. Clean up DataGridView
@@ -3136,33 +2628,34 @@ namespace thecalcify
             }
         }
 
-        private void DisposeSignalRConnection()
-        {
-            try
-            {
-                if (connection != null)
-                {
-                    try
-                    {
-                        connection.StopAsync().Wait();
-                        connection.DisposeAsync().AsTask().Wait();
-                    }
-                    catch (Exception ex)
-                    {
-                        ApplicationLogger.LogException(ex);
-                    }
-                    finally
-                    {
-                        connection = null; // Crucial to reset connection
-                        _eventHandlersAttached = false;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                ApplicationLogger.LogException(ex);
-            }
-        }
+        //private void DisposeSignalRConnection()
+        //{
+        //    try
+        //    {
+        //        if (connection != null)
+        //        {
+        //            try
+        //            {
+        //                connection.StopAsync().Wait();
+        //                connection.DisposeAsync().AsTask().Wait();
+        //                isConnectionDisposed = true;
+        //            }
+        //            catch (Exception ex)
+        //            {
+        //                ApplicationLogger.LogException(ex);
+        //            }
+        //            finally
+        //            {
+        //                //connection = null; // Crucial to reset connection
+        //                //_eventHandlersAttached = false;
+        //            }
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        ApplicationLogger.LogException(ex);
+        //    }
+        //}
 
         private void CleanupDataGridView()
         {
@@ -3357,38 +2850,10 @@ namespace thecalcify
 
         private async Task StopBackgroundTasks()
         {
-            try
-            {
-                if (connection != null && !isConnectionDisposed)
-                {
-                    if (connection.State != HubConnectionState.Disconnected)
-                    {
-                        await connection.StopAsync(); // ✅ Only stop if not already disconnected
-                    }
-
-                    await connection.DisposeAsync(); // ✅ Dispose safely
-                    isConnectionDisposed = true;
-                }
-
-                if (signalRTimer != null)
-                {
-                    signalRTimer.Stop();
-                    signalRTimer.Dispose();
-                    signalRTimer = null;
-                }
-            }
-            catch (ObjectDisposedException)
-            {
-                // Already disposed, safe to ignore or log once
-                ApplicationLogger.Log("SignalR connection was already disposed.");
-            }
-            catch (Exception ex)
-            {
-                // Catch other unexpected issues
-                //Console.WriteLine("Error stopping background tasks: " + ex.Message);
-                ApplicationLogger.LogException(ex);
-            }
+            _cts?.Cancel();
+            await Task.Delay(50);
         }
+
 
         //private void NewsNotification_Click(object sender, EventArgs e)
         //{
@@ -3615,17 +3080,17 @@ namespace thecalcify
                     existingNews.Dispose();
                 }
 
-                EditableMarketWatchGrid editableMarketWatchGrid = EditableMarketWatchGrid.CurrentInstance;
-                if (editableMarketWatchGrid != null)
-                {
-                    if (connection.State != HubConnectionState.Disconnected)
-                    {
-                        await connection.StopAsync(); // ✅ Only stop if not already disconnected
-                    }
+                //EditableMarketWatchGrid editableMarketWatchGrid = EditableMarketWatchGrid.CurrentInstance;
+                //if (editableMarketWatchGrid != null)
+                //{
+                //    if (connection.State != HubConnectionState.Disconnected)
+                //    {
+                //        await connection.StopAsync(); // ✅ Only stop if not already disconnected
+                //    }
 
-                    await connection.DisposeAsync(); // ✅ Dispose safely
-                    isConnectionDisposed = true;
-                }
+                //    await connection.DisposeAsync(); // ✅ Dispose safely
+                //    isConnectionDisposed = true;
+                //}
 
 
                 // 2. Create new NewsControl
@@ -4156,6 +3621,7 @@ namespace thecalcify
                 .ConfigureLogging(logging =>
                 {
                     logging.AddConsole();
+                    logging.SetMinimumLevel(LogLevel.Critical);
                     logging.SetMinimumLevel(LogLevel.Error);
                 })
                 .Build();
@@ -4163,6 +3629,7 @@ namespace thecalcify
             userconnection.Reconnected += async (connectionId) =>
             {
                 await userconnection.InvokeAsync("client", username);
+                //await userconnection.InvokeAsync("ClientWithDevice", username, Common.UUIDExtractor());
             };
 
             userconnection.On<object>("ReceiveMessage", async (base64) =>
@@ -4269,8 +3736,57 @@ namespace thecalcify
                 }
             });
 
+            userconnection.On<string>("rateAlertNotification", (compressedBase64) =>
+            {
+                try
+                {
+                    // Base64 → byte[]
+                    byte[] compressedBytes = Convert.FromBase64String(compressedBase64);
+
+                    // GZip Decompress
+                    string decompressedJson = DecompressGzip(compressedBytes);
+
+                    //// Parse JSON
+                    var alertObj = JsonConvert.DeserializeObject<RateAlertNotificationDto>(decompressedJson);
+
+                    if (alertObj != null && alertObj.Data != null)
+                    {
+                        if (alertObj.Data.Flag.ToLower().Contains("pop"))
+                        {
+
+                            Common.ShowRateAlertWindowsToast(
+                                $"Rate Alert Triggered for {alertObj.Data.Symbol}",
+                                $"Your rate alert for {alertObj.Data.Symbol} On {AlertCreationPanel.ConvertTypeCodeToLabel(alertObj.Data.Type)} has been triggered at {alertObj.Data.Rate}"
+                            ); 
+                        }
+
+                        if(alertObj.Data.Flag.ToLower().Contains("status"))
+                        {
+                            if (this.InvokeRequired)
+                            {
+                                BeginInvoke(new Action(() =>
+                                {
+                                    savelabel.Visible = true;
+                                    savelabel.Text = $"Alert for {alertObj.Data.Symbol} On {AlertCreationPanel.ConvertTypeCodeToLabel(alertObj.Data.Type)} has been triggered at {alertObj.Data.Rate} At {DateTime.Now:G}";
+                                }));
+                            }
+                            else {                                 
+                                savelabel.Visible = true;
+                                savelabel.Text = $"Alert for {alertObj.Data.Symbol} On {AlertCreationPanel.ConvertTypeCodeToLabel(alertObj.Data.Type)} has been triggered at {alertObj.Data.Rate} At {DateTime.Now:G}";
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ApplicationLogger.Log("❌ Error processing rate alert: " + ex);
+                }
+            });
+
+
             await userconnection.StartAsync();
             await userconnection.InvokeAsync("client", username);
+            //await userconnection.InvokeAsync("ClientWithDevice", username, Common.UUIDExtractor());
 
             // Helper to marshal UI updates safely
             async Task InvokeOnUIThread(Func<Task> action)
@@ -4338,7 +3854,7 @@ namespace thecalcify
                 {
                     await InvokeOnUIThread(async () =>
                     {
-                        await StopBackgroundTasks();
+                         await StopBackgroundTasks();
 
                         UnsubscribeAllEvents();
 
@@ -4417,6 +3933,1466 @@ namespace thecalcify
                 }
             }
         }
+
+
+        private static string DecompressGzip(byte[] compressed)
+        {
+            using (var input = new MemoryStream(compressed))
+            using (var gzip = new GZipStream(input, CompressionMode.Decompress))
+            using (var output = new MemoryStream())
+            {
+                gzip.CopyTo(output);
+                return Encoding.UTF8.GetString(output.ToArray());
+            }
+        }
         #endregion
+
+        #region RTW
+
+        private void UiTimer_Tick(object sender, EventArgs e)
+        {
+            if (defaultGrid.IsDisposed)
+                return;
+
+            int count = 0;
+
+            foreach (var key in _latestTicks.Keys)
+            {
+                if (_latestTicks.TryRemove(key, out var dto))
+                {
+                    ApplyDtoToGridFast(dto);
+
+                    //ExcelNotifier.NotifyExcel(dto.i,dto)
+
+                    if (++count >= 200)  // limit
+                        break;
+                }
+            }
+        }
+
+        private async Task ConsumeTicks(CancellationToken token)
+        {
+            while (!token.IsCancellationRequested && !defaultGrid.IsDisposed)
+            {
+                try
+                {
+                    if (_queue.Read(0, out byte[] buffer))
+                    {
+                        TickBinary tick = TickBinary.FromBytes(buffer);
+
+                        // Convert to your UI DTO
+                        var dto = TickUIConverter.ToUiDto(tick);
+
+                        // Queue it for UI thread
+                        _latestTicks[dto.i] = dto;
+                    }
+                    else
+                    {
+                        await Task.Delay(1);
+                    }
+                }
+                catch { }
+            }
+        }
+
+        private void ApplyDtoToGridFast(MarketDataDto dto)
+        {
+            if (dto == null) return;
+
+            // ======================================
+            // 0️⃣ PREVENT CRASH DURING GRID REBUILD
+            // ======================================
+            if (_isGridBuilding) return;                     // grid is loading / clearing
+            if (defaultGrid.IsDisposed) return;
+            if (!defaultGrid.IsHandleCreated) return;
+            if (defaultGrid.Rows.Count == 0) return;
+
+            // ======================================
+            // 1️⃣ SAFE ROW INDEX FETCH
+            // ======================================
+            if (!symbolRowMap.TryGetValue(dto.i, out int rowIndex))
+                return; // symbol not yet added
+
+            // --- Critical: prevent out-of-range ---
+            if (rowIndex < 0 || rowIndex >= defaultGrid.Rows.Count)
+                return;
+
+            DataGridViewRow row;
+            try
+            {
+                row = defaultGrid.Rows[rowIndex];
+            }
+            catch
+            {
+                return; // Grid is refreshing → ROW INVALID
+            }
+
+            // ======================================
+            // 2️⃣ EXCEL NOTIFIER (is fast; keep as is)
+            // ======================================
+            LastTickStore.ExcelPublish(dto);
+
+            // ======================================
+            // 3️⃣ READ OLD VALUES (safe)
+            // ======================================
+            double oldBid = FastParse(row.Cells["Bid"].Value);
+            double oldAsk = FastParse(row.Cells["Ask"].Value);
+            double oldLTP = FastParse(row.Cells["LTP"].Value);
+            double oldChange = FastParse(row.Cells["Net Chng"].Value);
+
+            // ======================================
+            // 4️⃣ CELL UPDATES (safe)
+            // ======================================
+            UpdateIfChanged(row, "Bid", dto.b);
+            UpdateIfChanged(row, "Ask", dto.a);
+            UpdateIfChanged(row, "LTP", dto.ltp);
+
+            UpdateIfChanged(row, "High", dto.h);
+            UpdateIfChanged(row, "Low", dto.l);
+            UpdateIfChanged(row, "Open", dto.o);
+            UpdateIfChanged(row, "Close", dto.c);
+
+            UpdateIfChanged(row, "Net Chng", dto.d);
+            UpdateIfChanged(row, "ATP", dto.atp);
+
+            UpdateIfChanged(row, "Bid Size", dto.bq);
+            UpdateIfChanged(row, "Total Bid Size", dto.tbq);
+            UpdateIfChanged(row, "Ask Size", dto.sq);
+            UpdateIfChanged(row, "Total Ask Size", dto.tsq);
+
+            UpdateIfChanged(row, "Volume", dto.vt);
+            UpdateIfChanged(row, "Open Interest", dto.oi);
+            UpdateIfChanged(row, "Last Size", dto.ltq);
+
+            UpdateIfChanged(row, "Time", Common.TimeStampConvert(dto.t));
+
+            // ======================================
+            // 5️⃣ PRICE COLOR UPDATES (safe)
+            // ======================================
+            UpdateColorFast(row, "Bid", oldBid, FastParse(dto.b));
+            UpdateColorFast(row, "Ask", oldAsk, FastParse(dto.a));
+            UpdateColorFast(row, "LTP", oldLTP, FastParse(dto.ltp));
+            UpdateColorFast(row, "Net Chng", oldChange, FastParse(dto.d));
+
+            // ======================================
+            // 6️⃣ ARROW UPDATE (safe)
+            // ======================================
+            if (double.TryParse(dto.a, out var ask))
+                UpdateAskArrow(row, dto.i, ask);
+        }
+
+        private double FastParse(object val)
+        {
+            if (val == null) return 0;
+            double.TryParse(val.ToString(), out double r);
+            return r;
+        }
+
+        private void UpdateIfChanged(DataGridViewRow row, string col, string newVal)
+        {
+            var cell = row.Cells[col];
+            if (cell.Value?.ToString() != newVal)
+                cell.Value = newVal;  // only update if changed
+        }
+
+        private void UpdateColorFast(DataGridViewRow row, string col, double oldVal, double newVal)
+        {
+            if (oldVal == newVal) return;
+
+            var cell = row.Cells[col];
+
+            if (newVal > oldVal)
+                cell.Style.ForeColor = Color.Green;
+            else
+                cell.Style.ForeColor = Color.Red;
+        }
+
+        private void UpdateAskArrow(DataGridViewRow row, string symbol, double newAsk)
+        {
+            double prevAsk = 0;
+            bool havePrev = _prevAskMap.TryGetValue(symbol, out prevAsk);
+
+            if (havePrev)
+            {
+                if (newAsk > prevAsk)
+                {
+                    ApplyArrow(row.Cells["Name"], true);
+                    //row.Cells["i"].Style.ForeColor = Color.Green;
+                }
+                else if (newAsk < prevAsk)
+                {
+                    ApplyArrow(row.Cells["Name"], false);
+                    //row.Cells["i"].Style.ForeColor = Color.Red;
+                }
+            }
+
+            _prevAskMap[symbol] = newAsk;
+        }
+
+        private void ApplyArrow(DataGridViewCell nameCell, bool isUp)
+        {
+            string clean = (nameCell.Value?.ToString() ?? "")
+                .Replace(" ▲", "")
+                .Replace(" ▼", "")
+                .Trim();
+
+            if (isUp)
+            {
+                nameCell.Value = clean + " ▲";
+                nameCell.Style.ForeColor = Color.Green;
+            }
+            else
+            {
+                nameCell.Value = clean + " ▼";
+                nameCell.Style.ForeColor = Color.Red;
+            }
+        }
+
+        private void UpdateRtwConfig()
+        {
+            try
+            {
+                ApplicationLogger.Log("[RTW] Updating config file by thecalcify at " + RtwConfigPath);
+
+                Directory.CreateDirectory(Path.GetDirectoryName(RtwConfigPath));
+                File.WriteAllText(RtwConfigPath, JsonConvert.SerializeObject(symbolMaster));
+
+                ApplicationLogger.Log("[RTW] Config updated successfully by thecalcify for " + symbolMaster.Count + " symbols.");
+
+                // Restart service so RTW reloads symbols
+                RestartRTWService();
+            }
+            catch (Exception ex)
+            {
+                ApplicationLogger.LogException(ex);
+            }
+        }
+
+        private void RestartRTWService()
+        {
+            try
+            {
+                string serviceName = "thecalcifyRTW";
+
+                using (ServiceController sc = new ServiceController(serviceName))
+                {
+                    if (sc.Status == ServiceControllerStatus.Running)
+                    {
+                        sc.Stop();
+                        sc.WaitForStatus(ServiceControllerStatus.Stopped, TimeSpan.FromSeconds(10));
+                    }
+
+                    sc.Start();
+                    sc.WaitForStatus(ServiceControllerStatus.Running, TimeSpan.FromSeconds(10));
+
+                    ApplicationLogger.Log("[RTW] Service restarted successfully by thecalcify.");
+                }
+            }
+            catch (Exception ex)
+            {
+                ApplicationLogger.LogException(ex);
+            }
+        }
+
+        private void startRTWService()
+        {
+            try
+            {
+                string serviceName = "thecalcifyRTW";
+
+                using (ServiceController sc = new ServiceController(serviceName))
+                {
+                    if (sc.Status == ServiceControllerStatus.Stopped || sc.Status == ServiceControllerStatus.Paused)
+                    {
+                        sc.Start();
+                        sc.WaitForStatus(ServiceControllerStatus.Running, TimeSpan.FromSeconds(10));
+                    }
+
+                    ApplicationLogger.Log("[RTW] Service started successfully by thecalcify.");
+                }
+            }
+            catch (Exception ex)
+            {
+                ApplicationLogger.LogException(ex);
+            }
+        }
+
+
+        #endregion
+
+        //#region Old Methods
+
+
+        //private void OnSharedMemoryMessage(byte[] data)
+        //{
+        //    try
+        //    {
+        //        if (data == null || data.Length < 4)
+        //            return;
+
+        //        // validate gzip
+        //        if (data[0] != 0x1F || data[1] != 0x8B)
+        //            return;
+
+        //        var json = DecompressGzip(data);
+        //        if (string.IsNullOrWhiteSpace(json))
+        //            return;
+
+        //        var dto = JsonConvert.DeserializeObject<MarketDataDto>(json);
+        //        if (dto == null || string.IsNullOrEmpty(dto.i))
+        //            return;
+
+        //        // convert timestamp
+        //        if (!long.TryParse(dto.t, out long ts))
+        //            return;
+
+        //        _latestUpdates.AddOrUpdate(dto.i, dto, (sym, oldVal) =>
+        //        {
+        //            long oldTs = 0;
+        //            long.TryParse(oldVal.t, out oldTs);
+
+        //            if (oldTs >= ts)
+        //                return oldVal;   // keep newer
+
+        //            return dto;          // replace with latest
+        //        });
+        //    }
+        //    catch
+        //    {
+        //        // swallow bad packets
+        //    }
+        //}
+
+
+        //private void UpdateTimer_Tick(object sender, EventArgs e)
+        //{
+        //    try
+        //    {
+        //        if (_latestUpdates.IsEmpty) return;
+
+        //        var updates = _latestUpdates.Values.ToList();
+        //        _latestUpdates.Clear(); // clear for next batch
+
+
+        //        if (updates.Count == 0) return;
+
+        //        // If queue has too many records, keep only the newest 1000
+        //        if (updates.Count > 1000)
+        //        {
+        //            // Sort by Time (assuming MarketDataDto has a Time property)
+        //            updates = updates
+        //                .OrderByDescending(x => x.t)  // Newest first
+        //                .Take(1000)                     // Keep only 1000 newest
+        //                .OrderBy(x => x.t)           // Restore original order if needed
+        //                .ToList();
+        //        }
+
+        //        try
+        //        {
+        //            updates = updates.Where(x => long.TryParse(x.t, out _)).OrderByDescending(x => DateTimeOffset.FromUnixTimeMilliseconds(long.Parse(x.t)).LocalDateTime).ToList();
+        //        }
+        //        catch (Exception)
+        //        {
+        //        }
+
+        //        if (updates != null)
+        //        {
+        //            SafeInvoke(async () => await ApplyBatchUpdatesParallelAsync(updates));
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        ApplicationLogger.LogException(ex);
+        //    }
+        //}
+
+        //private async Task StartChannelConsumerAsync(CancellationToken token)
+        //{
+        //    var reader = _marketChannel.Reader;
+        //    var batch = new List<MarketDataDto>(2000);
+        //    var sw = Stopwatch.StartNew();
+
+        //    while (await reader.WaitToReadAsync(token))
+        //    {
+        //        while (reader.TryRead(out var data))
+        //        {
+        //            batch.Add(data);
+
+        //            // process every ~100ms or 1000 items
+        //            if (batch.Count >= 1000 || sw.ElapsedMilliseconds >= 100)
+        //            {
+        //                await ProcessBatchAsync(batch);
+        //                batch.Clear();
+        //                sw.Restart();
+        //            }
+        //        }
+        //    }
+        //}
+
+        //private async Task ProcessBatchAsync(List<MarketDataDto> batch)
+        //{
+        //    // Deduplicate per symbol (keep latest)
+        //    var latest = batch
+        //        .GroupBy(x => x.i)
+        //        .Select(g => g.Last())
+        //        .ToList();
+
+        //    // Parallel non-UI (Excel) work
+        //    var tasks = latest.Select(x => Task.Run(() =>
+        //    {
+        //        var dict = CreateFieldDictionary(x);
+        //        ExcelNotifier.NotifyExcel(x.i, dict);
+        //    }));
+
+        //    await Task.WhenAll(tasks);
+
+        //    // Now batch update UI once
+        //    if (defaultGrid.IsHandleCreated)
+        //    {
+        //        defaultGrid.BeginInvoke(new Action(() =>
+        //        {
+        //            defaultGrid.SuspendLayout();
+        //            try
+        //            {
+        //                foreach (var data in latest)
+        //                {
+        //                    if (symbolRowMap.TryGetValue(data.i, out int row))
+        //                        UpdateRow(defaultGrid.Rows[row], data);
+        //                }
+        //            }
+        //            finally
+        //            {
+        //                defaultGrid.ResumeLayout();
+        //            }
+        //        }));
+        //    }
+        //}
+
+
+        ///// <summary>
+        ///// SharedMemory consumer callback — parse & write the latest snapshot for the symbol only.
+        ///// This method must be as cheap as possible (no UI work).
+        ///// </summary>
+        //private void OnSharedMemoryMessage(byte[] data)
+        //{
+        //    if (data == null || data.Length == 0)
+        //        return;
+
+        //    if (data.Length < 4 || data[0] != 0x1F || data[1] != 0x8B)
+        //        return;   // just ignore quietly
+
+
+        //    // Discard clearly invalid or giant blocks
+        //    if (data.Length > 512_000)
+        //    {
+        //        Trace.WriteLine($"Discarded corrupt large message ({data.Length} bytes)");
+        //        return;
+        //    }
+
+        //    // Validate gzip header quickly
+        //    if (data.Length < 4 || data[0] != 0x1F || data[1] != 0x8B)
+        //    {
+        //        System.Diagnostics.Trace.WriteLine($"Skipped non-gzip block ({data.Length} bytes)");
+        //        return;
+        //    }
+
+        //    try
+        //    {
+        //        var json = DecompressGzip(data);
+        //        if (string.IsNullOrWhiteSpace(json))
+        //            return;
+
+        //        var shortDto = JsonConvert.DeserializeObject<MarketDataDto>(json);
+        //        if (shortDto == null || string.IsNullOrEmpty(shortDto.i))
+        //            return;
+
+        //        // Convert string-based DTO to typed long-values DTO (cheap)
+        //        var tick = new MarketDataDto
+        //        {
+        //            i = shortDto.i,
+        //            b = shortDto.b,
+        //            a = shortDto.a,
+        //            ltp = shortDto.ltp,
+        //            h = shortDto.h,
+        //            l = shortDto.l,
+        //            t = shortDto.t,
+        //            o = shortDto.o,
+        //            c = shortDto.c,
+        //            d = shortDto.d,
+        //            v = shortDto.v,
+        //            atp = shortDto.atp,
+        //            bq = shortDto.bq,
+        //            tbq = shortDto.tbq,
+        //            sq = shortDto.sq,
+        //            tsq = shortDto.tsq,
+        //            vt = shortDto.vt,
+        //            oi = shortDto.oi,
+        //            ltq = shortDto.ltq
+
+        //        };
+
+        //        // Overwrite latest snapshot for the symbol — lock-free and cheap.
+        //        _latestUpdates.AddOrUpdate(tick.i, tick, (key, existing) =>
+        //        {
+        //            // Keep existing object identity? We return a fresh object (tick) so UI sync will copy values.
+        //            return tick;
+        //        });
+        //    }
+        //    catch (InvalidDataException ide)
+        //    {
+        //        System.Diagnostics.Trace.TraceWarning($"Corrupt gzip block ({data.Length} bytes): {ide.Message}");
+        //    }
+        //    catch (JsonReaderException jre)
+        //    {
+        //        System.Diagnostics.Trace.TraceWarning($"Bad JSON skipped: {jre.Message}");
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        System.Diagnostics.Trace.TraceError($"OnSharedMemoryMessage fatal error: {ex}");
+        //    }
+        //}
+
+        //private void StartWatchdogTimer()
+        //{
+        //    if (_watchdogTimer != null)
+        //        return;
+
+        //    int _connectingRetryCount = 0;
+        //    int MaxConnectingRetries = 3;
+
+        //    _watchdogTimer = new System.Timers.Timer(10000); // check every 5 seconds
+        //    _watchdogTimer.Elapsed += async (s, e) =>
+        //    {
+        //        try
+        //        {
+        //            if (connection == null)
+        //            { return; }
+
+        //            if (connection.State == HubConnectionState.Connecting)
+        //            {
+        //                _connectingRetryCount++;
+        //                ApplicationLogger.Log($"SignalR still connecting... Attempt {_connectingRetryCount}");
+
+        //                if (_connectingRetryCount >= MaxConnectingRetries)
+        //                {
+        //                    ApplicationLogger.Log("SignalR stuck in connecting state. Forcing hard reconnect.");
+        //                    connection = null;
+        //                    //_eventHandlersAttached = false;
+
+        //                    //SignalRTimer();
+        //                    await EnsureSignalRConnectedAndSubscribedAsync();
+        //                    _connectingRetryCount = 0;
+        //                }
+
+        //                return;
+        //            }
+
+        //            var secondsSinceLastMessage = (DateTime.UtcNow - _lastExcelRateTime).TotalSeconds;
+
+        //            if (secondsSinceLastMessage > 30) // 💀 No data in 30 seconds
+        //            {
+        //                ApplicationLogger.Log("No SignalR data in 30s — forcing reconnect.");
+
+        //                connection = null;
+        //                //_eventHandlersAttached = false;
+
+        //                //SignalRTimer();
+        //                await EnsureSignalRConnectedAndSubscribedAsync();
+        //            }
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            ApplicationLogger.LogException(ex);
+        //        }
+        //    };
+
+        //    _watchdogTimer.AutoReset = true;
+        //    _watchdogTimer.Start();
+        //}
+
+        //private void SetupUpdateTimer()
+        //{
+        //    try
+        //    {
+        //        // Purana timer dispose karo
+        //        if (_updateTimer != null)
+        //        {
+        //            _updateTimer.Dispose();
+        //            _updateTimer = null;
+        //        }
+
+        //        // Background timer setup (100ms interval)
+        //        _updateTimer = new System.Threading.Timer(
+        //            callback: state =>
+        //            {
+        //                try
+        //                {
+        //                    UpdateTimer_Tick(null, EventArgs.Empty);
+        //                }
+        //                catch (Exception ex)
+        //                {
+        //                    ApplicationLogger.LogException(ex);
+        //                }
+        //            },
+        //            state: null,
+        //            dueTime: 0,        // start immediately
+        //            period: 100        // repeat every 100ms
+        //        );
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        ApplicationLogger.LogException(ex);
+        //    }
+        //}
+
+        //private void OnExcelRateReceived(string base64)
+        //{
+        //    try
+        //    {
+        //        _lastExcelRateTime = DateTime.UtcNow; // ⏱️ Update timestamp
+
+        //        if (!string.IsNullOrEmpty(base64))
+        //        {
+
+        //            byte[] bytes = Convert.FromBase64String(base64);
+        //            string json = DecompressGzip(bytes);
+        //            var data = JsonConvert.DeserializeObject<MarketDataDto>(json, _jsonSettings);
+
+        //            if (data == null || string.IsNullOrEmpty(data.i))
+        //                return;
+
+        //            _latestUpdates[data.i] = data; // replace latest update for each symbol 
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        ApplicationLogger.LogException(ex);
+        //    }
+        //}
+
+        //public async Task SignalREvent()
+        //{
+        //    try
+        //    {
+        //        if (connection == null)
+        //        {
+        //            connection = BuildConnection();
+
+        //            //Console.WriteLine($"Connection Info: {connection}");
+
+        //            // Log the connection state
+        //            //Console.WriteLine($"Connection State: {connection.State}");
+
+        //            // Log the connection string (URL)
+        //            //Console.WriteLine($"Connection URL: {connection.ConnectionId}");
+
+
+        //            //if (!_eventHandlersAttached)
+        //            //{
+        //            // Attach event handlers only once
+        //            connection.On<string>("excelRate", base64 =>
+        //            {
+        //                try
+        //                {
+        //                    if (string.IsNullOrEmpty(base64)) return;
+
+        //                    // Convert string → bytes
+        //                    byte[] bytes = Convert.FromBase64String(base64);
+
+        //                    // Push to shared memory queue (non-blocking)
+        //                    _producer.Enqueue(bytes);
+        //                }
+        //                catch { }
+        //            });
+
+
+        //            //connection.Closed += async (error) =>
+        //            //{
+        //            //    ApplicationLogger.Log("Connection closed");
+
+        //            //    await Task.Delay(2000); // backoff instead of random
+        //            //    await TryReconnectAsync(); // safe reconnect
+
+        //            //};
+
+        //            //connection.Reconnected += async (connectionId) =>
+        //            //{
+        //            //    ApplicationLogger.Log("Reconnected to SignalR hub");
+        //            //    try
+        //            //    {
+        //            //        if (selectedSymbols.Count > 0)
+        //            //            identifiers = new List<string>(selectedSymbols);
+
+        //            //        using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5)))
+        //            //        {
+        //            //            await connection.InvokeAsync("SubscribeSymbols", symbolMaster, cts.Token);
+        //            //        }
+        //            //        ApplicationLogger.Log("Resubscribed after reconnect.");
+        //            //    }
+        //            //    catch (Exception ex) when (ex is TaskCanceledException || ex is OperationCanceledException)
+        //            //    {
+        //            //        ApplicationLogger.Log("SignalR Reconnecting/subscribe timeout/canceled.");
+
+        //            //        if (savelabel.InvokeRequired)
+        //            //        {
+        //            //            savelabel.Invoke(new Action(() =>
+        //            //            {
+        //            //                savelabel.Visible = true;
+        //            //                savelabel.Text = "Client is offline, switch network.";
+        //            //            }));
+        //            //        }
+        //            //        else
+        //            //        {
+        //            //            savelabel.Visible = true;
+        //            //            savelabel.Text = "Client is offline, switch network.";
+        //            //        }
+        //            //        connection = null;
+        //            //        _eventHandlersAttached = false;
+        //            //    }
+        //            //    catch (Exception ex)
+        //            //    {
+        //            //        ApplicationLogger.LogException(ex);
+        //            //    }
+
+        //            //};
+
+        //            //_eventHandlersAttached = true;
+        //        }
+        //        //}
+
+        //        if (connection.State == HubConnectionState.Disconnected)
+        //            await connection.StartAsync().ConfigureAwait(false);
+
+        //        if (connection.State == HubConnectionState.Connected)
+        //        {
+
+
+        //            // Log the connection string (URL)
+        //            //Console.WriteLine($"Connection URL: {connection.ConnectionId}");
+
+        //            if (symbolMaster == null || symbolMaster.Count == 0)
+        //            {
+        //                //Console.WriteLine("symbolmaster is null/empty");
+        //                ApplicationLogger.Log("Symbol list is empty, cannot subscribe.");
+        //                connection = null;
+        //                //_eventHandlersAttached = false;
+        //                _lastExcelRateTime = DateTime.MinValue;
+        //                return;
+        //            }
+
+        //            try
+        //            {
+        //                //Console.WriteLine($"Connection Time Symbols Count is {symbolMaster.Count}");
+        //                await connection.InvokeAsync("SubscribeSymbols", symbolMaster).ConfigureAwait(false);
+
+        //                if (savelabel.InvokeRequired)
+        //                {
+        //                    savelabel.Invoke(new Action(() =>
+        //                    {
+        //                        savelabel.Visible = false;
+        //                        savelabel.Text = string.Empty;
+        //                    }));
+        //                }
+        //                else
+        //                {
+        //                    savelabel.Visible = false;
+        //                    savelabel.Text = string.Empty;
+        //                }
+
+        //                SetupUpdateTimer();
+        //                StartWatchdogTimer();
+        //                //_cancellationTokenSource?.Cancel();
+        //                //_cancellationTokenSource = new CancellationTokenSource();
+        //                //_ = StartChannelConsumerAsync(_cancellationTokenSource.Token);
+        //            }
+        //            catch (Exception ex) when (ex is TaskCanceledException || ex is OperationCanceledException)
+        //            {
+        //                ApplicationLogger.Log("SignalR subscribe timeout/canceled.");
+
+        //                if (savelabel.InvokeRequired)
+        //                {
+        //                    savelabel.Invoke(new Action(() =>
+        //                    {
+        //                        savelabel.Visible = true;
+        //                        savelabel.Text = "Client is offline, switch network.";
+        //                    }));
+        //                }
+        //                else
+        //                {
+        //                    savelabel.Visible = true;
+        //                    savelabel.Text = "Client is offline, switch network.";
+        //                }
+        //                connection = null;
+        //                //_eventHandlersAttached = false;
+        //            }
+        //        }
+        //    }
+        //    catch (Exception ex) when (ex is TaskCanceledException || ex is OperationCanceledException)
+        //    {
+        //        ApplicationLogger.Log("SignalR subscribe timeout/canceled.");
+
+        //        if (savelabel.InvokeRequired)
+        //        {
+        //            savelabel.Invoke(new Action(() =>
+        //            {
+        //                savelabel.Visible = true;
+        //                savelabel.Text = "Client is offline, switch network.";
+        //            }));
+        //        }
+        //        else
+        //        {
+        //            savelabel.Visible = true;
+        //            savelabel.Text = "Client is offline, switch network.";
+        //        }
+        //        connection = null;
+        //        //_eventHandlersAttached = false;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        ApplicationLogger.LogException(ex);
+        //    }
+        //    //Console.WriteLine($"End At {DateTime.Now}");
+        //}
+
+
+        //private async Task TryReconnectAsync()
+        //{
+        //    if (_isReconnectInProgress) return; // prevent parallel reconnects
+        //    if (connection?.State != HubConnectionState.Disconnected) return;
+
+        //    try
+        //    {
+        //        _isReconnectInProgress = true;
+        //        await SignalREvent().ConfigureAwait(false);
+        //    }
+        //    catch (Exception ex) when (
+        //        ex is OperationCanceledException ||
+        //        ex is ObjectDisposedException ||
+        //        ex is TargetInvocationException ||
+        //        ex is InvalidOperationException)
+        //    {
+        //        ApplicationLogger.LogException(ex);
+
+        //        // 🔄 Instead of immediate retry → small backoff
+        //        await Task.Delay(2000);
+        //        await SignalREvent().ConfigureAwait(false);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        // Unexpected errors
+        //        ApplicationLogger.LogException(ex);
+        //    }
+        //    finally
+        //    {
+        //        _isReconnectInProgress = false;
+        //    }
+        //}
+
+        //public void SignalRTimer()
+        //{
+        //    if (signalRTimer != null) return; // prevent multiple timers
+
+        //    signalRTimer = new System.Windows.Forms.Timer { Interval = 10_000 };
+        //    signalRTimer.Tick += async (s, e) =>
+        //    {
+        //        try
+        //        {
+        //            if (!isReconnectTimerRunning && connection?.State == HubConnectionState.Disconnected)
+        //            {
+        //                isReconnectTimerRunning = true;
+        //                await TryReconnectAsync().ConfigureAwait(false);
+        //                isReconnectTimerRunning = false;
+        //            }
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            ApplicationLogger.LogException(ex);
+        //            isReconnectTimerRunning = false;
+        //        }
+        //    };
+        //    signalRTimer.Start();
+        //}
+        //#endregion
+
+        //#region SignalR Methods
+
+        //private HubConnection BuildConnection()
+        //{
+        //    _signalREventsAttached = false;
+
+        //    return new HubConnectionBuilder()
+        //        .WithUrl($"{APIUrl.LocalMarketURL}")
+        //        //.WithUrl($"{APIPath}excel?user={username}&auth=Starline@1008&type=Desktop")
+        //        .WithAutomaticReconnect(new[]
+        //        {
+        //    TimeSpan.Zero,
+        //    TimeSpan.FromSeconds(2),
+        //    TimeSpan.FromSeconds(5),
+        //    TimeSpan.FromSeconds(10)
+        //        })
+        //        .AddNewtonsoftJsonProtocol(options =>
+        //        {
+        //            options.PayloadSerializerSettings = new JsonSerializerSettings
+        //            {
+        //                NullValueHandling = NullValueHandling.Ignore,
+        //                MissingMemberHandling = MissingMemberHandling.Ignore,
+        //                Formatting = Formatting.None
+        //            };
+        //        })
+        //        .ConfigureLogging(logging =>
+        //        {
+        //            logging.AddConsole();
+        //        })
+        //        .Build();
+
+
+        //}
+
+
+        //private void AttachSignalREventHandlers()
+        //{
+        //    if (connection == null || _signalREventsAttached)
+        //        return;
+
+        //    // 🔔 Market data stream
+        //    connection.On<string>("excelRate", OnExcelRateReceived);
+        //    //connection.On<MarketTick>("tick", OnLocalTickReceived);
+
+        //    // 🔌 Connection lifecycle
+        //    connection.Closed += OnConnectionClosed;
+        //    connection.Reconnecting += OnConnectionReconnecting;
+        //    connection.Reconnected += OnConnectionReconnected;
+
+        //    _signalREventsAttached = true;
+        //}
+
+
+        //private void OnExcelRateReceived(string base64)
+        //{
+        //    try
+        //    {
+        //        if (string.IsNullOrEmpty(base64) || _producer == null)
+        //            return;
+
+        //        var bytes = Convert.FromBase64String(base64);
+        //        _producer.Enqueue(bytes);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        ApplicationLogger.LogException(ex);
+        //    }
+        //}
+
+
+        //private Task OnConnectionClosed(Exception error)
+        //{
+        //    ApplicationLogger.Log($"[SignalR] Closed: {error?.Message}");
+        //    _subscribedForCurrentSymbols = false;
+        //    _lastSubscribedKey = string.Empty;
+
+        //    // Fire-and-forget reconnection with throttle
+        //    _ = SafeReconnectAsync("Closed", error);
+        //    return Task.CompletedTask;
+        //}
+
+        //private Task OnConnectionReconnecting(Exception error)
+        //{
+        //    ApplicationLogger.Log($"[SignalR] Reconnecting: {error?.Message}");
+        //    return Task.CompletedTask;
+        //}
+
+        //private Task OnConnectionReconnected(string newConnectionId)
+        //{
+        //    ApplicationLogger.Log($"[SignalR] Reconnected. New Id: {newConnectionId}");
+
+        //    // After reconnect we need to re-subscribe
+        //    _subscribedForCurrentSymbols = false;
+        //    _lastSubscribedKey = string.Empty;
+
+        //    _ = SafeReconnectAsync("Reconnected");
+        //    return Task.CompletedTask;
+        //}
+
+        //private async Task SafeReconnectAsync(string reason, Exception error = null)
+        //{
+        //    try
+        //    {
+        //        lock (_reconnectLock)
+        //        {
+        //            var now = DateTime.UtcNow;
+        //            if (now - _lastReconnectAttempt < _reconnectThrottle)
+        //            {
+        //                ApplicationLogger.Log($"[SignalR] Reconnect skipped (throttle). Reason: {reason}");
+        //                return;
+        //            }
+
+        //            _lastReconnectAttempt = now;
+        //        }
+
+        //        ApplicationLogger.Log($"[SignalR] Reconnect triggered ({reason}). Error: {error?.Message}");
+        //        //await EnsureSignalRConnectedAndSubscribedAsync();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        ApplicationLogger.LogException(ex);
+        //    }
+        //}
+
+
+        ////private async Task EnsureSignalRConnectedAndSubscribedAsync()
+        ////{
+        ////    await _signalRLock.WaitAsync();   // 🔒 TAKE LOCK
+
+        ////    try
+        ////    {
+        ////        // 1️⃣ Create connection if needed
+        ////        if (connection == null || isConnectionDisposed)
+        ////        {
+        ////            connection = BuildConnection();
+        ////            AttachSignalREventHandlers(); // attach exactly once for this instance
+        ////        }
+        ////        else
+        ////        {
+        ////            // if we somehow built it earlier but not attached yet
+        ////            AttachSignalREventHandlers();
+        ////        }
+
+        ////        // 2️⃣ Ensure started
+        ////        if (connection.State == HubConnectionState.Disconnected)
+        ////        {
+        ////            ApplicationLogger.Log("[SignalR] Starting connection...");
+        ////            await connection.StartAsync();
+        ////            ApplicationLogger.Log("[SignalR] Connection started.");
+        ////        }
+        ////        else if (connection.State == HubConnectionState.Connecting ||
+        ////                 connection.State == HubConnectionState.Reconnecting)
+        ////        {
+        ////            // Let the ongoing attempt finish
+        ////            ApplicationLogger.Log("[SignalR] Already connecting/reconnecting, skipping.");
+        ////            return;
+        ////        }
+
+        ////        // 3️⃣ (Re)subscribe for current symbolMaster
+        ////        if (connection.State == HubConnectionState.Connected &&
+        ////            symbolMaster != null &&
+        ////            symbolMaster.Count > 0)
+        ////        {
+        ////            // create key representing current subscription set
+        ////            var key = string.Join("|", symbolMaster.OrderBy(x => x, StringComparer.OrdinalIgnoreCase));
+
+        ////            // if we never subscribed OR the symbol set changed → resubscribe
+        ////            if (!_subscribedForCurrentSymbols ||
+        ////                !string.Equals(key, _lastSubscribedKey, StringComparison.Ordinal))
+        ////            {
+        ////                ApplicationLogger.Log($"[SignalR] Subscribing {symbolMaster.Count} symbols...");
+        ////                await connection.InvokeAsync("SubscribeSymbols", symbolMaster);
+        ////                _subscribedForCurrentSymbols = true;
+        ////                _lastSubscribedKey = key;
+        ////                ApplicationLogger.Log("[SignalR] Subscription successful.");
+        ////            }
+        ////        }
+        ////    }
+        ////    catch (Exception ex)
+        ////    {
+        ////        ApplicationLogger.LogException(ex);
+        ////    }
+        ////    finally
+        ////    {
+        ////        _signalRLock.Release();       // 🔓 RELEASE LOCK
+        ////    }
+        ////}
+
+        //private MarketDataDto ParseDto(byte[] raw)
+        //{
+        //    if (raw == null) return null;
+
+        //    using (var ms = new MemoryStream(raw))
+        //    using (var gz = new GZipStream(ms, CompressionMode.Decompress))
+        //    using (var sr = new StreamReader(gz, Encoding.UTF8))
+        //    using (var reader = new JsonTextReader(sr))
+        //    {
+        //        return _dtoSerializer.Deserialize<MarketDataDto>(reader);
+        //    }
+        //}
+
+
+        //// ========================================
+        //// 🔥 Optimized Batch → Grid Update
+        //// ========================================
+
+        //private async Task ApplyBatchUpdatesParallelAsync(List<MarketDataDto> updates)
+        //{
+        //    if (updates == null || updates.Count == 0)
+        //        return;
+
+        //    // 🔥 Excel update (SUPER FAST, no Task.Run)
+        //    foreach (var dto in updates)
+        //    {
+        //        if (!long.TryParse(dto.t, out long ts))
+        //            continue;
+
+        //        if (!_excelLastSent.TryGetValue(dto.i, out long lastTs) || lastTs < ts)
+        //        {
+        //            var dict = CreateFieldDictionary(dto);
+        //            if (dict != null)
+        //                ExcelNotifier.NotifyExcel(dto.i, dict);
+
+        //            _excelLastSent[dto.i] = ts;
+        //        }
+        //    }
+
+        //    // ========= UI GRID UPDATE (SINGLE BATCH) ============
+
+        //    if (!defaultGrid.IsHandleCreated)
+        //        return;
+
+        //    defaultGrid.BeginInvoke(new Action(() =>
+        //    {
+        //        try
+        //        {
+        //            defaultGrid.SuspendLayout();
+
+        //            foreach (var dto in updates)
+        //            {
+        //                if (!long.TryParse(dto.t, out long ts))
+        //                    continue;
+
+        //                if (!symbolRowMap.TryGetValue(dto.i, out int rowIndex))
+        //                    continue;
+
+        //                if (_rowLastUpdate.TryGetValue(dto.i, out long oldTs) && oldTs >= ts)
+        //                    continue;
+
+        //                _rowLastUpdate[dto.i] = ts;
+
+        //                UpdateRow_Optimized(defaultGrid.Rows[rowIndex], dto);
+        //            }
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            ApplicationLogger.LogException(ex);
+        //        }
+        //        finally
+        //        {
+        //            defaultGrid.ResumeLayout();
+        //        }
+        //    }));
+        //}
+
+        ////private async Task ApplyBatchUpdatesParallelAsync(List<MarketDataDto> updates)
+        ////{
+        ////    if (updates == null || updates.Count == 0)
+        ////        return;
+
+        ////    // ========= NON-UI WORK (PARALLEL EXCEL) ============
+        ////    var excelTasks = updates.Select(dto => Task.Run(() =>
+        ////    {
+        ////        if (!long.TryParse(dto.t, out long ts))
+        ////            return;
+
+        ////        if (!_excelLastSent.TryGetValue(dto.i, out long lastTs) || lastTs < ts)
+        ////        {
+        ////            var dict = CreateFieldDictionary(dto);
+        ////            if (dict != null && dict.Count > 0)
+        ////            {
+        ////                ExcelNotifier.NotifyExcel(dto.i, dict);
+        ////            }
+        ////            _excelLastSent[dto.i] = ts;
+        ////        }
+        ////    })).ToList();
+
+        ////    await Task.WhenAll(excelTasks);
+
+        ////    // ========= UI GRID UPDATE (SINGLE BATCH) ============
+        ////    if (!defaultGrid.IsHandleCreated)
+        ////        return;
+
+        ////    defaultGrid.BeginInvoke(new Action(() =>
+        ////    {
+        ////        try
+        ////        {
+        ////            defaultGrid.SuspendLayout();
+
+        ////            foreach (var dto in updates)
+        ////            {
+        ////                // Convert timestamp only once (fixes your errors)
+        ////                if (!long.TryParse(dto.t, out long ts))
+        ////                    continue;
+
+        ////                if (!symbolRowMap.TryGetValue(dto.i, out int rowIndex))
+        ////                    continue;
+
+        ////                // Skip outdated ticks
+        ////                if (_rowLastUpdate.TryGetValue(dto.i, out long oldTs) && oldTs >= ts)
+        ////                    continue;
+
+        ////                _rowLastUpdate[dto.i] = ts;
+
+        ////                // Optimized row update
+        ////                UpdateRow_Optimized(defaultGrid.Rows[rowIndex], dto);
+        ////            }
+        ////        }
+        ////        catch (Exception ex)
+        ////        {
+        ////            ApplicationLogger.LogException(ex);
+        ////        }
+        ////        finally
+        ////        {
+        ////            defaultGrid.ResumeLayout();
+        ////        }
+        ////    }));
+        ////}
+
+        //private static Dictionary<string, object> CreateFieldDictionary(MarketDataDto data)
+        //{
+        //    try
+        //    {
+        //        return new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
+        //        {
+        //            ["Name"] = data.i,
+        //            ["Bid"] = data.b,
+        //            ["Ask"] = data.a,
+        //            ["LTP"] = data.ltp,
+        //            ["High"] = data.h,
+        //            ["Low"] = data.l,
+        //            ["Open"] = data.o,
+        //            ["Close"] = data.c,
+        //            ["Net Chng"] = data.d,
+        //            ["V"] = data.v,
+        //            ["ATP"] = data.atp,
+        //            ["Bid Size"] = data.bq,
+        //            ["Total Bid Size"] = data.tbq,
+        //            ["Ask Size"] = data.sq,
+        //            ["Total Ask Size"] = data.tsq,
+        //            ["Volume"] = data.vt,
+        //            ["Open Interest"] = data.oi,
+        //            ["Last Size"] = data.ltq,
+        //            ["Time"] = Common.TimeStampConvert(data.t)
+        //        };
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        ApplicationLogger.LogException(ex);
+        //        return new Dictionary<string, object>();
+        //    }
+        //}
+
+        //// ========================================
+        //// 🔥 Much Faster Row Updater
+        //// ========================================
+        //private void UpdateRow_Optimized(DataGridViewRow row, MarketDataDto data)
+        //{
+        //    try
+        //    {
+        //        string symbol = data.i;
+
+        //        // ========== Capture previous values ==========
+        //        var previous = new Dictionary<string, double>();
+        //        foreach (var col in numericColumns)
+        //        {
+        //            if (!defaultGrid.Columns.Contains(col)) continue;
+
+        //            string val = row.Cells[col].Value?.ToString();
+        //            if (double.TryParse(val, out double d))
+        //                previous[col] = d;
+        //        }
+
+        //        // ======== Update all numeric/string cells ========
+        //        SetCellValueFast(row, "Bid", data.b);
+        //        SetCellValueFast(row, "Ask", data.a);
+        //        SetCellValueFast(row, "LTP", data.ltp);
+        //        SetCellValueFast(row, "High", data.h);
+        //        SetCellValueFast(row, "Low", data.l);
+        //        SetCellValueFast(row, "Open", data.o);
+        //        SetCellValueFast(row, "Close", data.c);
+        //        SetCellValueFast(row, "Net Chng", data.d);
+        //        SetCellValueFast(row, "V", data.v);
+        //        SetCellValueFast(row, "ATP", data.atp);
+        //        SetCellValueFast(row, "Bid Size", data.bq);
+        //        SetCellValueFast(row, "Total Bid Size", data.tbq);
+        //        SetCellValueFast(row, "Ask Size", data.sq);
+        //        SetCellValueFast(row, "Total Ask Size", data.tsq);
+        //        SetCellValueFast(row, "Volume", data.vt);
+        //        SetCellValueFast(row, "Open Interest", data.oi);
+        //        SetCellValueFast(row, "Last Size", data.ltq);
+        //        SetCellValueFast(row, "Time", Common.TimeStampConvert(data.t));
+
+        //        // ========== Name Column ==========
+        //        var nameCell = row.Cells["Name"];
+        //        if ((nameCell.Value?.ToString() ?? "N/A") == "N/A")
+        //            nameCell.Value = pastRateTickDTO?.FirstOrDefault(x => x.i == symbol)?.n ?? "--";
+
+        //        // ========== ASK arrow logic ==========
+        //        double oldAsk = previousAskMap.TryGetValue(symbol, out var pa) ? pa : 0;
+        //        double newAsk = 0;
+        //        bool askChanged = false;
+        //        int askDirection = 0;
+
+        //        if (double.TryParse(data.a, out newAsk))
+        //        {
+        //            if (oldAsk != 0)
+        //            {
+        //                if (newAsk > oldAsk)
+        //                {
+        //                    askDirection = 1;
+        //                    askChanged = true;
+        //                }
+        //                else if (newAsk < oldAsk)
+        //                {
+        //                    askDirection = -1;
+        //                    askChanged = true;
+        //                }
+        //            }
+        //            previousAskMap[symbol] = newAsk;
+        //        }
+
+        //        // ========== COLOR CHANGE FOR NUMERIC COLUMNS ==========
+        //        foreach (var col in numericColumns)
+        //        {
+        //            if (!defaultGrid.Columns.Contains(col)) continue;
+
+        //            var cell = row.Cells[col];
+        //            string newValue = cell.Value?.ToString();
+        //            if (!double.TryParse(newValue, out double newNum)) continue;
+
+        //            if (previous.TryGetValue(col, out double oldNum))
+        //            {
+        //                if (newNum > oldNum)
+        //                    cell.Style.ForeColor = Color.Green;
+        //                else if (newNum < oldNum)
+        //                    cell.Style.ForeColor = Color.Red;
+        //            }
+        //        }
+
+        //        // ========== APPLY ARROW ==========
+        //        // APPLY ARROW
+        //        if (askChanged)
+        //        {
+        //            ApplyArrow(nameCell, askDirection == 1);
+
+        //            var color = askDirection == 1 ? Color.Green : Color.Red;
+
+        //            // FIXED: Proper column check
+        //            if (defaultGrid.Columns.Contains("i"))
+        //                row.Cells["i"].Style.ForeColor = color;
+
+        //            nameCell.Style.ForeColor = color;
+        //        }
+
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        ApplicationLogger.LogException(ex);
+        //    }
+        //}
+
+        //private void ApplyArrow(DataGridViewCell nameCell, bool up)
+        //{
+        //    string cleanName = (nameCell.Value?.ToString() ?? "")
+        //        .Replace(" ▲", "")
+        //        .Replace(" ▼", "")
+        //        .Trim();
+
+        //    if (up)
+        //    {
+        //        nameCell.Value = cleanName + " ▲";
+        //        nameCell.Style.ForeColor = Color.Green;
+        //    }
+        //    else
+        //    {
+        //        nameCell.Value = cleanName + " ▼";
+        //        nameCell.Style.ForeColor = Color.Red;
+        //    }
+        //}
+
+
+        //private void SetCellValueFast(DataGridViewRow row, string columnName, object newValue)
+        //{
+        //    if (!defaultGrid.Columns.Contains(columnName))
+        //        return;
+
+        //    var cell = row.Cells[columnName];
+        //    var newText = newValue?.ToString() ?? "--";
+
+        //    if (cell.Value?.ToString() != newText)
+        //        cell.Value = newText;
+        //}
+
+        //private static bool IsNumericChange(object oldVal, object newVal, out int direction)
+        //{
+        //    direction = 0;
+
+        //    try
+        //    {
+        //        if (oldVal == null || newVal == null) return false;
+
+        //        string oldStr = oldVal.ToString();
+        //        string newStr = newVal.ToString();
+
+        //        if (double.TryParse(oldStr, out double oldNum) && double.TryParse(newStr, out double newNum))
+        //        {
+        //            if (newNum > oldNum)
+        //            {
+        //                direction = 1;
+        //                return true;
+        //            }
+        //            else if (newNum < oldNum)
+        //            {
+        //                direction = -1;
+        //                return true;
+        //            }
+        //        }
+
+        //        return false;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        ApplicationLogger.LogException(ex);
+        //        return false;
+        //    }
+        //}
+
+        //private async void OnBatchReceived(List<(string symbol, byte[] raw)> batch)
+        //{
+        //    var parsed = new List<MarketDataDto>();
+
+        //    foreach (var (symbol, raw) in batch)
+        //    {
+        //        var dto = ParseDto(raw);
+        //        if (dto == null)
+        //            continue;
+
+        //        parsed.Add(dto);
+
+        //        // --- Excel throttling by timestamp ---
+        //        // dto.t is your tick timestamp (string → long)
+        //        if (!long.TryParse(dto.t, out long ts))
+        //            continue;
+
+        //        //lock (_excelLastSent)
+        //        //{
+        //        //    if (_excelLastSent.TryGetValue(dto.i, out long lastTs) && lastTs >= ts)
+        //        //    {
+        //        //        // this tick is older or same as what Excel already has → skip
+        //        //        continue;
+        //        //    }
+
+        //        //    _excelLastSent[dto.i] = ts;
+        //        //}
+
+        //        //// 🔥 QUEUE to Excel background thread (only NEWER ticks)
+        //        //var dict = CreateFieldDictionary(dto);
+        //        //    if (dict != null && dict.Count > 0)
+        //        //        _excelQueue.Enqueue(dto.i, dict); 
+
+        //    }
+
+        //    // 🔥 UPDATE WINFORMS GRID (already deduped by _rowLastUpdate)
+        //    await ApplyBatchUpdatesParallelAsync(parsed);
+        //}
+
+
+
+        //#endregion SignalR Methods
     }
 }
