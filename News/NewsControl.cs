@@ -1,7 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Globalization;
 using System.Linq;
 using System.Net;
@@ -33,7 +32,8 @@ namespace thecalcify.News
         private string subcategoryLiteral = string.Empty;
         private string categoryCode = string.Empty;
         private string subcategoryCode = string.Empty;
-        private string dateRange = string.Empty;
+        private string startdateRange = string.Empty;
+        private string todateRange = string.Empty;
         private string cursor = string.Empty;
         private int currentPage = 1; // Start from page 1
         private Task _fetchTask; // Store task when you start it
@@ -59,14 +59,17 @@ namespace thecalcify.News
                 btnRefresh.Visible = false;
                 btnNextPage.Visible = true;
                 btnPrevPage.Visible = true;
-                txtDateRange.Visible = true;
+                fromTextbox.Visible = true;
+                //fromcalender.Visible = true;
+                //tocalender.Visible = true;
+                todateTextbox.Visible = true;
 
 
                 if (dgvNews.Columns.Contains("DVGCategory"))
-                    dgvNews.Columns["DVGCategory"].Visible = !string.IsNullOrEmpty(_type);
+                    dgvNews.Columns["DVGCategory"].Visible = false;
 
                 if (dgvNews.Columns.Contains("DVGSubCategory"))
-                    dgvNews.Columns["DVGSubCategory"].Visible = !string.IsNullOrEmpty(_type);
+                    dgvNews.Columns["DVGSubCategory"].Visible = false;
 
 
             }
@@ -76,10 +79,10 @@ namespace thecalcify.News
                 btnRefresh.Visible = true;
 
                 if (dgvNews.Columns.Contains("DVGCategory"))
-                    dgvNews.Columns["DVGCategory"].Visible = !string.IsNullOrEmpty(_type);
+                    dgvNews.Columns["DVGCategory"].Visible = false;
 
                 if (dgvNews.Columns.Contains("DVGSubCategory"))
-                    dgvNews.Columns["DVGSubCategory"].Visible = !string.IsNullOrEmpty(_type);
+                    dgvNews.Columns["DVGSubCategory"].Visible = false;
 
                 _cts = new CancellationTokenSource();
 
@@ -94,10 +97,10 @@ namespace thecalcify.News
             dgvNews.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
 
             // Explicitly set column FillWeights again
-            dgvNews.Columns[0].FillWeight = 10;  // Time
-            dgvNews.Columns[1].FillWeight = 60;  // Title
-            dgvNews.Columns[2].FillWeight = 15;  // Category
-            dgvNews.Columns[3].FillWeight = 15;  // SubCategory
+            dgvNews.Columns[0].FillWeight = 20;  // Time
+            dgvNews.Columns[1].FillWeight = 80;  // Title
+            //dgvNews.Columns[2].FillWeight = 15;  // Category
+            //dgvNews.Columns[3].FillWeight = 15;  // SubCategory
 
             // Configure HttpClient once
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
@@ -285,7 +288,8 @@ namespace thecalcify.News
         {
             try
             {
-                dateRange = txtDateRange.Text.Replace("yyyy.MM.dd-yyyy.MM.dd", "");
+                startdateRange = fromTextbox.Text.Replace("From Date", "");
+                todateRange = todateTextbox.Text.Replace("To Date", "");
                 btnNextPage.Enabled = true;
                 btnPrevPage.Enabled = true;
                 lblPageInfo.Visible = true;
@@ -308,6 +312,7 @@ namespace thecalcify.News
                 {
                     categoryLiteral = string.Empty;
                     categoryCode = string.Empty;
+                    cmbCategory.SelectedIndex = 0;
                 }
 
                 if (subCategory != null)
@@ -319,11 +324,12 @@ namespace thecalcify.News
                 {
                     subcategoryLiteral = string.Empty;
                     subcategoryCode = string.Empty;
+                    //cmbSubCategory.SelectedIndex = 0;
                 }
 
 
                 // Fetch news data and update grid
-                await FetchNewsDataAndUpdateGrid(categoryCode ?? string.Empty, subcategoryCode ?? string.Empty, pageSize, string.Empty, dateRange);
+                await FetchNewsDataAndUpdateGrid(categoryCode ?? string.Empty, subcategoryCode ?? string.Empty, pageSize, string.Empty, $"{startdateRange}-{todateRange}");
 
                 UpdatePageInfo(currentPage, pageSize);
             }
@@ -761,7 +767,7 @@ namespace thecalcify.News
 
 
                 // Fetch next set of news using PrevCursor
-                await FetchNewsDataAndUpdateGrid(categoryCode, subcategoryCode, pageSize, cursor, dateRange);
+                await FetchNewsDataAndUpdateGrid(categoryCode, subcategoryCode, pageSize, cursor, $"{startdateRange}-{todateRange}");
 
                 // Update page info label
                 UpdatePageInfo(currentPage, pageSize);
@@ -784,7 +790,7 @@ namespace thecalcify.News
                 PrevCursor = string.Empty;
 
                 // Fetch first page of data again
-                await FetchNewsDataAndUpdateGrid(categoryCode, subcategoryCode, pageSize, PrevCursor, dateRange);
+                await FetchNewsDataAndUpdateGrid(categoryCode, subcategoryCode, pageSize, PrevCursor, $"{startdateRange}-{todateRange}");
 
                 // Reset page info starting from 0
                 UpdatePageInfo(currentPage, pageSize);

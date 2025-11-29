@@ -152,6 +152,8 @@ namespace thecalcify.News
 
                         if (topicsPanel.Visible && !topicsLoaded)
                         {
+                            SplashManager.Show(this);
+
                             // Lazy load topics
                             foreach (var topic in category.topics)
                             {
@@ -205,6 +207,8 @@ namespace thecalcify.News
 
                             // Initial sync once topics are added
                             UpdateMainCheckboxState(mainCheckBox, topicBoxes, category);
+
+                            SplashManager.Hide();
                         }
                     };
 

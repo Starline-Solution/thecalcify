@@ -56,12 +56,14 @@ namespace thecalcify.News
             this.lblCategory = new System.Windows.Forms.Label();
             this.lblSubCategory = new System.Windows.Forms.Label();
             this.pnlTop = new System.Windows.Forms.Panel();
+            this.todateTextbox = new System.Windows.Forms.TextBox();
+            this.fromTextbox = new System.Windows.Forms.TextBox();
+            this.tocalender = new System.Windows.Forms.MonthCalendar();
             this.btnRefresh = new System.Windows.Forms.PictureBox();
             this.label1 = new System.Windows.Forms.Label();
             this.newsSearch = new System.Windows.Forms.TextBox();
             this.newsUpdateLable = new System.Windows.Forms.Label();
-            this.txtDateRange = new System.Windows.Forms.TextBox();
-            this.monthCalendar = new System.Windows.Forms.MonthCalendar();
+            this.fromcalender = new System.Windows.Forms.MonthCalendar();
             this.pnlBottom = new System.Windows.Forms.Panel();
             this.btnPrevPage = new System.Windows.Forms.Button();
             this.lblPageInfo = new System.Windows.Forms.Label();
@@ -208,6 +210,9 @@ namespace thecalcify.News
             // 
             this.pnlTop.AutoSize = true;
             this.pnlTop.BackColor = System.Drawing.Color.White;
+            this.pnlTop.Controls.Add(this.todateTextbox);
+            this.pnlTop.Controls.Add(this.fromTextbox);
+            this.pnlTop.Controls.Add(this.tocalender);
             this.pnlTop.Controls.Add(this.btnRefresh);
             this.pnlTop.Controls.Add(this.label1);
             this.pnlTop.Controls.Add(this.newsSearch);
@@ -217,8 +222,7 @@ namespace thecalcify.News
             this.pnlTop.Controls.Add(this.lblSubCategory);
             this.pnlTop.Controls.Add(this.cmbSubCategory);
             this.pnlTop.Controls.Add(this.btnSearchNews);
-            this.pnlTop.Controls.Add(this.txtDateRange);
-            this.pnlTop.Controls.Add(this.monthCalendar);
+            this.pnlTop.Controls.Add(this.fromcalender);
             this.pnlTop.Dock = System.Windows.Forms.DockStyle.Top;
             this.pnlTop.Location = new System.Drawing.Point(0, 0);
             this.pnlTop.Margin = new System.Windows.Forms.Padding(3, 10, 3, 3);
@@ -226,6 +230,38 @@ namespace thecalcify.News
             this.pnlTop.Padding = new System.Windows.Forms.Padding(10);
             this.pnlTop.Size = new System.Drawing.Size(1255, 291);
             this.pnlTop.TabIndex = 1;
+            // 
+            // todateTextbox
+            // 
+            this.todateTextbox.Location = new System.Drawing.Point(526, 41);
+            this.todateTextbox.Name = "todateTextbox";
+            this.todateTextbox.Size = new System.Drawing.Size(100, 22);
+            this.todateTextbox.TabIndex = 14;
+            this.todateTextbox.Text = "To Date";
+            this.todateTextbox.Visible = false;
+            this.todateTextbox.Click += new System.EventHandler(this.todateTextbox_Click);
+            this.todateTextbox.Leave += new System.EventHandler(this.todateTextbox_Leave);
+            // 
+            // fromTextbox
+            // 
+            this.fromTextbox.Location = new System.Drawing.Point(419, 41);
+            this.fromTextbox.Name = "fromTextbox";
+            this.fromTextbox.Size = new System.Drawing.Size(100, 22);
+            this.fromTextbox.TabIndex = 13;
+            this.fromTextbox.Text = "From Date";
+            this.fromTextbox.Visible = false;
+            this.fromTextbox.Click += new System.EventHandler(this.fromTextbox_Click);
+            this.fromTextbox.Leave += new System.EventHandler(this.fromTextbox_Leave);
+            // 
+            // tocalender
+            // 
+            this.tocalender.Location = new System.Drawing.Point(526, 65);
+            this.tocalender.MaxSelectionCount = 31;
+            this.tocalender.Name = "tocalender";
+            this.tocalender.TabIndex = 12;
+            this.tocalender.Visible = false;
+            this.tocalender.DateSelected += new System.Windows.Forms.DateRangeEventHandler(this.tocalender_DateSelected);
+            this.tocalender.Leave += new System.EventHandler(this.tocalender_LostFocus);
             // 
             // btnRefresh
             // 
@@ -267,28 +303,16 @@ namespace thecalcify.News
             this.newsUpdateLable.Text = "Last News Recived At:- ";
             this.newsUpdateLable.Visible = false;
             // 
-            // txtDateRange
+            // fromcalender
             // 
-            this.txtDateRange.ForeColor = System.Drawing.Color.Gray;
-            this.txtDateRange.Location = new System.Drawing.Point(450, 41);
-            this.txtDateRange.Name = "txtDateRange";
-            this.txtDateRange.Size = new System.Drawing.Size(180, 22);
-            this.txtDateRange.TabIndex = 9;
-            this.txtDateRange.Text = "yyyy.MM.dd-yyyy.MM.dd";
-            this.txtDateRange.Visible = false;
-            this.txtDateRange.Click += new System.EventHandler(this.TxtDateRange_Click);
-            this.txtDateRange.GotFocus += new System.EventHandler(this.TxtDateRange_GotFocus);
-            this.txtDateRange.LostFocus += new System.EventHandler(this.TxtDateRange_LostFocus);
-            // 
-            // monthCalendar
-            // 
-            this.monthCalendar.Location = new System.Drawing.Point(450, 65);
-            this.monthCalendar.MaxSelectionCount = 31;
-            this.monthCalendar.Name = "monthCalendar";
-            this.monthCalendar.TabIndex = 10;
-            this.monthCalendar.Visible = false;
-            this.monthCalendar.DateSelected += new System.Windows.Forms.DateRangeEventHandler(this.MonthCalendar_DateSelected);
-            this.monthCalendar.LostFocus += new System.EventHandler(this.MonthCalendar_LostFocus);
+            this.fromcalender.Location = new System.Drawing.Point(364, 65);
+            this.fromcalender.MaxSelectionCount = 31;
+            this.fromcalender.Name = "fromcalender";
+            this.fromcalender.TabIndex = 10;
+            this.fromcalender.Visible = false;
+            this.fromcalender.DateSelected += new System.Windows.Forms.DateRangeEventHandler(this.fromcalender_DateSelected);
+            this.fromcalender.Leave += new System.EventHandler(this.fromcalender_LostFocus);
+            this.fromcalender.MouseDown += new System.Windows.Forms.MouseEventHandler(this.fromcalender_LostFocus);
             // 
             // pnlBottom
             // 
@@ -419,85 +443,125 @@ namespace thecalcify.News
             }
         }
 
-        private void TxtDateRange_Click(object sender, EventArgs e)
+        private void fromTextbox_Click(object sender, EventArgs e)
         {
-            ShowCalendar();
+            tocalender.Visible = false; // hide other calendar
+            fromcalender.Visible = true;
+            fromcalender.BringToFront();
+            fromcalender.MaxDate = DateTime.Today;
+            fromcalender.MinDate = DateTime.Today.AddMonths(-1); // optional, limit range
         }
 
-        private void TxtDateRange_GotFocus(object sender, EventArgs e)
+        private void todateTextbox_Click(object sender, EventArgs e)
         {
-            if (txtDateRange.Text == "yyyy.MM.dd-yyyy.MM.dd")
+            fromcalender.Visible = false; // hide other calendar
+            tocalender.Visible = true;
+            tocalender.BringToFront();
+            tocalender.MaxDate = DateTime.Today;
+            tocalender.MinDate = DateTime.Today.AddMonths(-1);
+        }
+
+        private void fromcalender_DateSelected(object sender, DateRangeEventArgs e)
+        {
+            startDate = e.Start.Date;
+            fromTextbox.Text = startDate?.ToString("yyyy.MM.dd");
+            fromcalender.Visible = false;
+
+            // Auto adjust To Date if before From Date
+            if (endDate.HasValue && endDate < startDate)
             {
-                txtDateRange.Text = "";
-                txtDateRange.ForeColor = System.Drawing.Color.Black;
+                endDate = startDate;
+                todateTextbox.Text = endDate?.ToString("yyyy.MM.dd");
             }
+
+            UpdateRangeTextbox();
         }
 
-        private void TxtDateRange_LostFocus(object sender, EventArgs e)
+        private void tocalender_DateSelected(object sender, DateRangeEventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(txtDateRange.Text))
+            endDate = e.Start.Date;
+            if (endDate > DateTime.Today)
+                endDate = DateTime.Today; // never greater than today
+
+            // Auto fix if To < From
+            if (startDate.HasValue && endDate < startDate)
+                endDate = startDate;
+
+            todateTextbox.Text = endDate?.ToString("yyyy.MM.dd");
+            tocalender.Visible = false;
+            UpdateRangeTextbox();
+        }
+
+        private void fromTextbox_Leave(object sender, EventArgs e)
+        {
+            DateTime parsedDate;
+            if (DateTime.TryParse(fromTextbox.Text, out parsedDate))
             {
-                txtDateRange.Text = "yyyy.MM.dd-yyyy.MM.dd";
-                txtDateRange.ForeColor = System.Drawing.Color.Gray;
+                if (parsedDate > DateTime.Today)
+                    parsedDate = DateTime.Today;
+
+                startDate = parsedDate;
+                fromTextbox.Text = startDate?.ToString("yyyy.MM.dd");
             }
-        }
-
-        private void ShowCalendar()
-        {
-            // Set these properties when showing calendar or initializing:
-            monthCalendar.MinDate = DateTime.Today.AddDays(-30);
-            monthCalendar.MaxDate = DateTime.Today;
-            monthCalendar.Visible = true;
-            monthCalendar.BringToFront();
-            monthCalendar.Focus();
-        }
-
-        private void MonthCalendar_DateSelected(object sender, DateRangeEventArgs e)
-        {
-            if (startDate == null)
+            else
             {
-                // First click sets start date
-                startDate = e.Start;
-                endDate = null; // reset end date
-                monthCalendar.SetSelectionRange(startDate.Value, startDate.Value); // highlight just start date
-                txtDateRange.Text = $"{startDate:yyyy.MM.dd}-";
-                txtDateRange.ForeColor = Color.Black;
-            }
-            else if (endDate == null)
-            {
-                // Second click sets end date
-                if (e.Start < startDate)
-                {
-                    // Swap if end date is before start date
-                    endDate = startDate;
-                    startDate = e.Start;
-                }
-                else
-                {
-                    endDate = e.Start;
-                }
-                monthCalendar.SetSelectionRange(startDate.Value, endDate.Value);
-                txtDateRange.Text = $"{startDate:yyyy.MM.dd}-{endDate:yyyy.MM.dd}";
-                txtDateRange.ForeColor = Color.Black;
-
-                // Optionally hide calendar now or wait for user action
-                monthCalendar.Visible = false;
-
-                // Reset for next selection if you want:
+                fromTextbox.Text = "yyyy.MM.dd";
                 startDate = null;
+            }
+            UpdateRangeTextbox();
+        }
+
+        private void todateTextbox_Leave(object sender, EventArgs e)
+        {
+            DateTime parsedDate;
+            if (DateTime.TryParse(todateTextbox.Text, out parsedDate))
+            {
+                if (parsedDate > DateTime.Today)
+                    parsedDate = DateTime.Today;
+
+                if (startDate.HasValue && parsedDate < startDate)
+                    parsedDate = startDate.Value;
+
+                endDate = parsedDate;
+                todateTextbox.Text = endDate?.ToString("yyyy.MM.dd");
+            }
+            else
+            {
+                todateTextbox.Text = "yyyy.MM.dd";
                 endDate = null;
             }
+            UpdateRangeTextbox();
         }
 
-
-        private void MonthCalendar_LostFocus(object sender, EventArgs e)
+        private void UpdateRangeTextbox()
         {
-            // Hide calendar if user clicks outside the calendar
-            if (!txtDateRange.Focused)
+            string from = startDate?.ToString("yyyy.MM.dd") ?? "yyyy.MM.dd";
+            string to = endDate?.ToString("yyyy.MM.dd") ?? "yyyy.MM.dd";
+            fromcalender.Visible = false;
+            tocalender.Visible = false;
+            // Example if you have a combined range text control:
+            // txtDateRange.Text = $"{from}-{to}";
+        }
+
+        private void fromcalender_LostFocus(object sender, EventArgs e)
+        {
+            // Hide From Calendar when focus is lost
+            if (!fromTextbox.Focused && !fromcalender.Focused)
             {
-                monthCalendar.Visible = false;
+                fromcalender.Visible = false;
             }
         }
+
+        private void tocalender_LostFocus(object sender, EventArgs e)
+        {
+            // Hide To Calendar when focus is lost
+            if (!todateTextbox.Focused && !tocalender.Focused)
+            {
+                tocalender.Visible = false;
+            }
+        }
+
+
 
         #endregion
 
@@ -508,8 +572,10 @@ namespace thecalcify.News
         private Label newsUpdateLable;
         private TextBox newsSearch;
         private Label label1;
-        private TextBox txtDateRange;
-        private MonthCalendar monthCalendar;
         private PictureBox btnRefresh;
+        private MonthCalendar fromcalender;
+        private MonthCalendar tocalender;
+        private TextBox todateTextbox;
+        private TextBox fromTextbox;
     }
 }

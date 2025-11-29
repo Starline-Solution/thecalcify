@@ -20,7 +20,7 @@ namespace thecalcify.Helper
             InitializeComponent();
             this.FormBorderStyle = FormBorderStyle.None;
             this.StartPosition = FormStartPosition.CenterScreen;
-            this.Size = new Size(180, 50); // Smaller size
+            this.Size = new Size(350, 60); // Smaller size
             this.BackColor = Color.White;
             this.Opacity = 0.95;
             this.ShowInTaskbar = false;

@@ -2,6 +2,7 @@
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Drawing;
 using System.Globalization;
 using System.Linq;
@@ -20,6 +21,75 @@ namespace thecalcify.Helper
     {
         private Timer internetCheckTimer;
         private bool isInternetAvailable = true;
+        private static readonly string[] WindowsFormats = BuildWindowsFormats();
+
+        private static string[] BuildWindowsFormats()
+        {
+            string[] dates =
+            {
+                // Short
+                "M/d/yyyy","MM/dd/yyyy","d/M/yyyy","dd/MM/yyyy","dd-MM-yyyy","yyyy-MM-dd",
+
+                // Long
+                "dddd, MMMM d, yyyy",
+                "dddd, MMMM dd, yyyy",
+                "MMMM d, yyyy",
+                "MMMM dd, yyyy",
+                "d MMMM yyyy",
+                "dd MMMM yyyy",
+
+                        // Colon-based dates (non-standard but used in some apps/logs)
+                "dd:MM:yyyy",
+                "d:M:yyyy",
+                "dd:MM:yy",
+                "d:M:yy",
+                "yyyy:MM:dd",
+
+            };
+
+            string[] times =
+            {
+                // 12-hour
+                "h:mm tt","hh:mm tt",
+                "h:mm:ss tt","hh:mm:ss tt",
+                "h:mm:ss.f tt","hh:mm:ss.f tt",
+                "h:mm:ss.ff tt","hh:mm:ss.ff tt",
+                "h:mm:ss.fff tt","hh:mm:ss.fff tt",
+
+                // 24-hour
+                "H:mm","HH:mm",
+                "H:mm:ss","HH:mm:ss",
+                "H:mm:ss.f","HH:mm:ss.f",
+                "H:mm:ss.ff","HH:mm:ss.ff",
+                "H:mm:ss.fff","HH:mm:ss.fff",
+
+                // time without seconds but with ms
+                "HH:mm:fff","H:mm:fff"
+            };
+
+            List<string> list = new List<string>();
+
+            // Combine date + time
+            foreach (var d in dates)
+                foreach (var t in times)
+                    list.Add($"{d} {t}");
+
+            // Add date-only formats
+            list.AddRange(dates);
+
+            // Add time-only formats
+            list.AddRange(times);
+
+            // Add ISO formats
+            list.Add("yyyy-MM-ddTHH:mm:ss");
+            list.Add("yyyy-MM-ddTHH:mm:ss.fff");
+
+            // Add ISO with space
+            list.Add("yyyy-MM-dd HH:mm:ss");
+            list.Add("yyyy-MM-dd HH:mm:ss.fff");
+
+            return list.Distinct().ToArray();
+        }
 
         public Common(Control control)
         {
@@ -62,182 +132,36 @@ namespace thecalcify.Helper
         public static DateTime ParseToDate(string input)
         {
             if (string.IsNullOrWhiteSpace(input))
-                throw new ArgumentException("Input date string is null or empty.");
+                throw new ArgumentException("Empty date input");
 
-            string[] formats = new string[]
+            input = input.Trim();
+
+            // Remove trailing timezone like +05:30
+            input = Regex.Replace(input, @"\s[+\-]\d{2}:\d{2}$", "");
+
+            // Unix Time
+            if (Regex.IsMatch(input, @"^\d{10,13}$") && long.TryParse(input, out long unix))
             {
-                "dd/MM/yyyy", "d/M/yyyy", "dd/MM/yy",
-                "d/M/yy", "MM/dd/yyyy", "M/d/yyyy",
-                "yyyy-MM-dd", "yyyy/MM/dd", "dd-MM-yyyy",
-                "d-M-yyyy", "dd-MM-yy", "d-M-yy",
-                "dd.MM.yyyy", "d.M.yyyy", "dd MMM yyyy",
-                "d MMM yyyy", "ddd, dd MMM yyyy", "ddd, d MMM yyyy",
-                "yyyyMMdd", "MMMyy", "dd/MM/yyyy HH:mm:ss",
-                "d/M/yyyy HH:mm:ss", "MM/dd/yyyy HH:mm:ss", "M/d/yyyy HH:mm:ss",
-                "yyyy-MM-dd HH:mm:ss", "yyyy/MM/dd HH:mm:ss", "dd-MM-yyyy HH:mm:ss",
-                "d-M-yyyy HH:mm:ss", "dd.MM.yyyy HH:mm:ss", "d.M.yyyy HH:mm:ss",
-                "dd MMM yyyy HH:mm:ss", "d MMM yyyy HH:mm:ss", "ddd, dd MMM yyyy HH:mm:ss",
-                "ddd, d MMM yyyy HH:mm:ss", "yyyyMMdd HH:mm:ss", "MMMyy HH:mm:ss",
-                "dd/MM/yyyy hh:mm:ss", "d/M/yyyy hh:mm:ss", "MM/dd/yyyy hh:mm:ss",
-                "M/d/yyyy hh:mm:ss", "yyyy-MM-dd hh:mm:ss", "yyyy/MM/dd hh:mm:ss",
-                "dd-MM-yyyy hh:mm:ss", "d-M-yyyy hh:mm:ss", "dd.MM.yyyy hh:mm:ss",
-                "d.M.yyyy hh:mm:ss", "dd MMM yyyy hh:mm:ss", "d MMM yyyy hh:mm:ss",
-                "ddd, dd MMM yyyy hh:mm:ss", "ddd, d MMM yyyy hh:mm:ss", "yyyyMMdd hh:mm:ss",
-                "MMMyy hh:mm:ss", "dd/MM/yyyy hh:mm:ss tt", "d/M/yyyy hh:mm:ss tt",
-                "MM/dd/yyyy hh:mm:ss tt", "M/d/yyyy hh:mm:ss tt", "yyyy-MM-dd hh:mm:ss tt",
-                "yyyy/MM/dd hh:mm:ss tt",
-                "dd-MM-yyyy hh:mm:ss tt",
-                "d-M-yyyy hh:mm:ss tt",
-                "dd.MM.yyyy hh:mm:ss tt",
-                "d.M.yyyy hh:mm:ss tt",
-                "dd MMM yyyy hh:mm:ss tt",
-                "d MMM yyyy hh:mm:ss tt",
-                "ddd, dd MMM yyyy hh:mm:ss tt",
-                "ddd, d MMM yyyy hh:mm:ss tt",
-                "yyyyMMdd hh:mm:ss tt",
-                "MMMyy hh:mm:ss tt",
-                "dd/MM/yyyy hh:mm",
-                "d/M/yyyy hh:mm",
-                "MM/dd/yyyy hh:mm",
-                "M/d/yyyy hh:mm",
-                "yyyy-MM-dd hh:mm",
-                "yyyy/MM/dd hh:mm",
-                "dd-MM-yyyy hh:mm",
-                "d-M-yyyy hh:mm",
-                "dd.MM.yyyy hh:mm",
-                "d.M.yyyy hh:mm",
-                "dd MMM yyyy hh:mm",
-                "d MMM yyyy hh:mm",
-                "ddd, dd MMM yyyy hh:mm",
-                "ddd, d MMM yyyy hh:mm",
-                "yyyyMMdd hh:mm",
-                "MMMyy hh:mm",
-                "dd/MM/yyyy hh:mm tt",
-                "d/M/yyyy hh:mm tt",
-                "MM/dd/yyyy hh:mm tt",
-                "M/d/yyyy hh:mm tt",
-                "yyyy-MM-dd hh:mm tt",
-                "yyyy/MM/dd hh:mm tt",
-                "dd-MM-yyyy hh:mm tt",
-                "d-M-yyyy hh:mm tt",
-                "dd.MM.yyyy hh:mm tt",
-                "d.M.yyyy hh:mm tt",
-                "dd MMM yyyy hh:mm tt",
-                "d MMM yyyy hh:mm tt",
-                "ddd, dd MMM yyyy hh:mm tt",
-                "ddd, d MMM yyyy hh:mm tt",
-                "yyyyMMdd hh:mm tt",
-                "MMMyy hh:mm tt",
-                "dd-MM-yyyy H:mm:ss",
-                "dd-MM-yyyy h.mm.ss tt",
-                "dd-MM-yyyy hh:mm:tt",
-                "dd-MM-yyyy HH:mm",
-                "dd-MM-yyyy H:mm",
-                "dd-MM-yy hh:mm tt",
-                "dd-MM-yy hh:mm:ss tt",
-                "dd-MM-yy HH:mm:ss",
-                "dd-MM-yy H:mm:ss",
-                "dd-MM-yy h.mm.ss tt",
-                "dd-MM-yy hh:mm:tt",
-                "dd-MM-yy HH:mm",
-                "dd-MM-yy H:mm",
-                "d-M-yy hh:mm tt",
-                "d-M-yy hh:mm:ss tt",
-                "d-M-yy HH:mm:ss",
-                "d-M-yy H:mm:ss",
-                "d-M-yy h.mm.ss tt",
-                "d-M-yy hh:mm:tt",
-                "d-M-yy HH:mm",
-                "d-M-yy H:mm",
-                "d.M.yy hh:mm tt",
-                "d.M.yy hh:mm:ss tt",
-                "d.M.yy HH:mm:ss",
-                "d.M.yy H:mm:ss",
-                "d.M.yy h.mm.ss tt",
-                "d.M.yy hh:mm:tt",
-                "d.M.yy HH:mm",
-                "d.M.yy H:mm",
-                "yyyy-MM-dd H:mm:ss",
-                "yyyy-MM-dd h.mm.ss tt",
-                "yyyy-MM-dd hh:mm:tt",
-                "yyyy-MM-dd HH:mm",
-                "yyyy-MM-dd H:mm",
-                "dd MMMM yyyy hh:mm tt",
-                "dd MMMM yyyy hh:mm:ss tt",
-                "dd MMMM yyyy HH:mm:ss",
-                "dd MMMM yyyy H:mm:ss",
-                "dd MMMM yyyy h.mm.ss tt",
-                "dd MMMM yyyy hh:mm:tt",
-                "dd MMMM yyyy HH:mm",
-                "dd MMMM yyyy H:mm",
-                "d MMMM yyyy hh:mm tt",
-                "d MMMM yyyy hh:mm:ss tt",
-                "d MMMM yyyy HH:mm:ss",
-                "d MMMM yyyy H:mm:ss",
-                "d MMMM yyyy h.mm.ss tt",
-                "d MMMM yyyy hh:mm:tt",
-                "d MMMM yyyy HH:mm",
-                "d MMMM yyyy H:mm",
-                "dddd, d MMMM yyyy hh:mm tt",
-                "dddd, d MMMM yyyy hh:mm:ss tt",
-                "dddd, d MMMM yyyy HH:mm:ss",
-                "dddd, d MMMM yyyy H:mm:ss",
-                "dddd, d MMMM yyyy h.mm.ss tt",
-                "dddd, d MMMM yyyy hh:mm:tt",
-                "dddd, d MMMM yyyy HH:mm",
-                "dddd, d MMMM yyyy H:mm",
-                "dddd, d MMMM, yyyy hh:mm tt",
-                "dddd, d MMMM, yyyy hh:mm:ss tt",
-                "dddd, d MMMM, yyyy HH:mm:ss",
-                "dddd, d MMMM, yyyy H:mm:ss",
-                "dddd, d MMMM, yyyy h.mm.ss tt",
-                "dddd, d MMMM, yyyy hh:mm:tt",
-                "dddd, d MMMM, yyyy HH:mm",
-                "dddd, d MMMM, yyyy H:mm",
-                "dddd, dd MMMM yyyy hh:mm tt",
-                "dddd, dd MMMM yyyy hh:mm:ss tt",
-                "dddd, dd MMMM yyyy hh:mm:tt",
-                "dddd, dd MMMM yyyy h:mm tt",
-                "dddd, dd MMMM yyyy h:mm:ss tt",
-                "dddd, dd MMMM yyyy h.mm.ss tt",
-                "dddd, dd MMMM yyyy HH:mm",
-                "dddd, dd MMMM yyyy HH:mm:ss",
-                "dddd, dd MMMM yyyy H:mm",
-                "dddd, dd MMMM yyyy H:mm:ss",
-                "dd MMMM yyyy hh:mm",
-                "dd MMMM yyyy hh:mm:ss",
-                "dd MMMM yyyy HH:mm:ss tt",
-                "dd MMMM yyyy H:mm:ss tt",
-                "d MMMM yyyy HH:mm tt",
-
-
-                // Licence Expiry format issue fixed
-                "dd:MM:yyyy", "d:M:yyyy", "dd:MM:yy",
-                "d:M:yy","dd-MM-yyyy'T'HH:mm:ss", "d-M-yyyy'T'HH:mm:ss",
-
-                "dd-MM-yyyy HH:mm:ss.fff",
-                "dd-MM-yyyy HH:mm:ss:fff",
-                "dd/MM/yyyy HH:mm:ss.fff",
-                "dd/MM/yyyy HH:mm:ss:fff"
-            };
-
-            string pattern = @"\s[+\-]\d{2}:\d{2}$";  // Matches '+00:00' or '-05:30'
-            input = Regex.Replace(input, pattern, "");
-
-            formats = formats.Distinct().ToArray();
-
-
-            if (DateTime.TryParseExact(
-                    input,
-                    formats,
-                    CultureInfo.InvariantCulture,
-                    DateTimeStyles.None,
-                    out DateTime parsedDate))
-            {
-                return parsedDate; // ✅ return DateTime (no string conversion)
+                if (input.Length == 13) return DateTimeOffset.FromUnixTimeMilliseconds(unix).LocalDateTime;
+                if (input.Length == 10) return DateTimeOffset.FromUnixTimeSeconds(unix).LocalDateTime;
             }
 
-            throw new FormatException($"Invalid date format: {input}");
+            // Try Windows formats
+            if (DateTime.TryParseExact(
+                    input,
+                    WindowsFormats,
+                    CultureInfo.InvariantCulture,
+                    DateTimeStyles.AllowWhiteSpaces,
+                    out DateTime dt))
+            {
+                return dt;
+            }
+
+            // Last fallback
+            if (DateTime.TryParse(input, CultureInfo.InvariantCulture, DateTimeStyles.AllowWhiteSpaces, out dt))
+                return dt;
+
+            throw new FormatException("Invalid date format: " + input);
         }
 
         public void StartInternetMonitor()
@@ -454,14 +378,24 @@ namespace thecalcify.Helper
             new ToastContentBuilder()
                 .AddText(title)
                 .AddText(parsedTime.ToLocalTime().ToString("G"))  // show seconds and AM/PM
-                .AddArgument("action", "thecaclcifyNotification")  // <-- Add this argument
+                .AddArgument("action", "thecalcifyNotification")  // <-- Add this argument
+                .AddButton(activationType: ToastActivationType.Background, content: "Dismiss", arguments: "action=dismiss")
+                .SetToastDuration(ToastDuration.Short) // Short duration toast
+                .Show();
+        }
+
+        public static void ShowRateAlertWindowsToast(string title, string body)
+        {
+            new ToastContentBuilder()
+                .AddText(title)
+                .AddText(body)
+                //.AddText(DateTime.Now.ToString("G"))  // show seconds and AM/PM
                 .AddButton(activationType: ToastActivationType.Background, content: "Dismiss", arguments: "action=dismiss")
                 .SetToastDuration(ToastDuration.Short) // Short duration toast
                 .Show();
         }
 
     }
-
 
     public class MarketApiResponse
     {
@@ -471,33 +405,38 @@ namespace thecalcify.Helper
     }
 
 
-    // DTO to map JSON data
-    public class MarketDataDto
+    public class MarketDataDto : INotifyPropertyChanged
     {
-        public string i { get; set; }
-        public string n { get; set; }
-        public string b { get; set; }
-        public string a { get; set; }
-        public string ltp { get; set; }
-        public string h { get; set; }
-        public string l { get; set; }
-        public string o { get; set; }
-        public string c { get; set; }
+        private string _i, _n, _b, _a, _ltp, _h, _l, _o, _c, _d, _v, _t, _atp, _bq, _tbq, _sq, _tsq, _vt, _oi, _ltq;
+        public string i { get => _i; set { _i = value; OnPropertyChanged(nameof(i)); } }
+        public string n { get => _n; set { _n = value; OnPropertyChanged(nameof(n)); } }
+        public string b { get => _b; set { _b = value; OnPropertyChanged(nameof(b)); } }
+        public string a { get => _a; set { _a = value; OnPropertyChanged(nameof(a)); } }
+        public string ltp { get => _ltp; set { _ltp = value; OnPropertyChanged(nameof(ltp)); } }
+        public string h { get => _h; set { _h = value; OnPropertyChanged(nameof(h)); } }
+        public string l { get => _l; set { _l = value; OnPropertyChanged(nameof(l)); } }
+        public string o { get => _o; set { _o = value; OnPropertyChanged(nameof(o)); } }
+        public string c { get => _c; set { _c = value; OnPropertyChanged(nameof(c)); } }
 
-        //[JsonConverter(typeof(StringOrNumberConverter))]
-        public string d { get; set; } = "--";
-        public string v { get; set; }
-        public string t { get; set; }
-        public string atp { get; set; } = "--";   // Ask traded price "98695.47"
-        public string bq { get; set; } = "--";   // Bid quantity "1"
-        public string tbq { get; set; } = "--";    // Total bid quantity "486"
-        public string sq { get; set; } = "--";        // Sell quantity "1"
-        public string tsq { get; set; } = "--";    // Total sell quantity "393"
-        public string vt { get; set; } = "--";    // Volume traded "2734"
-        public string oi { get; set; } = "--";    // Open interest "14129"
-        public string ltq { get; set; } = "--";    // Last Traded Quantity "5"
+        public string d { get => _d; set { _d = value; OnPropertyChanged(nameof(d)); } }
+        public string v { get => _v; set { _v = value; OnPropertyChanged(nameof(v)); } }
 
+        public string t { get => _t; set { _t = value; OnPropertyChanged(nameof(t)); } }
+
+        public string atp { get => _atp; set { _atp = value; OnPropertyChanged(nameof(atp)); } }
+        public string bq { get => _bq; set { _bq = value; OnPropertyChanged(nameof(bq)); } }
+        public string tbq { get => _tbq; set { _tbq = value; OnPropertyChanged(nameof(tbq)); } }
+        public string sq { get => _sq; set { _sq = value; OnPropertyChanged(nameof(sq)); } }
+        public string tsq { get => _tsq; set { _tsq = value; OnPropertyChanged(nameof(tsq)); } }
+        public string vt { get => _vt; set { _vt = value; OnPropertyChanged(nameof(vt)); } }
+        public string oi { get => _oi; set { _oi = value; OnPropertyChanged(nameof(oi)); } }
+        public string ltq { get => _ltq; set { _ltq = value; OnPropertyChanged(nameof(ltq)); } }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected void OnPropertyChanged(string name) =>
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     }
+
 
     class ExcelFormulaCell
     {
@@ -748,6 +687,24 @@ namespace thecalcify.Helper
         public string sortTimestamp { get; set; }
         public string firstCreated { get; set; }
     }
+
+    public class RateAlertNotificationDto
+    {
+        public string Username { get; set; }
+        public RateAlertDataDto Data { get; set; }
+    }
+
+    public class RateAlertDataDto
+    {
+        public int ClientId { get; set; }
+        public string Symbol { get; set; }
+        public int Id { get; set; }
+        public string Type { get; set; }
+        public string Condition { get; set; }
+        public string Flag { get; set; }
+        public decimal Rate { get; set; }
+    }
+
 
     class SmoothFlowLayoutPanel : FlowLayoutPanel
     {
