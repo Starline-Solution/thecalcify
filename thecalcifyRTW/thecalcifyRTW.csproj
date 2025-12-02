@@ -1,7 +1,7 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net8.0</TargetFramework>
+		<TargetFramework>net10.0</TargetFramework>
 		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
 
 		<!-- Make it FULLY self-contained -->
@@ -21,7 +21,31 @@
 
 		<OutputType>Exe</OutputType>
 		<ApplicationManifest>app.manifest</ApplicationManifest>
+		<PackageIcon>AppIcon.png</PackageIcon>
+		<ApplicationIcon>AppIcon.ico</ApplicationIcon>
+		<AssemblyTitle>thecalcifyRTW</AssemblyTitle>
+		<UserSecretsId>01dbba04-5b92-475c-afed-e4b0e1fbb0ce</UserSecretsId>
 	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+	  <Optimize>false</Optimize>
+	  <DebugType>full</DebugType>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+	  <DebugType>full</DebugType>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <Content Include="AppIcon.ico" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Include="..\Resources\AppIcon.png">
+	    <Pack>True</Pack>
+	    <PackagePath>\</PackagePath>
+	  </None>
+	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.0" />

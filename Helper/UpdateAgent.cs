@@ -115,7 +115,7 @@ namespace thecalcify.Helper
                             //if (SystemInformation.PowerStatus.PowerLineStatus == PowerLineStatus.Online)
                             //{
                             {
-                                SplashManager.Show(ParentForm, "Loading", "We are Upgrading Ourselves");
+                                SplashManager.Show(ParentForm,"Loading", "We are Upgrading Ourselves");
                                 UninstallOldVersion("thecalcify", displayversion);
                                 SplashManager.Hide();
                             }

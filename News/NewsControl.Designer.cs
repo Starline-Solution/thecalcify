@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Input;
+using thecalcify.Helper;
 using thecalcify.Properties;
 
 namespace thecalcify.News
@@ -267,9 +268,9 @@ namespace thecalcify.News
             // 
             this.btnRefresh.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnRefresh.Image = ((System.Drawing.Image)(resources.GetObject("btnRefresh.Image")));
-            this.btnRefresh.Location = new System.Drawing.Point(1199, 26);
+            this.btnRefresh.Location = new System.Drawing.Point(1191, 21);
             this.btnRefresh.Name = "btnRefresh";
-            this.btnRefresh.Size = new System.Drawing.Size(29, 24);
+            this.btnRefresh.Size = new System.Drawing.Size(44, 44);
             this.btnRefresh.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.btnRefresh.TabIndex = 11;
             this.btnRefresh.TabStop = false;
@@ -390,7 +391,10 @@ namespace thecalcify.News
             _cts = new CancellationTokenSource();
             _fetchTask = Task.Run(() => PeriodicFetchAsync(_cts.Token));
 
+            Common.ShowWindowsToast("News Refreshed", DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff"));
+
         }
+
 
         private void TextBox1_TextChanged(object sender, EventArgs e)
         {

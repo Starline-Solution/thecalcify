@@ -152,7 +152,7 @@ namespace thecalcify.News
 
                         if (topicsPanel.Visible && !topicsLoaded)
                         {
-                            SplashManager.Show(this);
+                            SplashManager.Show(this, "Loading", "Loading topics...");
 
                             // Lazy load topics
                             foreach (var topic in category.topics)

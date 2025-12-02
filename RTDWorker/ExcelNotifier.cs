@@ -1,10 +1,11 @@
-﻿using System;
+﻿using Microsoft.Office.Interop.Excel;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Pipes;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
-using Microsoft.Office.Interop.Excel;
 
 namespace thecalcify.Helper
 {
@@ -64,22 +65,24 @@ namespace thecalcify.Helper
         {
             try
             {
-                var excel = (Microsoft.Office.Interop.Excel.Application)
-                    System.Runtime.InteropServices.Marshal.GetActiveObject("Excel.Application");
+                var processes = System.Diagnostics.Process.GetProcessesByName("EXCEL");
 
-                foreach (Workbook wb in excel.Workbooks)
-                {
-                    if (wb.Name.Equals("thecalcify.xlsx", StringComparison.OrdinalIgnoreCase))
-                        return true;
-                }
+                if (processes.Length == 0)
+                    return false;
+
+                // Excel is open, now check workbook name via RTD pipe existence
+                bool pipeExists = new DirectoryInfo(@"\\.\pipe\")
+                    .GetFiles()
+                    .Any(p => p.Name.Equals("theCalcifyPipe", StringComparison.OrdinalIgnoreCase));
+
+                return pipeExists;
             }
             catch
             {
-                // Excel not running
+                return false;
             }
-
-            return false;
         }
+
 
         // =======================================================
         // SEND EACH TICK (CALLED FROM LastTickStore.ExcelPublish)
@@ -121,6 +124,22 @@ namespace thecalcify.Helper
         {
             try
             {
+                // DOES THE PIPE EXIST?
+                bool pipeExists;
+                try
+                {
+                    pipeExists = new DirectoryInfo(@"\\.\pipe\")
+                        .GetFiles()
+                        .Any(p => p.Name.Equals("theCalcifyPipe", StringComparison.OrdinalIgnoreCase));
+                }
+                catch
+                {
+                    pipeExists = false;
+                }
+
+                if (!pipeExists)
+                    return false;  // Excel RTD not ready yet
+
                 _client?.Dispose();
 
                 _client = new NamedPipeClientStream(
@@ -129,7 +148,7 @@ namespace thecalcify.Helper
                     PipeDirection.Out,
                     PipeOptions.Asynchronous);
 
-                _client.Connect(300);
+                _client.Connect(2000); // increased timeout
 
                 _writer = new StreamWriter(_client) { AutoFlush = true };
 
@@ -146,6 +165,7 @@ namespace thecalcify.Helper
                 return false;
             }
         }
+
 
         // =======================================================
         // SEND ENTIRE SNAPSHOT ONCE AFTER RECONNECT
@@ -245,11 +265,15 @@ namespace thecalcify.Helper
                     { "Low", dto.l },
                     { "Open", dto.o },
                     { "Close", dto.c },
+                    { "Net Chng", dto.d },
+                    { "ATP", dto.atp },
+                    { "Bid Size", dto.bq },
+                    { "Total Bid Size", dto.tbq },
+                    { "Ask Size", dto.sq },
+                    { "Total Ask Size", dto.tsq },
                     { "Volume", dto.vt },
-                    { "BidSize", dto.bq },
-                    { "AskSize", dto.sq },
-                    { "TBQ", dto.tbq },
-                    { "TSQ", dto.tsq },
+                    { "Open Interest", dto.oi },
+                    { "Last Size", dto.l },
                     { "Time", Common.TimeStampConvert(dto.t) }
                 };
 

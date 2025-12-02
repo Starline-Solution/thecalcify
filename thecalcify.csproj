@@ -83,7 +83,7 @@
       <DependentUpon>AlertPopup.cs</DependentUpon>
     </Compile>
     <Compile Include="Helper\About.cs">
-      <SubType>Form</SubType>
+      <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="Helper\About.Designer.cs">
       <DependentUpon>About.cs</DependentUpon>

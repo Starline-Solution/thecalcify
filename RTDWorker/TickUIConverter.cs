@@ -21,6 +21,7 @@ namespace thecalcify.RTDWorker
 
                 v = t.v.ToString(),
                 t = t.T.ToString(),
+                atp = t.Atp.ToString(),
 
                 bq = t.Bq.ToString(),
                 tbq = t.Tbq.ToString(),

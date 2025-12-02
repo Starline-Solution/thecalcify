@@ -592,29 +592,108 @@ namespace thecalcify
             }
         }
 
-        private void AboutToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void AboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            //try
+            //{
+            //    using (var aboutForm = new About(username, password, licenceDate, token))
+            //    {
+            //        if (isFullScreen)
+            //        {
+            //            aboutForm.StartPosition = FormStartPosition.CenterParent;
+            //            aboutForm.TopMost = true; // Ensures it stays above the full-screen window
+            //            aboutForm.ShowDialog(this); // Pass the main form as owner
+            //        }
+            //        else
+            //        {
+            //            aboutForm.ShowDialog(this);
+            //        }
+            //    }
+            //}
+            //catch (Exception ex)
+            //{
+            //    ApplicationLogger.LogException(ex);
+            //}
+
             try
             {
-                using (var aboutForm = new About(username, password, licenceDate, token))
+                // 1. Clean up existing NewsControl if already present
+                var existingAbout = this.Controls.Find("aboutControlView", true).FirstOrDefault();
+                if (existingAbout != null)
                 {
-                    if (isFullScreen)
-                    {
-                        aboutForm.StartPosition = FormStartPosition.CenterParent;
-                        aboutForm.TopMost = true; // Ensures it stays above the full-screen window
-                        aboutForm.ShowDialog(this); // Pass the main form as owner
-                    }
-                    else
-                    {
-                        aboutForm.ShowDialog();
-                    }
+                    this.Controls.Remove(existingAbout);
+                    existingAbout.Dispose();
                 }
+
+                EditableMarketWatchGrid editableMarketWatchGrid = EditableMarketWatchGrid.CurrentInstance;
+                if (editableMarketWatchGrid != null)
+                {
+                    if (editableMarketWatchGrid.IsCurrentCellInEditMode)
+                    {
+                        editableMarketWatchGrid.EndEdit();
+                    }
+
+                    editableMarketWatchGrid.EditableDispose(); // Dispose the grid
+                    editableMarketWatchGrid.Dispose();
+                }
+
+
+                // 2. Create new AboutControl
+                var aboutControl = new About(username, password, licenceDate, token)
+                {
+                    Name = "aboutControlView",
+                    Dock = DockStyle.Fill
+                };
+                saveMarketWatchHost.Visible = false;
+                fontSizeComboBox.Visible = false;
+                searchTextLabel.Visible = false;
+                txtsearch.Visible = false;
+                refreshMarketWatchHost.Visible = false;
+                newCTRLNToolStripMenuItem1.Enabled = true;
+                // Update status label
+
+                // Update title based on edit mode
+                titleLabel.Text = "About";
+
+                // 3. Add it to main form
+                this.Controls.Add(aboutControl);
+                aboutControl.BringToFront();
+                aboutControl.Focus();
+
+                licenceDate = LoginInfo.RateExpiredDate.ToString();
+
+                RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
+                if (RemainingDays <= 7)
+                {
+                    await CheckLicenceLoop();
+                }
+                else
+                {
+                    licenceExpire.Text = $"Licence Expire At:- {LoginInfo.RateExpiredDate:dd:MM:yyyy}";
+                }
+
             }
             catch (Exception ex)
             {
                 ApplicationLogger.LogException(ex);
+                MessageBox.Show($"Error loading News view: {ex.Message}");
+            }
+            finally
+            {
+                if (this.InvokeRequired)
+                {
+                    this.Invoke(new Action(() =>
+                    {
+                        notificationSettings.Visible = false;
+                    }));
+                }
+                else
+                {
+                    notificationSettings.Visible = false;
+                }
             }
         }
+
 
         private void Txtsearch_KeyDown(object sender, KeyEventArgs e)
         {
@@ -4039,6 +4118,18 @@ namespace thecalcify
             double oldAsk = FastParse(row.Cells["Ask"].Value);
             double oldLTP = FastParse(row.Cells["LTP"].Value);
             double oldChange = FastParse(row.Cells["Net Chng"].Value);
+            double oldHigh = FastParse(row.Cells["High"].Value);
+            double oldLow = FastParse(row.Cells["Low"].Value);
+            double oldOpen = FastParse(row.Cells["Open"].Value);
+            double oldClose = FastParse(row.Cells["Close"].Value);
+            double oldATP = FastParse(row.Cells["ATP"].Value);
+            double oldAskSize = FastParse(row.Cells["Ask Size"].Value);
+            double oldTotalAskSize = FastParse(row.Cells["Total Ask Size"].Value);
+            double oldBidSize = FastParse(row.Cells["Bid Size"].Value);
+            double oldTotalBidSize = FastParse(row.Cells["Total Bid Size"].Value);
+            double oldVolume = FastParse(row.Cells["Volume"].Value);
+            double oldOpenInterest = FastParse(row.Cells["Open Interest"].Value);
+            double oldLastSize = FastParse(row.Cells["Last Size"].Value);
 
             // ======================================
             // 4️⃣ CELL UPDATES (safe)
@@ -4073,6 +4164,18 @@ namespace thecalcify
             UpdateColorFast(row, "Ask", oldAsk, FastParse(dto.a));
             UpdateColorFast(row, "LTP", oldLTP, FastParse(dto.ltp));
             UpdateColorFast(row, "Net Chng", oldChange, FastParse(dto.d));
+            UpdateColorFast(row, "High", oldHigh, FastParse(dto.h));
+            UpdateColorFast(row, "Low", oldLow, FastParse(dto.l));
+            UpdateColorFast(row, "Open", oldOpen, FastParse(dto.o));
+            UpdateColorFast(row, "Close", oldClose, FastParse(dto.c));
+            UpdateColorFast(row, "ATP", oldATP, FastParse(dto.atp));
+            UpdateColorFast(row, "Ask Size", oldAskSize, FastParse(dto.sq));
+            UpdateColorFast(row, "Total Ask Size", oldTotalAskSize, FastParse(dto.tsq));
+            UpdateColorFast(row, "Bid Size", oldBidSize, FastParse(dto.bq));
+            UpdateColorFast(row, "Total Bid Size", oldTotalBidSize, FastParse(dto.tbq));
+            UpdateColorFast(row, "Volume", oldVolume, FastParse(dto.vt));
+            UpdateColorFast(row, "Open Interest", oldOpenInterest, FastParse(dto.oi));
+            UpdateColorFast(row, "Last Size", oldLastSize, FastParse(dto.ltq));
 
             // ======================================
             // 6️⃣ ARROW UPDATE (safe)

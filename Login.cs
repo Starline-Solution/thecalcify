@@ -201,11 +201,11 @@ namespace thecalcify
 
                                         thecalcify homeForm = new thecalcify();
                                         homeForm.Show();
+                                        this.Hide();
 
                                         await homeForm.UserInfoSignalREvent(username);
 
                                         SaveCredential(); // Presumably saves token or login info
-                                        this.Hide();
                                     }
                                     else
                                     {
@@ -392,8 +392,6 @@ namespace thecalcify
 
 
         }
-
-        // Add these event handlers for better UX:
 
         private void TextBox_Enter(object sender, EventArgs e)
         {
