@@ -41,6 +41,8 @@ namespace thecalcify
 
         [DllImport("user32.dll")]
         private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out int lpdwProcessId);
+
+
         //private string[] args;
 
         // ======================
@@ -55,7 +57,7 @@ namespace thecalcify
         // ======================
         // 📌 Flags / States
         // ======================
-        
+
         public bool isLoadedSymbol = false;
         public bool isEdit = false;
         public bool isGrid = true, reloadGrid = true;
@@ -168,7 +170,7 @@ namespace thecalcify
         // 📌 API Responses
         // ======================
         private MarketApiResponse resultdefault;
-        public string keywords = string.Empty, topics =string.Empty;
+        public string keywords = string.Empty, topics = string.Empty;
         public bool isDND = false;
         private int userId;
 
@@ -516,7 +518,7 @@ namespace thecalcify
                 {
                     try
                     {
-                         await StopBackgroundTasks();
+                        await StopBackgroundTasks();
                         UnsubscribeAllEvents();
 
                         new Login().Show();
@@ -1296,11 +1298,26 @@ namespace thecalcify
 
         private void DefaultGrid_CellMouseDown(object sender, DataGridViewCellMouseEventArgs e)
         {
-            if (e.Button == MouseButtons.Right && e.RowIndex >= 0 && e.ColumnIndex >= 0)
+            if (e.RowIndex < 0)
+                return;
+
+            if (e.Button == MouseButtons.Right)
             {
+                // ✔ Prevent focus loss
+                defaultGrid.Focus();
+
+                // ✔ Select the row on right-click
                 defaultGrid.ClearSelection();
+                defaultGrid.Rows[e.RowIndex].Selected = true;
+
+                // ✔ Set the current cell (important!)
+                defaultGrid.CurrentCell = defaultGrid.Rows[e.RowIndex].Cells[1];
+
+                // ✔ Show your context menu NEXT
+                Tools.Show(Cursor.Position);
             }
         }
+
 
         private void DefaultGrid_CellMouseEnter(object sender, DataGridViewCellEventArgs e)
         {
@@ -1942,7 +1959,7 @@ namespace thecalcify
         {
             if (e.Mode == PowerModes.Resume)
                 ApplicationLogger.Log("Power Resume");
-                //await EnsureSignalRConnectedAndSubscribedAsync();
+            //await EnsureSignalRConnectedAndSubscribedAsync();
         }
 
 
@@ -2051,7 +2068,7 @@ namespace thecalcify
                         {
                             if (!this.IsDisposed && this.IsHandleCreated)
                             {
-                                this.BeginInvoke((MethodInvoker)async delegate 
+                                this.BeginInvoke((MethodInvoker)async delegate
                                 {
                                     pastRateTickDTO = resultdefault.data;
 
@@ -2771,7 +2788,7 @@ namespace thecalcify
                 ApplicationLogger.LogException(ex);
             }
         }
-        
+
         public static void KillProcess()
         {
             // Kill any EXCEL processes without a main window (ghost/background instances)
@@ -3836,10 +3853,10 @@ namespace thecalcify
                             Common.ShowRateAlertWindowsToast(
                                 $"Rate Alert Triggered for {alertObj.Data.Symbol}",
                                 $"Your rate alert for {alertObj.Data.Symbol} On {AlertCreationPanel.ConvertTypeCodeToLabel(alertObj.Data.Type)} has been triggered at {alertObj.Data.Rate}"
-                            ); 
+                            );
                         }
 
-                        if(alertObj.Data.Flag.ToLower().Contains("status"))
+                        if (alertObj.Data.Flag.ToLower().Contains("status"))
                         {
                             if (this.InvokeRequired)
                             {
@@ -3849,7 +3866,8 @@ namespace thecalcify
                                     savelabel.Text = $"Alert for {alertObj.Data.Symbol} On {AlertCreationPanel.ConvertTypeCodeToLabel(alertObj.Data.Type)} has been triggered at {alertObj.Data.Rate} At {DateTime.Now:G}";
                                 }));
                             }
-                            else {                                 
+                            else
+                            {
                                 savelabel.Visible = true;
                                 savelabel.Text = $"Alert for {alertObj.Data.Symbol} On {AlertCreationPanel.ConvertTypeCodeToLabel(alertObj.Data.Type)} has been triggered at {alertObj.Data.Rate} At {DateTime.Now:G}";
                             }
@@ -3933,7 +3951,7 @@ namespace thecalcify
                 {
                     await InvokeOnUIThread(async () =>
                     {
-                         await StopBackgroundTasks();
+                        await StopBackgroundTasks();
 
                         UnsubscribeAllEvents();
 
@@ -4320,6 +4338,87 @@ namespace thecalcify
             }
         }
 
+        #endregion
+
+        #region Copy Actions
+        private void DefaultGrid_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Control && e.KeyCode == Keys.C)
+            {
+                CopySelectedRowsToClipboard();
+                e.Handled = true;
+            }
+        }
+
+        private void CopySelectedRowsToClipboard()
+        {
+            if (defaultGrid.SelectedRows.Count == 0)
+                return;
+
+            var excelRTD = new StringBuilder();
+
+            var rows = defaultGrid.SelectedRows
+                                  .Cast<DataGridViewRow>()
+                                  .OrderBy(r => r.Index);
+
+            foreach (var row in rows)
+            {
+                List<string> cells = new List<string>();
+
+                // Symbol from hidden column
+                string symbol = row.Cells[0].Value?.ToString()?.Trim() ?? "";
+
+                // Name (first visible)
+                string nameValue = "";
+                foreach (DataGridViewCell c in row.Cells)
+                {
+                    if (c.Visible)
+                    {
+                        nameValue = c.Value?.ToString()
+                            .Replace(" ▲", "")
+                            .Replace(" ▼", "")
+                            .Trim() ?? "";
+                        break;
+                    }
+                }
+
+                cells.Add(nameValue);
+
+                // RTD formulas
+                foreach (DataGridViewColumn col in defaultGrid.Columns)
+                {
+                    if (!col.Visible) continue;
+                    if (col.Index == 0) continue;
+                    if (col.HeaderText == "Name") continue;
+
+                    string header = col.HeaderText.Trim();
+                    string formula = $"=RTD(\"thecalcify\",,\"{symbol}\",\"{header}\")";
+                    cells.Add(formula);
+                }
+
+                excelRTD.AppendLine(string.Join("\t", cells));
+            }
+
+            DataObject obj = new DataObject();
+
+            // ✔ Excel sees RTD formulas (UnicodeText)
+            obj.SetData(DataFormats.UnicodeText, excelRTD.ToString());
+
+            // ✔ All other apps see blank → paste = nothing
+            obj.SetData(DataFormats.Text, "");
+            obj.SetData(DataFormats.StringFormat, "");
+
+            Clipboard.Clear();
+            Clipboard.SetDataObject(obj, true);
+        }
+
+        private void CopyRowToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (defaultGrid.SelectedRows.Count == 0)
+            { return; }
+
+            CopySelectedRowsToClipboard();
+        }
 
         #endregion
 

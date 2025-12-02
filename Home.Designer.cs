@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
 using System.Linq;
@@ -15,6 +16,11 @@ namespace thecalcify
         /// Required designer variable.
         /// </summary>
         private System.ComponentModel.IContainer components = null;
+        private int rowIndexFromMouseDown = -1;
+        private int rowIndexOfItemUnderMouseToDrop = -1;
+        private List<DataGridViewRow> draggedRows = new List<DataGridViewRow>();
+        private int dragSourceIndex = -1;
+
 
         /// <summary>
         /// Clean up any resources being used.
@@ -48,6 +54,7 @@ namespace thecalcify
             this.addEditSymbolsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.addEditColumnsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.clearExcelToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.copyRowToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.toolsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.disconnectESCToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -92,6 +99,7 @@ namespace thecalcify
             this.defaultGrid.BackgroundColor = System.Drawing.Color.White;
             this.defaultGrid.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.defaultGrid.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.Raised;
+            this.defaultGrid.ClipboardCopyMode = System.Windows.Forms.DataGridViewClipboardCopyMode.EnableWithoutHeaderText;
             dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
             dataGridViewCellStyle2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(81)))), ((int)(((byte)(213)))), ((int)(((byte)(220)))));
             dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold);
@@ -116,13 +124,12 @@ namespace thecalcify
             this.defaultGrid.GridColor = System.Drawing.Color.Gainsboro;
             this.defaultGrid.Location = new System.Drawing.Point(0, 58);
             this.defaultGrid.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.defaultGrid.MultiSelect = false;
             this.defaultGrid.Name = "defaultGrid";
             this.defaultGrid.ReadOnly = true;
             this.defaultGrid.RowHeadersVisible = false;
             this.defaultGrid.RowHeadersWidth = 51;
             this.defaultGrid.RowTemplate.Height = 36;
-            this.defaultGrid.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.CellSelect;
+            this.defaultGrid.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.defaultGrid.Size = new System.Drawing.Size(1115, 624);
             this.defaultGrid.TabIndex = 1;
             this.defaultGrid.CellFormatting += new System.Windows.Forms.DataGridViewCellFormattingEventHandler(this.DefaultGrid_CellFormatting);
@@ -130,6 +137,11 @@ namespace thecalcify
             this.defaultGrid.CellMouseEnter += new System.Windows.Forms.DataGridViewCellEventHandler(this.DefaultGrid_CellMouseEnter);
             this.defaultGrid.CellMouseLeave += new System.Windows.Forms.DataGridViewCellEventHandler(this.DefaultGrid_CellMouseLeave);
             this.defaultGrid.DataBindingComplete += new System.Windows.Forms.DataGridViewBindingCompleteEventHandler(this.DefaultGrid_DataBindingComplete);
+            this.defaultGrid.DragDrop += new System.Windows.Forms.DragEventHandler(this.DefaultGrid_DragDrop);
+            this.defaultGrid.DragOver += new System.Windows.Forms.DragEventHandler(this.DefaultGrid_DragOver);
+            this.defaultGrid.KeyDown += new System.Windows.Forms.KeyEventHandler(this.DefaultGrid_KeyDown);
+            this.defaultGrid.MouseDown += new System.Windows.Forms.MouseEventHandler(this.DefaultGrid_MouseDown);
+            this.defaultGrid.MouseMove += new System.Windows.Forms.MouseEventHandler(this.DefaultGrid_MouseMove);
             // 
             // Tools
             // 
@@ -138,9 +150,10 @@ namespace thecalcify
             this.ExportToExcelToolStripMenuItem,
             this.addEditSymbolsToolStripMenuItem,
             this.addEditColumnsToolStripMenuItem,
-            this.clearExcelToolStripMenuItem});
+            this.clearExcelToolStripMenuItem,
+            this.copyRowToolStripMenuItem});
             this.Tools.Name = "ClickMenuStrip";
-            this.Tools.Size = new System.Drawing.Size(200, 100);
+            this.Tools.Size = new System.Drawing.Size(200, 124);
             // 
             // ExportToExcelToolStripMenuItem
             // 
@@ -170,6 +183,13 @@ namespace thecalcify
             this.clearExcelToolStripMenuItem.Size = new System.Drawing.Size(199, 24);
             this.clearExcelToolStripMenuItem.Text = "Clear Excel";
             this.clearExcelToolStripMenuItem.Visible = false;
+            // 
+            // copyRowToolStripMenuItem
+            // 
+            this.copyRowToolStripMenuItem.Name = "copyRowToolStripMenuItem";
+            this.copyRowToolStripMenuItem.Size = new System.Drawing.Size(199, 24);
+            this.copyRowToolStripMenuItem.Text = "Copy Row";
+            this.copyRowToolStripMenuItem.Click += new System.EventHandler(this.CopyRowToolStripMenuItem_Click);
             // 
             // menuStrip1
             // 
@@ -638,6 +658,87 @@ namespace thecalcify
             return string.Empty;
         }
 
+        private void DefaultGrid_MouseDown(object sender, MouseEventArgs e)
+        {
+            var hit = defaultGrid.HitTest(e.X, e.Y);
+
+            if (hit.RowIndex < 0)
+                return;
+
+            dragSourceIndex = hit.RowIndex;
+            draggedRows = defaultGrid.SelectedRows
+                                     .Cast<DataGridViewRow>()
+                                     .OrderBy(r => r.Index)
+                                     .ToList();
+
+            // ensure row is selected
+            if (!defaultGrid.Rows[hit.RowIndex].Selected)
+            {
+                defaultGrid.ClearSelection();
+                defaultGrid.Rows[hit.RowIndex].Selected = true;
+                draggedRows = new List<DataGridViewRow> { defaultGrid.Rows[hit.RowIndex] };
+            }
+        }
+
+        private void DefaultGrid_MouseMove(object sender, MouseEventArgs e)
+        {
+            if ((e.Button & MouseButtons.Left) == MouseButtons.Left && dragSourceIndex >= 0)
+            {
+                defaultGrid.DoDragDrop(draggedRows, DragDropEffects.Move);
+            }
+        }
+
+
+        private void DefaultGrid_DragOver(object sender, DragEventArgs e)
+        {
+            e.Effect = DragDropEffects.Move;
+        }
+
+        private void DefaultGrid_DragDrop(object sender, DragEventArgs e)
+        {
+            Point clientPoint = defaultGrid.PointToClient(new Point(e.X, e.Y));
+            int dropIndex = defaultGrid.HitTest(clientPoint.X, clientPoint.Y).RowIndex;
+
+            if (dropIndex < 0)
+                dropIndex = defaultGrid.Rows.Count - 1;
+
+            // remove rows from bottom → avoids shifting issues
+            foreach (var row in draggedRows.OrderByDescending(r => r.Index))
+            {
+                defaultGrid.Rows.RemoveAt(row.Index);
+            }
+
+            // insert rows one by one
+            int insertIndex = dropIndex;
+
+            foreach (var row in draggedRows)
+            {
+                defaultGrid.Rows.Insert(insertIndex, row);
+                insertIndex++;
+            }
+
+            // fix selection after movement
+            foreach (var row in draggedRows)
+                row.Selected = true;
+
+            // VERY IMPORTANT: Sync your row → symbol map
+            RebuildSymbolRowMap();
+        }
+
+        private void RebuildSymbolRowMap()
+        {
+            symbolRowMap.Clear();
+
+            for (int i = 0; i < defaultGrid.Rows.Count; i++)
+            {
+                var row = defaultGrid.Rows[i];
+                string symbol = row.Cells["Symbol"].Value?.ToString();  // your unique symbol key
+
+                if (!string.IsNullOrEmpty(symbol))
+                    symbolRowMap[symbol] = i;
+            }
+        }
+
 
 
         #endregion
@@ -680,5 +781,6 @@ namespace thecalcify
         private ToolStripMenuItem notificationSettings;
         private ToolStripMenuItem newsListToolStripMenuItem;
         private ToolStripMenuItem newsHistoryToolStripMenuItem;
+        private ToolStripMenuItem copyRowToolStripMenuItem;
     }
 }
