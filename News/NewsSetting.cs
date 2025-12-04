@@ -438,7 +438,7 @@ namespace thecalcify.News
                     var response = await client.PostAsync($"{apiUrl}update-status-dnd", httpContent);
                     if (response.IsSuccessStatusCode)
                     {
-                        Console.WriteLine("DND status updated successfully on server.");
+                        ApplicationLogger.Log("DND status updated successfully on server.");
                     }
                     else if (response.StatusCode == System.Net.HttpStatusCode.Forbidden || response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                     {
@@ -448,12 +448,12 @@ namespace thecalcify.News
                     }
                     else
                     {
-                        Console.WriteLine($"Failed to update DND status. Server responded: {response.StatusCode}");
+                        ApplicationLogger.Log($"Failed to update DND status. Server responded: {response.StatusCode}");
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Error updating DND status: {ex.Message}");
+                    ApplicationLogger.Log($"Error updating DND status: {ex.Message}");
                 }
             }
         }
@@ -480,7 +480,7 @@ namespace thecalcify.News
                     var response = await client.PostAsync($"{apiUrl}update-topic-keyword", content);
                     if (response.IsSuccessStatusCode)
                     {
-                        Console.WriteLine($"✅ {(isTopic ? "Topics" : "Keywords")} updated successfully.");
+                        ApplicationLogger.Log($"✅ {(isTopic ? "Topics" : "Keywords")} updated successfully.");
                     }
                     else if(response.StatusCode == System.Net.HttpStatusCode.Forbidden || response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                     {
@@ -491,12 +491,12 @@ namespace thecalcify.News
                     else
                     {
                         string responseText = await response.Content.ReadAsStringAsync();
-                        Console.WriteLine($"❌ Failed to update {(isTopic ? "topics" : "keywords")}. Status: {response.StatusCode}, Response: {responseText}");
+                        ApplicationLogger.Log($"❌ Failed to update {(isTopic ? "topics" : "keywords")}. Status: {response.StatusCode}, Response: {responseText}");
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"❗ Error updating {(isTopic ? "topics" : "keywords")}: {ex.Message}");
+                    ApplicationLogger.Log($"❗ Error updating {(isTopic ? "topics" : "keywords")}: {ex.Message}");
                 }
             }
         }
@@ -544,14 +544,18 @@ namespace thecalcify.News
         public async Task UpdateSelectedSubTopics(Dictionary<string, string> selectedSubTopics)
         {
             SplashManager.Show(thecalcify.CurrentInstance, "Updating Subscriptions", "Please wait while we update your topic...");
+
             _selectedSubTopics = selectedSubTopics;
+
+            // FIX: update topics[] so UI refresh uses new values
+            topics = selectedSubTopics.Keys.ToArray();
 
             await UpdateTopicOrKeywordAsync(true, string.Join(",", selectedSubTopics.Keys));
 
-            //InitializeSelectedSubTopics();
             GenerateTopicChips();
             SplashManager.Hide();
         }
+
 
         private void InitializeSelectedSubTopics()
         {

@@ -25,14 +25,21 @@ namespace thecalcify.Helper
             // Fill labels
             lblUsername.Text = $"User Name:   {username}";
             lblPassword.Text = $"Password:   {password}";
-            lblExpiry.Text = $"License Expires:   {licenceExpiryDate}";
+            if (DateTime.TryParse(licenceExpiryDate, out var expiryDate))
+            {
+                lblExpiry.Text = $"License Expires:   {expiryDate:dd:MM:yyyy}";
+            }
+            else
+            {
+                lblExpiry.Text = $"License Expires:   {licenceExpiryDate}";
+            }
 
             string[] parts = Application.ProductVersion.Split('.');
             string result = string.Join(".", parts.Take(3));
             lblVersion.Text = $"Version:   {result}";
 
             var filePath = System.Reflection.Assembly.GetExecutingAssembly().Location;
-            lblModified.Text = $"Version Modified Date:   {File.GetLastWriteTime(filePath):dd-MM-yyyy}";
+            lblModified.Text = $"Version Modified Date:   {File.GetLastWriteTime(filePath):dd:MM:yyyy}";
 
             // ⭐ Center cardPanel
             cardPanel.Left = (this.Width - cardPanel.Width) / 2;

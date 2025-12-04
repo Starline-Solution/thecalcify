@@ -16,8 +16,8 @@ namespace thecalcify
         /// Required designer variable.
         /// </summary>
         private System.ComponentModel.IContainer components = null;
-        private int rowIndexFromMouseDown = -1;
-        private int rowIndexOfItemUnderMouseToDrop = -1;
+        //private int rowIndexFromMouseDown = -1;
+        //private int rowIndexOfItemUnderMouseToDrop = -1;
         private List<DataGridViewRow> draggedRows = new List<DataGridViewRow>();
         private int dragSourceIndex = -1;
 
@@ -122,7 +122,7 @@ namespace thecalcify
             this.defaultGrid.Dock = System.Windows.Forms.DockStyle.Fill;
             this.defaultGrid.EnableHeadersVisualStyles = false;
             this.defaultGrid.GridColor = System.Drawing.Color.Gainsboro;
-            this.defaultGrid.Location = new System.Drawing.Point(0, 58);
+            this.defaultGrid.Location = new System.Drawing.Point(0, 60);
             this.defaultGrid.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.defaultGrid.Name = "defaultGrid";
             this.defaultGrid.ReadOnly = true;
@@ -130,7 +130,7 @@ namespace thecalcify
             this.defaultGrid.RowHeadersWidth = 51;
             this.defaultGrid.RowTemplate.Height = 36;
             this.defaultGrid.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.defaultGrid.Size = new System.Drawing.Size(1115, 624);
+            this.defaultGrid.Size = new System.Drawing.Size(1115, 622);
             this.defaultGrid.TabIndex = 1;
             this.defaultGrid.CellFormatting += new System.Windows.Forms.DataGridViewCellFormattingEventHandler(this.DefaultGrid_CellFormatting);
             this.defaultGrid.CellMouseDown += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.DefaultGrid_CellMouseDown);
@@ -208,7 +208,7 @@ namespace thecalcify
             this.menuStrip1.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.HorizontalStackWithOverflow;
             this.menuStrip1.Location = new System.Drawing.Point(0, 30);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(1115, 28);
+            this.menuStrip1.Size = new System.Drawing.Size(1115, 30);
             this.menuStrip1.TabIndex = 1;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -218,7 +218,7 @@ namespace thecalcify
             this.disconnectESCToolStripMenuItem,
             this.fullScreenF11ToolStripMenuItem});
             this.toolsToolStripMenuItem.Name = "toolsToolStripMenuItem";
-            this.toolsToolStripMenuItem.Size = new System.Drawing.Size(64, 24);
+            this.toolsToolStripMenuItem.Size = new System.Drawing.Size(64, 26);
             this.toolsToolStripMenuItem.Text = "Tools";
             // 
             // disconnectESCToolStripMenuItem
@@ -255,7 +255,7 @@ namespace thecalcify
             this.refreshMarketWatchHost.Image = ((System.Drawing.Image)(resources.GetObject("refreshMarketWatchHost.Image")));
             this.refreshMarketWatchHost.Margin = new System.Windows.Forms.Padding(5, 0, 10, 0);
             this.refreshMarketWatchHost.Name = "refreshMarketWatchHost";
-            this.refreshMarketWatchHost.Size = new System.Drawing.Size(34, 24);
+            this.refreshMarketWatchHost.Size = new System.Drawing.Size(34, 26);
             this.refreshMarketWatchHost.ToolTipText = "Refresh MarketWatch";
             this.refreshMarketWatchHost.Click += new System.EventHandler(this.RefreshMarketWatchHost_Click);
             // 
@@ -266,7 +266,7 @@ namespace thecalcify
             this.viewToolStripMenuItem,
             this.deleteToolStripMenuItem});
             this.newCTRLNToolStripMenuItem.Name = "newCTRLNToolStripMenuItem";
-            this.newCTRLNToolStripMenuItem.Size = new System.Drawing.Size(127, 24);
+            this.newCTRLNToolStripMenuItem.Size = new System.Drawing.Size(127, 26);
             this.newCTRLNToolStripMenuItem.Text = "Market Watch";
             // 
             // newCTRLNToolStripMenuItem1
@@ -295,7 +295,7 @@ namespace thecalcify
             this.newswatchListToolStripMenuItem,
             this.notificationSettings});
             this.newsToolStripMenuItem.Name = "newsToolStripMenuItem";
-            this.newsToolStripMenuItem.Size = new System.Drawing.Size(65, 24);
+            this.newsToolStripMenuItem.Size = new System.Drawing.Size(65, 26);
             this.newsToolStripMenuItem.Text = "News";
             // 
             // newswatchListToolStripMenuItem
@@ -340,7 +340,7 @@ namespace thecalcify
             // aboutToolStripMenuItem
             // 
             this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
-            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(66, 24);
+            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(66, 26);
             this.aboutToolStripMenuItem.Text = "About";
             this.aboutToolStripMenuItem.ToolTipText = "Click CTRL + U";
             this.aboutToolStripMenuItem.Click += new System.EventHandler(this.AboutToolStripMenuItem_Click);
@@ -699,29 +699,34 @@ namespace thecalcify
             Point clientPoint = defaultGrid.PointToClient(new Point(e.X, e.Y));
             int dropIndex = defaultGrid.HitTest(clientPoint.X, clientPoint.Y).RowIndex;
 
-            if (dropIndex < 0)
-                dropIndex = defaultGrid.Rows.Count - 1;
+            // If drop position is OUTSIDE any row → force drop at end
+            if (dropIndex < 0 || dropIndex >= defaultGrid.Rows.Count)
+                dropIndex = defaultGrid.Rows.Count;
 
-            // remove rows from bottom → avoids shifting issues
+            // 1️⃣ Remove dragged rows (remove bottom-first to avoid shift issues)
             foreach (var row in draggedRows.OrderByDescending(r => r.Index))
             {
                 defaultGrid.Rows.RemoveAt(row.Index);
             }
 
-            // insert rows one by one
+            // 2️⃣ Insert rows at final drop index
             int insertIndex = dropIndex;
 
             foreach (var row in draggedRows)
             {
+                // IMPORTANT: InsertIndex may exceed row count after removals
+                if (insertIndex > defaultGrid.Rows.Count)
+                    insertIndex = defaultGrid.Rows.Count;
+
                 defaultGrid.Rows.Insert(insertIndex, row);
                 insertIndex++;
             }
 
-            // fix selection after movement
+            // 3️⃣ Reselect dragged rows
             foreach (var row in draggedRows)
                 row.Selected = true;
 
-            // VERY IMPORTANT: Sync your row → symbol map
+            // 4️⃣ Rebuild symbol index mapping
             RebuildSymbolRowMap();
         }
 

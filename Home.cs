@@ -29,9 +29,6 @@ using thecalcify.MarketWatch;
 using thecalcify.News;
 using thecalcify.RTDWorker;
 using thecalcify.Shared;
-using Button = System.Windows.Forms.Button;
-using Label = System.Windows.Forms.Label;
-using TextBox = System.Windows.Forms.TextBox;
 
 namespace thecalcify
 {
@@ -42,15 +39,10 @@ namespace thecalcify
         [DllImport("user32.dll")]
         private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out int lpdwProcessId);
 
-
-        //private string[] args;
-
         // ======================
         // 📌 Config / Constants
         // ======================
-        public readonly string AppFolder = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "thecalcify");
+        public readonly string AppFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "thecalcify");
 
         public string token, licenceDate, username, password;
 
@@ -87,7 +79,6 @@ namespace thecalcify
         public List<MarketDataDto> pastRateTickDTO = new List<MarketDataDto>();
         public List<string> symbolMaster = new List<string>();
         public List<string> columnPreferences;
-        //private HubConnection connection; 
         public List<string> columnPreferencesDefault = new List<string>()
         {
             "symbol","Name","Bid","Ask","High","Low","Open","Close","LTP","Net Chng",
@@ -121,22 +112,11 @@ namespace thecalcify
         //private bool isReconnectTimerRunning = false;
         //private bool _isReconnectInProgress = false;
         //private bool _eventHandlersAttached = false;
-
         public Common commonClass;
-
-        // ======================
-        // 📌 Timers / Threads
-        // ======================
-        //private System.Threading.Timer _updateTimer;
-
-        //private System.Windows.Forms.Timer signalRTimer;
-        public event EventHandler LogoutRequested;
-
 
         // ======================
         // 📌 Excel Interop
         // ======================
-
         private readonly string excelFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "thecalcify.xlsx");
         private static readonly string marketInitDataPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "initdata.dat");
 
@@ -144,7 +124,6 @@ namespace thecalcify
         // 📌 UI Elements
         // ======================
         private CheckedListBox checkedListColumns;
-
         private Button btnSelectAllColumns;
         private Button btnConfirmAddColumns;
         private Button btnCancelAddColumns;
@@ -162,7 +141,6 @@ namespace thecalcify
             Default,
             New
         }
-
         private MarketWatchViewMode marketWatchViewMode = MarketWatchViewMode.Default;
 
 
@@ -173,25 +151,16 @@ namespace thecalcify
         public string keywords = string.Empty, topics = string.Empty;
         public bool isDND = false;
         private int userId;
-
-
         private readonly Dictionary<string, long> _rowLastUpdate = new Dictionary<string, long>();
         private readonly Dictionary<string, double> _prevAskMap = new Dictionary<string, double>();
-
-
         private SharedMemoryQueue _queue;
         private CancellationTokenSource _cts;
         private Task _consumerTask;
-        //private readonly ConcurrentQueue<MarketDataDto> _uiUpdateBuffer = new ConcurrentQueue<MarketDataDto>();
         private System.Windows.Forms.Timer _uiTimer;
         private readonly string RtwConfigPath = APIUrl.RtwConfigPath;
         private readonly ConcurrentDictionary<string, MarketDataDto> _latestTicks = new ConcurrentDictionary<string, MarketDataDto>(StringComparer.OrdinalIgnoreCase);
         private bool _isGridBuilding = false;
-
-
-        //private ExcelUpdateQueue _excelQueue;
-        //private ExcelWorker _excelWorker;
-
+        private static bool _excelWarmedUp = false;
 
         #endregion Declaration and Initialization
 
@@ -200,6 +169,8 @@ namespace thecalcify
         {
             InitializeComponent();
             //this.args = args;
+            this.Shown += (s, e2) => WarmUpExcelLazy();
+
         }
 
         private async void Home_Load(object sender, EventArgs e)
@@ -239,9 +210,9 @@ namespace thecalcify
                         (columnPreferencesDefault ?? new List<string>()) : currentColumns;
                 }));
 
-                // Warm up Excel COM server (faster first export)
-                var app = new Microsoft.Office.Interop.Excel.Application();
-                app.Quit();
+                //// Warm up Excel COM server (faster first export)
+                //var app = new Microsoft.Office.Interop.Excel.Application();
+                //app.Quit();
 
                 startRTWService();
                 ExcelNotifier.StartExcelMonitor();
@@ -455,6 +426,26 @@ namespace thecalcify
             {
                 ApplicationLogger.LogException(ex);
             }
+        }
+
+        public static void WarmUpExcelLazy()
+        {
+            if (_excelWarmedUp) return;
+
+            Task.Run(() =>
+            {
+                try
+                {
+                    var xl = new Microsoft.Office.Interop.Excel.Application();
+                    xl.Quit();
+                    Marshal.ReleaseComObject(xl);
+                }
+                catch { }
+                finally
+                {
+                    _excelWarmedUp = true;
+                }
+            });
         }
 
         private Task CheckLicenceLoop()
@@ -4008,7 +3999,7 @@ namespace thecalcify
 
                     if (response.IsSuccessStatusCode)
                     {
-                        Console.WriteLine("✅ Logout successful.");
+                        ApplicationLogger.Log("✅ Logout successful.");
                     }
                     else if (response.StatusCode == System.Net.HttpStatusCode.Forbidden ||
                              response.StatusCode == System.Net.HttpStatusCode.Unauthorized ||
@@ -4021,12 +4012,12 @@ namespace thecalcify
                     else
                     {
                         string responseText = await response.Content.ReadAsStringAsync();
-                        Console.WriteLine($"❌ Logout failed. Status: {response.StatusCode}, Response: {responseText}");
+                        ApplicationLogger.Log($"❌ Logout failed. Status: {response.StatusCode}, Response: {responseText}");
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"❗ Error during logout: {ex.Message}");
+                    ApplicationLogger.Log($"❗ Error during logout: {ex.Message}");
                 }
             }
         }

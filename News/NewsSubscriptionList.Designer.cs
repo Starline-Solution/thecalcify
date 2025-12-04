@@ -54,7 +54,6 @@
             this.MinimizeBox = false;
             this.Name = "NewsSubscriptionList";
             this.Text = "NewsSubscriptionList";
-            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.NewsSubscriptionList_FormClosed);
             this.ResumeLayout(false);
 
         }

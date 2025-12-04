@@ -18,6 +18,7 @@ namespace thecalcify.News
         public NewsSubscriptionList(string json, string type, Dictionary<string,string> selectedSubTopics, NewsSetting newsSetting)
         {
             InitializeComponent();
+            AddSaveButton();
             jsonData = json;
             newsSettingInstance = newsSetting;
             _selectedSubTopics = selectedSubTopics ?? new Dictionary<string, string>();
@@ -25,9 +26,59 @@ namespace thecalcify.News
             this.Text = type.Equals("region", StringComparison.OrdinalIgnoreCase) ? "News Regions" : "News Categories";
         }
 
-        private void NewsSubscriptionList_Load(object sender, EventArgs e)
+        private void AddSaveButton()
         {
-            LoadData();
+            // TOP PANEL
+            Panel topPanel = new Panel
+            {
+                Dock = DockStyle.Top,
+                Height = 50,
+                BackColor = Color.WhiteSmoke
+            };
+
+            // SAVE BUTTON
+            Button btnSave = new Button
+            {
+                Text = "Save",
+                Width = 120,
+                Height = 35,
+                Font = new Font("Segoe UI", 10, FontStyle.Bold),
+                BackColor = Color.FromArgb(81, 213, 220),
+                Anchor = AnchorStyles.Top | AnchorStyles.Right
+            };
+
+            // Important: set right-aligned after adding panel to form
+            topPanel.Controls.Add(btnSave);
+
+            this.Controls.Add(topPanel);
+            this.Controls.SetChildIndex(topPanel, 0);
+
+            // AFTER the panel is inside the form → calculate right position
+            this.Shown += (s, e) =>
+            {
+                btnSave.Location = new Point(topPanel.Width - btnSave.Width - 10, 8);
+            };
+
+            topPanel.Resize += (s, e) =>
+            {
+                btnSave.Location = new Point(topPanel.Width - btnSave.Width - 10, 8);
+            };
+
+            // CLICK HANDLER
+            btnSave.Click += async (s, e) =>
+            {
+                if (newsSettingInstance is NewsSetting ns)
+                {
+                    await ns.UpdateSelectedSubTopics(_selectedSubTopics);
+                    MessageBox.Show("Subscriptions saved.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            };
+        }
+
+
+        private async void NewsSubscriptionList_Load(object sender, EventArgs e)
+        {
+            await LoadData();
         }
 
         private async Task LoadData()
@@ -39,7 +90,7 @@ namespace thecalcify.News
                     PropertyNameCaseInsensitive = true
                 };
                 var categories = await Task.Run(() =>
-                    System.Text.Json.JsonSerializer.Deserialize<List<NewsCategory>>(jsonData, options)
+                    JsonSerializer.Deserialize<List<NewsCategory>>(jsonData, options)
                 );
 
                 if (categories != null && categories.Any())
@@ -278,22 +329,6 @@ namespace thecalcify.News
                 mainCheckBox.CheckState = CheckState.Indeterminate;
         }
 
-
-        private async void NewsSubscriptionList_FormClosed(object sender, FormClosedEventArgs e)
-        {
-            var result = MessageBox.Show("Would you like to Save your news topic subscriptions?", "News Subscription", MessageBoxButtons.OKCancel, MessageBoxIcon.Information);
-
-            if (result == DialogResult.OK)
-            {
-                if (newsSettingInstance is NewsSetting newsSetting)
-                    await newsSetting.UpdateSelectedSubTopics(_selectedSubTopics);
-            }
-            else
-            {
-                return;
-            }
-            
-        }
 
 
         public class NewsCategory
