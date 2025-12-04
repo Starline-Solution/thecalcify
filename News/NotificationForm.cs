@@ -88,7 +88,7 @@ namespace thecalcify.News
         private void NotificationForm_DoubleClick(object sender, EventArgs e)
         {
             thecalcify thecalcify = thecalcify.CurrentInstance;
-            thecalcify.NewsListToolStripMenuItem_Click_1(this, EventArgs.Empty);
+            thecalcify.NewsListToolStripMenuItem_Click(this, EventArgs.Empty);
         }
 
         private void lblHeadline_DoubleClick(object sender, EventArgs e)

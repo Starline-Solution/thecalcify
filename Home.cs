@@ -365,7 +365,7 @@ namespace thecalcify
 
                     licenceDate = LoginInfo.NewsExpiredDate.ToString("dd:MM:yyyy");
 
-                    this.NewsListToolStripMenuItem_Click_1(this, EventArgs.Empty);
+                    this.NewsListToolStripMenuItem_Click(this, EventArgs.Empty);
                     newCTRLNToolStripMenuItem.Visible = false;
                     alertToolStripMenuItem.Visible = false;
                     toolsToolStripMenuItem.Enabled = true;
@@ -585,109 +585,6 @@ namespace thecalcify
             }
         }
 
-        private async void AboutToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            //try
-            //{
-            //    using (var aboutForm = new About(username, password, licenceDate, token))
-            //    {
-            //        if (isFullScreen)
-            //        {
-            //            aboutForm.StartPosition = FormStartPosition.CenterParent;
-            //            aboutForm.TopMost = true; // Ensures it stays above the full-screen window
-            //            aboutForm.ShowDialog(this); // Pass the main form as owner
-            //        }
-            //        else
-            //        {
-            //            aboutForm.ShowDialog(this);
-            //        }
-            //    }
-            //}
-            //catch (Exception ex)
-            //{
-            //    ApplicationLogger.LogException(ex);
-            //}
-
-            try
-            {
-                // 1. Clean up existing NewsControl if already present
-                var existingAbout = this.Controls.Find("aboutControlView", true).FirstOrDefault();
-                if (existingAbout != null)
-                {
-                    this.Controls.Remove(existingAbout);
-                    existingAbout.Dispose();
-                }
-
-                EditableMarketWatchGrid editableMarketWatchGrid = EditableMarketWatchGrid.CurrentInstance;
-                if (editableMarketWatchGrid != null)
-                {
-                    if (editableMarketWatchGrid.IsCurrentCellInEditMode)
-                    {
-                        editableMarketWatchGrid.EndEdit();
-                    }
-
-                    editableMarketWatchGrid.EditableDispose(); // Dispose the grid
-                    editableMarketWatchGrid.Dispose();
-                }
-
-
-                // 2. Create new AboutControl
-                var aboutControl = new About(username, password, licenceDate, token)
-                {
-                    Name = "aboutControlView",
-                    Dock = DockStyle.Fill
-                };
-                saveMarketWatchHost.Visible = false;
-                fontSizeComboBox.Visible = false;
-                searchTextLabel.Visible = false;
-                txtsearch.Visible = false;
-                refreshMarketWatchHost.Visible = false;
-                newCTRLNToolStripMenuItem1.Enabled = true;
-                // Update status label
-
-                // Update title based on edit mode
-                titleLabel.Text = "About";
-
-                // 3. Add it to main form
-                this.Controls.Add(aboutControl);
-                aboutControl.BringToFront();
-                aboutControl.Focus();
-
-                licenceDate = LoginInfo.RateExpiredDate.ToString();
-
-                RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
-                if (RemainingDays <= 7)
-                {
-                    await CheckLicenceLoop();
-                }
-                else
-                {
-                    licenceExpire.Text = $"Licence Expire At:- {LoginInfo.RateExpiredDate:dd:MM:yyyy}";
-                }
-
-            }
-            catch (Exception ex)
-            {
-                ApplicationLogger.LogException(ex);
-                MessageBox.Show($"Error loading News view: {ex.Message}");
-            }
-            finally
-            {
-                if (this.InvokeRequired)
-                {
-                    this.Invoke(new Action(() =>
-                    {
-                        notificationSettings.Visible = false;
-                    }));
-                }
-                else
-                {
-                    notificationSettings.Visible = false;
-                }
-            }
-        }
-
-
         private void Txtsearch_KeyDown(object sender, KeyEventArgs e)
         {
             // Check if Ctrl + Backspace is pressed
@@ -698,6 +595,172 @@ namespace thecalcify
             }
         }
 
+        private void DefaultGrid_CellMouseDown(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            if (e.RowIndex < 0)
+                return;
+
+            if (e.Button == MouseButtons.Right)
+            {
+                // ✔ Prevent focus loss
+                defaultGrid.Focus();
+
+                // ✔ Select the row on right-click
+                defaultGrid.ClearSelection();
+                defaultGrid.Rows[e.RowIndex].Selected = true;
+
+                // ✔ Set the current cell (important!)
+                defaultGrid.CurrentCell = defaultGrid.Rows[e.RowIndex].Cells[1];
+
+                // ✔ Show your context menu NEXT
+                Tools.Show(Cursor.Position);
+            }
+        }
+
+        private void DefaultGrid_CellMouseEnter(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex >= 0)
+            {
+                defaultGrid.Rows[e.RowIndex].DefaultCellStyle.BackColor = Color.FromArgb(245, 245, 245);
+            }
+        }
+
+        private void DefaultGrid_CellMouseLeave(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex >= 0)
+            {
+                if (e.RowIndex % 2 == 0)
+                    defaultGrid.Rows[e.RowIndex].DefaultCellStyle.BackColor = Color.White;
+                else
+                    defaultGrid.Rows[e.RowIndex].DefaultCellStyle.BackColor = Color.FromArgb(248, 248, 248);
+            }
+        }
+
+        private void Thecalcify_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Shift && e.KeyCode == Keys.Escape)
+            {
+                var result = MessageBox.Show("Do you want to Exit Application?", "Exit Application", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                if (result == DialogResult.Yes)
+                {
+                    //this.Close(); // Close the login form
+                    //Application.Exit(); // Terminate the application
+                    DisconnectESCToolStripMenuItem_Click(sender, e);
+                }
+            }
+
+            if (e.Control && e.KeyCode == Keys.N && marketWatchViewMode != MarketWatchViewMode.New && LoginInfo.IsRate)
+            {
+                NewCTRLNToolStripMenuItem1_Click(this, EventArgs.Empty);
+                e.Handled = true;
+            }
+
+            if (e.KeyCode == Keys.Escape && !(e.Shift && e.KeyCode == Keys.Escape))
+            {
+                FullScreenF11ToolStripMenuItem_Click(this, EventArgs.Empty);
+                e.Handled = true;
+            }
+
+            if (e.KeyCode == Keys.U && e.Control)
+            {
+                AboutToolStripMenuItem_Click(this, EventArgs.Empty);
+                e.Handled = true;
+            }
+        }
+
+        private void TitleLabel_TextChanged(object sender, EventArgs e)
+        {
+            txtsearch.Clear();
+        }
+
+        private void DefaultGrid_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
+        {
+            // Force-hide specific columns
+            if (defaultGrid.Columns.Contains("symbol"))
+                defaultGrid.Columns["symbol"].Visible = false;
+            if (defaultGrid.Columns.Contains("V"))
+                defaultGrid.Columns["V"].Visible = false;
+        }
+
+        private void DefaultGrid_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        {
+            if (e.Value?.ToString() == "N/A")
+                e.CellStyle.ForeColor = Color.Gray;
+        }
+
+        private async void OnNetworkAvailabilityChanged(object sender, NetworkAvailabilityEventArgs e)
+        {
+            if (e.IsAvailable)
+            {
+                //connection = null;
+                //_eventHandlersAttached = false;
+
+                //SignalRTimer();
+                //await EnsureSignalRConnectedAndSubscribedAsync();
+                if (this.InvokeRequired)
+                {
+                    this.Invoke(new Action(() =>
+                    {
+                        refreshMarketWatchHost.Visible = true;
+                        savelabel.Text = string.Empty;
+                        savelabel.Visible = false;
+                    }));
+                }
+                else
+                {
+                    refreshMarketWatchHost.Visible = true;
+                    savelabel.Text = string.Empty;
+                    savelabel.Visible = false;
+                }
+            }
+            else
+            {
+                ApplicationLogger.Log("Network unavailable.");
+                //connection = null;
+                //_eventHandlersAttached = false;
+
+                //if (signalRTimer != null)
+                //{
+                //    signalRTimer.Stop();
+                //}
+
+
+                //_eventHandlersAttached = false;
+
+                if (this.InvokeRequired)
+                {
+                    this.Invoke(new Action(() =>
+                    {
+                        refreshMarketWatchHost.Visible = false;
+                        savelabel.Text = "Client is offline, switch network.";
+                        savelabel.Visible = true;
+                    }));
+                }
+                else
+                {
+                    refreshMarketWatchHost.Visible = false;
+                    savelabel.Text = "Client is offline, switch network.";
+                    savelabel.Visible = true;
+                }
+            }
+
+        }
+
+        private void OnNetworkAddressChanged(object sender, EventArgs e)
+        {
+            ApplicationLogger.Log("Network address changed.");
+        }
+
+        private async void OnPowerModeChanged(object sender, PowerModeChangedEventArgs e)
+        {
+            if (e.Mode == PowerModes.Resume)
+                ApplicationLogger.Log("Power Resume");
+            //await EnsureSignalRConnectedAndSubscribedAsync();
+        }
+
+        #endregion Form Method
+
+        #region MarketWatch Click
         public async Task DefaultToolStripMenuItem_Click(object sender, EventArgs e)
         {
             try
@@ -769,7 +832,6 @@ namespace thecalcify
                 ApplicationLogger.LogException(ex);
             }
         }
-
 
         private async void NewCTRLNToolStripMenuItem1_Click(object sender, EventArgs e)
         {
@@ -1246,6 +1308,334 @@ namespace thecalcify
 
         }
 
+
+        public void MenuLoad()
+        {
+            try
+            {
+                // Final folder path
+                string finalPath = Path.Combine(AppFolder, username);
+
+                // Get all .slt files from the application folder
+                List<string> fileNames = Directory.GetFiles(finalPath, "*.slt")
+                                                 .Select(Path.GetFileNameWithoutExtension)
+                                                 .ToList();
+
+                FileLists = fileNames;
+
+                // Clear existing menu items
+                viewToolStripMenuItem.DropDownItems.Clear();
+                // Add Default menu item with click handler
+                ToolStripMenuItem defaultMenuItem = new ToolStripMenuItem("Default");
+                defaultMenuItem.Click += async (sender, e) =>
+                {
+                    selectedSymbols.Clear();
+                    identifiers.Clear();
+                    saveFileName = null;
+                    lastOpenMarketWatch = "Default";
+
+                    var clickedItem = (ToolStripMenuItem)sender;
+                    await DefaultToolStripMenuItem_Click(sender, e);
+                    addEditSymbolsToolStripMenuItem.Enabled = false;
+                    await LoadInitialMarketDataAsync();
+                    isGrid = true;
+                    reloadGrid = true;
+                };
+
+                viewToolStripMenuItem.DropDownItems.Add(defaultMenuItem);
+
+                // Add each file as a menu item with a click handler
+                foreach (string fileName in fileNames)
+                {
+                    ToolStripMenuItem menuItem = new ToolStripMenuItem(fileName);
+                    menuItem.Click += async (sender, e) =>
+                    {
+                        selectedSymbols.Clear();
+                        identifiers.Clear();
+                        saveFileName = string.Empty;
+                        //_updateQueue = new ConcurrentQueue<MarketDataDto>();
+
+                        var clickedItem = (ToolStripMenuItem)sender;
+
+                        saveFileName = clickedItem.Text;
+                        addEditSymbolsToolStripMenuItem.Enabled = true;
+                        lastOpenMarketWatch = saveFileName;
+
+                        EditableMarketWatchGrid editableMarketWatchGrid = EditableMarketWatchGrid.CurrentInstance;
+                        if (editableMarketWatchGrid != null)
+                        {
+                            if (editableMarketWatchGrid.IsCurrentCellInEditMode)
+                            {
+                                editableMarketWatchGrid.EndEdit();
+                            }
+
+                            editableMarketWatchGrid.EditableDispose(); // Dispose the grid
+                            editableMarketWatchGrid.Dispose();
+                        }
+
+                        saveMarketWatchHost.Visible = false;
+                        refreshMarketWatchHost.Visible = true;
+                        await LoadSymbol(Path.Combine(saveFileName + ".slt"));
+
+                        try
+                        {
+                            if (titleLabel != null)
+                            {
+                                titleLabel.Text = !string.IsNullOrWhiteSpace(saveFileName)
+                                    ? saveFileName.ToUpper()
+                                    : "Default";
+                            }
+                            else
+                            {
+                                ApplicationLogger.Log("titleLabel is null at MenuLoad");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            ApplicationLogger.LogException(ex);
+                            ApplicationLogger.Log("saveFileName: " + saveFileName ?? "NULL");
+                        }
+
+                        isEdit = false;
+                        await LoadInitialMarketDataAsync();
+                        isGrid = true;
+                        reloadGrid = true;
+                    };
+                    viewToolStripMenuItem.DropDownItems.Add(menuItem);
+                }
+            }
+            catch (DirectoryNotFoundException)
+            {
+                // Clear existing menu items
+                viewToolStripMenuItem.DropDownItems.Clear();
+                // Add Default menu item with click handler
+                ToolStripMenuItem defaultMenuItem = new ToolStripMenuItem("Default");
+                defaultMenuItem.Click += async (sender, e) =>
+                {
+                    selectedSymbols.Clear();
+                    identifiers.Clear();
+                    lastOpenMarketWatch = "Default";
+
+                    var clickedItem = (ToolStripMenuItem)sender;
+                    await DefaultToolStripMenuItem_Click(sender, e);
+                    MenuLoad();
+                    addEditSymbolsToolStripMenuItem.Enabled = false;
+                    saveFileName = null;
+                    titleLabel.Text = "DEFAULT";
+                    await LoadInitialMarketDataAsync();
+                    isGrid = true;
+                    reloadGrid = true;
+                };
+                defaultMenuItem.Enabled = true;
+                viewToolStripMenuItem.DropDownItems.Add(defaultMenuItem);
+            }
+            catch (Exception ex)
+            {
+                ApplicationLogger.LogException(ex);
+            }
+        }
+
+        public async Task LoadSymbol(string Filename)
+        {
+            try
+            {
+                savelabel.Visible = false;
+                fontSizeComboBox.Visible = true;
+
+                searchTextLabel.Visible = true;
+                txtsearch.Clear();
+                txtsearch.Visible = true;
+
+                string finalPath = Path.Combine(AppFolder, username);
+                selectedSymbols.Clear();
+                Filename = Path.Combine(finalPath, Filename);
+                string cipherText = File.ReadAllText(Filename);
+                string json = CryptoHelper.Decrypt(cipherText, EditableMarketWatchGrid.passphrase);
+                var symbols = System.Text.Json.JsonSerializer.Deserialize<List<string>>(json);
+                selectedSymbols.AddRange(symbols);
+                identifiers = selectedSymbols.Distinct().ToList();
+                isLoadedSymbol = true;
+                marketWatchViewMode = MarketWatchViewMode.Default;
+                titleLabel.Text = Path.GetFileNameWithoutExtension(Filename).ToUpper();
+                InitializeDataGridView();          // Configure the grid
+
+                //pageSwitched = true;
+
+                //await EnsureSignalRConnectedAndSubscribedAsync();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("File Was Never Save Or Moved Please Try Again!", "Load Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ApplicationLogger.LogException(ex);
+            }
+
+            thecalcifyGrid();
+            MenuLoad();
+        }
+
+        private void ClearCollections()
+        {
+            try
+            {
+                //lock (_updateQueue)
+                //{
+                //    while (_updateQueue.TryDequeue(out _)) { }
+                //}
+
+                lock (symbolRowMap)
+                {
+                    symbolRowMap.Clear();
+                }
+
+                _prevAskMap.Clear();
+            }
+            catch (Exception ex)
+            {
+                ApplicationLogger.LogException(ex);
+            }
+        }
+
+        private void UpdateUIStateForNewMarketWatch()
+        {
+            try
+            {
+                ClearCollections();
+
+                // Update menu items
+                toolsToolStripMenuItem.Enabled = true;
+                newCTRLNToolStripMenuItem1.Enabled = false;
+
+                // Update save button visibility
+                saveMarketWatchHost.Visible = true;
+                saveMarketWatchHost.Text = "Save MarketWatch";
+                refreshMarketWatchHost.Visible = false;
+
+                fontSizeComboBox.Visible = false;
+
+                // Update title based on edit mode
+                titleLabel.Text = isEdit
+                    ? $"Edit {saveFileName?.ToUpper() ?? "Unknown"} MarketWatch"
+                    : "New MarketWatch";
+
+                // Reset save file name
+                saveFileName = null;
+
+                savelabel.Visible = true;
+
+                // Enable all items in the Open menu
+                foreach (ToolStripMenuItem item in viewToolStripMenuItem.DropDownItems)
+                {
+                    item.Enabled = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                ApplicationLogger.LogException(ex);
+            }
+        }
+
+        private void CleanupBeforeViewSwitch()
+        {
+            try
+            {
+                // 1. Dispose SignalR connection properly
+                //DisposeSignalRConnection();
+
+                // //2.Stop and dispose timers
+                //signalRTimer?.Stop();
+                //signalRTimer?.Dispose();
+                //signalRTimer = null;
+
+
+                //if (_watchdogTimer != null)
+                //{
+                //    _watchdogTimer.Stop();
+                //    _watchdogTimer.Dispose();
+                //    _watchdogTimer = null;
+                //}
+
+                //_updateTimer?.Dispose();
+                //_updateTimer = null;
+                _latestUpdates.Clear();
+                txtsearch.Text = string.Empty;
+                // 3. Clean up DataGridView
+                CleanupDataGridView();
+
+                // 4. Dispose existing editable grid if exists
+                var existingGrid = this.Controls.Find("editableMarketWatchGridView", true).FirstOrDefault();
+                if (existingGrid != null)
+                {
+                    this.Controls.Remove(existingGrid);
+                    existingGrid.Dispose();
+                }
+            }
+            catch (Exception ex)
+            {
+                ApplicationLogger.LogException(ex);
+            }
+        }
+
+
+        private void CleanupDataGridView()
+        {
+            try
+            {
+                if (defaultGrid.InvokeRequired)
+                {
+                    this.Invoke(new Action(() =>
+                    {
+                        defaultGrid.SuspendLayout();
+                        defaultGrid.Visible = false;
+                        defaultGrid.DataSource = null; // Unbind data
+                        defaultGrid.Rows.Clear();
+                        defaultGrid.Columns.Clear();
+                        defaultGrid.DefaultCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", fontSize);
+                        defaultGrid.ColumnHeadersDefaultCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", fontSize + 1.5f, FontStyle.Bold);
+                        defaultGrid.ResumeLayout();
+                    }));
+                }
+                else
+                {
+                    defaultGrid.SuspendLayout();
+                    defaultGrid.Visible = false;
+                    defaultGrid.DataSource = null; // Unbind data
+                    defaultGrid.Rows.Clear();
+                    defaultGrid.Columns.Clear();
+                    defaultGrid.DefaultCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", fontSize);
+                    defaultGrid.ColumnHeadersDefaultCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", fontSize + 1.5f, FontStyle.Bold);
+                    defaultGrid.ResumeLayout();
+                }
+            }
+            catch (Exception ex)
+            {
+                ApplicationLogger.LogException(ex);
+            }
+        }
+
+        public static void KillProcess()
+        {
+            // Kill any EXCEL processes without a main window (ghost/background instances)
+            foreach (var process in Process.GetProcessesByName("EXCEL"))
+            {
+                try
+                {
+                    if (string.IsNullOrEmpty(process.MainWindowTitle))
+                    {
+                        process.Kill();
+                        process.WaitForExit(); // ensure it's gone
+                    }
+                }
+                catch (Exception ex)
+                {
+                    //Console.WriteLine("Error killing Excel process: " + ex.Message);
+                    ApplicationLogger.LogException(ex);
+                }
+            }
+        }
+
+        #endregion
+
+        #region Tools
         private void FullScreenF11ToolStripMenuItem_Click(object sender, EventArgs e)
         {
             try
@@ -1287,84 +1677,42 @@ namespace thecalcify
             }
         }
 
-        private void DefaultGrid_CellMouseDown(object sender, DataGridViewCellMouseEventArgs e)
+        public async void DisconnectESCToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (e.RowIndex < 0)
-                return;
-
-            if (e.Button == MouseButtons.Right)
+            try
             {
-                // ✔ Prevent focus loss
-                defaultGrid.Focus();
+                // 1️⃣ Stop background processes
+                await StopBackgroundTasks(); // You define this method
 
-                // ✔ Select the row on right-click
-                defaultGrid.ClearSelection();
-                defaultGrid.Rows[e.RowIndex].Selected = true;
+                // 2️⃣ Unsubscribe event handlers
+                UnsubscribeAllEvents(); // Optional, but recommended if you manually subscribed
 
-                // ✔ Set the current cell (important!)
-                defaultGrid.CurrentCell = defaultGrid.Rows[e.RowIndex].Cells[1];
+                // 3️⃣ Show Login Form
+                Login loginForm = new Login();
+                loginForm.Show();
 
-                // ✔ Show your context menu NEXT
-                Tools.Show(Cursor.Position);
+                // 4️⃣ Dispose current form
+                this.Hide();      // optional: avoid flicker before dispose
+                this.Dispose();   // frees unmanaged resources
+                this.Close();   // frees unmanaged resources
+
+                // 5️⃣ Kill extra processes if needed (use with caution)
+                KillProcess();    // Only if you're absolutely sure it's safe to kill processes
+                //await DisconnectESCToolStripMenuItem_ClickAsync();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error during disconnect: " + ex.Message);
+            }
+            finally
+            {
+                await StopBackgroundTasks();
             }
         }
 
+        #endregion
 
-        private void DefaultGrid_CellMouseEnter(object sender, DataGridViewCellEventArgs e)
-        {
-            if (e.RowIndex >= 0)
-            {
-                defaultGrid.Rows[e.RowIndex].DefaultCellStyle.BackColor = Color.FromArgb(245, 245, 245);
-            }
-        }
-
-        private void DefaultGrid_CellMouseLeave(object sender, DataGridViewCellEventArgs e)
-        {
-            if (e.RowIndex >= 0)
-            {
-                if (e.RowIndex % 2 == 0)
-                    defaultGrid.Rows[e.RowIndex].DefaultCellStyle.BackColor = Color.White;
-                else
-                    defaultGrid.Rows[e.RowIndex].DefaultCellStyle.BackColor = Color.FromArgb(248, 248, 248);
-            }
-        }
-
-        private void Thecalcify_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Shift && e.KeyCode == Keys.Escape)
-            {
-                var result = MessageBox.Show("Do you want to Exit Application?", "Exit Application", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-                if (result == DialogResult.Yes)
-                {
-                    //this.Close(); // Close the login form
-                    //Application.Exit(); // Terminate the application
-                    DisconnectESCToolStripMenuItem_Click(sender, e);
-                }
-            }
-
-            if (e.Control && e.KeyCode == Keys.N && marketWatchViewMode != MarketWatchViewMode.New && LoginInfo.IsRate)
-            {
-                NewCTRLNToolStripMenuItem1_Click(this, EventArgs.Empty);
-                e.Handled = true;
-            }
-
-            if (e.KeyCode == Keys.Escape && !(e.Shift && e.KeyCode == Keys.Escape))
-            {
-                FullScreenF11ToolStripMenuItem_Click(this, EventArgs.Empty);
-                e.Handled = true;
-            }
-
-            if (e.KeyCode == Keys.U && e.Control)
-            {
-                AboutToolStripMenuItem_Click(this, EventArgs.Empty);
-                e.Handled = true;
-            }
-        }
-
-        private void TitleLabel_TextChanged(object sender, EventArgs e)
-        {
-            txtsearch.Clear();
-        }
+        #region Column/Symbol - Add/Remove
 
         private void AddEditColumnsToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -1868,160 +2216,9 @@ namespace thecalcify
             }
         }
 
-        private void DefaultGrid_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
-        {
-            // Force-hide specific columns
-            if (defaultGrid.Columns.Contains("symbol"))
-                defaultGrid.Columns["symbol"].Visible = false;
-            if (defaultGrid.Columns.Contains("V"))
-                defaultGrid.Columns["V"].Visible = false;
-        }
+        #endregion
 
-        private void DefaultGrid_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
-        {
-            if (e.Value?.ToString() == "N/A")
-                e.CellStyle.ForeColor = Color.Gray;
-        }
-
-        private async void OnNetworkAvailabilityChanged(object sender, NetworkAvailabilityEventArgs e)
-        {
-            if (e.IsAvailable)
-            {
-                //connection = null;
-                //_eventHandlersAttached = false;
-
-                //SignalRTimer();
-                //await EnsureSignalRConnectedAndSubscribedAsync();
-                if (this.InvokeRequired)
-                {
-                    this.Invoke(new Action(() =>
-                    {
-                        refreshMarketWatchHost.Visible = true;
-                        savelabel.Text = string.Empty;
-                        savelabel.Visible = false;
-                    }));
-                }
-                else
-                {
-                    refreshMarketWatchHost.Visible = true;
-                    savelabel.Text = string.Empty;
-                    savelabel.Visible = false;
-                }
-            }
-            else
-            {
-                ApplicationLogger.Log("Network unavailable.");
-                //connection = null;
-                //_eventHandlersAttached = false;
-
-                //if (signalRTimer != null)
-                //{
-                //    signalRTimer.Stop();
-                //}
-
-
-                //_eventHandlersAttached = false;
-
-                if (this.InvokeRequired)
-                {
-                    this.Invoke(new Action(() =>
-                    {
-                        refreshMarketWatchHost.Visible = false;
-                        savelabel.Text = "Client is offline, switch network.";
-                        savelabel.Visible = true;
-                    }));
-                }
-                else
-                {
-                    refreshMarketWatchHost.Visible = false;
-                    savelabel.Text = "Client is offline, switch network.";
-                    savelabel.Visible = true;
-                }
-            }
-
-        }
-
-        private void OnNetworkAddressChanged(object sender, EventArgs e)
-        {
-            ApplicationLogger.Log("Network address changed.");
-        }
-
-        private async void OnPowerModeChanged(object sender, PowerModeChangedEventArgs e)
-        {
-            if (e.Mode == PowerModes.Resume)
-                ApplicationLogger.Log("Power Resume");
-            //await EnsureSignalRConnectedAndSubscribedAsync();
-        }
-
-
-        private async void RefreshMarketWatchHost_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                _isGridBuilding = true;
-
-                // 🚫 Disable refresh button while refreshing
-                refreshMarketWatchHost.Enabled = false;
-
-                // 🔄 Reset state
-                selectedSymbols.Clear();
-                identifiers.Clear();
-                isEdit = false;
-                isGrid = true;
-                reloadGrid = true;
-                saveFileName = null;
-                lastOpenMarketWatch = "Default";
-
-                // 🧹 Clear grid and data immediately
-                if (defaultGrid != null)
-                {
-                    defaultGrid.DataSource = null;
-                    defaultGrid.Rows.Clear();
-                    defaultGrid.Columns.Clear();
-                    defaultGrid.Refresh();
-                }
-
-                // 🔄 Dispose editable grid if any
-                EditableMarketWatchGrid editableMarketWatchGrid = EditableMarketWatchGrid.CurrentInstance;
-                if (editableMarketWatchGrid != null)
-                {
-                    if (editableMarketWatchGrid.IsCurrentCellInEditMode)
-                    {
-                        editableMarketWatchGrid.EndEdit();
-                    }
-
-                    editableMarketWatchGrid.EditableDispose(); // Dispose the grid
-                    editableMarketWatchGrid.Dispose();
-                }
-
-                saveMarketWatchHost.Visible = false;
-                refreshMarketWatchHost.Visible = true;
-
-                // 🔄 Force Default view
-                await DefaultToolStripMenuItem_Click(sender, e);
-                titleLabel.Text = "DEFAULT";
-
-                // 🔄 Reload market data & ensure SignalR
-                InitializeDataGridView();
-                await LoadInitialMarketDataAsync();
-                //await EnsureSignalRConnectedAndSubscribedAsync();
-
-                ApplicationLogger.Log("Refresh: Switched back to DEFAULT Market Watch.");
-            }
-            catch (Exception ex)
-            {
-                ApplicationLogger.LogException(ex);
-            }
-            finally
-            {
-                // ✅ Re-enable refresh button after process
-                refreshMarketWatchHost.Enabled = true;
-                _isGridBuilding = false;
-            }
-        }
-        #endregion Form Method
-
-        #region SignalR Helper Method
+        #region Helper Method
 
         public async Task LoadInitialMarketDataAsync()
         {
@@ -2186,6 +2383,67 @@ namespace thecalcify
             }
         }
 
+        private static void SaveInitDataToFile(List<MarketDataDto> data)
+        {
+            try
+            {
+                var dict = new Dictionary<string, Dictionary<string, object>>(StringComparer.OrdinalIgnoreCase);
+
+                foreach (var d in data)
+                {
+                    dict[d.i] = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        ["Name"] = d.n,
+                        ["Bid"] = d.b,
+                        ["Ask"] = d.a,
+                        ["LTP"] = d.ltp,
+                        ["High"] = d.h,
+                        ["Low"] = d.l,
+                        ["Open"] = d.o,
+                        ["Close"] = d.c,
+                        ["Net Chng"] = d.d,
+                        ["V"] = d.v,
+                        ["ATP"] = d.atp,
+                        ["Bid Size"] = d.bq,
+                        ["Total Bid Size"] = d.tbq,
+                        ["Ask Size"] = d.sq,
+                        ["Total Ask Size"] = d.tsq,
+                        ["Volume"] = d.vt,
+                        ["Open Interest"] = d.oi,
+                        ["Last Size"] = d.ltq,
+                        ["Time"] = Common.TimeStampConvert(d.t)
+                    };
+                }
+
+                Directory.CreateDirectory(Path.GetDirectoryName(marketInitDataPath));
+                string json = JsonConvert.SerializeObject(dict);
+                string encryptedJson = CryptoHelper.Encrypt(json, EditableMarketWatchGrid.passphrase);
+                File.WriteAllText(marketInitDataPath, encryptedJson);
+                SaveInitDataPathToRegistry();
+            }
+            catch (Exception ex)
+            {
+                ApplicationLogger.Log($"Error writing initdata.dat: {ex.Message} And {ex.StackTrace}");
+            }
+        }
+
+
+        private static void SaveInitDataPathToRegistry()
+        {
+            try
+            {
+                using (var baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64))
+                using (var key = baseKey.CreateSubKey(@"SOFTWARE\thecalcify"))
+                {
+                    key.SetValue("InitDataPath", marketInitDataPath, RegistryValueKind.String);
+                }
+            }
+            catch (Exception ex)
+            {
+                ApplicationLogger.LogException(ex);
+            }
+        }
+
         private void InitializeGridColumns()
         {
             defaultGrid.Columns.Clear();
@@ -2325,12 +2583,6 @@ namespace thecalcify
             defaultGrid.ResumeLayout();
         }
 
-        //private Task AttemptReconnectAsync(string reason)
-        //{
-        //    _ = SafeReconnectAsync(reason);
-        //    return Task.CompletedTask;
-        //}
-
         private void BuildSymbolRowMap()
         {
             symbolRowMap.Clear();
@@ -2427,380 +2679,6 @@ namespace thecalcify
             if (cell != null) cell.Value = value;
         }
 
-
-        #endregion SignalR Helper Method
-
-        #region Other Methods
-
-        public void MenuLoad()
-        {
-            try
-            {
-                // Final folder path
-                string finalPath = Path.Combine(AppFolder, username);
-
-                // Get all .slt files from the application folder
-                List<string> fileNames = Directory.GetFiles(finalPath, "*.slt")
-                                                 .Select(Path.GetFileNameWithoutExtension)
-                                                 .ToList();
-
-                FileLists = fileNames;
-
-                // Clear existing menu items
-                viewToolStripMenuItem.DropDownItems.Clear();
-                // Add Default menu item with click handler
-                ToolStripMenuItem defaultMenuItem = new ToolStripMenuItem("Default");
-                defaultMenuItem.Click += async (sender, e) =>
-                {
-                    selectedSymbols.Clear();
-                    identifiers.Clear();
-                    saveFileName = null;
-                    lastOpenMarketWatch = "Default";
-
-                    var clickedItem = (ToolStripMenuItem)sender;
-                    await DefaultToolStripMenuItem_Click(sender, e);
-                    addEditSymbolsToolStripMenuItem.Enabled = false;
-                    await LoadInitialMarketDataAsync();
-                    isGrid = true;
-                    reloadGrid = true;
-                };
-
-                viewToolStripMenuItem.DropDownItems.Add(defaultMenuItem);
-
-                // Add each file as a menu item with a click handler
-                foreach (string fileName in fileNames)
-                {
-                    ToolStripMenuItem menuItem = new ToolStripMenuItem(fileName);
-                    menuItem.Click += async (sender, e) =>
-                    {
-                        selectedSymbols.Clear();
-                        identifiers.Clear();
-                        saveFileName = string.Empty;
-                        //_updateQueue = new ConcurrentQueue<MarketDataDto>();
-
-                        var clickedItem = (ToolStripMenuItem)sender;
-
-                        saveFileName = clickedItem.Text;
-                        addEditSymbolsToolStripMenuItem.Enabled = true;
-                        lastOpenMarketWatch = saveFileName;
-
-                        EditableMarketWatchGrid editableMarketWatchGrid = EditableMarketWatchGrid.CurrentInstance;
-                        if (editableMarketWatchGrid != null)
-                        {
-                            if (editableMarketWatchGrid.IsCurrentCellInEditMode)
-                            {
-                                editableMarketWatchGrid.EndEdit();
-                            }
-
-                            editableMarketWatchGrid.EditableDispose(); // Dispose the grid
-                            editableMarketWatchGrid.Dispose();
-                        }
-
-                        saveMarketWatchHost.Visible = false;
-                        refreshMarketWatchHost.Visible = true;
-                        await LoadSymbol(Path.Combine(saveFileName + ".slt"));
-
-                        try
-                        {
-                            if (titleLabel != null)
-                            {
-                                titleLabel.Text = !string.IsNullOrWhiteSpace(saveFileName)
-                                    ? saveFileName.ToUpper()
-                                    : "Default";
-                            }
-                            else
-                            {
-                                ApplicationLogger.Log("titleLabel is null at MenuLoad");
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            ApplicationLogger.LogException(ex);
-                            ApplicationLogger.Log("saveFileName: " + saveFileName ?? "NULL");
-                        }
-
-                        isEdit = false;
-                        await LoadInitialMarketDataAsync();
-                        isGrid = true;
-                        reloadGrid = true;
-                    };
-                    viewToolStripMenuItem.DropDownItems.Add(menuItem);
-                }
-            }
-            catch (DirectoryNotFoundException)
-            {
-                // Clear existing menu items
-                viewToolStripMenuItem.DropDownItems.Clear();
-                // Add Default menu item with click handler
-                ToolStripMenuItem defaultMenuItem = new ToolStripMenuItem("Default");
-                defaultMenuItem.Click += async (sender, e) =>
-                {
-                    selectedSymbols.Clear();
-                    identifiers.Clear();
-                    lastOpenMarketWatch = "Default";
-
-                    var clickedItem = (ToolStripMenuItem)sender;
-                    await DefaultToolStripMenuItem_Click(sender, e);
-                    MenuLoad();
-                    addEditSymbolsToolStripMenuItem.Enabled = false;
-                    saveFileName = null;
-                    titleLabel.Text = "DEFAULT";
-                    await LoadInitialMarketDataAsync();
-                    isGrid = true;
-                    reloadGrid = true;
-                };
-                defaultMenuItem.Enabled = true;
-                viewToolStripMenuItem.DropDownItems.Add(defaultMenuItem);
-            }
-            catch (Exception ex)
-            {
-                ApplicationLogger.LogException(ex);
-            }
-        }
-
-        public async Task LoadSymbol(string Filename)
-        {
-            try
-            {
-                savelabel.Visible = false;
-                fontSizeComboBox.Visible = true;
-
-                searchTextLabel.Visible = true;
-                txtsearch.Clear();
-                txtsearch.Visible = true;
-
-                string finalPath = Path.Combine(AppFolder, username);
-                selectedSymbols.Clear();
-                Filename = Path.Combine(finalPath, Filename);
-                string cipherText = File.ReadAllText(Filename);
-                string json = CryptoHelper.Decrypt(cipherText, EditableMarketWatchGrid.passphrase);
-                var symbols = System.Text.Json.JsonSerializer.Deserialize<List<string>>(json);
-                selectedSymbols.AddRange(symbols);
-                identifiers = selectedSymbols.Distinct().ToList();
-                isLoadedSymbol = true;
-                marketWatchViewMode = MarketWatchViewMode.Default;
-                titleLabel.Text = Path.GetFileNameWithoutExtension(Filename).ToUpper();
-                InitializeDataGridView();          // Configure the grid
-
-                //pageSwitched = true;
-
-                //await EnsureSignalRConnectedAndSubscribedAsync();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("File Was Never Save Or Moved Please Try Again!", "Load Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                ApplicationLogger.LogException(ex);
-            }
-
-            thecalcifyGrid();
-            MenuLoad();
-        }
-
-        private void ClearCollections()
-        {
-            try
-            {
-                //lock (_updateQueue)
-                //{
-                //    while (_updateQueue.TryDequeue(out _)) { }
-                //}
-
-                lock (symbolRowMap)
-                {
-                    symbolRowMap.Clear();
-                }
-
-                _prevAskMap.Clear();
-            }
-            catch (Exception ex)
-            {
-                ApplicationLogger.LogException(ex);
-            }
-        }
-
-        private void UpdateUIStateForNewMarketWatch()
-        {
-            try
-            {
-                ClearCollections();
-
-                // Update menu items
-                toolsToolStripMenuItem.Enabled = true;
-                newCTRLNToolStripMenuItem1.Enabled = false;
-
-                // Update save button visibility
-                saveMarketWatchHost.Visible = true;
-                saveMarketWatchHost.Text = "Save MarketWatch";
-                refreshMarketWatchHost.Visible = false;
-
-                fontSizeComboBox.Visible = false;
-
-                // Update title based on edit mode
-                titleLabel.Text = isEdit
-                    ? $"Edit {saveFileName?.ToUpper() ?? "Unknown"} MarketWatch"
-                    : "New MarketWatch";
-
-                // Reset save file name
-                saveFileName = null;
-
-                savelabel.Visible = true;
-
-                // Enable all items in the Open menu
-                foreach (ToolStripMenuItem item in viewToolStripMenuItem.DropDownItems)
-                {
-                    item.Enabled = true;
-                }
-            }
-            catch (Exception ex)
-            {
-                ApplicationLogger.LogException(ex);
-            }
-        }
-
-        private void CleanupBeforeViewSwitch()
-        {
-            try
-            {
-                // 1. Dispose SignalR connection properly
-                //DisposeSignalRConnection();
-
-                // //2.Stop and dispose timers
-                //signalRTimer?.Stop();
-                //signalRTimer?.Dispose();
-                //signalRTimer = null;
-
-
-                //if (_watchdogTimer != null)
-                //{
-                //    _watchdogTimer.Stop();
-                //    _watchdogTimer.Dispose();
-                //    _watchdogTimer = null;
-                //}
-
-                //_updateTimer?.Dispose();
-                //_updateTimer = null;
-                _latestUpdates.Clear();
-                txtsearch.Text = string.Empty;
-                // 3. Clean up DataGridView
-                CleanupDataGridView();
-
-                // 4. Dispose existing editable grid if exists
-                var existingGrid = this.Controls.Find("editableMarketWatchGridView", true).FirstOrDefault();
-                if (existingGrid != null)
-                {
-                    this.Controls.Remove(existingGrid);
-                    existingGrid.Dispose();
-                }
-            }
-            catch (Exception ex)
-            {
-                ApplicationLogger.LogException(ex);
-            }
-        }
-
-        private void AlertToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            using (var alertForm = new AlertCreationPanel(token))
-            {
-                if (isFullScreen)
-                {
-                    alertForm.StartPosition = FormStartPosition.CenterParent;
-                    alertForm.TopMost = true; // Ensures it stays above the full-screen window
-                    alertForm.ShowDialog(this); // Pass the main form as owner
-                }
-                else
-                {
-                    alertForm.ShowDialog();
-                }
-            }
-        }
-
-        //private void DisposeSignalRConnection()
-        //{
-        //    try
-        //    {
-        //        if (connection != null)
-        //        {
-        //            try
-        //            {
-        //                connection.StopAsync().Wait();
-        //                connection.DisposeAsync().AsTask().Wait();
-        //                isConnectionDisposed = true;
-        //            }
-        //            catch (Exception ex)
-        //            {
-        //                ApplicationLogger.LogException(ex);
-        //            }
-        //            finally
-        //            {
-        //                //connection = null; // Crucial to reset connection
-        //                //_eventHandlersAttached = false;
-        //            }
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        ApplicationLogger.LogException(ex);
-        //    }
-        //}
-
-        private void CleanupDataGridView()
-        {
-            try
-            {
-                if (defaultGrid.InvokeRequired)
-                {
-                    this.Invoke(new Action(() =>
-                    {
-                        defaultGrid.SuspendLayout();
-                        defaultGrid.Visible = false;
-                        defaultGrid.DataSource = null; // Unbind data
-                        defaultGrid.Rows.Clear();
-                        defaultGrid.Columns.Clear();
-                        defaultGrid.DefaultCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", fontSize);
-                        defaultGrid.ColumnHeadersDefaultCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", fontSize + 1.5f, FontStyle.Bold);
-                        defaultGrid.ResumeLayout();
-                    }));
-                }
-                else
-                {
-                    defaultGrid.SuspendLayout();
-                    defaultGrid.Visible = false;
-                    defaultGrid.DataSource = null; // Unbind data
-                    defaultGrid.Rows.Clear();
-                    defaultGrid.Columns.Clear();
-                    defaultGrid.DefaultCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", fontSize);
-                    defaultGrid.ColumnHeadersDefaultCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", fontSize + 1.5f, FontStyle.Bold);
-                    defaultGrid.ResumeLayout();
-                }
-            }
-            catch (Exception ex)
-            {
-                ApplicationLogger.LogException(ex);
-            }
-        }
-
-        public static void KillProcess()
-        {
-            // Kill any EXCEL processes without a main window (ghost/background instances)
-            foreach (var process in Process.GetProcessesByName("EXCEL"))
-            {
-                try
-                {
-                    if (string.IsNullOrEmpty(process.MainWindowTitle))
-                    {
-                        process.Kill();
-                        process.WaitForExit(); // ensure it's gone
-                    }
-                }
-                catch (Exception ex)
-                {
-                    //Console.WriteLine("Error killing Excel process: " + ex.Message);
-                    ApplicationLogger.LogException(ex);
-                }
-            }
-        }
-
         public void HandleLastOpenedMarketWatch()
         {
             try
@@ -2824,105 +2702,12 @@ namespace thecalcify
             }
         }
 
-        private static void SaveInitDataToFile(List<MarketDataDto> data)
-        {
-            try
-            {
-                var dict = new Dictionary<string, Dictionary<string, object>>(StringComparer.OrdinalIgnoreCase);
-
-                foreach (var d in data)
-                {
-                    dict[d.i] = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
-                    {
-                        ["Name"] = d.n,
-                        ["Bid"] = d.b,
-                        ["Ask"] = d.a,
-                        ["LTP"] = d.ltp,
-                        ["High"] = d.h,
-                        ["Low"] = d.l,
-                        ["Open"] = d.o,
-                        ["Close"] = d.c,
-                        ["Net Chng"] = d.d,
-                        ["V"] = d.v,
-                        ["ATP"] = d.atp,
-                        ["Bid Size"] = d.bq,
-                        ["Total Bid Size"] = d.tbq,
-                        ["Ask Size"] = d.sq,
-                        ["Total Ask Size"] = d.tsq,
-                        ["Volume"] = d.vt,
-                        ["Open Interest"] = d.oi,
-                        ["Last Size"] = d.ltq,
-                        ["Time"] = Common.TimeStampConvert(d.t)
-                    };
-                }
-
-                Directory.CreateDirectory(Path.GetDirectoryName(marketInitDataPath));
-                string json = JsonConvert.SerializeObject(dict);
-                string encryptedJson = CryptoHelper.Encrypt(json, EditableMarketWatchGrid.passphrase);
-                File.WriteAllText(marketInitDataPath, encryptedJson);
-                SaveInitDataPathToRegistry();
-            }
-            catch (Exception ex)
-            {
-                ApplicationLogger.Log($"Error writing initdata.dat: {ex.Message} And {ex.StackTrace}");
-            }
-        }
-
-        private static void SaveInitDataPathToRegistry()
-        {
-            try
-            {
-                using (var baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64))
-                using (var key = baseKey.CreateSubKey(@"SOFTWARE\thecalcify"))
-                {
-                    key.SetValue("InitDataPath", marketInitDataPath, RegistryValueKind.String);
-                }
-            }
-            catch (Exception ex)
-            {
-                ApplicationLogger.LogException(ex);
-            }
-        }
-
         private void SafeInvoke(Action action)
         {
             if (!IsDisposed && IsHandleCreated)
             {
                 if (InvokeRequired) BeginInvoke((MethodInvoker)(() => action()));
                 else action();
-            }
-        }
-
-        public async void DisconnectESCToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                // 1️⃣ Stop background processes
-                await StopBackgroundTasks(); // You define this method
-
-                // 2️⃣ Unsubscribe event handlers
-                UnsubscribeAllEvents(); // Optional, but recommended if you manually subscribed
-
-                // 3️⃣ Show Login Form
-                Login loginForm = new Login();
-                loginForm.Show();
-
-                // 4️⃣ Dispose current form
-                this.Hide();      // optional: avoid flicker before dispose
-                this.Dispose();   // frees unmanaged resources
-                this.Close();   // frees unmanaged resources
-
-                // 5️⃣ Kill extra processes if needed (use with caution)
-                KillProcess();    // Only if you're absolutely sure it's safe to kill processes
-                //await DisconnectESCToolStripMenuItem_ClickAsync();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error during disconnect: " + ex.Message);
-            }
-            finally
-            {
-                await StopBackgroundTasks();
             }
         }
 
@@ -2941,62 +2726,58 @@ namespace thecalcify
             await Task.Delay(50);
         }
 
+        #endregion
 
-        //private void NewsNotification_Click(object sender, EventArgs e)
-        //{
-        //    // Check if the button is checked
-        //    if (!newsNotification.Checked)
-        //    {
-        //        // If checked, prompt the user if they want to turn off notifications
-        //        var result = MessageBox.Show("Do you want to turn off notifications?",
-        //                                     "Turn off notifications",
-        //                                     MessageBoxButtons.YesNo,
-        //                                     MessageBoxIcon.Question);
+        #region Alert
 
-        //        // If user clicks Yes, uncheck the button
-        //        if (result == DialogResult.Yes)
-        //        {
-        //            newsNotification.Checked = false;
-        //            MessageBox.Show("Notifications have been turned off.", "Notification", MessageBoxButtons.OK, MessageBoxIcon.Information);
-        //        }
-        //        else
-        //        {
-        //            newsNotification.Checked = true; // Keep it checked if user clicks No
-        //        }
-        //        // If user clicks No, do nothing and keep the button checked
-        //    }
-        //    else
-        //    {
-        //        // If unchecked, ask the user if they want to start receiving notifications
-        //        var result = MessageBox.Show("Do you want to turn on notifications?",
-        //                                     "Turn on notifications",
-        //                                     MessageBoxButtons.YesNo,
-        //                                     MessageBoxIcon.Question);
-
-        //        // If user clicks Yes, check the button
-        //        if (result == DialogResult.Yes)
-        //        {
-        //            newsNotification.Checked = true;
-        //            MessageBox.Show("Notifications have been turned on.", "Notification", MessageBoxButtons.OK, MessageBoxIcon.Information);
-        //        }
-        //        else
-        //        {
-        //            newsNotification.Checked = false; // Keep it unchecked if user clicks No
-        //        }
-        //        // If user clicks No, do nothing and keep the button unchecked
-        //    }
-        //}
-
-        public async void NewsListToolStripMenuItem_Click_1(object sender, EventArgs e)
+        private void AlertToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            using (var alertForm = new AlertCreationPanel(token))
+            {
+                if (isFullScreen)
+                {
+                    alertForm.StartPosition = FormStartPosition.CenterParent;
+                    alertForm.TopMost = true; // Ensures it stays above the full-screen window
+                    alertForm.ShowDialog(this); // Pass the main form as owner
+                }
+                else
+                {
+                    alertForm.ShowDialog();
+                }
+            }
+        }
+
+        private async void AboutToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            //try
+            //{
+            //    using (var aboutForm = new About(username, password, licenceDate, token))
+            //    {
+            //        if (isFullScreen)
+            //        {
+            //            aboutForm.StartPosition = FormStartPosition.CenterParent;
+            //            aboutForm.TopMost = true; // Ensures it stays above the full-screen window
+            //            aboutForm.ShowDialog(this); // Pass the main form as owner
+            //        }
+            //        else
+            //        {
+            //            aboutForm.ShowDialog(this);
+            //        }
+            //    }
+            //}
+            //catch (Exception ex)
+            //{
+            //    ApplicationLogger.LogException(ex);
+            //}
+
             try
             {
                 // 1. Clean up existing NewsControl if already present
-                var existingNews = this.Controls.Find("newsControlView", true).FirstOrDefault();
-                if (existingNews != null)
+                var existingAbout = this.Controls.Find("aboutControlView", true).FirstOrDefault();
+                if (existingAbout != null)
                 {
-                    this.Controls.Remove(existingNews);
-                    existingNews.Dispose();
+                    this.Controls.Remove(existingAbout);
+                    existingAbout.Dispose();
                 }
 
                 EditableMarketWatchGrid editableMarketWatchGrid = EditableMarketWatchGrid.CurrentInstance;
@@ -3012,14 +2793,12 @@ namespace thecalcify
                 }
 
 
-                // 2. Create new NewsControl
-                var newsControl = new NewsControl(username, password, token, string.Empty)
+                // 2. Create new AboutControl
+                var aboutControl = new About(username, password, licenceDate, token)
                 {
-                    Name = "newsControlView",
+                    Name = "aboutControlView",
                     Dock = DockStyle.Fill
                 };
-
-                //DisposeSignalRConnection();
                 saveMarketWatchHost.Visible = false;
                 fontSizeComboBox.Visible = false;
                 searchTextLabel.Visible = false;
@@ -3029,14 +2808,14 @@ namespace thecalcify
                 // Update status label
 
                 // Update title based on edit mode
-                titleLabel.Text = "News";
+                titleLabel.Text = "About";
 
                 // 3. Add it to main form
-                this.Controls.Add(newsControl);
-                newsControl.BringToFront();
-                newsControl.Focus();
+                this.Controls.Add(aboutControl);
+                aboutControl.BringToFront();
+                aboutControl.Focus();
 
-                licenceDate = LoginInfo.NewsExpiredDate.ToString();
+                licenceDate = LoginInfo.RateExpiredDate.ToString();
 
                 RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
                 if (RemainingDays <= 7)
@@ -3045,7 +2824,7 @@ namespace thecalcify
                 }
                 else
                 {
-                    licenceExpire.Text = $"Licence Expire At:- {LoginInfo.NewsExpiredDate:dd:MM:yyyy}";
+                    licenceExpire.Text = $"Licence Expire At:- {LoginInfo.RateExpiredDate:dd:MM:yyyy}";
                 }
 
             }
@@ -3060,28 +2839,44 @@ namespace thecalcify
                 {
                     this.Invoke(new Action(() =>
                     {
-                        notificationSettings.Visible = true;
+                        notificationSettings.Visible = false;
                     }));
                 }
                 else
                 {
-                    notificationSettings.Visible = true;
+                    notificationSettings.Visible = false;
                 }
             }
         }
 
-        private async void NewsHistoryToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void RefreshMarketWatchHost_Click(object sender, EventArgs e)
         {
             try
             {
-                // 1. Clean up existing NewsControl if already present
-                var existingNews = this.Controls.Find("newsControlView", true).FirstOrDefault();
-                if (existingNews != null)
+                _isGridBuilding = true;
+
+                // 🚫 Disable refresh button while refreshing
+                refreshMarketWatchHost.Enabled = false;
+
+                // 🔄 Reset state
+                selectedSymbols.Clear();
+                identifiers.Clear();
+                isEdit = false;
+                isGrid = true;
+                reloadGrid = true;
+                saveFileName = null;
+                lastOpenMarketWatch = "Default";
+
+                // 🧹 Clear grid and data immediately
+                if (defaultGrid != null)
                 {
-                    this.Controls.Remove(existingNews);
-                    existingNews.Dispose();
+                    defaultGrid.DataSource = null;
+                    defaultGrid.Rows.Clear();
+                    defaultGrid.Columns.Clear();
+                    defaultGrid.Refresh();
                 }
 
+                // 🔄 Dispose editable grid if any
                 EditableMarketWatchGrid editableMarketWatchGrid = EditableMarketWatchGrid.CurrentInstance;
                 if (editableMarketWatchGrid != null)
                 {
@@ -3094,151 +2889,33 @@ namespace thecalcify
                     editableMarketWatchGrid.Dispose();
                 }
 
-
-                // 2. Create new NewsControl
-                var newsControl = new NewsControl(username, password, token, "history")
-                {
-                    Name = "newsControlView",
-                    Dock = DockStyle.Fill
-                };
-
-                //DisposeSignalRConnection();
                 saveMarketWatchHost.Visible = false;
-                fontSizeComboBox.Visible = false;
-                searchTextLabel.Visible = false;
-                txtsearch.Visible = false;
-                refreshMarketWatchHost.Visible = false;
-                // Update status label
+                refreshMarketWatchHost.Visible = true;
 
-                newCTRLNToolStripMenuItem1.Enabled = true;
+                // 🔄 Force Default view
+                await DefaultToolStripMenuItem_Click(sender, e);
+                titleLabel.Text = "DEFAULT";
 
+                // 🔄 Reload market data & ensure SignalR
+                InitializeDataGridView();
+                await LoadInitialMarketDataAsync();
+                //await EnsureSignalRConnectedAndSubscribedAsync();
 
-                // Update title based on edit mode
-                titleLabel.Text = "News History";
-
-                // 3. Add it to main form
-                this.Controls.Add(newsControl);
-                newsControl.BringToFront();
-                newsControl.Focus();
-
-                licenceDate = LoginInfo.NewsExpiredDate.ToString();
-
-                RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
-                if (RemainingDays <= 7)
-                {
-                    await CheckLicenceLoop();
-                }
-                else
-                {
-                    licenceExpire.Text = $"Licence Expire At:- {licenceDate.Replace("0:00:00", "").Replace("12:00:00 AM", "").Replace("00:00:00", "").Replace("00:00", "").Replace("00:00 AM", "").TrimEnd('0').Trim()}";
-                }
-
+                ApplicationLogger.Log("Refresh: Switched back to DEFAULT Market Watch.");
             }
             catch (Exception ex)
             {
                 ApplicationLogger.LogException(ex);
-                MessageBox.Show($"Error loading News view: {ex.Message}");
             }
             finally
             {
-                if (this.InvokeRequired)
-                {
-                    this.Invoke(new Action(() =>
-                    {
-                        notificationSettings.Visible = true;
-                    }));
-                }
-                else
-                {
-                    notificationSettings.Visible = true;
-                }
+                // ✅ Re-enable refresh button after process
+                refreshMarketWatchHost.Enabled = true;
+                _isGridBuilding = false;
             }
         }
 
-        private async void NewsSettingsToolStrip_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                // 1. Clean up existing NewsControl if already present
-                var existingNews = this.Controls.Find("NewsSettingView", true).FirstOrDefault();
-                if (existingNews != null)
-                {
-                    this.Controls.Remove(existingNews);
-                    existingNews.Dispose();
-                }
-
-                //EditableMarketWatchGrid editableMarketWatchGrid = EditableMarketWatchGrid.CurrentInstance;
-                //if (editableMarketWatchGrid != null)
-                //{
-                //    if (connection.State != HubConnectionState.Disconnected)
-                //    {
-                //        await connection.StopAsync(); // ✅ Only stop if not already disconnected
-                //    }
-
-                //    await connection.DisposeAsync(); // ✅ Dispose safely
-                //    isConnectionDisposed = true;
-                //}
-
-
-                // 2. Create new NewsControl
-                var newsControl = new NewsSetting(userId, keywords, topics, isDND, token)
-                {
-                    Name = "NewsSettingView",
-                    Dock = DockStyle.Fill
-                };
-
-                //DisposeSignalRConnection();
-                saveMarketWatchHost.Visible = false;
-                fontSizeComboBox.Visible = false;
-                searchTextLabel.Visible = false;
-                txtsearch.Visible = false;
-                refreshMarketWatchHost.Visible = false;
-                // Update status label
-
-                // Update title based on edit mode
-                titleLabel.Text = "News Settings";
-
-                // 3. Add it to main form
-                this.Controls.Add(newsControl);
-                newsControl.BringToFront();
-                newsControl.Focus();
-
-                licenceDate = LoginInfo.NewsExpiredDate.ToString();
-
-                RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
-                if (RemainingDays <= 7)
-                {
-                    await CheckLicenceLoop();
-                }
-                else
-                {
-                    licenceExpire.Text = $"Licence Expire At:- {licenceDate.Replace("0:00:00", "").Replace("12:00:00 AM", "").Replace("00:00:00", "").Replace("00:00", "").Replace("00:00 AM", "").TrimEnd('0').Trim()}";
-                }
-
-            }
-            catch (Exception ex)
-            {
-                // Catch other unexpected issues
-                //Console.WriteLine("Error stopping background tasks: " + ex.Message);
-                ApplicationLogger.LogException(ex);
-                MessageBox.Show($"Error loading News view: {ex.Message}");
-            }
-            finally
-            {
-                if (this.InvokeRequired)
-                {
-                    this.Invoke(new Action(() =>
-                    {
-                        notificationSettings.Visible = true;
-                    }));
-                }
-                else
-                {
-                    notificationSettings.Visible = true;
-                }
-            }
-        }
-        #endregion Other Methods
+        #endregion
 
         #region Excel Export
 
@@ -3693,6 +3370,262 @@ namespace thecalcify
 
         #endregion Excel Export
 
+        #region News
+        
+        public async void NewsListToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // 1. Clean up existing NewsControl if already present
+                var existingNews = this.Controls.Find("newsControlView", true).FirstOrDefault();
+                if (existingNews != null)
+                {
+                    this.Controls.Remove(existingNews);
+                    existingNews.Dispose();
+                }
+
+                EditableMarketWatchGrid editableMarketWatchGrid = EditableMarketWatchGrid.CurrentInstance;
+                if (editableMarketWatchGrid != null)
+                {
+                    if (editableMarketWatchGrid.IsCurrentCellInEditMode)
+                    {
+                        editableMarketWatchGrid.EndEdit();
+                    }
+
+                    editableMarketWatchGrid.EditableDispose(); // Dispose the grid
+                    editableMarketWatchGrid.Dispose();
+                }
+
+
+                // 2. Create new NewsControl
+                var newsControl = new NewsControl(username, password, token, string.Empty)
+                {
+                    Name = "newsControlView",
+                    Dock = DockStyle.Fill
+                };
+
+                //DisposeSignalRConnection();
+                saveMarketWatchHost.Visible = false;
+                fontSizeComboBox.Visible = false;
+                searchTextLabel.Visible = false;
+                txtsearch.Visible = false;
+                refreshMarketWatchHost.Visible = false;
+                newCTRLNToolStripMenuItem1.Enabled = true;
+                // Update status label
+
+                // Update title based on edit mode
+                titleLabel.Text = "News";
+
+                // 3. Add it to main form
+                this.Controls.Add(newsControl);
+                newsControl.BringToFront();
+                newsControl.Focus();
+
+                licenceDate = LoginInfo.NewsExpiredDate.ToString();
+
+                RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
+                if (RemainingDays <= 7)
+                {
+                    await CheckLicenceLoop();
+                }
+                else
+                {
+                    licenceExpire.Text = $"Licence Expire At:- {LoginInfo.NewsExpiredDate:dd:MM:yyyy}";
+                }
+
+            }
+            catch (Exception ex)
+            {
+                ApplicationLogger.LogException(ex);
+                MessageBox.Show($"Error loading News view: {ex.Message}");
+            }
+            finally
+            {
+                if (this.InvokeRequired)
+                {
+                    this.Invoke(new Action(() =>
+                    {
+                        notificationSettings.Visible = true;
+                    }));
+                }
+                else
+                {
+                    notificationSettings.Visible = true;
+                }
+            }
+        }
+
+        private async void NewsHistoryToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // 1. Clean up existing NewsControl if already present
+                var existingNews = this.Controls.Find("newsControlView", true).FirstOrDefault();
+                if (existingNews != null)
+                {
+                    this.Controls.Remove(existingNews);
+                    existingNews.Dispose();
+                }
+
+                EditableMarketWatchGrid editableMarketWatchGrid = EditableMarketWatchGrid.CurrentInstance;
+                if (editableMarketWatchGrid != null)
+                {
+                    if (editableMarketWatchGrid.IsCurrentCellInEditMode)
+                    {
+                        editableMarketWatchGrid.EndEdit();
+                    }
+
+                    editableMarketWatchGrid.EditableDispose(); // Dispose the grid
+                    editableMarketWatchGrid.Dispose();
+                }
+
+
+                // 2. Create new NewsControl
+                var newsControl = new NewsControl(username, password, token, "history")
+                {
+                    Name = "newsControlView",
+                    Dock = DockStyle.Fill
+                };
+
+                //DisposeSignalRConnection();
+                saveMarketWatchHost.Visible = false;
+                fontSizeComboBox.Visible = false;
+                searchTextLabel.Visible = false;
+                txtsearch.Visible = false;
+                refreshMarketWatchHost.Visible = false;
+                // Update status label
+
+                newCTRLNToolStripMenuItem1.Enabled = true;
+
+
+                // Update title based on edit mode
+                titleLabel.Text = "News History";
+
+                // 3. Add it to main form
+                this.Controls.Add(newsControl);
+                newsControl.BringToFront();
+                newsControl.Focus();
+
+                licenceDate = LoginInfo.NewsExpiredDate.ToString();
+
+                RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
+                if (RemainingDays <= 7)
+                {
+                    await CheckLicenceLoop();
+                }
+                else
+                {
+                    licenceExpire.Text = $"Licence Expire At:- {licenceDate.Replace("0:00:00", "").Replace("12:00:00 AM", "").Replace("00:00:00", "").Replace("00:00", "").Replace("00:00 AM", "").TrimEnd('0').Trim()}";
+                }
+
+            }
+            catch (Exception ex)
+            {
+                ApplicationLogger.LogException(ex);
+                MessageBox.Show($"Error loading News view: {ex.Message}");
+            }
+            finally
+            {
+                if (this.InvokeRequired)
+                {
+                    this.Invoke(new Action(() =>
+                    {
+                        notificationSettings.Visible = true;
+                    }));
+                }
+                else
+                {
+                    notificationSettings.Visible = true;
+                }
+            }
+        }
+
+        private async void NewsSettingsToolStrip_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // 1. Clean up existing NewsControl if already present
+                var existingNews = this.Controls.Find("NewsSettingView", true).FirstOrDefault();
+                if (existingNews != null)
+                {
+                    this.Controls.Remove(existingNews);
+                    existingNews.Dispose();
+                }
+
+                //EditableMarketWatchGrid editableMarketWatchGrid = EditableMarketWatchGrid.CurrentInstance;
+                //if (editableMarketWatchGrid != null)
+                //{
+                //    if (connection.State != HubConnectionState.Disconnected)
+                //    {
+                //        await connection.StopAsync(); // ✅ Only stop if not already disconnected
+                //    }
+
+                //    await connection.DisposeAsync(); // ✅ Dispose safely
+                //    isConnectionDisposed = true;
+                //}
+
+
+                // 2. Create new NewsControl
+                var newsControl = new NewsSetting(userId, keywords, topics, isDND, token)
+                {
+                    Name = "NewsSettingView",
+                    Dock = DockStyle.Fill
+                };
+
+                //DisposeSignalRConnection();
+                saveMarketWatchHost.Visible = false;
+                fontSizeComboBox.Visible = false;
+                searchTextLabel.Visible = false;
+                txtsearch.Visible = false;
+                refreshMarketWatchHost.Visible = false;
+                // Update status label
+
+                // Update title based on edit mode
+                titleLabel.Text = "News Settings";
+
+                // 3. Add it to main form
+                this.Controls.Add(newsControl);
+                newsControl.BringToFront();
+                newsControl.Focus();
+
+                licenceDate = LoginInfo.NewsExpiredDate.ToString();
+
+                RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
+                if (RemainingDays <= 7)
+                {
+                    await CheckLicenceLoop();
+                }
+                else
+                {
+                    licenceExpire.Text = $"Licence Expire At:- {licenceDate.Replace("0:00:00", "").Replace("12:00:00 AM", "").Replace("00:00:00", "").Replace("00:00", "").Replace("00:00 AM", "").TrimEnd('0').Trim()}";
+                }
+
+            }
+            catch (Exception ex)
+            {
+                // Catch other unexpected issues
+                //Console.WriteLine("Error stopping background tasks: " + ex.Message);
+                ApplicationLogger.LogException(ex);
+                MessageBox.Show($"Error loading News view: {ex.Message}");
+            }
+            finally
+            {
+                if (this.InvokeRequired)
+                {
+                    this.Invoke(new Action(() =>
+                    {
+                        notificationSettings.Visible = true;
+                    }));
+                }
+                else
+                {
+                    notificationSettings.Visible = true;
+                }
+            }
+        }
+
+        #endregion
+
         #region User Activity Moniter
 
         public async Task UserInfoSignalREvent(string username)
@@ -3904,7 +3837,7 @@ namespace thecalcify
                     {
                         newCTRLNToolStripMenuItem.Visible = false;
                         newsToolStripMenuItem.Visible = true;
-                        NewsListToolStripMenuItem_Click_1(this, EventArgs.Empty);
+                        NewsListToolStripMenuItem_Click(this, EventArgs.Empty);
                         hasPrevNews = hasNews;
                         hasPrevRate = hasRate;
                         return Task.CompletedTask;
@@ -4021,7 +3954,6 @@ namespace thecalcify
                 }
             }
         }
-
 
         private static string DecompressGzip(byte[] compressed)
         {
@@ -4412,1180 +4344,5 @@ namespace thecalcify
         }
 
         #endregion
-
-        //#region Old Methods
-
-
-        //private void OnSharedMemoryMessage(byte[] data)
-        //{
-        //    try
-        //    {
-        //        if (data == null || data.Length < 4)
-        //            return;
-
-        //        // validate gzip
-        //        if (data[0] != 0x1F || data[1] != 0x8B)
-        //            return;
-
-        //        var json = DecompressGzip(data);
-        //        if (string.IsNullOrWhiteSpace(json))
-        //            return;
-
-        //        var dto = JsonConvert.DeserializeObject<MarketDataDto>(json);
-        //        if (dto == null || string.IsNullOrEmpty(dto.i))
-        //            return;
-
-        //        // convert timestamp
-        //        if (!long.TryParse(dto.t, out long ts))
-        //            return;
-
-        //        _latestUpdates.AddOrUpdate(dto.i, dto, (sym, oldVal) =>
-        //        {
-        //            long oldTs = 0;
-        //            long.TryParse(oldVal.t, out oldTs);
-
-        //            if (oldTs >= ts)
-        //                return oldVal;   // keep newer
-
-        //            return dto;          // replace with latest
-        //        });
-        //    }
-        //    catch
-        //    {
-        //        // swallow bad packets
-        //    }
-        //}
-
-
-        //private void UpdateTimer_Tick(object sender, EventArgs e)
-        //{
-        //    try
-        //    {
-        //        if (_latestUpdates.IsEmpty) return;
-
-        //        var updates = _latestUpdates.Values.ToList();
-        //        _latestUpdates.Clear(); // clear for next batch
-
-
-        //        if (updates.Count == 0) return;
-
-        //        // If queue has too many records, keep only the newest 1000
-        //        if (updates.Count > 1000)
-        //        {
-        //            // Sort by Time (assuming MarketDataDto has a Time property)
-        //            updates = updates
-        //                .OrderByDescending(x => x.t)  // Newest first
-        //                .Take(1000)                     // Keep only 1000 newest
-        //                .OrderBy(x => x.t)           // Restore original order if needed
-        //                .ToList();
-        //        }
-
-        //        try
-        //        {
-        //            updates = updates.Where(x => long.TryParse(x.t, out _)).OrderByDescending(x => DateTimeOffset.FromUnixTimeMilliseconds(long.Parse(x.t)).LocalDateTime).ToList();
-        //        }
-        //        catch (Exception)
-        //        {
-        //        }
-
-        //        if (updates != null)
-        //        {
-        //            SafeInvoke(async () => await ApplyBatchUpdatesParallelAsync(updates));
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        ApplicationLogger.LogException(ex);
-        //    }
-        //}
-
-        //private async Task StartChannelConsumerAsync(CancellationToken token)
-        //{
-        //    var reader = _marketChannel.Reader;
-        //    var batch = new List<MarketDataDto>(2000);
-        //    var sw = Stopwatch.StartNew();
-
-        //    while (await reader.WaitToReadAsync(token))
-        //    {
-        //        while (reader.TryRead(out var data))
-        //        {
-        //            batch.Add(data);
-
-        //            // process every ~100ms or 1000 items
-        //            if (batch.Count >= 1000 || sw.ElapsedMilliseconds >= 100)
-        //            {
-        //                await ProcessBatchAsync(batch);
-        //                batch.Clear();
-        //                sw.Restart();
-        //            }
-        //        }
-        //    }
-        //}
-
-        //private async Task ProcessBatchAsync(List<MarketDataDto> batch)
-        //{
-        //    // Deduplicate per symbol (keep latest)
-        //    var latest = batch
-        //        .GroupBy(x => x.i)
-        //        .Select(g => g.Last())
-        //        .ToList();
-
-        //    // Parallel non-UI (Excel) work
-        //    var tasks = latest.Select(x => Task.Run(() =>
-        //    {
-        //        var dict = CreateFieldDictionary(x);
-        //        ExcelNotifier.NotifyExcel(x.i, dict);
-        //    }));
-
-        //    await Task.WhenAll(tasks);
-
-        //    // Now batch update UI once
-        //    if (defaultGrid.IsHandleCreated)
-        //    {
-        //        defaultGrid.BeginInvoke(new Action(() =>
-        //        {
-        //            defaultGrid.SuspendLayout();
-        //            try
-        //            {
-        //                foreach (var data in latest)
-        //                {
-        //                    if (symbolRowMap.TryGetValue(data.i, out int row))
-        //                        UpdateRow(defaultGrid.Rows[row], data);
-        //                }
-        //            }
-        //            finally
-        //            {
-        //                defaultGrid.ResumeLayout();
-        //            }
-        //        }));
-        //    }
-        //}
-
-
-        ///// <summary>
-        ///// SharedMemory consumer callback — parse & write the latest snapshot for the symbol only.
-        ///// This method must be as cheap as possible (no UI work).
-        ///// </summary>
-        //private void OnSharedMemoryMessage(byte[] data)
-        //{
-        //    if (data == null || data.Length == 0)
-        //        return;
-
-        //    if (data.Length < 4 || data[0] != 0x1F || data[1] != 0x8B)
-        //        return;   // just ignore quietly
-
-
-        //    // Discard clearly invalid or giant blocks
-        //    if (data.Length > 512_000)
-        //    {
-        //        Trace.WriteLine($"Discarded corrupt large message ({data.Length} bytes)");
-        //        return;
-        //    }
-
-        //    // Validate gzip header quickly
-        //    if (data.Length < 4 || data[0] != 0x1F || data[1] != 0x8B)
-        //    {
-        //        System.Diagnostics.Trace.WriteLine($"Skipped non-gzip block ({data.Length} bytes)");
-        //        return;
-        //    }
-
-        //    try
-        //    {
-        //        var json = DecompressGzip(data);
-        //        if (string.IsNullOrWhiteSpace(json))
-        //            return;
-
-        //        var shortDto = JsonConvert.DeserializeObject<MarketDataDto>(json);
-        //        if (shortDto == null || string.IsNullOrEmpty(shortDto.i))
-        //            return;
-
-        //        // Convert string-based DTO to typed long-values DTO (cheap)
-        //        var tick = new MarketDataDto
-        //        {
-        //            i = shortDto.i,
-        //            b = shortDto.b,
-        //            a = shortDto.a,
-        //            ltp = shortDto.ltp,
-        //            h = shortDto.h,
-        //            l = shortDto.l,
-        //            t = shortDto.t,
-        //            o = shortDto.o,
-        //            c = shortDto.c,
-        //            d = shortDto.d,
-        //            v = shortDto.v,
-        //            atp = shortDto.atp,
-        //            bq = shortDto.bq,
-        //            tbq = shortDto.tbq,
-        //            sq = shortDto.sq,
-        //            tsq = shortDto.tsq,
-        //            vt = shortDto.vt,
-        //            oi = shortDto.oi,
-        //            ltq = shortDto.ltq
-
-        //        };
-
-        //        // Overwrite latest snapshot for the symbol — lock-free and cheap.
-        //        _latestUpdates.AddOrUpdate(tick.i, tick, (key, existing) =>
-        //        {
-        //            // Keep existing object identity? We return a fresh object (tick) so UI sync will copy values.
-        //            return tick;
-        //        });
-        //    }
-        //    catch (InvalidDataException ide)
-        //    {
-        //        System.Diagnostics.Trace.TraceWarning($"Corrupt gzip block ({data.Length} bytes): {ide.Message}");
-        //    }
-        //    catch (JsonReaderException jre)
-        //    {
-        //        System.Diagnostics.Trace.TraceWarning($"Bad JSON skipped: {jre.Message}");
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        System.Diagnostics.Trace.TraceError($"OnSharedMemoryMessage fatal error: {ex}");
-        //    }
-        //}
-
-        //private void StartWatchdogTimer()
-        //{
-        //    if (_watchdogTimer != null)
-        //        return;
-
-        //    int _connectingRetryCount = 0;
-        //    int MaxConnectingRetries = 3;
-
-        //    _watchdogTimer = new System.Timers.Timer(10000); // check every 5 seconds
-        //    _watchdogTimer.Elapsed += async (s, e) =>
-        //    {
-        //        try
-        //        {
-        //            if (connection == null)
-        //            { return; }
-
-        //            if (connection.State == HubConnectionState.Connecting)
-        //            {
-        //                _connectingRetryCount++;
-        //                ApplicationLogger.Log($"SignalR still connecting... Attempt {_connectingRetryCount}");
-
-        //                if (_connectingRetryCount >= MaxConnectingRetries)
-        //                {
-        //                    ApplicationLogger.Log("SignalR stuck in connecting state. Forcing hard reconnect.");
-        //                    connection = null;
-        //                    //_eventHandlersAttached = false;
-
-        //                    //SignalRTimer();
-        //                    await EnsureSignalRConnectedAndSubscribedAsync();
-        //                    _connectingRetryCount = 0;
-        //                }
-
-        //                return;
-        //            }
-
-        //            var secondsSinceLastMessage = (DateTime.UtcNow - _lastExcelRateTime).TotalSeconds;
-
-        //            if (secondsSinceLastMessage > 30) // 💀 No data in 30 seconds
-        //            {
-        //                ApplicationLogger.Log("No SignalR data in 30s — forcing reconnect.");
-
-        //                connection = null;
-        //                //_eventHandlersAttached = false;
-
-        //                //SignalRTimer();
-        //                await EnsureSignalRConnectedAndSubscribedAsync();
-        //            }
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            ApplicationLogger.LogException(ex);
-        //        }
-        //    };
-
-        //    _watchdogTimer.AutoReset = true;
-        //    _watchdogTimer.Start();
-        //}
-
-        //private void SetupUpdateTimer()
-        //{
-        //    try
-        //    {
-        //        // Purana timer dispose karo
-        //        if (_updateTimer != null)
-        //        {
-        //            _updateTimer.Dispose();
-        //            _updateTimer = null;
-        //        }
-
-        //        // Background timer setup (100ms interval)
-        //        _updateTimer = new System.Threading.Timer(
-        //            callback: state =>
-        //            {
-        //                try
-        //                {
-        //                    UpdateTimer_Tick(null, EventArgs.Empty);
-        //                }
-        //                catch (Exception ex)
-        //                {
-        //                    ApplicationLogger.LogException(ex);
-        //                }
-        //            },
-        //            state: null,
-        //            dueTime: 0,        // start immediately
-        //            period: 100        // repeat every 100ms
-        //        );
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        ApplicationLogger.LogException(ex);
-        //    }
-        //}
-
-        //private void OnExcelRateReceived(string base64)
-        //{
-        //    try
-        //    {
-        //        _lastExcelRateTime = DateTime.UtcNow; // ⏱️ Update timestamp
-
-        //        if (!string.IsNullOrEmpty(base64))
-        //        {
-
-        //            byte[] bytes = Convert.FromBase64String(base64);
-        //            string json = DecompressGzip(bytes);
-        //            var data = JsonConvert.DeserializeObject<MarketDataDto>(json, _jsonSettings);
-
-        //            if (data == null || string.IsNullOrEmpty(data.i))
-        //                return;
-
-        //            _latestUpdates[data.i] = data; // replace latest update for each symbol 
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        ApplicationLogger.LogException(ex);
-        //    }
-        //}
-
-        //public async Task SignalREvent()
-        //{
-        //    try
-        //    {
-        //        if (connection == null)
-        //        {
-        //            connection = BuildConnection();
-
-        //            //Console.WriteLine($"Connection Info: {connection}");
-
-        //            // Log the connection state
-        //            //Console.WriteLine($"Connection State: {connection.State}");
-
-        //            // Log the connection string (URL)
-        //            //Console.WriteLine($"Connection URL: {connection.ConnectionId}");
-
-
-        //            //if (!_eventHandlersAttached)
-        //            //{
-        //            // Attach event handlers only once
-        //            connection.On<string>("excelRate", base64 =>
-        //            {
-        //                try
-        //                {
-        //                    if (string.IsNullOrEmpty(base64)) return;
-
-        //                    // Convert string → bytes
-        //                    byte[] bytes = Convert.FromBase64String(base64);
-
-        //                    // Push to shared memory queue (non-blocking)
-        //                    _producer.Enqueue(bytes);
-        //                }
-        //                catch { }
-        //            });
-
-
-        //            //connection.Closed += async (error) =>
-        //            //{
-        //            //    ApplicationLogger.Log("Connection closed");
-
-        //            //    await Task.Delay(2000); // backoff instead of random
-        //            //    await TryReconnectAsync(); // safe reconnect
-
-        //            //};
-
-        //            //connection.Reconnected += async (connectionId) =>
-        //            //{
-        //            //    ApplicationLogger.Log("Reconnected to SignalR hub");
-        //            //    try
-        //            //    {
-        //            //        if (selectedSymbols.Count > 0)
-        //            //            identifiers = new List<string>(selectedSymbols);
-
-        //            //        using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5)))
-        //            //        {
-        //            //            await connection.InvokeAsync("SubscribeSymbols", symbolMaster, cts.Token);
-        //            //        }
-        //            //        ApplicationLogger.Log("Resubscribed after reconnect.");
-        //            //    }
-        //            //    catch (Exception ex) when (ex is TaskCanceledException || ex is OperationCanceledException)
-        //            //    {
-        //            //        ApplicationLogger.Log("SignalR Reconnecting/subscribe timeout/canceled.");
-
-        //            //        if (savelabel.InvokeRequired)
-        //            //        {
-        //            //            savelabel.Invoke(new Action(() =>
-        //            //            {
-        //            //                savelabel.Visible = true;
-        //            //                savelabel.Text = "Client is offline, switch network.";
-        //            //            }));
-        //            //        }
-        //            //        else
-        //            //        {
-        //            //            savelabel.Visible = true;
-        //            //            savelabel.Text = "Client is offline, switch network.";
-        //            //        }
-        //            //        connection = null;
-        //            //        _eventHandlersAttached = false;
-        //            //    }
-        //            //    catch (Exception ex)
-        //            //    {
-        //            //        ApplicationLogger.LogException(ex);
-        //            //    }
-
-        //            //};
-
-        //            //_eventHandlersAttached = true;
-        //        }
-        //        //}
-
-        //        if (connection.State == HubConnectionState.Disconnected)
-        //            await connection.StartAsync().ConfigureAwait(false);
-
-        //        if (connection.State == HubConnectionState.Connected)
-        //        {
-
-
-        //            // Log the connection string (URL)
-        //            //Console.WriteLine($"Connection URL: {connection.ConnectionId}");
-
-        //            if (symbolMaster == null || symbolMaster.Count == 0)
-        //            {
-        //                //Console.WriteLine("symbolmaster is null/empty");
-        //                ApplicationLogger.Log("Symbol list is empty, cannot subscribe.");
-        //                connection = null;
-        //                //_eventHandlersAttached = false;
-        //                _lastExcelRateTime = DateTime.MinValue;
-        //                return;
-        //            }
-
-        //            try
-        //            {
-        //                //Console.WriteLine($"Connection Time Symbols Count is {symbolMaster.Count}");
-        //                await connection.InvokeAsync("SubscribeSymbols", symbolMaster).ConfigureAwait(false);
-
-        //                if (savelabel.InvokeRequired)
-        //                {
-        //                    savelabel.Invoke(new Action(() =>
-        //                    {
-        //                        savelabel.Visible = false;
-        //                        savelabel.Text = string.Empty;
-        //                    }));
-        //                }
-        //                else
-        //                {
-        //                    savelabel.Visible = false;
-        //                    savelabel.Text = string.Empty;
-        //                }
-
-        //                SetupUpdateTimer();
-        //                StartWatchdogTimer();
-        //                //_cancellationTokenSource?.Cancel();
-        //                //_cancellationTokenSource = new CancellationTokenSource();
-        //                //_ = StartChannelConsumerAsync(_cancellationTokenSource.Token);
-        //            }
-        //            catch (Exception ex) when (ex is TaskCanceledException || ex is OperationCanceledException)
-        //            {
-        //                ApplicationLogger.Log("SignalR subscribe timeout/canceled.");
-
-        //                if (savelabel.InvokeRequired)
-        //                {
-        //                    savelabel.Invoke(new Action(() =>
-        //                    {
-        //                        savelabel.Visible = true;
-        //                        savelabel.Text = "Client is offline, switch network.";
-        //                    }));
-        //                }
-        //                else
-        //                {
-        //                    savelabel.Visible = true;
-        //                    savelabel.Text = "Client is offline, switch network.";
-        //                }
-        //                connection = null;
-        //                //_eventHandlersAttached = false;
-        //            }
-        //        }
-        //    }
-        //    catch (Exception ex) when (ex is TaskCanceledException || ex is OperationCanceledException)
-        //    {
-        //        ApplicationLogger.Log("SignalR subscribe timeout/canceled.");
-
-        //        if (savelabel.InvokeRequired)
-        //        {
-        //            savelabel.Invoke(new Action(() =>
-        //            {
-        //                savelabel.Visible = true;
-        //                savelabel.Text = "Client is offline, switch network.";
-        //            }));
-        //        }
-        //        else
-        //        {
-        //            savelabel.Visible = true;
-        //            savelabel.Text = "Client is offline, switch network.";
-        //        }
-        //        connection = null;
-        //        //_eventHandlersAttached = false;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        ApplicationLogger.LogException(ex);
-        //    }
-        //    //Console.WriteLine($"End At {DateTime.Now}");
-        //}
-
-
-        //private async Task TryReconnectAsync()
-        //{
-        //    if (_isReconnectInProgress) return; // prevent parallel reconnects
-        //    if (connection?.State != HubConnectionState.Disconnected) return;
-
-        //    try
-        //    {
-        //        _isReconnectInProgress = true;
-        //        await SignalREvent().ConfigureAwait(false);
-        //    }
-        //    catch (Exception ex) when (
-        //        ex is OperationCanceledException ||
-        //        ex is ObjectDisposedException ||
-        //        ex is TargetInvocationException ||
-        //        ex is InvalidOperationException)
-        //    {
-        //        ApplicationLogger.LogException(ex);
-
-        //        // 🔄 Instead of immediate retry → small backoff
-        //        await Task.Delay(2000);
-        //        await SignalREvent().ConfigureAwait(false);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        // Unexpected errors
-        //        ApplicationLogger.LogException(ex);
-        //    }
-        //    finally
-        //    {
-        //        _isReconnectInProgress = false;
-        //    }
-        //}
-
-        //public void SignalRTimer()
-        //{
-        //    if (signalRTimer != null) return; // prevent multiple timers
-
-        //    signalRTimer = new System.Windows.Forms.Timer { Interval = 10_000 };
-        //    signalRTimer.Tick += async (s, e) =>
-        //    {
-        //        try
-        //        {
-        //            if (!isReconnectTimerRunning && connection?.State == HubConnectionState.Disconnected)
-        //            {
-        //                isReconnectTimerRunning = true;
-        //                await TryReconnectAsync().ConfigureAwait(false);
-        //                isReconnectTimerRunning = false;
-        //            }
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            ApplicationLogger.LogException(ex);
-        //            isReconnectTimerRunning = false;
-        //        }
-        //    };
-        //    signalRTimer.Start();
-        //}
-        //#endregion
-
-        //#region SignalR Methods
-
-        //private HubConnection BuildConnection()
-        //{
-        //    _signalREventsAttached = false;
-
-        //    return new HubConnectionBuilder()
-        //        .WithUrl($"{APIUrl.LocalMarketURL}")
-        //        //.WithUrl($"{APIPath}excel?user={username}&auth=Starline@1008&type=Desktop")
-        //        .WithAutomaticReconnect(new[]
-        //        {
-        //    TimeSpan.Zero,
-        //    TimeSpan.FromSeconds(2),
-        //    TimeSpan.FromSeconds(5),
-        //    TimeSpan.FromSeconds(10)
-        //        })
-        //        .AddNewtonsoftJsonProtocol(options =>
-        //        {
-        //            options.PayloadSerializerSettings = new JsonSerializerSettings
-        //            {
-        //                NullValueHandling = NullValueHandling.Ignore,
-        //                MissingMemberHandling = MissingMemberHandling.Ignore,
-        //                Formatting = Formatting.None
-        //            };
-        //        })
-        //        .ConfigureLogging(logging =>
-        //        {
-        //            logging.AddConsole();
-        //        })
-        //        .Build();
-
-
-        //}
-
-
-        //private void AttachSignalREventHandlers()
-        //{
-        //    if (connection == null || _signalREventsAttached)
-        //        return;
-
-        //    // 🔔 Market data stream
-        //    connection.On<string>("excelRate", OnExcelRateReceived);
-        //    //connection.On<MarketTick>("tick", OnLocalTickReceived);
-
-        //    // 🔌 Connection lifecycle
-        //    connection.Closed += OnConnectionClosed;
-        //    connection.Reconnecting += OnConnectionReconnecting;
-        //    connection.Reconnected += OnConnectionReconnected;
-
-        //    _signalREventsAttached = true;
-        //}
-
-
-        //private void OnExcelRateReceived(string base64)
-        //{
-        //    try
-        //    {
-        //        if (string.IsNullOrEmpty(base64) || _producer == null)
-        //            return;
-
-        //        var bytes = Convert.FromBase64String(base64);
-        //        _producer.Enqueue(bytes);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        ApplicationLogger.LogException(ex);
-        //    }
-        //}
-
-
-        //private Task OnConnectionClosed(Exception error)
-        //{
-        //    ApplicationLogger.Log($"[SignalR] Closed: {error?.Message}");
-        //    _subscribedForCurrentSymbols = false;
-        //    _lastSubscribedKey = string.Empty;
-
-        //    // Fire-and-forget reconnection with throttle
-        //    _ = SafeReconnectAsync("Closed", error);
-        //    return Task.CompletedTask;
-        //}
-
-        //private Task OnConnectionReconnecting(Exception error)
-        //{
-        //    ApplicationLogger.Log($"[SignalR] Reconnecting: {error?.Message}");
-        //    return Task.CompletedTask;
-        //}
-
-        //private Task OnConnectionReconnected(string newConnectionId)
-        //{
-        //    ApplicationLogger.Log($"[SignalR] Reconnected. New Id: {newConnectionId}");
-
-        //    // After reconnect we need to re-subscribe
-        //    _subscribedForCurrentSymbols = false;
-        //    _lastSubscribedKey = string.Empty;
-
-        //    _ = SafeReconnectAsync("Reconnected");
-        //    return Task.CompletedTask;
-        //}
-
-        //private async Task SafeReconnectAsync(string reason, Exception error = null)
-        //{
-        //    try
-        //    {
-        //        lock (_reconnectLock)
-        //        {
-        //            var now = DateTime.UtcNow;
-        //            if (now - _lastReconnectAttempt < _reconnectThrottle)
-        //            {
-        //                ApplicationLogger.Log($"[SignalR] Reconnect skipped (throttle). Reason: {reason}");
-        //                return;
-        //            }
-
-        //            _lastReconnectAttempt = now;
-        //        }
-
-        //        ApplicationLogger.Log($"[SignalR] Reconnect triggered ({reason}). Error: {error?.Message}");
-        //        //await EnsureSignalRConnectedAndSubscribedAsync();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        ApplicationLogger.LogException(ex);
-        //    }
-        //}
-
-
-        ////private async Task EnsureSignalRConnectedAndSubscribedAsync()
-        ////{
-        ////    await _signalRLock.WaitAsync();   // 🔒 TAKE LOCK
-
-        ////    try
-        ////    {
-        ////        // 1️⃣ Create connection if needed
-        ////        if (connection == null || isConnectionDisposed)
-        ////        {
-        ////            connection = BuildConnection();
-        ////            AttachSignalREventHandlers(); // attach exactly once for this instance
-        ////        }
-        ////        else
-        ////        {
-        ////            // if we somehow built it earlier but not attached yet
-        ////            AttachSignalREventHandlers();
-        ////        }
-
-        ////        // 2️⃣ Ensure started
-        ////        if (connection.State == HubConnectionState.Disconnected)
-        ////        {
-        ////            ApplicationLogger.Log("[SignalR] Starting connection...");
-        ////            await connection.StartAsync();
-        ////            ApplicationLogger.Log("[SignalR] Connection started.");
-        ////        }
-        ////        else if (connection.State == HubConnectionState.Connecting ||
-        ////                 connection.State == HubConnectionState.Reconnecting)
-        ////        {
-        ////            // Let the ongoing attempt finish
-        ////            ApplicationLogger.Log("[SignalR] Already connecting/reconnecting, skipping.");
-        ////            return;
-        ////        }
-
-        ////        // 3️⃣ (Re)subscribe for current symbolMaster
-        ////        if (connection.State == HubConnectionState.Connected &&
-        ////            symbolMaster != null &&
-        ////            symbolMaster.Count > 0)
-        ////        {
-        ////            // create key representing current subscription set
-        ////            var key = string.Join("|", symbolMaster.OrderBy(x => x, StringComparer.OrdinalIgnoreCase));
-
-        ////            // if we never subscribed OR the symbol set changed → resubscribe
-        ////            if (!_subscribedForCurrentSymbols ||
-        ////                !string.Equals(key, _lastSubscribedKey, StringComparison.Ordinal))
-        ////            {
-        ////                ApplicationLogger.Log($"[SignalR] Subscribing {symbolMaster.Count} symbols...");
-        ////                await connection.InvokeAsync("SubscribeSymbols", symbolMaster);
-        ////                _subscribedForCurrentSymbols = true;
-        ////                _lastSubscribedKey = key;
-        ////                ApplicationLogger.Log("[SignalR] Subscription successful.");
-        ////            }
-        ////        }
-        ////    }
-        ////    catch (Exception ex)
-        ////    {
-        ////        ApplicationLogger.LogException(ex);
-        ////    }
-        ////    finally
-        ////    {
-        ////        _signalRLock.Release();       // 🔓 RELEASE LOCK
-        ////    }
-        ////}
-
-        //private MarketDataDto ParseDto(byte[] raw)
-        //{
-        //    if (raw == null) return null;
-
-        //    using (var ms = new MemoryStream(raw))
-        //    using (var gz = new GZipStream(ms, CompressionMode.Decompress))
-        //    using (var sr = new StreamReader(gz, Encoding.UTF8))
-        //    using (var reader = new JsonTextReader(sr))
-        //    {
-        //        return _dtoSerializer.Deserialize<MarketDataDto>(reader);
-        //    }
-        //}
-
-
-        //// ========================================
-        //// 🔥 Optimized Batch → Grid Update
-        //// ========================================
-
-        //private async Task ApplyBatchUpdatesParallelAsync(List<MarketDataDto> updates)
-        //{
-        //    if (updates == null || updates.Count == 0)
-        //        return;
-
-        //    // 🔥 Excel update (SUPER FAST, no Task.Run)
-        //    foreach (var dto in updates)
-        //    {
-        //        if (!long.TryParse(dto.t, out long ts))
-        //            continue;
-
-        //        if (!_excelLastSent.TryGetValue(dto.i, out long lastTs) || lastTs < ts)
-        //        {
-        //            var dict = CreateFieldDictionary(dto);
-        //            if (dict != null)
-        //                ExcelNotifier.NotifyExcel(dto.i, dict);
-
-        //            _excelLastSent[dto.i] = ts;
-        //        }
-        //    }
-
-        //    // ========= UI GRID UPDATE (SINGLE BATCH) ============
-
-        //    if (!defaultGrid.IsHandleCreated)
-        //        return;
-
-        //    defaultGrid.BeginInvoke(new Action(() =>
-        //    {
-        //        try
-        //        {
-        //            defaultGrid.SuspendLayout();
-
-        //            foreach (var dto in updates)
-        //            {
-        //                if (!long.TryParse(dto.t, out long ts))
-        //                    continue;
-
-        //                if (!symbolRowMap.TryGetValue(dto.i, out int rowIndex))
-        //                    continue;
-
-        //                if (_rowLastUpdate.TryGetValue(dto.i, out long oldTs) && oldTs >= ts)
-        //                    continue;
-
-        //                _rowLastUpdate[dto.i] = ts;
-
-        //                UpdateRow_Optimized(defaultGrid.Rows[rowIndex], dto);
-        //            }
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            ApplicationLogger.LogException(ex);
-        //        }
-        //        finally
-        //        {
-        //            defaultGrid.ResumeLayout();
-        //        }
-        //    }));
-        //}
-
-        ////private async Task ApplyBatchUpdatesParallelAsync(List<MarketDataDto> updates)
-        ////{
-        ////    if (updates == null || updates.Count == 0)
-        ////        return;
-
-        ////    // ========= NON-UI WORK (PARALLEL EXCEL) ============
-        ////    var excelTasks = updates.Select(dto => Task.Run(() =>
-        ////    {
-        ////        if (!long.TryParse(dto.t, out long ts))
-        ////            return;
-
-        ////        if (!_excelLastSent.TryGetValue(dto.i, out long lastTs) || lastTs < ts)
-        ////        {
-        ////            var dict = CreateFieldDictionary(dto);
-        ////            if (dict != null && dict.Count > 0)
-        ////            {
-        ////                ExcelNotifier.NotifyExcel(dto.i, dict);
-        ////            }
-        ////            _excelLastSent[dto.i] = ts;
-        ////        }
-        ////    })).ToList();
-
-        ////    await Task.WhenAll(excelTasks);
-
-        ////    // ========= UI GRID UPDATE (SINGLE BATCH) ============
-        ////    if (!defaultGrid.IsHandleCreated)
-        ////        return;
-
-        ////    defaultGrid.BeginInvoke(new Action(() =>
-        ////    {
-        ////        try
-        ////        {
-        ////            defaultGrid.SuspendLayout();
-
-        ////            foreach (var dto in updates)
-        ////            {
-        ////                // Convert timestamp only once (fixes your errors)
-        ////                if (!long.TryParse(dto.t, out long ts))
-        ////                    continue;
-
-        ////                if (!symbolRowMap.TryGetValue(dto.i, out int rowIndex))
-        ////                    continue;
-
-        ////                // Skip outdated ticks
-        ////                if (_rowLastUpdate.TryGetValue(dto.i, out long oldTs) && oldTs >= ts)
-        ////                    continue;
-
-        ////                _rowLastUpdate[dto.i] = ts;
-
-        ////                // Optimized row update
-        ////                UpdateRow_Optimized(defaultGrid.Rows[rowIndex], dto);
-        ////            }
-        ////        }
-        ////        catch (Exception ex)
-        ////        {
-        ////            ApplicationLogger.LogException(ex);
-        ////        }
-        ////        finally
-        ////        {
-        ////            defaultGrid.ResumeLayout();
-        ////        }
-        ////    }));
-        ////}
-
-        //private static Dictionary<string, object> CreateFieldDictionary(MarketDataDto data)
-        //{
-        //    try
-        //    {
-        //        return new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
-        //        {
-        //            ["Name"] = data.i,
-        //            ["Bid"] = data.b,
-        //            ["Ask"] = data.a,
-        //            ["LTP"] = data.ltp,
-        //            ["High"] = data.h,
-        //            ["Low"] = data.l,
-        //            ["Open"] = data.o,
-        //            ["Close"] = data.c,
-        //            ["Net Chng"] = data.d,
-        //            ["V"] = data.v,
-        //            ["ATP"] = data.atp,
-        //            ["Bid Size"] = data.bq,
-        //            ["Total Bid Size"] = data.tbq,
-        //            ["Ask Size"] = data.sq,
-        //            ["Total Ask Size"] = data.tsq,
-        //            ["Volume"] = data.vt,
-        //            ["Open Interest"] = data.oi,
-        //            ["Last Size"] = data.ltq,
-        //            ["Time"] = Common.TimeStampConvert(data.t)
-        //        };
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        ApplicationLogger.LogException(ex);
-        //        return new Dictionary<string, object>();
-        //    }
-        //}
-
-        //// ========================================
-        //// 🔥 Much Faster Row Updater
-        //// ========================================
-        //private void UpdateRow_Optimized(DataGridViewRow row, MarketDataDto data)
-        //{
-        //    try
-        //    {
-        //        string symbol = data.i;
-
-        //        // ========== Capture previous values ==========
-        //        var previous = new Dictionary<string, double>();
-        //        foreach (var col in numericColumns)
-        //        {
-        //            if (!defaultGrid.Columns.Contains(col)) continue;
-
-        //            string val = row.Cells[col].Value?.ToString();
-        //            if (double.TryParse(val, out double d))
-        //                previous[col] = d;
-        //        }
-
-        //        // ======== Update all numeric/string cells ========
-        //        SetCellValueFast(row, "Bid", data.b);
-        //        SetCellValueFast(row, "Ask", data.a);
-        //        SetCellValueFast(row, "LTP", data.ltp);
-        //        SetCellValueFast(row, "High", data.h);
-        //        SetCellValueFast(row, "Low", data.l);
-        //        SetCellValueFast(row, "Open", data.o);
-        //        SetCellValueFast(row, "Close", data.c);
-        //        SetCellValueFast(row, "Net Chng", data.d);
-        //        SetCellValueFast(row, "V", data.v);
-        //        SetCellValueFast(row, "ATP", data.atp);
-        //        SetCellValueFast(row, "Bid Size", data.bq);
-        //        SetCellValueFast(row, "Total Bid Size", data.tbq);
-        //        SetCellValueFast(row, "Ask Size", data.sq);
-        //        SetCellValueFast(row, "Total Ask Size", data.tsq);
-        //        SetCellValueFast(row, "Volume", data.vt);
-        //        SetCellValueFast(row, "Open Interest", data.oi);
-        //        SetCellValueFast(row, "Last Size", data.ltq);
-        //        SetCellValueFast(row, "Time", Common.TimeStampConvert(data.t));
-
-        //        // ========== Name Column ==========
-        //        var nameCell = row.Cells["Name"];
-        //        if ((nameCell.Value?.ToString() ?? "N/A") == "N/A")
-        //            nameCell.Value = pastRateTickDTO?.FirstOrDefault(x => x.i == symbol)?.n ?? "--";
-
-        //        // ========== ASK arrow logic ==========
-        //        double oldAsk = previousAskMap.TryGetValue(symbol, out var pa) ? pa : 0;
-        //        double newAsk = 0;
-        //        bool askChanged = false;
-        //        int askDirection = 0;
-
-        //        if (double.TryParse(data.a, out newAsk))
-        //        {
-        //            if (oldAsk != 0)
-        //            {
-        //                if (newAsk > oldAsk)
-        //                {
-        //                    askDirection = 1;
-        //                    askChanged = true;
-        //                }
-        //                else if (newAsk < oldAsk)
-        //                {
-        //                    askDirection = -1;
-        //                    askChanged = true;
-        //                }
-        //            }
-        //            previousAskMap[symbol] = newAsk;
-        //        }
-
-        //        // ========== COLOR CHANGE FOR NUMERIC COLUMNS ==========
-        //        foreach (var col in numericColumns)
-        //        {
-        //            if (!defaultGrid.Columns.Contains(col)) continue;
-
-        //            var cell = row.Cells[col];
-        //            string newValue = cell.Value?.ToString();
-        //            if (!double.TryParse(newValue, out double newNum)) continue;
-
-        //            if (previous.TryGetValue(col, out double oldNum))
-        //            {
-        //                if (newNum > oldNum)
-        //                    cell.Style.ForeColor = Color.Green;
-        //                else if (newNum < oldNum)
-        //                    cell.Style.ForeColor = Color.Red;
-        //            }
-        //        }
-
-        //        // ========== APPLY ARROW ==========
-        //        // APPLY ARROW
-        //        if (askChanged)
-        //        {
-        //            ApplyArrow(nameCell, askDirection == 1);
-
-        //            var color = askDirection == 1 ? Color.Green : Color.Red;
-
-        //            // FIXED: Proper column check
-        //            if (defaultGrid.Columns.Contains("i"))
-        //                row.Cells["i"].Style.ForeColor = color;
-
-        //            nameCell.Style.ForeColor = color;
-        //        }
-
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        ApplicationLogger.LogException(ex);
-        //    }
-        //}
-
-        //private void ApplyArrow(DataGridViewCell nameCell, bool up)
-        //{
-        //    string cleanName = (nameCell.Value?.ToString() ?? "")
-        //        .Replace(" ▲", "")
-        //        .Replace(" ▼", "")
-        //        .Trim();
-
-        //    if (up)
-        //    {
-        //        nameCell.Value = cleanName + " ▲";
-        //        nameCell.Style.ForeColor = Color.Green;
-        //    }
-        //    else
-        //    {
-        //        nameCell.Value = cleanName + " ▼";
-        //        nameCell.Style.ForeColor = Color.Red;
-        //    }
-        //}
-
-
-        //private void SetCellValueFast(DataGridViewRow row, string columnName, object newValue)
-        //{
-        //    if (!defaultGrid.Columns.Contains(columnName))
-        //        return;
-
-        //    var cell = row.Cells[columnName];
-        //    var newText = newValue?.ToString() ?? "--";
-
-        //    if (cell.Value?.ToString() != newText)
-        //        cell.Value = newText;
-        //}
-
-        //private static bool IsNumericChange(object oldVal, object newVal, out int direction)
-        //{
-        //    direction = 0;
-
-        //    try
-        //    {
-        //        if (oldVal == null || newVal == null) return false;
-
-        //        string oldStr = oldVal.ToString();
-        //        string newStr = newVal.ToString();
-
-        //        if (double.TryParse(oldStr, out double oldNum) && double.TryParse(newStr, out double newNum))
-        //        {
-        //            if (newNum > oldNum)
-        //            {
-        //                direction = 1;
-        //                return true;
-        //            }
-        //            else if (newNum < oldNum)
-        //            {
-        //                direction = -1;
-        //                return true;
-        //            }
-        //        }
-
-        //        return false;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        ApplicationLogger.LogException(ex);
-        //        return false;
-        //    }
-        //}
-
-        //private async void OnBatchReceived(List<(string symbol, byte[] raw)> batch)
-        //{
-        //    var parsed = new List<MarketDataDto>();
-
-        //    foreach (var (symbol, raw) in batch)
-        //    {
-        //        var dto = ParseDto(raw);
-        //        if (dto == null)
-        //            continue;
-
-        //        parsed.Add(dto);
-
-        //        // --- Excel throttling by timestamp ---
-        //        // dto.t is your tick timestamp (string → long)
-        //        if (!long.TryParse(dto.t, out long ts))
-        //            continue;
-
-        //        //lock (_excelLastSent)
-        //        //{
-        //        //    if (_excelLastSent.TryGetValue(dto.i, out long lastTs) && lastTs >= ts)
-        //        //    {
-        //        //        // this tick is older or same as what Excel already has → skip
-        //        //        continue;
-        //        //    }
-
-        //        //    _excelLastSent[dto.i] = ts;
-        //        //}
-
-        //        //// 🔥 QUEUE to Excel background thread (only NEWER ticks)
-        //        //var dict = CreateFieldDictionary(dto);
-        //        //    if (dict != null && dict.Count > 0)
-        //        //        _excelQueue.Enqueue(dto.i, dict); 
-
-        //    }
-
-        //    // 🔥 UPDATE WINFORMS GRID (already deduped by _rowLastUpdate)
-        //    await ApplyBatchUpdatesParallelAsync(parsed);
-        //}
-
-
-
-        //#endregion SignalR Methods
     }
 }
