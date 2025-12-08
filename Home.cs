@@ -770,7 +770,7 @@ namespace thecalcify
                 // ---------------------------------------------
                 fontSizeComboBox.Visible = true;
                 savelabel.Visible = false;
-
+                
                 searchTextLabel.Visible = true;
                 txtsearch.Visible = true;
                 txtsearch.Text = string.Empty;
@@ -833,7 +833,7 @@ namespace thecalcify
             }
         }
 
-        private async void NewCTRLNToolStripMenuItem1_Click(object sender, EventArgs e)
+        public async void NewCTRLNToolStripMenuItem1_Click(object sender, EventArgs e)
         {
             try
             {
@@ -918,7 +918,7 @@ namespace thecalcify
             }
         }
 
-        private async void DeleteToolStripMenuItem_Click(object sender, EventArgs e)
+        public async void DeleteToolStripMenuItem_Click(object sender, EventArgs e)
         {
             try
             {
@@ -931,156 +931,204 @@ namespace thecalcify
 
                 using (var selectionForm = new Form())
                 {
-                    selectionForm.Text = "Select Market Watch to Delete";
-                    selectionForm.Width = 600;
-                    selectionForm.Height = 500;
+                    // --- Form Styling ---
+                    selectionForm.Text = "Manage Watchlists";
+                    selectionForm.Size = new Size(550, 600);
                     selectionForm.FormBorderStyle = FormBorderStyle.FixedDialog;
                     selectionForm.StartPosition = FormStartPosition.CenterParent;
                     selectionForm.BackColor = Color.White;
-                    selectionForm.Font = new System.Drawing.Font("Microsoft Sans Serif", 9);
-                    selectionForm.Icon = SystemIcons.WinLogo;
+                    selectionForm.MaximizeBox = false;
+                    selectionForm.MinimizeBox = false;
+                    selectionForm.ShowIcon = false;
+                    selectionForm.Font = new System.Drawing.Font("Segoe UI", 9F, FontStyle.Regular); // Modern Font
 
+                    // --- 1. Header Section ---
                     var headerPanel = new Panel
                     {
                         Dock = DockStyle.Top,
-                        Height = 50,
-                        BackColor = Color.FromArgb(0, 120, 215)
+                        Height = 60,
+                        BackColor = Color.White,
+                        Padding = new Padding(20, 0, 0, 0)
+                    };
+                    // Draw subtle bottom border
+                    headerPanel.Paint += (s, p) =>
+                    {
+                        p.Graphics.DrawLine(new Pen(Color.FromArgb(226, 232, 240)), 0, headerPanel.Height - 1, headerPanel.Width, headerPanel.Height - 1);
                     };
 
                     var headerLabel = new Label
                     {
-                        Text = "Select Market Watch to Delete",
+                        Text = "Delete Market Watch",
                         Dock = DockStyle.Fill,
-                        ForeColor = Color.White,
+                        ForeColor = Color.FromArgb(30, 41, 59), // Dark Slate Blue
                         TextAlign = ContentAlignment.MiddleLeft,
-                        Font = new System.Drawing.Font("Microsoft Sans Serif", 12, FontStyle.Bold),
-                        Padding = new Padding(15, 0, 0, 0)
+                        Font = new System.Drawing.Font("Segoe UI", 14F, FontStyle.Bold)
                     };
                     headerPanel.Controls.Add(headerLabel);
 
-                    // Search box for filtering
-                    var searchBox = new TextBox
+                    // --- 2. Search Section ---
+                    var searchPanel = new Panel
                     {
                         Dock = DockStyle.Top,
-                        Height = 30,
-                        Margin = new Padding(10, 10, 10, 5),
-                        Font = new System.Drawing.Font("Microsoft Sans Serif", 9),
-                        Text = "Search Here..."
+                        Height = 50,
+                        Padding = new Padding(20, 10, 20, 5),
+                        BackColor = Color.White
                     };
 
-                    // Modern list view with checkboxes
+                    var searchBox = new TextBox
+                    {
+                        Dock = DockStyle.Fill,
+                        Font = new System.Drawing.Font("Segoe UI", 11F),
+                        ForeColor = Color.Gray,
+                        Text = "Search...",
+                        BorderStyle = BorderStyle.FixedSingle
+                    };
+
+                    // Search Placeholder Logic
+                    searchBox.Enter += (s, args) => {
+                        if (searchBox.Text == "Search...") { searchBox.Text = ""; searchBox.ForeColor = Color.Black; }
+                    };
+                    searchBox.Leave += (s, args) => {
+                        if (string.IsNullOrWhiteSpace(searchBox.Text)) { searchBox.Text = "Search..."; searchBox.ForeColor = Color.Gray; }
+                    };
+
+                    searchPanel.Controls.Add(searchBox);
+
+                    // --- 3. ListView Section ---
+                    var listPanel = new Panel
+                    {
+                        Dock = DockStyle.Fill,
+                        Padding = new Padding(20, 5, 20, 10), // Padding around the list
+                        BackColor = Color.White
+                    };
+
                     var listView = new ListView
                     {
                         Dock = DockStyle.Fill,
                         CheckBoxes = true,
                         View = View.Details,
                         FullRowSelect = true,
-                        GridLines = false,
-                        MultiSelect = false,
-                        BorderStyle = BorderStyle.None,
-                        BackColor = SystemColors.Window
+                        GridLines = true,
+                        HeaderStyle = ColumnHeaderStyle.Nonclickable,
+                        BorderStyle = BorderStyle.FixedSingle,
+                        Font = new System.Drawing.Font("Segoe UI", 10F)
                     };
 
-                    // Modern column headers
-                    listView.Columns.Add("Market Watch Name", 300);
-                    listView.Columns.Add("Path", 250);
+                    // Hack to increase row height
+                    ImageList imgList = new ImageList();
+                    imgList.ImageSize = new Size(1, 28); // Width 1, Height 28 (Controls Row Height)
+                    listView.SmallImageList = imgList;
 
-                    // Add files to list view
+                    listView.Columns.Add("Name", 300);
+                    listView.Columns.Add("Path", 120); // Hidden mostly if you want
+
+                    // Populate Data
                     foreach (string filePath in FileLists)
                     {
                         if (filePath != saveFileName)
                         {
                             var item = new ListViewItem(Path.GetFileName(filePath));
                             item.SubItems.Add(filePath);
-                            item.Tag = filePath; // Store full path in tag
+                            item.Tag = filePath;
                             listView.Items.Add(item);
                         }
                     }
 
                     if (listView.Items.Count == 0)
                     {
-                        MessageBox.Show("There is only one MarketWatch and that Open so can't Delete.", "Information",
-                                 MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        MessageBox.Show("There is only one MarketWatch and that Open so can't Delete.", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         return;
                     }
 
-                    // Selection controls panel
+                    listPanel.Controls.Add(listView);
+
+                    // --- 4. Footer Buttons Section ---
                     var controlsPanel = new Panel
                     {
                         Dock = DockStyle.Bottom,
-                        Height = 50,
-                        BackColor = Color.FromArgb(240, 240, 240)
+                        Height = 70,
+                        BackColor = Color.FromArgb(248, 250, 252), // Very light gray background
+                        Padding = new Padding(20, 15, 20, 15)
+                    };
+                    // Top border for footer
+                    controlsPanel.Paint += (s, p) =>
+                    {
+                        p.Graphics.DrawLine(new Pen(Color.FromArgb(226, 232, 240)), 0, 0, controlsPanel.Width, 0);
                     };
 
-                    // Modern flat buttons
-                    var selectAllButton = new Button
+                    // "Select All" Button (Styled as a Link/Secondary)
+                    var btnSelectAll = new Button
                     {
                         Text = "Select All",
                         FlatStyle = FlatStyle.Flat,
-                        BackColor = Color.White,
-                        ForeColor = Color.FromArgb(0, 120, 215),
-                        Height = 30,
-                        Width = 120,
-                        Anchor = AnchorStyles.Left | AnchorStyles.Bottom,
-                        Margin = new Padding(10, 10, 0, 10)
+                        BackColor = Color.Transparent,
+                        ForeColor = Color.FromArgb(0, 120, 215), // Blue
+                        Size = new Size(100, 40),
+                        Dock = DockStyle.Left,
+                        Cursor = Cursors.Hand,
+                        Font = new System.Drawing.Font("Segoe UI", 9F, FontStyle.Bold)
                     };
+                    btnSelectAll.FlatAppearance.BorderSize = 0;
+                    btnSelectAll.FlatAppearance.MouseOverBackColor = Color.FromArgb(240, 240, 240);
 
-                    var deleteButton = new Button
+                    // "Delete" Button (Danger Style)
+                    var btnDelete = new Button
                     {
                         Text = "Delete Selected",
                         FlatStyle = FlatStyle.Flat,
-                        BackColor = Color.FromArgb(0, 120, 215),
+                        BackColor = Color.FromArgb(220, 38, 38), // Red
                         ForeColor = Color.White,
-                        Height = 30,
-                        Width = 120,
-                        Anchor = AnchorStyles.Right | AnchorStyles.Bottom,
-                        Margin = new Padding(0, 10, 90, 10)
+                        Size = new Size(130, 40),
+                        Dock = DockStyle.Right,
+                        Cursor = Cursors.Hand,
+                        Font = new System.Drawing.Font("Segoe UI", 9F, FontStyle.Bold)
                     };
+                    btnDelete.FlatAppearance.BorderSize = 0;
 
-                    var cancelButton = new Button
+                    // "Cancel" Button
+                    var btnCancel = new Button
                     {
                         Text = "Cancel",
                         FlatStyle = FlatStyle.Flat,
                         BackColor = Color.White,
-                        ForeColor = Color.FromArgb(0, 120, 215),
-                        Height = 30,
-                        Width = 80,
-                        Anchor = AnchorStyles.Right | AnchorStyles.Bottom,
-                        Margin = new Padding(0, 10, 10, 10)
+                        ForeColor = Color.Black,
+                        Size = new Size(90, 40),
+                        Dock = DockStyle.Right,
+                        Cursor = Cursors.Hand
                     };
+                    btnCancel.FlatAppearance.BorderColor = Color.LightGray;
 
-                    // Button event handlers
-                    selectAllButton.Click += (s, args) =>
+                    // Spacer
+                    Panel spacer = new Panel { Width = 10, Dock = DockStyle.Right };
+
+                    // --- Event Handlers ---
+
+                    btnSelectAll.Click += (s, args) =>
                     {
+                        bool anyUnchecked = listView.Items.Cast<ListViewItem>().Any(i => !i.Checked);
                         foreach (ListViewItem item in listView.Items)
                         {
-                            item.Checked = true;
+                            item.Checked = anyUnchecked;
                         }
+                        btnSelectAll.Text = anyUnchecked ? "Unselect All" : "Select All";
                     };
 
-                    cancelButton.Click += (s, args) => selectionForm.DialogResult = DialogResult.Cancel;
+                    btnCancel.Click += (s, args) => selectionForm.DialogResult = DialogResult.Cancel;
 
-                    deleteButton.Click += (s, args) =>
+                    btnDelete.Click += (s, args) =>
                     {
                         var selectedFiles = listView.CheckedItems.Cast<ListViewItem>()
-                                                 .Select(item => item.Tag.ToString())
-                                                 .ToList();
+                                                    .Select(item => item.Tag.ToString())
+                                                    .ToList();
 
                         if (selectedFiles.Count == 0)
                         {
-                            MessageBox.Show("Please select at least one Market Watch to delete.",
-                                            "No Selection",
-                                            MessageBoxButtons.OK,
-                                            MessageBoxIcon.Information);
+                            MessageBox.Show("Please select at least one Market Watch to delete.", "No Selection", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                             return;
                         }
 
-                        // Modern confirmation dialog
-                        var confirmResult = MessageBox.Show($"Are you sure you want to delete {selectedFiles.Count} Market Watch(s)?",
-                                                         "Confirm Deletion",
-                                                         MessageBoxButtons.YesNo,
-                                                         MessageBoxIcon.Warning,
-                                                         MessageBoxDefaultButton.Button2);
+                        var confirmResult = MessageBox.Show($"Are you sure you want to delete {selectedFiles.Count} Market Watch(s)?\nThis action cannot be undone.",
+                                                            "Confirm Deletion", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
 
                         if (confirmResult == DialogResult.Yes)
                         {
@@ -1091,16 +1139,20 @@ namespace thecalcify
                             {
                                 if (saveFileName == filePath)
                                 {
-                                    MessageBox.Show("Can't Delete Open MarketWatch", "Delete Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                                    return;
+                                    failedDeletions.Add($"{Path.GetFileName(filePath)} (Currently Open)");
+                                    continue;
                                 }
+
                                 string fullpath = Path.Combine(AppFolder, username, $"{filePath}.slt");
                                 try
                                 {
                                     DeleteExcelSheet(filePath);
-                                    File.Delete(fullpath);
-                                    successCount++;
-                                    isdeleted = true;
+                                    if (File.Exists(fullpath))
+                                    {
+                                        File.Delete(fullpath);
+                                        successCount++;
+                                        isdeleted = true;
+                                    }
                                 }
                                 catch (Exception ex)
                                 {
@@ -1109,78 +1161,62 @@ namespace thecalcify
                                 }
                             }
 
-                            // Modern result display
-                            var resultMessage = new StringBuilder();
-                            resultMessage.AppendLine($"Successfully deleted {successCount} Market Watch(s).");
+                            // --- SUCCESS MESSAGE LOGIC ---
+                            StringBuilder msg = new StringBuilder();
+                            if (successCount > 0)
+                            {
+                                msg.AppendLine($"✅ Successfully deleted {successCount} watchlist(s).");
+                            }
 
                             if (failedDeletions.Count > 0)
                             {
-                                resultMessage.AppendLine();
-                                resultMessage.AppendLine("The following files couldn't be deleted:");
-                                resultMessage.AppendLine(string.Join(Environment.NewLine, failedDeletions));
+                                msg.AppendLine("\n❌ Failed to delete:");
+                                foreach (var fail in failedDeletions) msg.AppendLine($"- {fail}");
                             }
 
-                            MessageBox.Show(resultMessage.ToString(),
-                                          "Deletion Results",
-                                          MessageBoxButtons.OK,
-                                          failedDeletions.Count > 0 ? MessageBoxIcon.Warning : MessageBoxIcon.Information);
+                            MessageBoxIcon icon = failedDeletions.Count > 0 ? MessageBoxIcon.Warning : MessageBoxIcon.Information;
+                            MessageBox.Show(msg.ToString(), "Deletion Result", MessageBoxButtons.OK, icon);
 
                             if (successCount > 0)
                             {
                                 selectionForm.DialogResult = DialogResult.OK;
+                                MenuLoad(); // Refresh menu
                             }
-
-                            MenuLoad();
                         }
-
-                        if (this.InvokeRequired)
-                        {
-                            this.Invoke(new Action(() =>
-                            {
-                                notificationSettings.Visible = false;
-                            }));
-                        }
-                        else
-                        {
-                            notificationSettings.Visible = false;
-                        }
-
                     };
 
-                    // Search functionality
+                    // Search Logic
                     searchBox.TextChanged += (s, args) =>
                     {
+                        string txt = searchBox.Text == "Search..." ? "" : searchBox.Text;
                         listView.BeginUpdate();
                         listView.Items.Clear();
 
-                        foreach (string filePath in FileLists.Where(f =>
-                            Path.GetFileName(f).IndexOf(searchBox.Text, StringComparison.OrdinalIgnoreCase) >= 0))
+                        foreach (string filePath in FileLists.Where(f => Path.GetFileName(f).IndexOf(txt, StringComparison.OrdinalIgnoreCase) >= 0))
                         {
-                            var item = new ListViewItem(Path.GetFileName(filePath));
-                            item.SubItems.Add(filePath);
-                            item.Tag = filePath;
-                            listView.Items.Add(item);
+                            if (filePath != saveFileName)
+                            {
+                                var item = new ListViewItem(Path.GetFileName(filePath));
+                                item.SubItems.Add(filePath);
+                                item.Tag = filePath;
+                                listView.Items.Add(item);
+                            }
                         }
-
                         listView.EndUpdate();
                     };
 
-                    // Add controls to panels
-                    controlsPanel.Controls.Add(selectAllButton);
-                    controlsPanel.Controls.Add(deleteButton);
-                    controlsPanel.Controls.Add(cancelButton);
+                    // Add Controls
+                    controlsPanel.Controls.Add(btnDelete);
+                    controlsPanel.Controls.Add(spacer);
+                    controlsPanel.Controls.Add(btnCancel);
+                    controlsPanel.Controls.Add(btnSelectAll);
 
-                    // Add controls to form
-                    selectionForm.Controls.Add(listView);
-                    selectionForm.Controls.Add(searchBox);
-                    selectionForm.Controls.Add(headerPanel);
+                    selectionForm.Controls.Add(listPanel);
+                    selectionForm.Controls.Add(searchPanel);
                     selectionForm.Controls.Add(controlsPanel);
+                    selectionForm.Controls.Add(headerPanel);
 
-                    // Set form buttons
-                    selectionForm.AcceptButton = deleteButton;
-                    selectionForm.CancelButton = cancelButton;
-
-                    // Show dialog
+                    // Show
                     if (selectionForm.ShowDialog() == DialogResult.OK)
                     {
                         saveFileName = null;
@@ -1441,6 +1477,7 @@ namespace thecalcify
             {
                 savelabel.Visible = false;
                 fontSizeComboBox.Visible = true;
+                
 
                 searchTextLabel.Visible = true;
                 txtsearch.Clear();
@@ -1511,7 +1548,7 @@ namespace thecalcify
                 refreshMarketWatchHost.Visible = false;
 
                 fontSizeComboBox.Visible = false;
-
+                
                 // Update title based on edit mode
                 titleLabel.Text = isEdit
                     ? $"Edit {saveFileName?.ToUpper() ?? "Unknown"} MarketWatch"
@@ -1636,7 +1673,7 @@ namespace thecalcify
         #endregion
 
         #region Tools
-        private void FullScreenF11ToolStripMenuItem_Click(object sender, EventArgs e)
+        public void FullScreenF11ToolStripMenuItem_Click(object sender, EventArgs e)
         {
             try
             {
@@ -2747,7 +2784,7 @@ namespace thecalcify
             }
         }
 
-        private async void AboutToolStripMenuItem_Click(object sender, EventArgs e)
+        public async void AboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
             //try
             //{
@@ -2849,7 +2886,7 @@ namespace thecalcify
             }
         }
 
-        private async void RefreshMarketWatchHost_Click(object sender, EventArgs e)
+        public async void RefreshMarketWatchHost_Click(object sender, EventArgs e)
         {
             try
             {
@@ -3455,7 +3492,7 @@ namespace thecalcify
             }
         }
 
-        private async void NewsHistoryToolStripMenuItem_Click(object sender, EventArgs e)
+        public async void NewsHistoryToolStripMenuItem_Click(object sender, EventArgs e)
         {
             try
             {
@@ -3540,7 +3577,7 @@ namespace thecalcify
             }
         }
 
-        private async void NewsSettingsToolStrip_Click(object sender, EventArgs e)
+        public async void NewsSettingsToolStrip_Click(object sender, EventArgs e)
         {
             try
             {
