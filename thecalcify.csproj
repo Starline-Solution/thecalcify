@@ -85,6 +85,22 @@
     <Compile Include="Alert\AlertPopup.Designer.cs">
       <DependentUpon>AlertPopup.cs</DependentUpon>
     </Compile>
+    <Compile Include="Charts\Engine\CandleBuilder.cs" />
+    <Compile Include="Charts\CandlePainter.cs" />
+    <Compile Include="Charts\Chart.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Charts\Chart.Designer.cs">
+      <DependentUpon>Chart.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Charts\DTOs\Tick.cs" />
+    <Compile Include="Charts\DTOs\TimeFrame.cs" />
+    <Compile Include="Charts\GlobalTickDispatcher.cs" />
+    <Compile Include="Charts\Helper\TimeFrameHelper.cs" />
+    <Compile Include="Charts\IRealtimeTickSource.cs" />
+    <Compile Include="Charts\SkiaChartView.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="Helper\About.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -162,6 +178,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Alert\AlertPopup.resx">
       <DependentUpon>AlertPopup.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Charts\Chart.resx">
+      <DependentUpon>Chart.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Helper\About.resx">
       <DependentUpon>About.cs</DependentUpon>
@@ -302,6 +321,12 @@
     <PackageReference Include="Newtonsoft.Json">
       <Version>13.0.4</Version>
     </PackageReference>
+    <PackageReference Include="SkiaSharp">
+      <Version>3.119.1</Version>
+    </PackageReference>
+    <PackageReference Include="SkiaSharp.Views.WindowsForms">
+      <Version>3.119.1</Version>
+    </PackageReference>
     <PackageReference Include="System.ComponentModel.Annotations">
       <Version>5.0.0</Version>
     </PackageReference>
@@ -370,5 +395,6 @@
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </COMReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

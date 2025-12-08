@@ -55,6 +55,7 @@ namespace thecalcify
             this.addEditColumnsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.clearExcelToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.copyRowToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.ChartWindowToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.toolsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.disconnectESCToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -151,9 +152,10 @@ namespace thecalcify
             this.addEditSymbolsToolStripMenuItem,
             this.addEditColumnsToolStripMenuItem,
             this.clearExcelToolStripMenuItem,
-            this.copyRowToolStripMenuItem});
+            this.copyRowToolStripMenuItem,
+            this.ChartWindowToolStripMenuItem});
             this.Tools.Name = "ClickMenuStrip";
-            this.Tools.Size = new System.Drawing.Size(200, 124);
+            this.Tools.Size = new System.Drawing.Size(200, 148);
             // 
             // ExportToExcelToolStripMenuItem
             // 
@@ -190,6 +192,13 @@ namespace thecalcify
             this.copyRowToolStripMenuItem.Size = new System.Drawing.Size(199, 24);
             this.copyRowToolStripMenuItem.Text = "Copy Row";
             this.copyRowToolStripMenuItem.Click += new System.EventHandler(this.CopyRowToolStripMenuItem_Click);
+            // 
+            // ChartWindowToolStripMenuItem
+            // 
+            this.ChartWindowToolStripMenuItem.Name = "ChartWindowToolStripMenuItem";
+            this.ChartWindowToolStripMenuItem.Size = new System.Drawing.Size(199, 24);
+            this.ChartWindowToolStripMenuItem.Text = "Chart Window";
+            this.ChartWindowToolStripMenuItem.Click += new System.EventHandler(this.ChartWindowToolStripMenuItem_Click);
             // 
             // menuStrip1
             // 
@@ -787,5 +796,6 @@ namespace thecalcify
         private ToolStripMenuItem newsListToolStripMenuItem;
         private ToolStripMenuItem newsHistoryToolStripMenuItem;
         private ToolStripMenuItem copyRowToolStripMenuItem;
+        private ToolStripMenuItem ChartWindowToolStripMenuItem;
     }
 }
