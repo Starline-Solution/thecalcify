@@ -127,6 +127,7 @@ namespace thecalcify
         private Button btnSelectAllColumns;
         private Button btnConfirmAddColumns;
         private Button btnCancelAddColumns;
+        private ModernUIManager uiManager;
 
         // ======================
         // 📌 Static & Singleton
@@ -216,6 +217,9 @@ namespace thecalcify
 
                 startRTWService();
                 ExcelNotifier.StartExcelMonitor();
+
+                uiManager = new ModernUIManager(this);
+                uiManager?.ApplyModernUI();
 
                 // --- MENU SETUP ---
                 if (LoginInfo.IsRate && LoginInfo.IsNews && LoginInfo.RateExpiredDate.Date >= DateTime.Today.Date && LoginInfo.NewsExpiredDate >= DateTime.Today.Date)
@@ -770,9 +774,14 @@ namespace thecalcify
                 // ---------------------------------------------
                 fontSizeComboBox.Visible = true;
                 savelabel.Visible = false;
-                
+                uiManager?.SetFontSizeComboBoxVisibility(true);
+
                 searchTextLabel.Visible = true;
                 txtsearch.Visible = true;
+                uiManager?.SetSearchBoxVisibility(true);
+
+                uiManager?.SetSearchBoxVisibility(true);
+
                 txtsearch.Text = string.Empty;
 
                 // Close editable grid if open
@@ -1008,19 +1017,20 @@ namespace thecalcify
                         CheckBoxes = true,
                         View = View.Details,
                         FullRowSelect = true,
-                        GridLines = true,
+                        GridLines = false,
                         HeaderStyle = ColumnHeaderStyle.Nonclickable,
                         BorderStyle = BorderStyle.FixedSingle,
-                        Font = new System.Drawing.Font("Segoe UI", 10F)
+                        Font = new System.Drawing.Font("Segoe UI", 10F),
+                        ShowGroups = false
                     };
 
-                    // Hack to increase row height
+                    // Row height
                     ImageList imgList = new ImageList();
-                    imgList.ImageSize = new Size(1, 28); // Width 1, Height 28 (Controls Row Height)
+                    imgList.ImageSize = new Size(1, 22);
                     listView.SmallImageList = imgList;
 
-                    listView.Columns.Add("Name", 300);
-                    listView.Columns.Add("Path", 120); // Hidden mostly if you want
+                    // Only one column
+                    listView.Columns.Add("Name", 420);
 
                     // Populate Data
                     foreach (string filePath in FileLists)
@@ -1028,11 +1038,11 @@ namespace thecalcify
                         if (filePath != saveFileName)
                         {
                             var item = new ListViewItem(Path.GetFileName(filePath));
-                            item.SubItems.Add(filePath);
                             item.Tag = filePath;
                             listView.Items.Add(item);
                         }
                     }
+
 
                     if (listView.Items.Count == 0)
                     {
@@ -1477,11 +1487,14 @@ namespace thecalcify
             {
                 savelabel.Visible = false;
                 fontSizeComboBox.Visible = true;
-                
+                uiManager?.SetFontSizeComboBoxVisibility(true);
 
                 searchTextLabel.Visible = true;
                 txtsearch.Clear();
                 txtsearch.Visible = true;
+                uiManager?.SetSearchBoxVisibility(true);
+
+                uiManager?.SetSearchBoxVisibility(true);
 
                 string finalPath = Path.Combine(AppFolder, username);
                 selectedSymbols.Clear();
@@ -1548,7 +1561,8 @@ namespace thecalcify
                 refreshMarketWatchHost.Visible = false;
 
                 fontSizeComboBox.Visible = false;
-                
+                uiManager?.SetFontSizeComboBoxVisibility(false);
+
                 // Update title based on edit mode
                 titleLabel.Text = isEdit
                     ? $"Edit {saveFileName?.ToUpper() ?? "Unknown"} MarketWatch"
@@ -2011,7 +2025,7 @@ namespace thecalcify
             panelAddColumns.BringToFront();
         }
 
-        private void AddEditSymbolsToolStripMenuItem_Click(object sender, EventArgs e)
+        public void AddEditSymbolsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             try
             {
@@ -2838,8 +2852,14 @@ namespace thecalcify
                 };
                 saveMarketWatchHost.Visible = false;
                 fontSizeComboBox.Visible = false;
+                uiManager?.SetFontSizeComboBoxVisibility(false);
+
                 searchTextLabel.Visible = false;
                 txtsearch.Visible = false;
+                uiManager?.SetSearchBoxVisibility(false);
+
+                uiManager?.SetSearchBoxVisibility(false);
+
                 refreshMarketWatchHost.Visible = false;
                 newCTRLNToolStripMenuItem1.Enabled = true;
                 // Update status label
@@ -3408,7 +3428,7 @@ namespace thecalcify
         #endregion Excel Export
 
         #region News
-        
+
         public async void NewsListToolStripMenuItem_Click(object sender, EventArgs e)
         {
             try
@@ -3444,8 +3464,14 @@ namespace thecalcify
                 //DisposeSignalRConnection();
                 saveMarketWatchHost.Visible = false;
                 fontSizeComboBox.Visible = false;
+                uiManager?.SetFontSizeComboBoxVisibility(false);
+
                 searchTextLabel.Visible = false;
                 txtsearch.Visible = false;
+                uiManager?.SetSearchBoxVisibility(false);
+
+                uiManager?.SetSearchBoxVisibility(false);
+
                 refreshMarketWatchHost.Visible = false;
                 newCTRLNToolStripMenuItem1.Enabled = true;
                 // Update status label
@@ -3527,8 +3553,14 @@ namespace thecalcify
                 //DisposeSignalRConnection();
                 saveMarketWatchHost.Visible = false;
                 fontSizeComboBox.Visible = false;
+                uiManager?.SetFontSizeComboBoxVisibility(false);
+
                 searchTextLabel.Visible = false;
                 txtsearch.Visible = false;
+                uiManager?.SetSearchBoxVisibility(false);
+
+                uiManager?.SetSearchBoxVisibility(false);
+
                 refreshMarketWatchHost.Visible = false;
                 // Update status label
 
@@ -3612,8 +3644,14 @@ namespace thecalcify
                 //DisposeSignalRConnection();
                 saveMarketWatchHost.Visible = false;
                 fontSizeComboBox.Visible = false;
+                uiManager?.SetFontSizeComboBoxVisibility(false);
+
                 searchTextLabel.Visible = false;
                 txtsearch.Visible = false;
+                uiManager?.SetSearchBoxVisibility(false);
+
+                uiManager?.SetSearchBoxVisibility(false);
+
                 refreshMarketWatchHost.Visible = false;
                 // Update status label
 
