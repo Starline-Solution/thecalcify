@@ -85,6 +85,12 @@
     <Compile Include="Alert\AlertPopup.Designer.cs">
       <DependentUpon>AlertPopup.cs</DependentUpon>
     </Compile>
+    <Compile Include="Excel Helper\UserExcelExportForm.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Excel Helper\UserExcelExportForm.Designer.cs">
+      <DependentUpon>UserExcelExportForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Helper\About.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -162,6 +168,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Alert\AlertPopup.resx">
       <DependentUpon>AlertPopup.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Excel Helper\UserExcelExportForm.resx">
+      <DependentUpon>UserExcelExportForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Helper\About.resx">
       <DependentUpon>About.cs</DependentUpon>

@@ -25,12 +25,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using thecalcify.Alert;
+using thecalcify.Excel_Helper;
 using thecalcify.Helper;
 using thecalcify.MarketWatch;
 using thecalcify.News;
 using thecalcify.RTDWorker;
 using thecalcify.Shared;
 using Application = System.Windows.Forms.Application;
+using CellData = thecalcify.Helper.CellData;
 
 namespace thecalcify
 {
@@ -1634,6 +1636,76 @@ namespace thecalcify
                 }
             }
         }
+
+        private async void exportWorksheetsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // 1. Clean up existing ExportControl if already present
+                var existingExport = this.Controls.Find("exportControlView", true).FirstOrDefault();
+                if (existingExport != null)
+                {
+                    this.Controls.Remove(existingExport);
+                    existingExport.Dispose();
+                }
+
+                EditableMarketWatchGrid editableMarketWatchGrid = EditableMarketWatchGrid.CurrentInstance;
+                if (editableMarketWatchGrid != null)
+                {
+                    if (editableMarketWatchGrid.IsCurrentCellInEditMode)
+                    {
+                        editableMarketWatchGrid.EndEdit();
+                    }
+
+                    editableMarketWatchGrid.EditableDispose(); // Dispose the grid
+                    editableMarketWatchGrid.Dispose();
+                }
+
+
+                // 2. Create new ExportControl
+                var exportControl = new UserExcelExportForm()
+                {
+                    Name = "exportControlView",
+                    Dock = DockStyle.Fill
+                };
+
+                //DisposeSignalRConnection();
+                saveMarketWatchHost.Visible = false;
+                fontSizeComboBox.Visible = false;
+                searchTextLabel.Visible = false;
+                txtsearch.Visible = false;
+                refreshMarketWatchHost.Visible = false;
+                newCTRLNToolStripMenuItem1.Enabled = true;
+                // Update status label
+
+                // Update title based on edit mode
+                titleLabel.Text = "Export Excel Sheets";
+
+                // 3. Add it to main form
+                this.Controls.Add(exportControl);
+                exportControl.BringToFront();
+                exportControl.Focus();
+
+                licenceDate = LoginInfo.RateExpiredDate.ToString();
+
+                RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
+                if (RemainingDays <= 7)
+                {
+                    await CheckLicenceLoop();
+                }
+                else
+                {
+                    licenceExpire.Text = $"Licence Expire At:- {LoginInfo.RateExpiredDate:dd:MM:yyyy}";
+                }
+
+            }
+            catch (Exception ex)
+            {
+                ApplicationLogger.LogException(ex);
+                MessageBox.Show($"Error loading Export view: {ex.Message}");
+            }
+        }
+
 
         #endregion
 

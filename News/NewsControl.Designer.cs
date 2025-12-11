@@ -262,7 +262,6 @@ namespace thecalcify.News
             this.tocalender.TabIndex = 12;
             this.tocalender.Visible = false;
             this.tocalender.DateSelected += new System.Windows.Forms.DateRangeEventHandler(this.tocalender_DateSelected);
-            this.tocalender.Leave += new System.EventHandler(this.tocalender_LostFocus);
             // 
             // btnRefresh
             // 
@@ -312,8 +311,6 @@ namespace thecalcify.News
             this.fromcalender.TabIndex = 10;
             this.fromcalender.Visible = false;
             this.fromcalender.DateSelected += new System.Windows.Forms.DateRangeEventHandler(this.fromcalender_DateSelected);
-            this.fromcalender.Leave += new System.EventHandler(this.fromcalender_LostFocus);
-            this.fromcalender.MouseDown += new System.Windows.Forms.MouseEventHandler(this.fromcalender_LostFocus);
             // 
             // pnlBottom
             // 
@@ -395,7 +392,6 @@ namespace thecalcify.News
 
         }
 
-
         private void TextBox1_TextChanged(object sender, EventArgs e)
         {
             string filterText = newsSearch.Text.Trim();
@@ -451,6 +447,7 @@ namespace thecalcify.News
         {
             tocalender.Visible = false; // hide other calendar
             fromcalender.Visible = true;
+            startDate = null;
             fromcalender.BringToFront();
             fromcalender.MaxDate = DateTime.Today;
             fromcalender.MinDate = DateTime.Today.AddMonths(-1); // optional, limit range
@@ -460,6 +457,7 @@ namespace thecalcify.News
         {
             fromcalender.Visible = false; // hide other calendar
             tocalender.Visible = true;
+            endDate = null;
             tocalender.BringToFront();
             tocalender.MaxDate = DateTime.Today;
             tocalender.MinDate = DateTime.Today.AddMonths(-1);
@@ -541,30 +539,16 @@ namespace thecalcify.News
         {
             string from = startDate?.ToString("yyyy.MM.dd") ?? "yyyy.MM.dd";
             string to = endDate?.ToString("yyyy.MM.dd") ?? "yyyy.MM.dd";
-            fromcalender.Visible = false;
-            tocalender.Visible = false;
-            // Example if you have a combined range text control:
-            // txtDateRange.Text = $"{from}-{to}";
-        }
 
-        private void fromcalender_LostFocus(object sender, EventArgs e)
-        {
-            // Hide From Calendar when focus is lost
-            if (!fromTextbox.Focused && !fromcalender.Focused)
+            if (from == "yyyy.MM.dd")
             {
-                fromcalender.Visible = false;
+                fromcalender.Visible = true;
+            }
+            else if (to == "yyyy.MM.dd") 
+            {
+                tocalender.Visible = true;
             }
         }
-
-        private void tocalender_LostFocus(object sender, EventArgs e)
-        {
-            // Hide To Calendar when focus is lost
-            if (!todateTextbox.Focused && !tocalender.Focused)
-            {
-                tocalender.Visible = false;
-            }
-        }
-
 
 
         #endregion
