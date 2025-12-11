@@ -61,39 +61,46 @@ namespace thecalcify.Helper
 
                 Directory.CreateDirectory(tempBasePath);
 
-                string tempZipPath = Path.Combine(Path.GetTempPath(), $"update_{Guid.NewGuid()}.zip");
+                DownloadAndExtract();
 
-                using (var httpClient = new HttpClient())
-                {
-                    httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
-                    httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                //string tempZipPath = Path.Combine(Path.GetTempPath(), $"update_{Guid.NewGuid()}.zip");
 
-                    var response = httpClient.GetAsync("http://api.thecalcify.com/setup").Result;
+                //using (var httpClient = new HttpClient())
+                //{
+                //    httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
+                //    httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-                    if (response.IsSuccessStatusCode)
-                    {
-                        var zipBytes = response.Content.ReadAsByteArrayAsync().Result;
-                        File.WriteAllBytes(tempZipPath, zipBytes);
-                    }
-                    else
-                    {
-                        // Hide the splash after UI update
-                        SplashManager.Hide();
+                //    var response = httpClient.GetAsync("http://api.thecalcify.com/setup").Result;
 
-                        MessageBox.Show($"You Are already to our Upgraded Version", "Version Upgrade", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    }
-                }
+                //    if (response.IsSuccessStatusCode)
+                //    {
+                //        var zipBytes = response.Content.ReadAsByteArrayAsync().Result;
+                //        File.WriteAllBytes(tempZipPath, zipBytes);
+                //    }
+                //    else
+                //    {
+                //        // Hide the splash after UI update
+                //        SplashManager.Hide();
+
+                //        MessageBox.Show($"You Are already to our Upgraded Version", "Version Upgrade", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                //    }
+                //}
 
                 // Extract to temp/thecalcify
-                ZipFile.ExtractToDirectory(tempZipPath, tempBasePath);
+                //ZipFile.ExtractToDirectory(tempZipPath, tempBasePath);
 
-                // Expecting thecalcify.exe inside temp/thecalcify/thecalcify.exe
-                string expectedExePath = Path.Combine(tempBasePath, "thecalcify.exe");
+                // Expecting thecalcify.exe inside temp/thecalcify/setup.exe
+                string expectedExePath = Path.Combine(tempBasePath, "setup.exe");
+                string optionalExpectedExePath = Path.Combine(tempBasePath, "thecalcify.exe");
 
-                if (!File.Exists(expectedExePath))
+                if (File.Exists(expectedExePath))
+                    newInstallerPath = expectedExePath;
+                else if (File.Exists(optionalExpectedExePath))
+                    newInstallerPath = optionalExpectedExePath;
+                else
                     throw new FileNotFoundException("thecalcify.exe not found at expected path.");
 
-                newInstallerPath = expectedExePath;
+
 
                 // Read version and decide
                 SetupVersionReader(tempBasePath);
@@ -190,8 +197,71 @@ namespace thecalcify.Helper
             catch (Exception ex)
             {
                 ApplicationLogger.LogException(ex);
+                SplashManager.Hide();
+                MessageBox.Show("Proccess Has been failed", "Update Fail", MessageBoxButtons.OK);
             }
         }
+
+
+        public void DownloadAndExtract()
+        {
+            try
+            {
+                string baseFolder = Path.GetTempPath();
+
+                // Ensure base folder exists
+                if (!Directory.Exists(baseFolder))
+                    Directory.CreateDirectory(baseFolder);
+
+                string tempZipPath = Path.Combine(baseFolder, "thecalcify.zip");
+                string extractPath = Path.Combine(baseFolder, "thecalcify");
+
+                using (var httpClient = new HttpClient())
+                {
+                    Stopwatch sw = new Stopwatch();
+                    sw.Start();
+
+                    var response = httpClient.GetAsync("http://thecalcify.com/Setup/thecalcify.zip").Result;
+
+                    sw.Stop();
+                    
+                    ApplicationLogger.Log($"Download completed in {sw.ElapsedMilliseconds} ms");
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var zipBytes = response.Content.ReadAsByteArrayAsync().Result;
+
+                        // If ZIP exists, delete it (avoids lock + access denied)
+                        if (File.Exists(tempZipPath))
+                        {
+                            File.SetAttributes(tempZipPath, FileAttributes.Normal);
+                            File.Delete(tempZipPath);
+                        }
+
+                        // Save ZIP file
+                        File.WriteAllBytes(tempZipPath, zipBytes);
+
+                        // Rebuild extract folder
+                        if (Directory.Exists(extractPath))
+                            Directory.Delete(extractPath, true);
+
+                        Directory.CreateDirectory(extractPath);
+
+                        // Extract ZIP
+                        ZipFile.ExtractToDirectory(tempZipPath, extractPath);
+                    }
+                    else
+                    {
+                        MessageBox.Show("Already updated.");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error: " + ex.Message);
+            }
+        }
+
 
         /// <summary>
         /// Get Msi Version

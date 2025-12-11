@@ -2941,7 +2941,7 @@ namespace thecalcify
                 isGrid = true;
                 reloadGrid = true;
                 saveFileName = null;
-                lastOpenMarketWatch = "Default";
+                //lastOpenMarketWatch = "Default";
 
                 // 🧹 Clear grid and data immediately
                 if (defaultGrid != null)
@@ -2968,9 +2968,7 @@ namespace thecalcify
                 saveMarketWatchHost.Visible = false;
                 refreshMarketWatchHost.Visible = true;
 
-                // 🔄 Force Default view
-                await DefaultToolStripMenuItem_Click(sender, e);
-                titleLabel.Text = "DEFAULT";
+                HandleLastOpenedMarketWatch();
 
                 // 🔄 Reload market data & ensure SignalR
                 InitializeDataGridView();
@@ -4267,8 +4265,14 @@ namespace thecalcify
             if (!defaultGrid.IsHandleCreated) return;
             if (defaultGrid.Rows.Count == 0) return;
 
+
             // ======================================
-            // 1️⃣ SAFE ROW INDEX FETCH
+            // 1 EXCEL NOTIFIER (is fast; keep as is)
+            // ======================================
+            LastTickStore.ExcelPublish(dto);
+
+            // ======================================
+            // 2 SAFE ROW INDEX FETCH
             // ======================================
             if (!symbolRowMap.TryGetValue(dto.i, out int rowIndex))
                 return; // symbol not yet added
@@ -4286,11 +4290,6 @@ namespace thecalcify
             {
                 return; // Grid is refreshing → ROW INVALID
             }
-
-            // ======================================
-            // 2️⃣ EXCEL NOTIFIER (is fast; keep as is)
-            // ======================================
-            LastTickStore.ExcelPublish(dto);
 
             // ======================================
             // 3️⃣ READ OLD VALUES (safe)
