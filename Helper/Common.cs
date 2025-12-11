@@ -769,4 +769,32 @@ namespace thecalcify.Helper
     }
 
 
+    public class CellData
+    {
+        public int Row { get; set; }
+        public int Column { get; set; }
+        public string Value { get; set; }
+        public string Formula { get; set; }
+
+        public string Type { get; set; }
+        public string Symbol { get; set; }
+        public string Field { get; set; }
+        public CellFormat Format { get; set; }
+    }
+
+    public class CellFormat
+    {
+        public string FontName { get; set; }
+        public double FontSize { get; set; }
+        public bool Bold { get; set; }
+        public bool Italic { get; set; }
+
+        public string FontColor { get; set; }
+        public string BackgroundColor { get; set; }
+        public string NumberFormat { get; set; }
+        public string HorizontalAlign { get; set; }
+        public string VerticalAlign { get; set; }
+    }
+
+
 }

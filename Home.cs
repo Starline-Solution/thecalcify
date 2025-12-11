@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.Logging;
+using Microsoft.Vbe.Interop;
 using Microsoft.Win32;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -29,6 +30,7 @@ using thecalcify.MarketWatch;
 using thecalcify.News;
 using thecalcify.RTDWorker;
 using thecalcify.Shared;
+using Application = System.Windows.Forms.Application;
 
 namespace thecalcify
 {
@@ -1687,6 +1689,8 @@ namespace thecalcify
                 // 2️⃣ Unsubscribe event handlers
                 UnsubscribeAllEvents(); // Optional, but recommended if you manually subscribed
 
+                await LogoutAsync();
+
                 // 3️⃣ Show Login Form
                 Login loginForm = new Login();
                 loginForm.Show();
@@ -2923,6 +2927,7 @@ namespace thecalcify
         {
             try
             {
+                SplashManager.Show(this, "Exporting to Excel...", "Please wait");
                 ExportToExcelToolStripMenuItem.Enabled = false;
 
                 if (Type.GetTypeFromProgID("thecalcify", false) == null)
@@ -2942,6 +2947,7 @@ namespace thecalcify
                 if (!File.Exists(marketInitDataPath))
                 {
                     MessageBox.Show("initdata.dat not found.");
+                    SplashManager.Hide();
                     return;
                 }
 
@@ -3028,6 +3034,7 @@ namespace thecalcify
                         ws = (Microsoft.Office.Interop.Excel.Worksheet)wb.Sheets.Add();
                         ws.Name = "Sheet1";
                     }
+
                 }
                 else
                 {
@@ -3042,6 +3049,29 @@ namespace thecalcify
                         ws.Name = saveFileName;
                     }
                 }
+
+
+                // Try to get the sheet if it already exists
+                Microsoft.Office.Interop.Excel.Worksheet GetSheetIfExists(string name)
+                {
+                    foreach (Microsoft.Office.Interop.Excel.Worksheet s in wb.Sheets)
+                    {
+                        if (s.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
+                            return s;
+                    }
+                    return null;
+                }
+
+                // Try to find existing sheet
+                Microsoft.Office.Interop.Excel.Worksheet costCalcWs = GetSheetIfExists("Cost.Cal"); 
+
+                if (costCalcWs == null)
+                {
+                    costCalcWs = (Microsoft.Office.Interop.Excel.Worksheet)wb.Sheets.Add();
+                    costCalcWs.Name = "Cost.Cal";
+                    ApplyCostCalJsonToSheet(costCalcWs, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "excel_model.json"));
+                }
+
 
                 // ✅ Make bulk 2D array
                 int maxRow = formulaCells.Max(c => c.Row);
@@ -3089,17 +3119,119 @@ namespace thecalcify
                     }
                 }
                 ws.Activate();
+                SplashManager.Hide();
                 excelApp.Visible = true;
             }
             catch (Exception ex)
             {
                 MessageBox.Show("An error occurred while exporting. Please retry.");
                 ApplicationLogger.LogException(ex);
+                SplashManager.Hide();
             }
             finally
             {
                 ExportToExcelToolStripMenuItem.Enabled = true;
             }
+        }
+
+        private void ApplyCostCalJsonToSheet(Microsoft.Office.Interop.Excel.Worksheet ws, string jsonFilePath)
+        {
+            string json = File.ReadAllText(jsonFilePath);
+            var cells = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, CellData>>(json);
+
+            foreach (var kv in cells)
+            {
+                var cell = kv.Value;
+                Microsoft.Office.Interop.Excel.Range rng = ws.Cells[cell.Row, cell.Column];
+
+                // Value / Formula
+                if (!string.IsNullOrEmpty(cell.Formula))
+                    rng.Formula = cell.Formula;
+                else
+                    rng.Value2 = cell.Value;
+
+                // Formatting
+                var f = cell.Format;
+                if (f != null)
+                {
+                    rng.Font.Name = f.FontName;
+                    rng.Font.Size = f.FontSize;
+                    rng.Font.Bold = f.Bold;
+                    rng.Font.Italic = f.Italic;
+                    rng.Font.Color = ColorTranslator.FromHtml(f.FontColor);
+                    rng.Interior.Color = ColorTranslator.FromHtml(f.BackgroundColor);
+                    rng.NumberFormat = f.NumberFormat;
+
+                    // ALIGNMENT FIX
+                    rng.HorizontalAlignment = ConvertAlignment(f.HorizontalAlign);
+                    rng.VerticalAlignment = ConvertVerticalAlignment(f.VerticalAlign);
+
+                    // BORDERS
+                    ApplyBorders(rng);
+                }
+            }
+        }
+
+        private object ConvertAlignment(string align)
+        {
+            if (string.IsNullOrEmpty(align))
+                return Microsoft.Office.Interop.Excel.XlHAlign.xlHAlignGeneral;
+
+            align = align.Trim().ToLower();
+
+            switch (align)
+            {
+                case "center":
+                    return Microsoft.Office.Interop.Excel.XlHAlign.xlHAlignCenter;
+
+                case "left":
+                    return Microsoft.Office.Interop.Excel.XlHAlign.xlHAlignLeft;
+
+                case "right":
+                    return Microsoft.Office.Interop.Excel.XlHAlign.xlHAlignRight;
+
+                case "justify":
+                    return Microsoft.Office.Interop.Excel.XlHAlign.xlHAlignJustify;
+
+                default:
+                    int val;
+                    if (int.TryParse(align, out val))
+                        return val;
+
+                    return Microsoft.Office.Interop.Excel.XlHAlign.xlHAlignGeneral;
+            }
+        }
+
+        private object ConvertVerticalAlignment(string align)
+        {
+            if (string.IsNullOrEmpty(align))
+                return Microsoft.Office.Interop.Excel.XlVAlign.xlVAlignBottom;
+
+            align = align.Trim().ToLower();
+
+            switch (align)
+            {
+                case "top":
+                    return Microsoft.Office.Interop.Excel.XlVAlign.xlVAlignTop;
+
+                case "center":
+                    return Microsoft.Office.Interop.Excel.XlVAlign.xlVAlignCenter;
+
+                case "bottom":
+                    return Microsoft.Office.Interop.Excel.XlVAlign.xlVAlignBottom;
+
+                default:
+                    return Microsoft.Office.Interop.Excel.XlVAlign.xlVAlignCenter;
+            }
+        }
+
+        private void ApplyBorders(Microsoft.Office.Interop.Excel.Range rng)
+        {
+            Microsoft.Office.Interop.Excel.Borders borders = rng.Borders;
+
+            borders.LineStyle = Microsoft.Office.Interop.Excel.XlLineStyle.xlContinuous;
+            borders.Color = ColorTranslator.FromHtml("#000000");
+            borders.Weight = Microsoft.Office.Interop.Excel.XlBorderWeight.xlThin;
         }
 
         public void RegisterRtdDll(string dllName, params string[] searchPaths)
@@ -3186,17 +3318,20 @@ namespace thecalcify
             try
             {
                 string officeVersion = GetOfficeVersion();
+
                 string excelOptionsPath = $@"Software\Microsoft\Office\{officeVersion}\Excel\Options";
                 string graphicsPath = $@"Software\Microsoft\Office\{officeVersion}\Common\Graphics";
+                string securityPath = $@"Software\Microsoft\Office\{officeVersion}\Excel\Security";
 
-                // --- Excel Options (RTD + EnableAnimations) ---
+                //
+                // ---- Excel Options (RTD + Disable Animations) ----
+                //
                 using (RegistryKey key = Registry.CurrentUser.OpenSubKey(excelOptionsPath, writable: true))
                 {
                     if (key != null)
                     {
                         key.SetValue("RTDThrottleInterval", 200, RegistryValueKind.DWord);
                         key.SetValue("EnableAnimations", 0, RegistryValueKind.DWord);
-                        //Console.WriteLine("RTDThrottleInterval & EnableAnimations updated.");
                     }
                     else
                     {
@@ -3204,25 +3339,42 @@ namespace thecalcify
                         {
                             newKey.SetValue("RTDThrottleInterval", 200, RegistryValueKind.DWord);
                             newKey.SetValue("EnableAnimations", 0, RegistryValueKind.DWord);
-                            //Console.WriteLine("Excel Options key created & values set.");
                         }
                     }
                 }
 
-                // --- Common Graphics (DisableAnimations for Excel 2013+) ---
+                //
+                // ---- Graphics (DisableAnimations for Excel 2013+) ----
+                //
                 using (RegistryKey key = Registry.CurrentUser.OpenSubKey(graphicsPath, writable: true))
                 {
                     if (key != null)
                     {
                         key.SetValue("DisableAnimations", 1, RegistryValueKind.DWord);
-                        //Console.WriteLine("DisableAnimations updated.");
                     }
                     else
                     {
                         using (RegistryKey newKey = Registry.CurrentUser.CreateSubKey(graphicsPath))
                         {
                             newKey.SetValue("DisableAnimations", 1, RegistryValueKind.DWord);
-                            //Console.WriteLine("Graphics key created & DisableAnimations set.");
+                        }
+                    }
+                }
+
+                //
+                // ---- VBA Security (AccessVBOM = 1) ----
+                //
+                using (RegistryKey key = Registry.CurrentUser.OpenSubKey(securityPath, writable: true))
+                {
+                    if (key != null)
+                    {
+                        key.SetValue("AccessVBOM", 1, RegistryValueKind.DWord);
+                    }
+                    else
+                    {
+                        using (RegistryKey newKey = Registry.CurrentUser.CreateSubKey(securityPath))
+                        {
+                            newKey.SetValue("AccessVBOM", 1, RegistryValueKind.DWord);
                         }
                     }
                 }
@@ -3230,7 +3382,6 @@ namespace thecalcify
             catch (Exception ex)
             {
                 ApplicationLogger.LogException(ex);
-                //Console.WriteLine("Error setting registry values: " + ex.Message);
             }
         }
 
@@ -3812,11 +3963,28 @@ namespace thecalcify
             // Helper to marshal UI updates safely
             async Task InvokeOnUIThread(Func<Task> action)
             {
+                // If form is disposed or disposing → just ignore the call
+                if (this.IsDisposed || this.Disposing)
+                    return;
+
                 if (this.InvokeRequired)
-                    this.Invoke(new Func<Task>(() => action()));
+                {
+                    try
+                    {
+                        await (Task)this.Invoke(new Func<Task>(action));
+                    }
+                    catch (ObjectDisposedException)
+                    {
+                        // Form was closed between the check and invoke
+                    }
+                }
                 else
-                    await action();
+                {
+                    if (!this.IsDisposed)
+                        await action();
+                }
             }
+
 
             async Task UpdateUIBasedOnUserDto(UserDto userDto)
             {
@@ -3924,7 +4092,7 @@ namespace thecalcify
             using (var client = new HttpClient())
             {
                 client.DefaultRequestHeaders.Authorization =
-                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+                    new AuthenticationHeaderValue("Bearer", token);
 
                 try
                 {
@@ -3934,11 +4102,11 @@ namespace thecalcify
                     {
                         ApplicationLogger.Log("✅ Logout successful.");
                     }
-                    else if (response.StatusCode == System.Net.HttpStatusCode.Forbidden ||
-                             response.StatusCode == System.Net.HttpStatusCode.Unauthorized ||
+                    else if (response.StatusCode == HttpStatusCode.Forbidden ||
+                             response.StatusCode == HttpStatusCode.Unauthorized ||
                              response.StatusCode == HttpStatusCode.NotFound)
                     {
-                        thecalcify thecalcify = thecalcify.CurrentInstance;
+                        thecalcify thecalcify = CurrentInstance;
                         thecalcify.DisconnectESCToolStripMenuItem_Click(null, null);
                         MessageBox.Show("Session expired. Please log in again.", "Session Expired", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
