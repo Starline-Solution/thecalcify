@@ -263,6 +263,7 @@ namespace thecalcify
                 _form.Shown += (s, e) => CenterTitle();
 
                 pnlLower.Resize += (s, e) => CenterTitle();
+                titleLabel.TextChanged += (s, e) => CenterTitle();
             }
 
             // ====================================================================
@@ -280,14 +281,6 @@ namespace thecalcify
             _form.saveMarketWatchHost.AvailableChanged += (s, e) =>
             {
                 btnSave.Visible = _form.saveMarketWatchHost.Available;
-            };
-
-            _form.newCTRLNToolStripMenuItem1.EnabledChanged += (s, e) =>
-            {
-                if (_modernNewWatchlistItem != null)
-                {
-                    _modernNewWatchlistItem.Enabled = _form.newCTRLNToolStripMenuItem1.Enabled;
-                }
             };
         }
 
@@ -339,12 +332,18 @@ namespace thecalcify
             cm.Renderer = new ModernMenuRenderer();
             _modernNewWatchlistItem = new ToolStripMenuItem("➕ New Watchlist (Ctrl+N)");
             _modernNewWatchlistItem.Click += (s, e) => _form.NewCTRLNToolStripMenuItem1_Click(s, e);
-
-            // Sync initial state from original menu item
+            if (_form.newCTRLNToolStripMenuItem1.Enabled)
+            {
+                _modernNewWatchlistItem.Enabled = true;
+            }
+            else
+            {
+                _modernNewWatchlistItem.Enabled = false;
+            }
 
             cm.Items.Add(_modernNewWatchlistItem);
 
-            ToolStripMenuItem viewItem = new ToolStripMenuItem("👁 View Watchlist");
+            ToolStripMenuItem viewItem = new ToolStripMenuItem("📈 View Watchlist");
             cm.Items.Add(viewItem);
             cm.Items.Add(new ToolStripSeparator());
             cm.Items.Add("🗑 Delete", null, (s, e) => _form.DeleteToolStripMenuItem_Click(s, e));
@@ -354,7 +353,7 @@ namespace thecalcify
                 foreach (ToolStripItem originalItem in _form.viewToolStripMenuItem.DropDownItems)
                 {
                     // Create visual copy
-                    ToolStripMenuItem modernItem = new ToolStripMenuItem(originalItem.Text);
+                    ToolStripMenuItem modernItem = new ToolStripMenuItem("👁 " + originalItem.Text);
 
                     // PROXY CLICK: Run the logic defined in Home.cs
                     modernItem.Click += (s, e) => originalItem.PerformClick();
@@ -376,8 +375,10 @@ namespace thecalcify
             newsListParent.DropDownItems.Add("📜 News History", null, (s, e) => _form.NewsHistoryToolStripMenuItem_Click(s, e));
 
             cm.Items.Add(newsListParent);
-            cm.Items.Add(new ToolStripSeparator());
-            cm.Items.Add("🔔 Notification Settings", null, (s, e) => _form.NewsSettingsToolStrip_Click(s, e));
+            if (_form.notificationSettings.Available)
+            {
+                cm.Items.Add("🔔 Notification Settings", null, (s, e) => _form.NewsSettingsToolStrip_Click(s, e));
+            }
 
             cm.Show(anchor, new Point(0, anchor.Height));
         }

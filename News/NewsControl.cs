@@ -102,6 +102,8 @@ namespace thecalcify.News
             //dgvNews.Columns[2].FillWeight = 15;  // Category
             //dgvNews.Columns[3].FillWeight = 15;  // SubCategory
 
+            dgvNews.Columns[0].MinimumWidth = 300;
+
             // Configure HttpClient once
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
