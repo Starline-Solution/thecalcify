@@ -92,6 +92,73 @@ namespace thecalcify.Charts
             }
         }
 
+        public static void DrawBars(
+    SKCanvas canvas, SKRect rect, IReadOnlyList<Candle> candles,
+    DateTime minTime, DateTime maxTime, double minPrice, double maxPrice,
+    SKPaint upPaint, SKPaint downPaint, float minWidth = 2f, float maxWidth = 15f)
+        {
+            if (candles == null || candles.Count == 0) return;
+
+            double totalSec = (maxTime - minTime).TotalSeconds;
+            if (totalSec <= 0) totalSec = 1;
+
+            float barW = rect.Width / Math.Max(candles.Count, 1);
+            barW = Math.Max(minWidth, Math.Min(maxWidth, barW));
+            float tickLength = barW / 3f;
+
+            foreach (var c in candles)
+            {
+                float x = TimeToX(c.OpenTime, minTime, maxTime, rect);
+                if (float.IsNaN(x)) continue;
+
+                float yHigh = PriceToY(c.High, minPrice, maxPrice, rect);
+                float yLow = PriceToY(c.Low, minPrice, maxPrice, rect);
+                float yOpen = PriceToY(c.Open, minPrice, maxPrice, rect);
+                float yClose = PriceToY(c.Close, minPrice, maxPrice, rect);
+
+                bool isUp = c.Close >= c.Open;
+                var paint = isUp ? upPaint : downPaint;
+
+                // Vertical line (High to Low)
+                canvas.DrawLine(x, yHigh, x, yLow, paint);
+
+                // Open tick (left)
+                canvas.DrawLine(x - tickLength, yOpen, x, yOpen, paint);
+
+                // Close tick (right)
+                canvas.DrawLine(x, yClose, x + tickLength, yClose, paint);
+            }
+        }
+
+        public static void DrawColumns(
+    SKCanvas canvas, SKRect rect, IReadOnlyList<Candle> candles,
+    DateTime minTime, DateTime maxTime, double minPrice, double maxPrice,
+    SKPaint upPaint, SKPaint downPaint, float minWidth = 5f, float maxWidth = 20f)
+        {
+            if (candles == null || candles.Count == 0) return;
+
+            float colW = rect.Width / Math.Max(candles.Count, 1);
+            colW = Math.Max(minWidth, Math.Min(maxWidth, colW));
+            float half = colW / 2f;
+            float baseline = rect.Bottom;
+
+            foreach (var c in candles)
+            {
+                float x = TimeToX(c.OpenTime, minTime, maxTime, rect);
+                if (float.IsNaN(x)) continue;
+
+                float yClose = PriceToY(c.Close, minPrice, maxPrice, rect);
+                bool isUp = c.Close >= c.Open;
+                var paint = isUp ? upPaint : downPaint;
+
+                float top = Math.Min(yClose, baseline);
+                float bottom = Math.Max(yClose, baseline);
+
+                var column = new SKRect(x - half, top, x + half, bottom);
+                canvas.DrawRect(column, paint);
+            }
+        }
+
 
         // ============================================================
         //  GRID + AXES
@@ -194,6 +261,89 @@ namespace thecalcify.Charts
             canvas.DrawRect(bg, bgPaint);
             canvas.DrawText(label, bg.Left + pad, bg.Bottom - pad, textPaint);
         }
+
+        public static void DrawHighLow(
+            SKCanvas canvas,
+            SKRect rect,
+            IReadOnlyList<Candle> candles,
+            DateTime minTime,
+            DateTime maxTime,
+            double minPrice,
+            double maxPrice,
+            SKPaint linePaint,
+            float minWidth = 1.5f,
+            float maxWidth = 4f)
+        {
+            if (candles == null || candles.Count == 0)
+                return;
+
+            foreach (var c in candles)
+            {
+                float x = TimeToX(c.OpenTime, minTime, maxTime, rect);
+                if (float.IsNaN(x))
+                    continue;
+
+                float yHigh = PriceToY(c.High, minPrice, maxPrice, rect);
+                float yLow = PriceToY(c.Low, minPrice, maxPrice, rect);
+
+                // Direct use
+                canvas.DrawLine(x, yHigh, x, yLow, linePaint);
+            }
+        }
+        public static void DrawLine(
+    SKCanvas canvas,
+    SKRect rect,
+    IReadOnlyList<Candle> candles,
+    DateTime minTime,
+    DateTime maxTime,
+    double minPrice,
+    double maxPrice,
+    SKPaint linePaint,
+    float lineWidth = 2f)
+        {
+            if (candles == null || candles.Count == 0)
+                return;
+
+            // Create path for smooth line
+            using (var path = new SKPath())
+            {
+                bool firstPoint = true;
+
+                foreach (var c in candles)
+                {
+                    float x = TimeToX(c.OpenTime, minTime, maxTime, rect);
+                    if (float.IsNaN(x))
+                        continue;
+
+                    // Use Close price for line chart
+                    float y = PriceToY(c.Close, minPrice, maxPrice, rect);
+
+                    if (firstPoint)
+                    {
+                        path.MoveTo(x, y);
+                        firstPoint = false;
+                    }
+                    else
+                    {
+                        path.LineTo(x, y);
+                    }
+                }
+
+                // Draw the line
+                using (var paint = new SKPaint())
+                {
+                    paint.Style = SKPaintStyle.Stroke;
+                    paint.Color = linePaint.Color;
+                    paint.StrokeWidth = lineWidth;
+                    paint.IsAntialias = true;
+                    paint.StrokeCap = SKStrokeCap.Round;
+                    paint.StrokeJoin = SKStrokeJoin.Round;
+
+                    canvas.DrawPath(path, paint);
+                }
+            }
+        }
+
 
         // ============================================================
         //  CROSSHAIR + TOOLTIP

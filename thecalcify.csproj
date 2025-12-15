@@ -85,6 +85,7 @@
     <Compile Include="Alert\AlertPopup.Designer.cs">
       <DependentUpon>AlertPopup.cs</DependentUpon>
     </Compile>
+    <Compile Include="Charts\DTOs\EnumChartType.cs" />
     <Compile Include="Charts\Engine\CandleBuilder.cs" />
     <Compile Include="Charts\CandlePainter.cs" />
     <Compile Include="Charts\Chart.cs">
@@ -97,6 +98,7 @@
     <Compile Include="Charts\DTOs\TimeFrame.cs" />
     <Compile Include="Charts\GlobalTickDispatcher.cs" />
     <Compile Include="Charts\Helper\TimeFrameHelper.cs" />
+    <Compile Include="Charts\Helper\TrendLine.cs" />
     <Compile Include="Charts\IRealtimeTickSource.cs" />
     <Compile Include="Charts\SkiaChartView.cs">
       <SubType>UserControl</SubType>

@@ -13,7 +13,10 @@ namespace thecalcify.Charts
     {
         private readonly string _symbol;
         private readonly SkiaChartView _chartView;
-        private readonly Panel _topPanel;
+        //private readonly Panel _topPanel;
+        private readonly FlowLayoutPanel _topPanel;
+        private ComboBox _timeframeDropdown;
+        private ComboBox _drawingToolDropdown;
 
         private CandleBuilder _builder;
         private TimeFrame _currentTF = TimeFrame.Min1;
@@ -25,138 +28,140 @@ namespace thecalcify.Charts
         private readonly object _sync = new object();
         private const int MaxTicksHistory = 50000; // adjust as you like
 
+        private ComboBox _chartTypeDropdown;
+        private ChartType _currentChartType = ChartType.Candle;
+
         public Chart(string symbol)
         {
             InitializeComponent();
-
             _symbol = symbol;
             Text = $"Chart - {symbol}";
 
-            // builder
             _builder = new CandleBuilder(_currentTF.ToTimeSpan());
 
-            // Top panel for timeframe buttons
-            _topPanel = new Panel
+            // ✅ Changed to FlowLayoutPanel
+            _topPanel = new FlowLayoutPanel
             {
                 Dock = DockStyle.Top,
-                Height = 34,
+                Height = 40,  // slightly taller
                 Padding = new Padding(5),
-                BackColor = Color.FromArgb(81, 213, 220)
+                BackColor = Color.FromArgb(81, 213, 220),
+                FlowDirection = FlowDirection.LeftToRight,
+                WrapContents = false
             };
 
-            // Chart view
             _chartView = new SkiaChartView
             {
                 Dock = DockStyle.Fill,
-                ChartBackground = new SKColor(255,255,255)
+                ChartBackground = new SKColor(255, 255, 255)
             };
-
 
             Controls.Add(_chartView);
             Controls.Add(_topPanel);
 
-            CreateTimeFrameButtons();
+            // ✅ Replace button method with dropdown
+            CreateTimeFrameDropdown();
+            CreateDrawingToolDropdown();
+            CreateChartTypeDropdown();
 
-            // UI timer
-            _uiTimer = new Timer
-            {
-                Interval = 50 // ~20 FPS
-            };
+
+            _uiTimer = new Timer { Interval = 50 };
             _uiTimer.Tick += UiTimer_Tick;
         }
 
-        #region Timeframe buttons
+        #region Timeframe Dropdown
 
-        private void CreateTimeFrameButtons()
+        private void CreateTimeFrameDropdown()
         {
-            var flow = new FlowLayoutPanel
+            // Label
+            //var label = new Label
+            //{
+            //    Text = "Timeframe:",
+            //    AutoSize = true,
+            //    Margin = new Padding(5, 7, 3, 3),
+            //    ForeColor = Color.FromArgb(30, 30, 30),
+            //    Font = new Font("Segoe UI", 9f, FontStyle.Bold)
+            //};
+            //_topPanel.Controls.Add(label);
+
+            // Dropdown
+            _timeframeDropdown = new ComboBox
             {
-                Dock = DockStyle.Fill,
-                FlowDirection = FlowDirection.LeftToRight,
-                WrapContents = false
+                Width = 80,
+                Height = 24,
+                Margin = new Padding(0, 3, 15, 3),
+                DropDownStyle = ComboBoxStyle.DropDownList,
+                BackColor = Color.FromArgb(45, 45, 45),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 9f)
             };
-            _topPanel.Controls.Add(flow);
 
-            var items = new (string Text, TimeFrame TF)[]
-            {
-                ("1m",  TimeFrame.Min1),
-                ("5m",  TimeFrame.Min5),
-                ("15m", TimeFrame.Min15),
-                ("30m", TimeFrame.Min30),
-                ("1H",  TimeFrame.Hour1),
-                ("1D",  TimeFrame.Day1)
-            };
+            // Items
+            _timeframeDropdown.Items.Add("1 Minute");
+            _timeframeDropdown.Items.Add("5 Minutes");
+            _timeframeDropdown.Items.Add("15 Minutes");
+            _timeframeDropdown.Items.Add("30 Minutes");
+            _timeframeDropdown.Items.Add("1 Hour");
+            _timeframeDropdown.Items.Add("1 Day");
 
-            foreach (var item in items)
-            {
-                var btn = new Button
-                {
-                    Text = item.Text,
-                    Tag = item.TF,
-                    Width = 50,
-                    Height = 24,
-                    Margin = new Padding(3),
-                    FlatStyle = FlatStyle.Flat,
-                    BackColor = Color.FromArgb(45, 45, 45),
-                    ForeColor = Color.White
-                };
-                btn.FlatAppearance.BorderSize = 0;
-                btn.Click += TimeFrameButton_Click;
-                flow.Controls.Add(btn);
-            }
+            _timeframeDropdown.SelectedIndex = 0;
+            _timeframeDropdown.SelectedIndexChanged += TimeframeDropdown_Changed;
 
-            // Initial highlight
-            HighlightTimeframeButtons();
+            _topPanel.Controls.Add(_timeframeDropdown);
         }
 
-        private void TimeFrameButton_Click(object sender, EventArgs e)
+        private async void TimeframeDropdown_Changed(object sender, EventArgs e)
         {
-            var btn = sender as Button;
-            if (btn == null) return;
-
-            if (btn.Tag is TimeFrame)
-            {
-                ChangeTimeFrame((TimeFrame)btn.Tag);
-            }
-        }
-
-        /// <summary>
-        /// Re-color timeframe buttons based on _currentTF.
-        /// </summary>
-        private void HighlightTimeframeButtons()
-        {
-            if (_topPanel.Controls.Count == 0)
+            if (_timeframeDropdown.SelectedIndex == -1)
                 return;
 
-            var flow = _topPanel.Controls[0] as FlowLayoutPanel;
-            if (flow == null)
-                return;
+            TimeFrame selectedTF;
 
-            foreach (Control c in flow.Controls)
+            // Traditional switch (C# 7.3 compatible)
+            switch (_timeframeDropdown.SelectedIndex)
             {
-                var b = c as Button;
-                if (b == null || !(b.Tag is TimeFrame))
-                    continue;
+                case 0:
+                    selectedTF = TimeFrame.Min1;
+                    break;
+                case 1:
+                    selectedTF = TimeFrame.Min5;
+                    break;
+                case 2:
+                    selectedTF = TimeFrame.Min15;
+                    break;
+                case 3:
+                    selectedTF = TimeFrame.Min30;
+                    break;
+                case 4:
+                    selectedTF = TimeFrame.Hour1;
+                    break;
+                case 5:
+                    selectedTF = TimeFrame.Day1;
+                    break;
+                default:
+                    selectedTF = TimeFrame.Min1;
+                    break;
+            }
 
-                var tf = (TimeFrame)b.Tag;
-                bool isActive = tf == _currentTF;
-
-                b.BackColor = isActive
-                    ? Color.FromArgb(80, 80, 80)
-                    : Color.FromArgb(45, 45, 45);
+            if (selectedTF != _currentTF)
+            {
+                await ChangeTimeFrame(selectedTF);
             }
         }
 
-        private async void ChangeTimeFrame(TimeFrame tf)
+
+        private async Task ChangeTimeFrame(TimeFrame tf)
         {
             _currentTF = tf;
-
-            // reload historical candles for new timeframe
             await LoadAndApplyHistorical();
-
-            // update button highlight
-            HighlightTimeframeButtons();
         }
+
+        #endregion
+
+
+        #region Timeframe buttons
+
 
         #endregion
 
@@ -186,6 +191,155 @@ namespace thecalcify.Charts
         #endregion
 
         #region Ticks + UI timer
+
+        private void CreateChartTypeDropdown()
+        {
+            // Label
+            //var label = new Label
+            //{
+            //    Text = "Chart Type:",
+            //    AutoSize = true,
+            //    Margin = new Padding(5, 7, 3, 3),
+            //    ForeColor = Color.FromArgb(30, 30, 30),
+            //    Font = new Font("Segoe UI", 9f, FontStyle.Bold)
+            //};
+            //_topPanel.Controls.Add(label);
+
+            // Dropdown
+            _chartTypeDropdown = new ComboBox
+            {
+                Width = 100,
+                Height = 24,
+                Margin = new Padding(0, 3, 3, 3),
+                DropDownStyle = ComboBoxStyle.DropDownList,
+                BackColor = Color.FromArgb(45, 45, 45),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 9f)
+            };
+
+            _chartTypeDropdown.Items.Add("Candlestick");
+            _chartTypeDropdown.Items.Add("OHLC Bar");
+            _chartTypeDropdown.Items.Add("Column");
+            _chartTypeDropdown.Items.Add("High-Low");
+            _chartTypeDropdown.Items.Add("Line");
+
+            _chartTypeDropdown.SelectedIndex = 0;
+            _chartTypeDropdown.SelectedIndexChanged += ChartTypeDropdown_Changed;
+
+            _topPanel.Controls.Add(_chartTypeDropdown);
+        }
+
+        private void CreateDrawingToolDropdown()
+        {
+            // Separator
+            var separator = new Label
+            {
+                Text = " | ",
+                AutoSize = true,
+                Margin = new Padding(10, 7, 10, 3),
+                ForeColor = Color.FromArgb(60, 60, 60),
+                Font = new Font("Segoe UI", 10f, FontStyle.Bold)
+            };
+            _topPanel.Controls.Add(separator);
+
+            // Label
+            var label = new Label
+            {
+                Text = "Drawing:",
+                AutoSize = true,
+                Margin = new Padding(5, 7, 3, 3),
+                ForeColor = Color.FromArgb(30, 30, 30),
+                Font = new Font("Segoe UI", 9f, FontStyle.Bold)
+            };
+            _topPanel.Controls.Add(label);
+
+            // Dropdown
+            _drawingToolDropdown = new ComboBox
+            {
+                Width = 150,
+                Height = 24,
+                Margin = new Padding(0, 3, 15, 3),
+                DropDownStyle = ComboBoxStyle.DropDownList,
+                BackColor = Color.FromArgb(45, 45, 45),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 9f)
+            };
+
+            // Items
+            _drawingToolDropdown.Items.Add("None");
+            _drawingToolDropdown.Items.Add("📐 Trend Line");
+            _drawingToolDropdown.Items.Add("📈 Regression Trend");
+            _drawingToolDropdown.Items.Add("➖ Horizontal Line");
+
+            _drawingToolDropdown.SelectedIndex = 0; // Default: None
+            _drawingToolDropdown.SelectedIndexChanged += DrawingToolDropdown_Changed;
+
+            _topPanel.Controls.Add(_drawingToolDropdown);
+
+            // Clear button
+            var clearBtn = new Button
+            {
+                Text = "🗑️ Clear",
+                Width = 80,
+                Height = 28,
+                Margin = new Padding(2, 2, 3, 2),
+                FlatStyle = FlatStyle.Flat,
+                BackColor = Color.FromArgb(180, 0, 0),
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 9f),
+                Cursor = Cursors.Hand
+            };
+            clearBtn.FlatAppearance.BorderSize = 0;
+            clearBtn.Click += (s, e) => _chartView.ClearTrendLines();
+            _topPanel.Controls.Add(clearBtn);
+        }
+
+
+        private void DrawingToolDropdown_Changed(object sender, EventArgs e)
+        {
+            DrawingMode mode;
+
+            switch (_drawingToolDropdown.SelectedIndex)
+            {
+                case 0:
+                    mode = DrawingMode.None;
+                    break;
+                case 1:
+                    mode = DrawingMode.TrendLine;
+                    break;
+                case 2:
+                    mode = DrawingMode.RegressionTrend;
+                    break;
+                case 3:
+                    mode = DrawingMode.HorizontalLine;
+                    break;
+                default:
+                    mode = DrawingMode.None;
+                    break;
+            }
+
+            _chartView.SetDrawingMode(mode);
+        }
+
+        private void ChartTypeDropdown_Changed(object sender, EventArgs e)
+        {
+            if (_chartTypeDropdown.SelectedIndex == -1)
+                return;
+
+            switch (_chartTypeDropdown.SelectedIndex)
+            {
+                case 0: _currentChartType = ChartType.Candle; break;
+                case 1: _currentChartType = ChartType.Bar; break;
+                case 2: _currentChartType = ChartType.Column; break;
+                case 3: _currentChartType = ChartType.HighLow; break;
+                case 4: _currentChartType = ChartType.Line; break;
+            }
+
+            _chartView.SetChartType(_currentChartType);
+        }
+
 
         // Called from your Global dispatcher
         private void OnTick(Tick t)

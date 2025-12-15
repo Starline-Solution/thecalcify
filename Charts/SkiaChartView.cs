@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
+using thecalcify.Charts.DTOs;
 
 namespace thecalcify.Charts
 {
@@ -18,6 +19,9 @@ namespace thecalcify.Charts
         // price viewport
         private double _minPrice = 0;
         private double _maxPrice = 1;
+
+        private bool _isSelectingRegression = false;
+        private DateTime _regressionStartTime;
 
         // time ranges
         private DateTime _dataMin;
@@ -46,6 +50,14 @@ namespace thecalcify.Charts
         private readonly SKPaint _lastPriceLinePaint;
         private readonly SKPaint _lastPriceLabelBgPaint;
         private readonly SKPaint _lastPriceLabelTextPaint;
+
+        private ChartType _chartType = ChartType.Candle;
+
+        private DrawingMode _drawingMode = DrawingMode.None;
+        private readonly List<TrendLine> _trendLines = new List<TrendLine>();
+        private TrendLine _currentTrendLine = null;
+        private bool _isDrawingTrendLine = false;
+
         public SKColor ChartBackground { get; set; } = new SKColor(18, 18, 18);
 
         public SkiaChartView()
@@ -197,6 +209,51 @@ namespace thecalcify.Charts
 
             _skControl.Invalidate();
         }
+        public void ClearTrendLines()
+        {
+            _trendLines.Clear();
+            _currentTrendLine = null;
+            _isDrawingTrendLine = false;
+            _skControl.Invalidate();
+        }
+
+
+        public void SetDrawingMode(DrawingMode mode)
+        {
+            _drawingMode = mode;
+            _currentTrendLine = null;
+            _isDrawingTrendLine = false;
+            _isSelectingRegression = false;
+        }
+
+        public DrawingMode GetDrawingMode()
+        {
+            return _drawingMode;
+        }
+
+        private DateTime PixelToTime(float pixelX)
+        {
+            if (_viewMax <= _viewMin)
+                return _viewMin;
+
+            float relX = (pixelX - 10) / (Width - 70); // Adjust for margins
+            relX = Math.Max(0, Math.Min(1, relX));
+
+            double totalSec = (_viewMax - _viewMin).TotalSeconds;
+            return _viewMin.AddSeconds(totalSec * relX);
+        }
+
+        private double PixelToPrice(float pixelY)
+        {
+            if (_maxPrice <= _minPrice)
+                return _minPrice;
+
+            float relY = (Height - 32 - pixelY) / (Height - 52); // Adjust for margins
+            relY = Math.Max(0, Math.Min(1, relY));
+
+            return _minPrice + (_maxPrice - _minPrice) * relY;
+        }
+
 
         public void UpdateCandles(IReadOnlyList<Candle> candles, bool autoFit = false)
         {
@@ -218,6 +275,11 @@ namespace thecalcify.Charts
             _skControl.Invalidate();
         }
 
+        public void SetChartType(ChartType type)
+        {
+            _chartType = type;
+            _skControl.Invalidate();
+        }
 
         public void AutoFit()
         {
@@ -291,18 +353,30 @@ namespace thecalcify.Charts
             canvas.Save();
             canvas.ClipRect(priceRect, SKClipOperation.Intersect, true);
 
-            CandlePainter.DrawCandles(
-                canvas,
-                priceRect,
-                _candles,
-                _viewMin,
-                _viewMax,
-                _minPrice,
-                _maxPrice,
-                _upBodyPaint,
-                _downBodyPaint,
-                _wickPaint
-            );
+            switch (_chartType)
+            {
+                case ChartType.Candle:
+                    CandlePainter.DrawCandles(canvas, priceRect, _candles, _viewMin, _viewMax,
+                                               _minPrice, _maxPrice, _upBodyPaint, _downBodyPaint, _wickPaint);
+                    break;
+                case ChartType.Bar:
+                    CandlePainter.DrawBars(canvas, priceRect, _candles, _viewMin, _viewMax,
+                                            _minPrice, _maxPrice, _upBodyPaint, _downBodyPaint);
+                    break;
+                case ChartType.Column:
+                    CandlePainter.DrawColumns(canvas, priceRect, _candles, _viewMin, _viewMax,
+                                               _minPrice, _maxPrice, _upBodyPaint, _downBodyPaint);
+                    break;
+
+                case ChartType.HighLow:
+                    CandlePainter.DrawHighLow(canvas, priceRect, _candles, _viewMin, _viewMax, _minPrice, _maxPrice, _wickPaint);
+                    break;
+
+                case ChartType.Line:    // 👈 NEW
+                    CandlePainter.DrawLine(canvas, priceRect, _candles, _viewMin, _viewMax, _minPrice, _maxPrice, _upBodyPaint, 2.5f);
+                    break;
+            }
+
 
             var last = _candles.Last();
 
@@ -340,7 +414,138 @@ namespace thecalcify.Charts
             );
 
             canvas.Restore();
+
+            foreach (var trendLine in _trendLines)
+            {
+                DrawTrendLine(canvas, priceRect, trendLine);
+            }
+
+            // Draw current trend line being drawn (dashed preview)
+            if (_isDrawingTrendLine && _currentTrendLine != null)
+            {
+                DrawTrendLine(canvas, priceRect, _currentTrendLine, isDashed: true);
+            }
+
+            // Draw regression selection highlight
+            if (_drawingMode == DrawingMode.RegressionTrend && _isSelectingRegression)
+            {
+                if (_crosshair.HasValue)
+                {
+                    float x1 = TimeToPixelX(_regressionStartTime, priceRect);
+                    float x2 = _crosshair.Value.X;
+
+                    using (var paint = new SKPaint())
+                    {
+                        paint.Style = SKPaintStyle.Stroke;
+                        paint.Color = new SKColor(0, 150, 255, 180);
+                        paint.StrokeWidth = 2f;
+                        paint.PathEffect = SKPathEffect.CreateDash(new float[] { 5, 5 }, 0);
+
+                        // Vertical lines
+                        canvas.DrawLine(x1, priceRect.Top, x1, priceRect.Bottom, paint);
+                        canvas.DrawLine(x2, priceRect.Top, x2, priceRect.Bottom, paint);
+
+                        // Shaded area
+                        paint.Style = SKPaintStyle.Fill;
+                        paint.Color = new SKColor(0, 150, 255, 30);
+                        var rect = new SKRect(
+                            Math.Min(x1, x2),
+                            priceRect.Top,
+                            Math.Max(x1, x2),
+                            priceRect.Bottom
+                        );
+                        canvas.DrawRect(rect, paint);
+                    }
+                }
+            }
+
         }
+
+        private void DrawTrendLine(SKCanvas canvas, SKRect rect, TrendLine line, bool isDashed = false)
+        {
+            float x1 = TimeToPixelX(line.StartTime, rect);
+            float y1 = PriceToPixelY(line.StartPrice, rect);
+            float x2 = TimeToPixelX(line.EndTime, rect);
+            float y2 = PriceToPixelY(line.EndPrice, rect);
+
+            using (var paint = new SKPaint())
+            {
+                paint.Style = SKPaintStyle.Stroke;
+                paint.Color = line.Color;
+                paint.StrokeWidth = line.StrokeWidth;
+                paint.IsAntialias = true;
+
+                if (isDashed || line.IsDashed)
+                {
+                    paint.PathEffect = SKPathEffect.CreateDash(new float[] { 8, 4 }, 0);
+                }
+
+                if (line.RSquared.HasValue)
+                {
+                    float midX = (x1 + x2) / 2;
+                    float midY = (y1 + y2) / 2;
+
+                    string label = string.Format("R² = {0:0.000}", line.RSquared.Value);
+
+                    using (var textPaint = new SKPaint())
+                    {
+                        textPaint.Color = SKColors.Black;
+                        textPaint.TextSize = 11f;
+                        textPaint.IsAntialias = true;
+
+                        var bounds = new SKRect();
+                        textPaint.MeasureText(label, ref bounds);
+
+                        // Background box
+                        using (var bgPaint = new SKPaint())
+                        {
+                            bgPaint.Style = SKPaintStyle.Fill;
+                            bgPaint.Color = new SKColor(255, 255, 255, 220);
+                            var bg = new SKRect(
+                                midX - 2,
+                                midY - bounds.Height - 2,
+                                midX + bounds.Width + 2,
+                                midY + 2
+                            );
+                            canvas.DrawRect(bg, bgPaint);
+                        }
+
+                        canvas.DrawText(label, midX, midY, textPaint);
+                    }
+                }
+
+                canvas.DrawLine(x1, y1, x2, y2, paint);
+
+                // Draw small circles at endpoints
+                paint.Style = SKPaintStyle.Fill;
+                canvas.DrawCircle(x1, y1, 4, paint);
+                canvas.DrawCircle(x2, y2, 4, paint);
+            }
+        }
+
+        private float TimeToPixelX(DateTime time, SKRect rect)
+        {
+            double totalSec = (_viewMax - _viewMin).TotalSeconds;
+            if (totalSec <= 0) totalSec = 1;
+
+            double sec = (time - _viewMin).TotalSeconds;
+            float t = (float)(sec / totalSec);
+            t = Math.Max(0, Math.Min(1, t));
+
+            return rect.Left + t * rect.Width;
+        }
+
+        private float PriceToPixelY(double price, SKRect rect)
+        {
+            if (_maxPrice <= _minPrice)
+                return rect.Bottom;
+
+            double t = (price - _minPrice) / (_maxPrice - _minPrice);
+            t = Math.Max(0, Math.Min(1, t));
+
+            return rect.Bottom - (float)(t * rect.Height);
+        }
+
 
         private void DrawEmptyMessage(SKCanvas canvas, SKRect rect)
         {
@@ -427,6 +632,71 @@ namespace thecalcify.Charts
 
         private void SkControl_MouseDown(object sender, MouseEventArgs e)
         {
+            // TREND LINE MODE
+            if (_drawingMode == DrawingMode.TrendLine && e.Button == MouseButtons.Left)
+            {
+                if (!_isDrawingTrendLine)
+                {
+                    // First click - start trend line
+                    _currentTrendLine = new TrendLine
+                    {
+                        StartTime = PixelToTime(e.X),
+                        StartPrice = PixelToPrice(e.Y),
+                        EndTime = PixelToTime(e.X),
+                        EndPrice = PixelToPrice(e.Y)
+                    };
+                    _isDrawingTrendLine = true;
+                }
+                else
+                {
+                    // Second click - finish trend line
+                    _currentTrendLine.EndTime = PixelToTime(e.X);
+                    _currentTrendLine.EndPrice = PixelToPrice(e.Y);
+
+                    _trendLines.Add(_currentTrendLine);
+                    _currentTrendLine = null;
+                    _isDrawingTrendLine = false;
+                }
+
+                _skControl.Invalidate();
+                return;
+            }
+
+            if (_drawingMode == DrawingMode.RegressionTrend && e.Button == MouseButtons.Left)
+            {
+                if (!_isSelectingRegression)
+                {
+                    // First click - start selection
+                    _regressionStartTime = PixelToTime(e.X);
+                    _isSelectingRegression = true;
+                    _skControl.Invalidate();
+                }
+                else
+                {
+                    // Second click - calculate regression
+                    DateTime endTime = PixelToTime(e.X);
+
+                    // Get candles in range
+                    var selectedCandles = _candles
+                        .Where(c => c.OpenTime >= _regressionStartTime && c.OpenTime <= endTime)
+                        .ToList();
+
+                    if (selectedCandles.Count >= 2)
+                    {
+                        var regression = CalculateLinearRegression(selectedCandles);
+                        if (regression != null)
+                        {
+                            _trendLines.Add(regression);
+                        }
+                    }
+
+                    _isSelectingRegression = false;
+                    _skControl.Invalidate();
+                }
+                return;
+            }
+
+            // NORMAL MODE (existing code)
             if (e.Button == MouseButtons.Left)
             {
                 _isPanning = true;
@@ -441,8 +711,77 @@ namespace thecalcify.Charts
             }
         }
 
+        private TrendLine CalculateLinearRegression(List<Candle> candles)
+        {
+            if (candles.Count < 2)
+                return null;
+
+            int n = candles.Count;
+            double sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+
+            for (int i = 0; i < n; i++)
+            {
+                double x = i;
+                double y = candles[i].Close;
+
+                sumX += x;
+                sumY += y;
+                sumXY += x * y;
+                sumX2 += x * x;
+            }
+
+            // Linear regression: y = mx + b
+            double m = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+            double b = (sumY - m * sumX) / n;
+
+            // Calculate R² (coefficient of determination)
+            double meanY = sumY / n;
+            double ssTotal = 0, ssResidual = 0;
+
+            for (int i = 0; i < n; i++)
+            {
+                double yActual = candles[i].Close;
+                double yPredicted = m * i + b;
+
+                ssTotal += Math.Pow(yActual - meanY, 2);
+                ssResidual += Math.Pow(yActual - yPredicted, 2);
+            }
+
+            double rSquared = ssTotal > 0 ? 1 - (ssResidual / ssTotal) : 0;
+
+            // Calculate endpoints
+            double startPrice = b;
+            double endPrice = m * (n - 1) + b;
+
+            return new TrendLine
+            {
+                StartTime = candles[0].OpenTime,
+                StartPrice = startPrice,
+                EndTime = candles[n - 1].OpenTime,
+                EndPrice = endPrice,
+                Color = new SKColor(0, 150, 255),  // Blue
+                StrokeWidth = 2.5f,
+                IsDashed = false,
+                RSquared = rSquared
+            };
+        }
+
+
         private void SkControl_MouseMove(object sender, MouseEventArgs e)
         {
+            // TREND LINE MODE - Update preview
+            if (_drawingMode == DrawingMode.TrendLine && _isDrawingTrendLine)
+            {
+                if (_currentTrendLine != null)
+                {
+                    _currentTrendLine.EndTime = PixelToTime(e.X);
+                    _currentTrendLine.EndPrice = PixelToPrice(e.Y);
+                    _skControl.Invalidate();
+                }
+                return;
+            }
+
+            // NORMAL MODE (existing pan code...)
             if (_isPanning && _candles.Count > 0)
             {
                 int dx = e.Location.X - _lastMouse.X;
@@ -452,13 +791,12 @@ namespace thecalcify.Charts
                 if (viewSec <= 0) viewSec = 1;
 
                 double secPerPixel = viewSec / Math.Max(Width, 1);
-
                 double shift = -dx * secPerPixel;
 
                 _viewMin = _viewMin.AddSeconds(shift);
                 _viewMax = _viewMax.AddSeconds(shift);
-
                 _autoFit = false;
+
                 ClampViewToData();
                 _skControl.Invalidate();
             }
@@ -466,6 +804,7 @@ namespace thecalcify.Charts
             _crosshair = e.Location;
             _skControl.Invalidate();
         }
+
 
         private void SkControl_MouseUp(object sender, MouseEventArgs e)
         {
