@@ -1,0 +1,6242 @@
+{
+  "A1": {
+    "Row": 1,
+    "Column": 1,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 11.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "B1": {
+    "Row": 1,
+    "Column": 2,
+    "Value": "SPOT 995",
+    "Formula": "SPOT 995",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": true,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#ACB9CA",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "C1": {
+    "Row": 1,
+    "Column": 3,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "D1": {
+    "Row": 1,
+    "Column": 4,
+    "Value": "SPOT 999",
+    "Formula": "SPOT 999",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": true,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#ACB9CA",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "E1": {
+    "Row": 1,
+    "Column": 5,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "F1": {
+    "Row": 1,
+    "Column": 6,
+    "Value": "Comex 995",
+    "Formula": "Comex 995",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": true,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#ACB9CA",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "G1": {
+    "Row": 1,
+    "Column": 7,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "H1": {
+    "Row": 1,
+    "Column": 8,
+    "Value": "Comex 999",
+    "Formula": "Comex 999",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": true,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#ACB9CA",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "I1": {
+    "Row": 1,
+    "Column": 9,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "J1": {
+    "Row": 1,
+    "Column": 10,
+    "Value": "SILVER SPOT",
+    "Formula": "SILVER SPOT",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": true,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#ACB9CA",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "K1": {
+    "Row": 1,
+    "Column": 11,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 11.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "L1": {
+    "Row": 1,
+    "Column": 12,
+    "Value": "SILVER COMEX",
+    "Formula": "SILVER COMEX",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": true,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#ACB9CA",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "A2": {
+    "Row": 2,
+    "Column": 1,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 11.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "B2": {
+    "Row": 2,
+    "Column": 2,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "C2": {
+    "Row": 2,
+    "Column": 3,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "D2": {
+    "Row": 2,
+    "Column": 4,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "E2": {
+    "Row": 2,
+    "Column": 5,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "F2": {
+    "Row": 2,
+    "Column": 6,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "G2": {
+    "Row": 2,
+    "Column": 7,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "H2": {
+    "Row": 2,
+    "Column": 8,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "I2": {
+    "Row": 2,
+    "Column": 9,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "J2": {
+    "Row": 2,
+    "Column": 10,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 11.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "K2": {
+    "Row": 2,
+    "Column": 11,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 11.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "L2": {
+    "Row": 2,
+    "Column": 12,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 11.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "A3": {
+    "Row": 3,
+    "Column": 1,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 11.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "B3": {
+    "Row": 3,
+    "Column": 2,
+    "Value": "4207.31",
+    "Formula": "=RTD(\"thecalcify\", ,\"GOLDSPOT_I\",\"Ask\")",
+    "Type": "rtd",
+    "Symbol": "GOLDSPOT_I",
+    "Field": "Ask",
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "C3": {
+    "Row": 3,
+    "Column": 3,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "D3": {
+    "Row": 3,
+    "Column": 4,
+    "Value": "4207.31",
+    "Formula": "=RTD(\"thecalcify\", ,\"GOLDSPOT_I\",\"Ask\")",
+    "Type": "rtd",
+    "Symbol": "GOLDSPOT_I",
+    "Field": "Ask",
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "E3": {
+    "Row": 3,
+    "Column": 5,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "F3": {
+    "Row": 3,
+    "Column": 6,
+    "Value": "4235.5",
+    "Formula": "=RTD(\"thecalcify\", ,\"GOLDCOMEX_I\",\"Ask\")",
+    "Type": "rtd",
+    "Symbol": "GOLDCOMEX_I",
+    "Field": "Ask",
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "G3": {
+    "Row": 3,
+    "Column": 7,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "H3": {
+    "Row": 3,
+    "Column": 8,
+    "Value": "4235.5",
+    "Formula": "=RTD(\"thecalcify\", ,\"GOLDCOMEX_I\",\"Ask\")",
+    "Type": "rtd",
+    "Symbol": "GOLDCOMEX_I",
+    "Field": "Ask",
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "I3": {
+    "Row": 3,
+    "Column": 9,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "J3": {
+    "Row": 3,
+    "Column": 10,
+    "Value": "61.206",
+    "Formula": "=RTD(\"thecalcify\", ,\"SILVERSPOT_I\",\"Ask\")",
+    "Type": "rtd",
+    "Symbol": "SILVERSPOT_I",
+    "Field": "Ask",
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "K3": {
+    "Row": 3,
+    "Column": 11,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "L3": {
+    "Row": 3,
+    "Column": 12,
+    "Value": "61.705",
+    "Formula": "=RTD(\"thecalcify\", ,\"SILVERCOMEX_I\",\"Ask\")",
+    "Type": "rtd",
+    "Symbol": "SILVERCOMEX_I",
+    "Field": "Ask",
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "A4": {
+    "Row": 4,
+    "Column": 1,
+    "Value": "Premium",
+    "Formula": "Premium",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFD966",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "B4": {
+    "Row": 4,
+    "Column": 2,
+    "Value": "0",
+    "Formula": "0",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "C4": {
+    "Row": 4,
+    "Column": 3,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "D4": {
+    "Row": 4,
+    "Column": 4,
+    "Value": "0",
+    "Formula": "0",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "E4": {
+    "Row": 4,
+    "Column": 5,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "F4": {
+    "Row": 4,
+    "Column": 6,
+    "Value": "0",
+    "Formula": "0",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "G4": {
+    "Row": 4,
+    "Column": 7,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "H4": {
+    "Row": 4,
+    "Column": 8,
+    "Value": "0",
+    "Formula": "0",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "I4": {
+    "Row": 4,
+    "Column": 9,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "J4": {
+    "Row": 4,
+    "Column": 10,
+    "Value": "0",
+    "Formula": "0",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "K4": {
+    "Row": 4,
+    "Column": 11,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 11.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "L4": {
+    "Row": 4,
+    "Column": 12,
+    "Value": "0",
+    "Formula": "=J4",
+    "Type": "formula",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "A5": {
+    "Row": 5,
+    "Column": 1,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 11.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "B5": {
+    "Row": 5,
+    "Column": 2,
+    "Value": "4207.31",
+    "Formula": "=SUM(B3+B4)",
+    "Type": "formula",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "C5": {
+    "Row": 5,
+    "Column": 3,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "D5": {
+    "Row": 5,
+    "Column": 4,
+    "Value": "4207.31",
+    "Formula": "=SUM(D3+D4)",
+    "Type": "formula",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "E5": {
+    "Row": 5,
+    "Column": 5,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "F5": {
+    "Row": 5,
+    "Column": 6,
+    "Value": "4235.5",
+    "Formula": "=SUM(F3+F4)",
+    "Type": "formula",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "G5": {
+    "Row": 5,
+    "Column": 7,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "H5": {
+    "Row": 5,
+    "Column": 8,
+    "Value": "4235.5",
+    "Formula": "=SUM(H3+H4)",
+    "Type": "formula",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "I5": {
+    "Row": 5,
+    "Column": 9,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "J5": {
+    "Row": 5,
+    "Column": 10,
+    "Value": "61.206",
+    "Formula": "=SUM(J3+J4)",
+    "Type": "formula",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "K5": {
+    "Row": 5,
+    "Column": 11,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 11.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "L5": {
+    "Row": 5,
+    "Column": 12,
+    "Value": "61.705",
+    "Formula": "=SUM(L3+L4)",
+    "Type": "formula",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "A6": {
+    "Row": 6,
+    "Column": 1,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 11.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "B6": {
+    "Row": 6,
+    "Column": 2,
+    "Value": "89.87",
+    "Formula": "=RTD(\"thecalcify\", ,\"INRSPOT_I\",\"Ask\")",
+    "Type": "rtd",
+    "Symbol": "INRSPOT_I",
+    "Field": "Ask",
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "C6": {
+    "Row": 6,
+    "Column": 3,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "D6": {
+    "Row": 6,
+    "Column": 4,
+    "Value": "89.87",
+    "Formula": "=RTD(\"thecalcify\", ,\"INRSPOT_I\",\"Ask\")",
+    "Type": "rtd",
+    "Symbol": "INRSPOT_I",
+    "Field": "Ask",
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "E6": {
+    "Row": 6,
+    "Column": 5,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "F6": {
+    "Row": 6,
+    "Column": 6,
+    "Value": "89.87",
+    "Formula": "=RTD(\"thecalcify\", ,\"INRSPOT_I\",\"Ask\")",
+    "Type": "rtd",
+    "Symbol": "INRSPOT_I",
+    "Field": "Ask",
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "G6": {
+    "Row": 6,
+    "Column": 7,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "H6": {
+    "Row": 6,
+    "Column": 8,
+    "Value": "89.87",
+    "Formula": "=RTD(\"thecalcify\", ,\"INRSPOT_I\",\"Ask\")",
+    "Type": "rtd",
+    "Symbol": "INRSPOT_I",
+    "Field": "Ask",
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "I6": {
+    "Row": 6,
+    "Column": 9,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "J6": {
+    "Row": 6,
+    "Column": 10,
+    "Value": "89.87",
+    "Formula": "=RTD(\"thecalcify\", ,\"INRSPOT_I\",\"Ask\")",
+    "Type": "rtd",
+    "Symbol": "INRSPOT_I",
+    "Field": "Ask",
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "K6": {
+    "Row": 6,
+    "Column": 11,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 11.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "L6": {
+    "Row": 6,
+    "Column": 12,
+    "Value": "89.87",
+    "Formula": "=RTD(\"thecalcify\", ,\"INRSPOT_I\",\"Ask\")",
+    "Type": "rtd",
+    "Symbol": "INRSPOT_I",
+    "Field": "Ask",
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "A7": {
+    "Row": 7,
+    "Column": 1,
+    "Value": "INTER BANK",
+    "Formula": "INTER BANK",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFD966",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "B7": {
+    "Row": 7,
+    "Column": 2,
+    "Value": "0",
+    "Formula": "0",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "C7": {
+    "Row": 7,
+    "Column": 3,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "D7": {
+    "Row": 7,
+    "Column": 4,
+    "Value": "0",
+    "Formula": "0",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "E7": {
+    "Row": 7,
+    "Column": 5,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "F7": {
+    "Row": 7,
+    "Column": 6,
+    "Value": "0",
+    "Formula": "0",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "G7": {
+    "Row": 7,
+    "Column": 7,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "H7": {
+    "Row": 7,
+    "Column": 8,
+    "Value": "0",
+    "Formula": "=F7",
+    "Type": "formula",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "I7": {
+    "Row": 7,
+    "Column": 9,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "J7": {
+    "Row": 7,
+    "Column": 10,
+    "Value": "0",
+    "Formula": "0",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "K7": {
+    "Row": 7,
+    "Column": 11,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 11.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "L7": {
+    "Row": 7,
+    "Column": 12,
+    "Value": "0",
+    "Formula": "=J7",
+    "Type": "formula",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "A8": {
+    "Row": 8,
+    "Column": 1,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 11.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "B8": {
+    "Row": 8,
+    "Column": 2,
+    "Value": "378110.9497",
+    "Formula": "=SUM(B5*(B6+B7))",
+    "Type": "formula",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "C8": {
+    "Row": 8,
+    "Column": 3,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "D8": {
+    "Row": 8,
+    "Column": 4,
+    "Value": "378110.9497",
+    "Formula": "=SUM(D5*(D6+D7))",
+    "Type": "formula",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "E8": {
+    "Row": 8,
+    "Column": 5,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "F8": {
+    "Row": 8,
+    "Column": 6,
+    "Value": "380644.385",
+    "Formula": "=SUM(F5*(F6+F7))",
+    "Type": "formula",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "G8": {
+    "Row": 8,
+    "Column": 7,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "H8": {
+    "Row": 8,
+    "Column": 8,
+    "Value": "380644.385",
+    "Formula": "=SUM(H5*(H6+H7))",
+    "Type": "formula",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "I8": {
+    "Row": 8,
+    "Column": 9,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "J8": {
+    "Row": 8,
+    "Column": 10,
+    "Value": "5500.58322",
+    "Formula": "=SUM(J5*(J6+J7))",
+    "Type": "formula",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "K8": {
+    "Row": 8,
+    "Column": 11,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 11.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "L8": {
+    "Row": 8,
+    "Column": 12,
+    "Value": "5545.42835",
+    "Formula": "=SUM(L5*(L6+L7))",
+    "Type": "formula",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "A9": {
+    "Row": 9,
+    "Column": 1,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 11.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "B9": {
+    "Row": 9,
+    "Column": 2,
+    "Value": "31.99",
+    "Formula": "31.99",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "C9": {
+    "Row": 9,
+    "Column": 3,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "D9": {
+    "Row": 9,
+    "Column": 4,
+    "Value": "32.15",
+    "Formula": "32.15",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "E9": {
+    "Row": 9,
+    "Column": 5,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "F9": {
+    "Row": 9,
+    "Column": 6,
+    "Value": "31.99",
+    "Formula": "31.99",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "G9": {
+    "Row": 9,
+    "Column": 7,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "H9": {
+    "Row": 9,
+    "Column": 8,
+    "Value": "32.15",
+    "Formula": "32.15",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "I9": {
+    "Row": 9,
+    "Column": 9,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "J9": {
+    "Row": 9,
+    "Column": 10,
+    "Value": "32.15",
+    "Formula": "32.15",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "K9": {
+    "Row": 9,
+    "Column": 11,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 11.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "L9": {
+    "Row": 9,
+    "Column": 12,
+    "Value": "32.15",
+    "Formula": "32.15",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "A10": {
+    "Row": 10,
+    "Column": 1,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 11.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "B10": {
+    "Row": 10,
+    "Column": 2,
+    "Value": "12095769.280903",
+    "Formula": "=SUM(B8*B9)",
+    "Type": "formula",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "C10": {
+    "Row": 10,
+    "Column": 3,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "D10": {
+    "Row": 10,
+    "Column": 4,
+    "Value": "12156267.032855",
+    "Formula": "=SUM(D8*D9)",
+    "Type": "formula",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "E10": {
+    "Row": 10,
+    "Column": 5,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "F10": {
+    "Row": 10,
+    "Column": 6,
+    "Value": "12176813.87615",
+    "Formula": "=SUM(F8*F9)",
+    "Type": "formula",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "G10": {
+    "Row": 10,
+    "Column": 7,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "H10": {
+    "Row": 10,
+    "Column": 8,
+    "Value": "12237716.97775",
+    "Formula": "=SUM(H8*H9)",
+    "Type": "formula",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "I10": {
+    "Row": 10,
+    "Column": 9,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "J10": {
+    "Row": 10,
+    "Column": 10,
+    "Value": "176843.750523",
+    "Formula": "=SUM(J8*J9)",
+    "Type": "formula",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "K10": {
+    "Row": 10,
+    "Column": 11,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 11.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "L10": {
+    "Row": 10,
+    "Column": 12,
+    "Value": "178285.5214525",
+    "Formula": "=SUM(L8*L9)",
+    "Type": "formula",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "A11": {
+    "Row": 11,
+    "Column": 1,
+    "Value": "C.DUTY",
+    "Formula": "C.DUTY",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFD966",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "B11": {
+    "Row": 11,
+    "Column": 2,
+    "Value": "731860.8",
+    "Formula": "=RTD(\"thecalcify\", ,\"CDUTY\",\"High\")",
+    "Type": "rtd",
+    "Symbol": "CDUTY",
+    "Field": "High",
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "C11": {
+    "Row": 11,
+    "Column": 3,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "D11": {
+    "Row": 11,
+    "Column": 4,
+    "Value": "731860.8",
+    "Formula": "=RTD(\"thecalcify\", ,\"CDUTY\",\"High\")",
+    "Type": "rtd",
+    "Symbol": "CDUTY",
+    "Field": "High",
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "E11": {
+    "Row": 11,
+    "Column": 5,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "F11": {
+    "Row": 11,
+    "Column": 6,
+    "Value": "731860.8",
+    "Formula": "=RTD(\"thecalcify\", ,\"CDUTY\",\"High\")",
+    "Type": "rtd",
+    "Symbol": "CDUTY",
+    "Field": "High",
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "G11": {
+    "Row": 11,
+    "Column": 7,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "H11": {
+    "Row": 11,
+    "Column": 8,
+    "Value": "731860.8",
+    "Formula": "=RTD(\"thecalcify\", ,\"CDUTY\",\"High\")",
+    "Type": "rtd",
+    "Symbol": "CDUTY",
+    "Field": "High",
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "I11": {
+    "Row": 11,
+    "Column": 9,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "J11": {
+    "Row": 11,
+    "Column": 10,
+    "Value": "9438.59",
+    "Formula": "=RTD(\"thecalcify\", ,\"CDUTY\",\"Low\")",
+    "Type": "rtd",
+    "Symbol": "CDUTY",
+    "Field": "Low",
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "K11": {
+    "Row": 11,
+    "Column": 11,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "L11": {
+    "Row": 11,
+    "Column": 12,
+    "Value": "9438.59",
+    "Formula": "=RTD(\"thecalcify\", ,\"CDUTY\",\"Low\")",
+    "Type": "rtd",
+    "Symbol": "CDUTY",
+    "Field": "Low",
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "A12": {
+    "Row": 12,
+    "Column": 1,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 11.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "B12": {
+    "Row": 12,
+    "Column": 2,
+    "Value": "12827630.080903",
+    "Formula": "=SUM(B10+B11)",
+    "Type": "formula",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "C12": {
+    "Row": 12,
+    "Column": 3,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "D12": {
+    "Row": 12,
+    "Column": 4,
+    "Value": "12888127.832855",
+    "Formula": "=SUM(D10+D11)",
+    "Type": "formula",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "E12": {
+    "Row": 12,
+    "Column": 5,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "F12": {
+    "Row": 12,
+    "Column": 6,
+    "Value": "12908674.67615",
+    "Formula": "=SUM(F10+F11)",
+    "Type": "formula",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "G12": {
+    "Row": 12,
+    "Column": 7,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "H12": {
+    "Row": 12,
+    "Column": 8,
+    "Value": "12969577.77775",
+    "Formula": "=SUM(H10+H11)",
+    "Type": "formula",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "I12": {
+    "Row": 12,
+    "Column": 9,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "J12": {
+    "Row": 12,
+    "Column": 10,
+    "Value": "186282.340523",
+    "Formula": "=SUM(J10+J11)",
+    "Type": "formula",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "K12": {
+    "Row": 12,
+    "Column": 11,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 11.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "L12": {
+    "Row": 12,
+    "Column": 12,
+    "Value": "187724.1114525",
+    "Formula": "=SUM(L10+L11)",
+    "Type": "formula",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "A13": {
+    "Row": 13,
+    "Column": 1,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 11.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "B13": {
+    "Row": 13,
+    "Column": 2,
+    "Value": "100",
+    "Formula": "100",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "C13": {
+    "Row": 13,
+    "Column": 3,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "D13": {
+    "Row": 13,
+    "Column": 4,
+    "Value": "100",
+    "Formula": "100",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "E13": {
+    "Row": 13,
+    "Column": 5,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "F13": {
+    "Row": 13,
+    "Column": 6,
+    "Value": "100",
+    "Formula": "100",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "G13": {
+    "Row": 13,
+    "Column": 7,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "H13": {
+    "Row": 13,
+    "Column": 8,
+    "Value": "100",
+    "Formula": "100",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "I13": {
+    "Row": 13,
+    "Column": 9,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "J13": {
+    "Row": 13,
+    "Column": 10,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 11.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "K13": {
+    "Row": 13,
+    "Column": 11,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 11.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "L13": {
+    "Row": 13,
+    "Column": 12,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 11.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "A14": {
+    "Row": 14,
+    "Column": 1,
+    "Value": "SPOT COSTING",
+    "Formula": "SPOT COSTING",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFD966",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "B14": {
+    "Row": 14,
+    "Column": 2,
+    "Value": "128276.30080903",
+    "Formula": "=SUM(B12/B13)",
+    "Type": "formula",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": true,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFF00",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "C14": {
+    "Row": 14,
+    "Column": 3,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "D14": {
+    "Row": 14,
+    "Column": 4,
+    "Value": "128881.27832855",
+    "Formula": "=SUM(D12/D13)",
+    "Type": "formula",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": true,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFF00",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "E14": {
+    "Row": 14,
+    "Column": 5,
+    "Value": "COMEX COSTING",
+    "Formula": "COMEX COSTING",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFD966",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "F14": {
+    "Row": 14,
+    "Column": 6,
+    "Value": "129086.7467615",
+    "Formula": "=SUM(F12/F13)",
+    "Type": "formula",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": true,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFF00",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "G14": {
+    "Row": 14,
+    "Column": 7,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "H14": {
+    "Row": 14,
+    "Column": 8,
+    "Value": "129695.7777775",
+    "Formula": "=SUM(H12/H13)",
+    "Type": "formula",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": true,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFF00",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "I14": {
+    "Row": 14,
+    "Column": 9,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "J14": {
+    "Row": 14,
+    "Column": 10,
+    "Value": "186282.340523",
+    "Formula": "=J12",
+    "Type": "formula",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": true,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFF00",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "K14": {
+    "Row": 14,
+    "Column": 11,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "L14": {
+    "Row": 14,
+    "Column": 12,
+    "Value": "187724.1114525",
+    "Formula": "=L12",
+    "Type": "formula",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": true,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFF00",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "A15": {
+    "Row": 15,
+    "Column": 1,
+    "Value": "FUTURE",
+    "Formula": "FUTURE",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFD966",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "B15": {
+    "Row": 15,
+    "Column": 2,
+    "Value": "130140",
+    "Formula": "=RTD(\"thecalcify\", ,\"GOLDFUTURE_I\",\"Ask\")",
+    "Type": "rtd",
+    "Symbol": "GOLDFUTURE_I",
+    "Field": "Ask",
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 16.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "C15": {
+    "Row": 15,
+    "Column": 3,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 16.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "D15": {
+    "Row": 15,
+    "Column": 4,
+    "Value": "130140",
+    "Formula": "=RTD(\"thecalcify\", ,\"GOLDFUTURE_I\",\"Ask\")",
+    "Type": "rtd",
+    "Symbol": "GOLDFUTURE_I",
+    "Field": "Ask",
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 16.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "E15": {
+    "Row": 15,
+    "Column": 5,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 16.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "F15": {
+    "Row": 15,
+    "Column": 6,
+    "Value": "130140",
+    "Formula": "=RTD(\"thecalcify\", ,\"GOLDFUTURE_I\",\"Ask\")",
+    "Type": "rtd",
+    "Symbol": "GOLDFUTURE_I",
+    "Field": "Ask",
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 16.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "G15": {
+    "Row": 15,
+    "Column": 7,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 16.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "H15": {
+    "Row": 15,
+    "Column": 8,
+    "Value": "130140",
+    "Formula": "=RTD(\"thecalcify\", ,\"GOLDFUTURE_I\",\"Ask\")",
+    "Type": "rtd",
+    "Symbol": "GOLDFUTURE_I",
+    "Field": "Ask",
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 16.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "I15": {
+    "Row": 15,
+    "Column": 9,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "J15": {
+    "Row": 15,
+    "Column": 10,
+    "Value": "190550",
+    "Formula": "=RTD(\"thecalcify\", ,\"SILVERFUTURE_I\",\"Ask\")",
+    "Type": "rtd",
+    "Symbol": "SILVERFUTURE_I",
+    "Field": "Ask",
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "K15": {
+    "Row": 15,
+    "Column": 11,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "L15": {
+    "Row": 15,
+    "Column": 12,
+    "Value": "190550",
+    "Formula": "=RTD(\"thecalcify\", ,\"SILVERFUTURE_I\",\"Ask\")",
+    "Type": "rtd",
+    "Symbol": "SILVERFUTURE_I",
+    "Field": "Ask",
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "A16": {
+    "Row": 16,
+    "Column": 1,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 11.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "B16": {
+    "Row": 16,
+    "Column": 2,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "C16": {
+    "Row": 16,
+    "Column": 3,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "D16": {
+    "Row": 16,
+    "Column": 4,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "E16": {
+    "Row": 16,
+    "Column": 5,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "F16": {
+    "Row": 16,
+    "Column": 6,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "G16": {
+    "Row": 16,
+    "Column": 7,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "H16": {
+    "Row": 16,
+    "Column": 8,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "I16": {
+    "Row": 16,
+    "Column": 9,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "J16": {
+    "Row": 16,
+    "Column": 10,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 11.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "K16": {
+    "Row": 16,
+    "Column": 11,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 11.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "L16": {
+    "Row": 16,
+    "Column": 12,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 11.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "A17": {
+    "Row": 17,
+    "Column": 1,
+    "Value": "SPOT-FUTURE",
+    "Formula": "SPOT-FUTURE",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFD966",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "B17": {
+    "Row": 17,
+    "Column": 2,
+    "Value": "-1863.69919096999",
+    "Formula": "=SUM(B14-B15)",
+    "Type": "formula",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": true,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#B4C6E7",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "C17": {
+    "Row": 17,
+    "Column": 3,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "D17": {
+    "Row": 17,
+    "Column": 4,
+    "Value": "-1258.72167145",
+    "Formula": "=SUM(D14-D15)",
+    "Type": "formula",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": true,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#B4C6E7",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "E17": {
+    "Row": 17,
+    "Column": 5,
+    "Value": "COMEX -FUTURE",
+    "Formula": "COMEX -FUTURE",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFD966",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "F17": {
+    "Row": 17,
+    "Column": 6,
+    "Value": "-1053.25323850001",
+    "Formula": "=SUM(F14-F15)",
+    "Type": "formula",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": true,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#B4C6E7",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "G17": {
+    "Row": 17,
+    "Column": 7,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "H17": {
+    "Row": 17,
+    "Column": 8,
+    "Value": "-444.222222500001",
+    "Formula": "=SUM(H14-H15)",
+    "Type": "formula",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": true,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#B4C6E7",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "I17": {
+    "Row": 17,
+    "Column": 9,
+    "Value": "SPOT-FUTURE",
+    "Formula": "SPOT-FUTURE",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFD966",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "J17": {
+    "Row": 17,
+    "Column": 10,
+    "Value": "-4267.65947700001",
+    "Formula": "=SUM(J14-J15)",
+    "Type": "formula",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": true,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#B4C6E7",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "K17": {
+    "Row": 17,
+    "Column": 11,
+    "Value": "COMEX -FUTURE",
+    "Formula": "COMEX -FUTURE",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFD966",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "L17": {
+    "Row": 17,
+    "Column": 12,
+    "Value": "-2825.88854750001",
+    "Formula": "=SUM(L14-L15)",
+    "Type": "formula",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": true,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#B4C6E7",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "A18": {
+    "Row": 18,
+    "Column": 1,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "B18": {
+    "Row": 18,
+    "Column": 2,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "C18": {
+    "Row": 18,
+    "Column": 3,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "D18": {
+    "Row": 18,
+    "Column": 4,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "E18": {
+    "Row": 18,
+    "Column": 5,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "F18": {
+    "Row": 18,
+    "Column": 6,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "G18": {
+    "Row": 18,
+    "Column": 7,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "H18": {
+    "Row": 18,
+    "Column": 8,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "I18": {
+    "Row": 18,
+    "Column": 9,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "J18": {
+    "Row": 18,
+    "Column": 10,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "K18": {
+    "Row": 18,
+    "Column": 11,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "L18": {
+    "Row": 18,
+    "Column": 12,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "A19": {
+    "Row": 19,
+    "Column": 1,
+    "Value": "FUTURE -SPOT",
+    "Formula": "FUTURE -SPOT",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFD966",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "B19": {
+    "Row": 19,
+    "Column": 2,
+    "Value": "1863.69919096999",
+    "Formula": "=SUM(B15-B14)",
+    "Type": "formula",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": true,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#B4C6E7",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "C19": {
+    "Row": 19,
+    "Column": 3,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "D19": {
+    "Row": 19,
+    "Column": 4,
+    "Value": "1258.72167145",
+    "Formula": "=SUM(D15-D14)",
+    "Type": "formula",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": true,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#B4C6E7",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "E19": {
+    "Row": 19,
+    "Column": 5,
+    "Value": "FUTURE -COMEX",
+    "Formula": "FUTURE -COMEX",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFD966",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "F19": {
+    "Row": 19,
+    "Column": 6,
+    "Value": "1053.25323850001",
+    "Formula": "=SUM(F15-F14)",
+    "Type": "formula",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": true,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#B4C6E7",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "G19": {
+    "Row": 19,
+    "Column": 7,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "H19": {
+    "Row": 19,
+    "Column": 8,
+    "Value": "444.222222500001",
+    "Formula": "=SUM(H15-H14)",
+    "Type": "formula",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": true,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#B4C6E7",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "I19": {
+    "Row": 19,
+    "Column": 9,
+    "Value": "FUTURE -SPOT",
+    "Formula": "FUTURE -SPOT",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFD966",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "J19": {
+    "Row": 19,
+    "Column": 10,
+    "Value": "4267.65947700001",
+    "Formula": "=SUM(J15-J14)",
+    "Type": "formula",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": true,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#B4C6E7",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "K19": {
+    "Row": 19,
+    "Column": 11,
+    "Value": "FUTURE -COMEX",
+    "Formula": "FUTURE -COMEX",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFD966",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "L19": {
+    "Row": 19,
+    "Column": 12,
+    "Value": "2825.88854750001",
+    "Formula": "=SUM(L15-L14)",
+    "Type": "formula",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": true,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#B4C6E7",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "A20": {
+    "Row": 20,
+    "Column": 1,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "B20": {
+    "Row": 20,
+    "Column": 2,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "C20": {
+    "Row": 20,
+    "Column": 3,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "D20": {
+    "Row": 20,
+    "Column": 4,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "E20": {
+    "Row": 20,
+    "Column": 5,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "F20": {
+    "Row": 20,
+    "Column": 6,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "G20": {
+    "Row": 20,
+    "Column": 7,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "H20": {
+    "Row": 20,
+    "Column": 8,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "I20": {
+    "Row": 20,
+    "Column": 9,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 11.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "J20": {
+    "Row": 20,
+    "Column": 10,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 11.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "K20": {
+    "Row": 20,
+    "Column": 11,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 11.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "L20": {
+    "Row": 20,
+    "Column": 12,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 11.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "A21": {
+    "Row": 21,
+    "Column": 1,
+    "Value": "SPOT",
+    "Formula": "SPOT",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFD966",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "B21": {
+    "Row": 21,
+    "Column": 2,
+    "Value": "Diff 995/999",
+    "Formula": "Diff 995/999",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFD966",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "C21": {
+    "Row": 21,
+    "Column": 3,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "D21": {
+    "Row": 21,
+    "Column": 4,
+    "Value": "-604.977519519991",
+    "Formula": "=SUM(B14-D14)",
+    "Type": "formula",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": true,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFC000",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "E21": {
+    "Row": 21,
+    "Column": 5,
+    "Value": "COMEX",
+    "Formula": "COMEX",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFD966",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "F21": {
+    "Row": 21,
+    "Column": 6,
+    "Value": "Diff 995/999",
+    "Formula": "Diff 995/999",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFD966",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "G21": {
+    "Row": 21,
+    "Column": 7,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "H21": {
+    "Row": 21,
+    "Column": 8,
+    "Value": "-609.031016000008",
+    "Formula": "=SUM(F14-H14)",
+    "Type": "formula",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": true,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFC000",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "I21": {
+    "Row": 21,
+    "Column": 9,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 11.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "J21": {
+    "Row": 21,
+    "Column": 10,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 11.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "K21": {
+    "Row": 21,
+    "Column": 11,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 11.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "L21": {
+    "Row": 21,
+    "Column": 12,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 11.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "A22": {
+    "Row": 22,
+    "Column": 1,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "B22": {
+    "Row": 22,
+    "Column": 2,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "C22": {
+    "Row": 22,
+    "Column": 3,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "D22": {
+    "Row": 22,
+    "Column": 4,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "E22": {
+    "Row": 22,
+    "Column": 5,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "F22": {
+    "Row": 22,
+    "Column": 6,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "G22": {
+    "Row": 22,
+    "Column": 7,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "H22": {
+    "Row": 22,
+    "Column": 8,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "I22": {
+    "Row": 22,
+    "Column": 9,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 11.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "J22": {
+    "Row": 22,
+    "Column": 10,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 11.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "K22": {
+    "Row": 22,
+    "Column": 11,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 11.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "L22": {
+    "Row": 22,
+    "Column": 12,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 11.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "A23": {
+    "Row": 23,
+    "Column": 1,
+    "Value": "SPOT-COMEX",
+    "Formula": "SPOT-COMEX",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFD966",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "B23": {
+    "Row": 23,
+    "Column": 2,
+    "Value": "Diff 995/995",
+    "Formula": "Diff 995/995",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFD966",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "C23": {
+    "Row": 23,
+    "Column": 3,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "D23": {
+    "Row": 23,
+    "Column": 4,
+    "Value": "-810.445952469978",
+    "Formula": "=SUM(B14-F14)",
+    "Type": "formula",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": true,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#92D050",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "E23": {
+    "Row": 23,
+    "Column": 5,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "F23": {
+    "Row": 23,
+    "Column": 6,
+    "Value": "Diff 999/999",
+    "Formula": "Diff 999/999",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFD966",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "G23": {
+    "Row": 23,
+    "Column": 7,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "H23": {
+    "Row": 23,
+    "Column": 8,
+    "Value": "-814.499448949995",
+    "Formula": "=SUM(D14-H14)",
+    "Type": "formula",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": true,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#92D050",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "I23": {
+    "Row": 23,
+    "Column": 9,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 11.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "J23": {
+    "Row": 23,
+    "Column": 10,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 11.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "K23": {
+    "Row": 23,
+    "Column": 11,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 11.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "L23": {
+    "Row": 23,
+    "Column": 12,
+    "Value": "-1441.77092949999",
+    "Formula": "=SUM(J14-L14)",
+    "Type": "formula",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": true,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#92D050",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "A24": {
+    "Row": 24,
+    "Column": 1,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "B24": {
+    "Row": 24,
+    "Column": 2,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "C24": {
+    "Row": 24,
+    "Column": 3,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "D24": {
+    "Row": 24,
+    "Column": 4,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "E24": {
+    "Row": 24,
+    "Column": 5,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "F24": {
+    "Row": 24,
+    "Column": 6,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "G24": {
+    "Row": 24,
+    "Column": 7,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "H24": {
+    "Row": 24,
+    "Column": 8,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "I24": {
+    "Row": 24,
+    "Column": 9,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 11.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "J24": {
+    "Row": 24,
+    "Column": 10,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 11.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "K24": {
+    "Row": 24,
+    "Column": 11,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 11.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "L24": {
+    "Row": 24,
+    "Column": 12,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "A25": {
+    "Row": 25,
+    "Column": 1,
+    "Value": "COMEX-SPOT",
+    "Formula": "COMEX-SPOT",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFD966",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "B25": {
+    "Row": 25,
+    "Column": 2,
+    "Value": "Diff 995/995",
+    "Formula": "Diff 995/995",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFD966",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "C25": {
+    "Row": 25,
+    "Column": 3,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "D25": {
+    "Row": 25,
+    "Column": 4,
+    "Value": "810.445952469978",
+    "Formula": "=SUM(F14-B14)",
+    "Type": "formula",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": true,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#F4B084",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "E25": {
+    "Row": 25,
+    "Column": 5,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "F25": {
+    "Row": 25,
+    "Column": 6,
+    "Value": "Diff 999/999",
+    "Formula": "Diff 999/999",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFD966",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "G25": {
+    "Row": 25,
+    "Column": 7,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "H25": {
+    "Row": 25,
+    "Column": 8,
+    "Value": "814.499448949995",
+    "Formula": "=SUM(H14-D14)",
+    "Type": "formula",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": true,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#92D050",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "I25": {
+    "Row": 25,
+    "Column": 9,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 11.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "J25": {
+    "Row": 25,
+    "Column": 10,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 11.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "K25": {
+    "Row": 25,
+    "Column": 11,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 11.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "L25": {
+    "Row": 25,
+    "Column": 12,
+    "Value": "1441.77092949999",
+    "Formula": "=SUM(L14-J14)",
+    "Type": "formula",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": true,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#F4B084",
+      "NumberFormat": "#,##0.00",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "A26": {
+    "Row": 26,
+    "Column": 1,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 11.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "B26": {
+    "Row": 26,
+    "Column": 2,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 11.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "C26": {
+    "Row": 26,
+    "Column": 3,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 11.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "D26": {
+    "Row": 26,
+    "Column": 4,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 11.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "E26": {
+    "Row": 26,
+    "Column": 5,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 11.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "F26": {
+    "Row": 26,
+    "Column": 6,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 11.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "G26": {
+    "Row": 26,
+    "Column": 7,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 11.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "H26": {
+    "Row": 26,
+    "Column": 8,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 14.0,
+      "Bold": true,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "Center",
+      "VerticalAlign": "Center"
+    }
+  },
+  "I26": {
+    "Row": 26,
+    "Column": 9,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 11.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "J26": {
+    "Row": 26,
+    "Column": 10,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 11.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "K26": {
+    "Row": 26,
+    "Column": 11,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 11.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  },
+  "L26": {
+    "Row": 26,
+    "Column": 12,
+    "Value": null,
+    "Formula": "",
+    "Type": "static",
+    "Symbol": null,
+    "Field": null,
+    "Format": {
+      "FontName": "Calibri",
+      "FontSize": 11.0,
+      "Bold": false,
+      "Italic": false,
+      "FontColor": "#000000",
+      "BackgroundColor": "#FFFFFF",
+      "NumberFormat": "General",
+      "HorizontalAlign": "1",
+      "VerticalAlign": "Bottom"
+    }
+  }
+}

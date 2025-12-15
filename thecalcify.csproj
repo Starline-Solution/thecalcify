@@ -85,6 +85,12 @@
     <Compile Include="Alert\AlertPopup.Designer.cs">
       <DependentUpon>AlertPopup.cs</DependentUpon>
     </Compile>
+    <Compile Include="Excel Helper\UserExcelExportForm.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Excel Helper\UserExcelExportForm.Designer.cs">
+      <DependentUpon>UserExcelExportForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Helper\About.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -165,6 +171,9 @@
     <EmbeddedResource Include="Alert\AlertPopup.resx">
       <DependentUpon>AlertPopup.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Excel Helper\UserExcelExportForm.resx">
+      <DependentUpon>UserExcelExportForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Helper\About.resx">
       <DependentUpon>About.cs</DependentUpon>
     </EmbeddedResource>
@@ -204,6 +213,7 @@
       <DesignTime>True</DesignTime>
     </Compile>
     <None Include="app.manifest" />
+    <None Include="excel_model.json" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -248,6 +258,10 @@
     <None Include="Resources\Starline Solution.png" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="thecalcify Update Agent\thecalcify Update Service.csproj">
+      <Project>{8d7c34c3-931c-4a1a-9d9c-1b9c44400be2}</Project>
+      <Name>thecalcify Update Service</Name>
+    </ProjectReference>
     <ProjectReference Include="thecalcify.Shared\thecalcify.Shared.csproj">
       <Project>{9c94e29f-d5ee-4604-bea6-0c4d67f0b50b}</Project>
       <Name>thecalcify.Shared</Name>

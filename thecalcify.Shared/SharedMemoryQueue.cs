@@ -92,7 +92,7 @@ namespace thecalcify.Shared
             _accessor.Write(4, 0); // tail
         }
 
-        
+
         public bool Write(byte[] data)
         {
             EnsureNotDisposed();
@@ -101,24 +101,30 @@ namespace thecalcify.Shared
                 return false;
 
             if (data.Length > SLOT_SIZE - 4)
-                return false;
+                return false; // too large for slot
 
             int head = _accessor.ReadInt32(0);
             int tail = _accessor.ReadInt32(4);
 
             int nextTail = (tail + 1) % SLOT_COUNT;
+
+            // ------------------------------------------
+            // 💥 DROP OLDEST IF QUEUE IS FULL
+            // ------------------------------------------
             if (nextTail == head)
             {
-                // full
-                return false;
+                // Queue full → advance head (drop oldest)
+                head = (head + 1) % SLOT_COUNT;
+                _accessor.Write(0, head);
             }
 
+            // Write data to slot
             long offset = HEADER_SIZE + (long)tail * SLOT_SIZE;
 
             _accessor.Write(offset, data.Length);
             _accessor.WriteArray(offset + 4, data, 0, data.Length);
 
-            // publish new tail
+            // Publish new tail
             _accessor.Write(4, nextTail);
 
             return true;
