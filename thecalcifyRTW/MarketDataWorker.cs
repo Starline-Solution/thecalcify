@@ -28,12 +28,13 @@ namespace thecalcifyRTW
             new ConcurrentDictionary<string, byte[]>(StringComparer.OrdinalIgnoreCase);
 
         // Producer → Consumer internal channel
-        private readonly Channel<string> _incomingChannel =
-            Channel.CreateUnbounded<string>(
-                new UnboundedChannelOptions
+        private readonly Channel<string> _incomingChannel = 
+            Channel.CreateBounded<string>(
+                new BoundedChannelOptions(1000)
                 {
                     SingleWriter = false,
-                    SingleReader = true
+                    SingleReader = true,
+                    FullMode = BoundedChannelFullMode.DropOldest
                 });
 
         private SharedMemoryQueue _queue;

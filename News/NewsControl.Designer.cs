@@ -288,7 +288,6 @@ namespace thecalcify.News
             this.tocalender.TabIndex = 12;
             this.tocalender.Visible = false;
             this.tocalender.DateSelected += new System.Windows.Forms.DateRangeEventHandler(this.tocalender_DateSelected);
-            this.tocalender.Leave += new System.EventHandler(this.tocalender_LostFocus);
             // 
             // btnRefresh
             // 
@@ -347,8 +346,6 @@ namespace thecalcify.News
             this.fromcalender.TabIndex = 10;
             this.fromcalender.Visible = false;
             this.fromcalender.DateSelected += new System.Windows.Forms.DateRangeEventHandler(this.fromcalender_DateSelected);
-            this.fromcalender.Leave += new System.EventHandler(this.fromcalender_LostFocus);
-            this.fromcalender.MouseDown += new System.Windows.Forms.MouseEventHandler(this.fromcalender_LostFocus);
             // 
             // pnlBottom
             // 
@@ -426,7 +423,6 @@ namespace thecalcify.News
             this.pnlTop.PerformLayout();
             this.pnlBottom.ResumeLayout(false);
             this.ResumeLayout(false);
-
         }
 
         #endregion

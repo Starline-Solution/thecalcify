@@ -65,6 +65,7 @@ namespace thecalcify
             this.newCTRLNToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.viewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.exportWorksheetsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.newsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.newswatchListToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.newsListToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -264,7 +265,8 @@ namespace thecalcify
             this.newCTRLNToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.newCTRLNToolStripMenuItem1,
             this.viewToolStripMenuItem,
-            this.deleteToolStripMenuItem});
+            this.deleteToolStripMenuItem,
+            this.exportWorksheetsToolStripMenuItem});
             this.newCTRLNToolStripMenuItem.Name = "newCTRLNToolStripMenuItem";
             this.newCTRLNToolStripMenuItem.Size = new System.Drawing.Size(127, 24);
             this.newCTRLNToolStripMenuItem.Text = "Market Watch";
@@ -272,22 +274,29 @@ namespace thecalcify
             // newCTRLNToolStripMenuItem1
             // 
             this.newCTRLNToolStripMenuItem1.Name = "newCTRLNToolStripMenuItem1";
-            this.newCTRLNToolStripMenuItem1.Size = new System.Drawing.Size(233, 26);
+            this.newCTRLNToolStripMenuItem1.Size = new System.Drawing.Size(234, 26);
             this.newCTRLNToolStripMenuItem1.Text = "New      (CTRL+N)";
             this.newCTRLNToolStripMenuItem1.Click += new System.EventHandler(this.NewCTRLNToolStripMenuItem1_Click);
             // 
             // viewToolStripMenuItem
             // 
             this.viewToolStripMenuItem.Name = "viewToolStripMenuItem";
-            this.viewToolStripMenuItem.Size = new System.Drawing.Size(233, 26);
+            this.viewToolStripMenuItem.Size = new System.Drawing.Size(234, 26);
             this.viewToolStripMenuItem.Text = "View";
             // 
             // deleteToolStripMenuItem
             // 
             this.deleteToolStripMenuItem.Name = "deleteToolStripMenuItem";
-            this.deleteToolStripMenuItem.Size = new System.Drawing.Size(233, 26);
+            this.deleteToolStripMenuItem.Size = new System.Drawing.Size(234, 26);
             this.deleteToolStripMenuItem.Text = "Delete";
             this.deleteToolStripMenuItem.Click += new System.EventHandler(this.DeleteToolStripMenuItem_Click);
+            // 
+            // exportWorksheetsToolStripMenuItem
+            // 
+            this.exportWorksheetsToolStripMenuItem.Name = "exportWorksheetsToolStripMenuItem";
+            this.exportWorksheetsToolStripMenuItem.Size = new System.Drawing.Size(234, 26);
+            this.exportWorksheetsToolStripMenuItem.Text = "Export Worksheets";
+            this.exportWorksheetsToolStripMenuItem.Click += new System.EventHandler(this.exportWorksheetsToolStripMenuItem_Click);
             // 
             // newsToolStripMenuItem
             // 
@@ -787,5 +796,6 @@ namespace thecalcify
         private ToolStripMenuItem newsListToolStripMenuItem;
         private ToolStripMenuItem newsHistoryToolStripMenuItem;
         private ToolStripMenuItem copyRowToolStripMenuItem;
+        private ToolStripMenuItem exportWorksheetsToolStripMenuItem;
     }
 }
