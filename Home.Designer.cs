@@ -154,42 +154,42 @@ namespace thecalcify
             this.clearExcelToolStripMenuItem,
             this.copyRowToolStripMenuItem});
             this.Tools.Name = "ClickMenuStrip";
-            this.Tools.Size = new System.Drawing.Size(200, 124);
+            this.Tools.Size = new System.Drawing.Size(225, 124);
             // 
             // ExportToExcelToolStripMenuItem
             // 
             this.ExportToExcelToolStripMenuItem.Name = "ExportToExcelToolStripMenuItem";
-            this.ExportToExcelToolStripMenuItem.Size = new System.Drawing.Size(199, 24);
-            this.ExportToExcelToolStripMenuItem.Text = "Export To Excel";
+            this.ExportToExcelToolStripMenuItem.Size = new System.Drawing.Size(224, 24);
+            this.ExportToExcelToolStripMenuItem.Text = "📗 Export To Excel";
             this.ExportToExcelToolStripMenuItem.Click += new System.EventHandler(this.ExportToExcelToolStripMenuItem_Click);
             // 
             // addEditSymbolsToolStripMenuItem
             // 
             this.addEditSymbolsToolStripMenuItem.Enabled = false;
             this.addEditSymbolsToolStripMenuItem.Name = "addEditSymbolsToolStripMenuItem";
-            this.addEditSymbolsToolStripMenuItem.Size = new System.Drawing.Size(199, 24);
-            this.addEditSymbolsToolStripMenuItem.Text = "Add/Edit Symbols";
+            this.addEditSymbolsToolStripMenuItem.Size = new System.Drawing.Size(224, 24);
+            this.addEditSymbolsToolStripMenuItem.Text = "🏷️ Add/Edit Symbols";
             this.addEditSymbolsToolStripMenuItem.Click += new System.EventHandler(this.AddEditSymbolsToolStripMenuItem_Click);
             // 
             // addEditColumnsToolStripMenuItem
             // 
             this.addEditColumnsToolStripMenuItem.Name = "addEditColumnsToolStripMenuItem";
-            this.addEditColumnsToolStripMenuItem.Size = new System.Drawing.Size(199, 24);
-            this.addEditColumnsToolStripMenuItem.Text = "Add/Edit Columns";
+            this.addEditColumnsToolStripMenuItem.Size = new System.Drawing.Size(224, 24);
+            this.addEditColumnsToolStripMenuItem.Text = "✍️ Add/Edit Columns";
             this.addEditColumnsToolStripMenuItem.Click += new System.EventHandler(this.AddEditColumnsToolStripMenuItem_Click);
             // 
             // clearExcelToolStripMenuItem
             // 
             this.clearExcelToolStripMenuItem.Name = "clearExcelToolStripMenuItem";
-            this.clearExcelToolStripMenuItem.Size = new System.Drawing.Size(199, 24);
-            this.clearExcelToolStripMenuItem.Text = "Clear Excel";
+            this.clearExcelToolStripMenuItem.Size = new System.Drawing.Size(224, 24);
+            this.clearExcelToolStripMenuItem.Text = "🧹 Clear Excel";
             this.clearExcelToolStripMenuItem.Visible = false;
             // 
             // copyRowToolStripMenuItem
             // 
             this.copyRowToolStripMenuItem.Name = "copyRowToolStripMenuItem";
-            this.copyRowToolStripMenuItem.Size = new System.Drawing.Size(199, 24);
-            this.copyRowToolStripMenuItem.Text = "Copy Row";
+            this.copyRowToolStripMenuItem.Size = new System.Drawing.Size(224, 24);
+            this.copyRowToolStripMenuItem.Text = "📑 Copy Row";
             this.copyRowToolStripMenuItem.Click += new System.EventHandler(this.CopyRowToolStripMenuItem_Click);
             // 
             // menuStrip1
