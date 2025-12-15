@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DocumentFormat.OpenXml.Office.CoverPageProps;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -21,6 +22,15 @@ namespace thecalcify.Helper
              "thecalcify",
              "rtw_config.json"
          );
+
+        public static string InstallationPath => @"C:\Program Files\thecalcify\thecalcify\thecalcify.exe";
+
+        public static string SystemTempPath =>
+            Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.Windows),
+            "SystemTemp"
+        );
+
 
     }
 }

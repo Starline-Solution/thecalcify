@@ -2,11 +2,6 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.IO.Compression;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Runtime.InteropServices;
-using System.Text;
 using System.Windows.Forms;
 
 namespace thecalcify.Helper
@@ -14,185 +9,104 @@ namespace thecalcify.Helper
     public class UpdateAgent
     {
         string newInstallerPath = string.Empty;
-        string oldInstallerPath = @"C:\Program Files\thecalcify\thecalcify\thecalcify.exe";
 
-        #region New Setup Version Reader
-
-        [DllImport("msi.dll", SetLastError = true)]
-        static extern uint MsiOpenDatabase(string szDatabasePath, IntPtr phPersist, out IntPtr phDatabase);
-
-        [DllImport("msi.dll", CharSet = CharSet.Unicode)]
-        static extern int MsiDatabaseOpenViewW(IntPtr hDatabase, [MarshalAs(UnmanagedType.LPWStr)] string szQuery, out IntPtr phView);
-
-        [DllImport("msi.dll", CharSet = CharSet.Unicode)]
-        static extern int MsiViewExecute(IntPtr hView, IntPtr hRecord);
-
-        [DllImport("msi.dll", CharSet = CharSet.Unicode)]
-        static extern uint MsiViewFetch(IntPtr hView, out IntPtr hRecord);
-
-        [DllImport("msi.dll", CharSet = CharSet.Unicode)]
-        static extern int MsiRecordGetString(IntPtr hRecord, int iField, [Out] StringBuilder szValueBuf, ref int pcchValueBuf);
-
-        [DllImport("msi.dll", ExactSpelling = true)]
-        static extern uint MsiCloseHandle(IntPtr hAny);
-
-        #endregion New Setup Version Reader
-
-        string displayversion = string.Empty;
-        string currentveriosn = string.Empty;
 
         /// <summary>
         /// Create UpdateAgent Constructor
         /// </summary>
         public UpdateAgent(string token, Form ParentForm)
         {
-            SplashManager.Show(ParentForm, "Loading", "" +
-                "Working on Upgrade...");
 
             try
             {
-                string tempBasePath = Path.Combine(Path.GetTempPath(), "thecalcify");
+                string tempBasePath = Path.Combine(APIUrl.SystemTempPath, "thecalcify");
 
                 // Ensure the folder is fresh
-                if (Directory.Exists(tempBasePath))
+                bool isUpToDate = true;
+
+                if (Directory.Exists(tempBasePath) && File.Exists(Path.Combine(tempBasePath, "thecalcify.exe")))
                 {
-                    Directory.Delete(tempBasePath, true);
+                    DateTime installedModified = File.GetLastWriteTime(APIUrl.InstallationPath);
+                    DateTime installerModified = File.GetLastWriteTime(Path.Combine(tempBasePath, "thecalcify.exe"));
+
+                    if ((installerModified - installedModified).TotalMinutes > 2)
+                    {
+                        isUpToDate = false;
+                    }
                 }
 
-                Directory.CreateDirectory(tempBasePath);
+                if (isUpToDate)
+                {
+                    SplashManager.Hide();
+                    MessageBox.Show(
+                        "Application is already up to date.",
+                        "No Update Available",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information
+                    );
+                    return;
+                }
 
-                DownloadAndExtract();
+                SplashManager.Show(ParentForm, "Working On Upgrade");
+                UninstallOldVersion("thecalcify");
 
-                //string tempZipPath = Path.Combine(Path.GetTempPath(), $"update_{Guid.NewGuid()}.zip");
-
-                //using (var httpClient = new HttpClient())
+                //try
                 //{
-                //    httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
-                //    httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                //    ApplicationLogger.Log("Software is installed. Checking versions...");
+                //    ApplicationLogger.Log($"Current Version: {currentveriosn}, New Version: {displayversion}");
 
-                //    var response = httpClient.GetAsync("http://api.thecalcify.com/setup").Result;
-
-                //    if (response.IsSuccessStatusCode)
+                //    if (Version.Parse(currentveriosn) > Version.Parse(displayversion))
                 //    {
-                //        var zipBytes = response.Content.ReadAsByteArrayAsync().Result;
-                //        File.WriteAllBytes(tempZipPath, zipBytes);
+                //        // Hide the splash after UI update
+
+                //        var result = MessageBox.Show("Application Has Newer Version Want to Upgrade", "Update Version", MessageBoxButtons.OKCancel);
+                //        if (result == DialogResult.OK)
+                //        //if (SystemInformation.PowerStatus.PowerLineStatus == PowerLineStatus.Online)
+                //        //{
+                //        {
+                           
+                //        }
+                //        else
+                //            return;
                 //    }
                 //    else
                 //    {
-                //        // Hide the splash after UI update
-                //        SplashManager.Hide();
+                //        DateTime olddateModified = File.GetLastWriteTime(oldInstallerPath);
+                //        DateTime newdateModified = File.GetLastWriteTime(newInstallerPath);
 
-                //        MessageBox.Show($"You Are already to our Upgraded Version", "Version Upgrade", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                //        ApplicationLogger.Log($"Old Version Date Modified: {olddateModified} && New Version Date Modified: {newdateModified}.");
+
+                //        if (olddateModified < newdateModified)
+                //        {
+                //            // Hide the splash after UI update
+                //            SplashManager.Hide();
+
+                //            var result = MessageBox.Show("Application Has Newer Version Want to Upgrade", "Update Version", MessageBoxButtons.OKCancel);
+                //            ApplicationLogger.Log("User selected: " + result.ToString());
+
+                //            if (result == DialogResult.OK)
+                //            //if (SystemInformation.PowerStatus.PowerLineStatus == PowerLineStatus.Online)
+                //            {
+                //                SplashManager.Show(ParentForm, "Loading", "We are Upgrading Ourselves");
+                //                UninstallOldVersion("thecalcify", displayversion);
+                //                SplashManager.Hide();
+                //            }
+                //            else
+                //                return;
+                //        }
+                //        else
+                //        {
+                //            // Hide the splash after UI update
+                //            SplashManager.Hide();
+
+                //            MessageBox.Show($"You Are already to our Upgraded Version, Which is {currentveriosn}", "Version Upgrade", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                //        }
                 //    }
                 //}
-
-                // Extract to temp/thecalcify
-                //ZipFile.ExtractToDirectory(tempZipPath, tempBasePath);
-
-                // Expecting thecalcify.exe inside temp/thecalcify/setup.exe
-                string expectedExePath = Path.Combine(tempBasePath, "setup.exe");
-                string optionalExpectedExePath = Path.Combine(tempBasePath, "thecalcify.exe");
-
-                if (File.Exists(expectedExePath))
-                    newInstallerPath = expectedExePath;
-                else if (File.Exists(optionalExpectedExePath))
-                    newInstallerPath = optionalExpectedExePath;
-                else
-                    throw new FileNotFoundException("thecalcify.exe not found at expected path.");
-
-
-
-                // Read version and decide
-                SetupVersionReader(tempBasePath);
-
-                if (IsSoftwareInstalled("thecalcify"))
-                {
-                    try
-                    {
-                        ApplicationLogger.Log("Software is installed. Checking versions...");
-                        ApplicationLogger.Log($"Current Version: {currentveriosn}, New Version: {displayversion}");
-
-                        if (Version.Parse(currentveriosn) > Version.Parse(displayversion))
-                        {
-                            // Hide the splash after UI update
-                            SplashManager.Hide();
-
-                            var result = MessageBox.Show("Application Has Newer Version Want to Upgrade", "Update Version", MessageBoxButtons.OKCancel);
-                            if (result == DialogResult.OK)
-                            //if (SystemInformation.PowerStatus.PowerLineStatus == PowerLineStatus.Online)
-                            //{
-                            {
-                                SplashManager.Show(ParentForm,"Loading", "We are Upgrading Ourselves");
-                                UninstallOldVersion("thecalcify", displayversion);
-                                SplashManager.Hide();
-                            }
-                            //}
-                            //else
-                            //{
-
-                            //    MessageBox.Show(
-                            //        "The process cannot continue while the system is running on battery power.\n\nPlease connect your device to a power source and restart the process.",
-                            //        "Power Supply Disconnected",
-                            //        MessageBoxButtons.OK,
-                            //        MessageBoxIcon.Warning
-                            //    );
-                            //    return;
-                            //}
-                            else
-                                return;
-                        }
-                        else
-                        {
-                            DateTime olddateModified = File.GetLastWriteTime(oldInstallerPath);
-                            DateTime newdateModified = File.GetLastWriteTime(newInstallerPath);
-
-                            ApplicationLogger.Log($"Old Version Date Modified: {olddateModified} && New Version Date Modified: {newdateModified}.");
-
-                            if (olddateModified < newdateModified)
-                            {
-                                // Hide the splash after UI update
-                                SplashManager.Hide();
-
-                                var result = MessageBox.Show("Application Has Newer Version Want to Upgrade", "Update Version", MessageBoxButtons.OKCancel);
-                                ApplicationLogger.Log("User selected: " + result.ToString());
-
-                                if (result == DialogResult.OK)
-                                //if (SystemInformation.PowerStatus.PowerLineStatus == PowerLineStatus.Online)
-                                {
-                                    SplashManager.Show(ParentForm, "Loading", "We are Upgrading Ourselves");
-                                    UninstallOldVersion("thecalcify", displayversion);
-                                    SplashManager.Hide();
-                                }
-                                //else
-                                //{
-                                //    // Hide the splash after UI update
-                                //    SplashManager.Hide();
-
-                                //    MessageBox.Show(
-                                //        "The process cannot continue while the system is running on battery power.\n\nPlease connect your device to a power source and restart the process.",
-                                //        "Power Supply Disconnected",
-                                //        MessageBoxButtons.OK,
-                                //        MessageBoxIcon.Warning
-                                //    );
-                                //    return;
-                                //}
-                                else
-                                    return;
-                            }
-                            else
-                            {
-                                // Hide the splash after UI update
-                                SplashManager.Hide();
-
-                                MessageBox.Show($"You Are already to our Upgraded Version, Which is {currentveriosn}", "Version Upgrade", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        ApplicationLogger.LogException(ex);
-                    }
-                }
+                //catch (Exception ex)
+                //{
+                //    ApplicationLogger.LogException(ex);
+                //}
             }
             catch (Exception ex)
             {
@@ -202,202 +116,273 @@ namespace thecalcify.Helper
             }
         }
 
+        ///// <summary>
+        ///// Check For Update
+        ///// </summary>
+        //public void CheckForUpdate()
+        //{
+        //    try
+        //    {
+        //        string localExePath = @"C:\Program Files\thecalcify\thecalcify\thecalcify.exe";
 
-        public void DownloadAndExtract()
-        {
-            try
-            {
-                string baseFolder = Path.GetTempPath();
+        //        using (var httpClient = new HttpClient())
+        //        {
+        //            string filepath = APIUrl.LocalVersionPath;
+        //            // STEP 1: Read version.json
+        //            string json = httpClient.GetStringAsync(APIUrl.SetupVersionPath).Result;
 
-                // Ensure base folder exists
-                if (!Directory.Exists(baseFolder))
-                    Directory.CreateDirectory(baseFolder);
 
-                string tempZipPath = Path.Combine(baseFolder, "thecalcify.zip");
-                string extractPath = Path.Combine(baseFolder, "thecalcify");
+        //            // 3️⃣ Now safely deserialize extracted JSON
+        //            dynamic data = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
 
-                using (var httpClient = new HttpClient())
-                {
-                    Stopwatch sw = new Stopwatch();
-                    sw.Start();
 
-                    var response = httpClient.GetAsync("http://thecalcify.com/Setup/thecalcify.zip").Result;
+        //            string remoteVersion = data.version;
+        //            bool forceUpdate = data.forceUpdate;
 
-                    sw.Stop();
+        //            // STEP 2: Read local app version (based on EXE modified date)
+        //            string localVersion = "0";
+
+        //            if (File.Exists(localExePath))
+        //            {
+        //                DateTime modified = File.GetLastWriteTime(localExePath);
+        //                localVersion = modified.ToString("yyyyMMddHHmm");
+        //            }
+
+        //            string remoteComparable = remoteVersion.Replace(".", "");
+        //            string localComparable = localVersion;
+
+        //            bool updateNeeded =
+        //                forceUpdate ||
+        //                string.Compare(remoteComparable, localComparable) > 0;
+
+        //            // STEP 3: If no update needed → do nothing
+        //            if (!updateNeeded)
+        //                return;
+
+        //            SplashManager.Hide();
+
+        //            // STEP 4: Ask user for permission
+        //            DialogResult userChoice = MessageBox.Show(
+        //                "A new update is available. Do you want to update now?",
+        //                "Update Available",
+        //                MessageBoxButtons.YesNo,
+        //                MessageBoxIcon.Question);
+
+        //            if (userChoice == DialogResult.Yes)
+        //            {
+        //                // STEP 5: Call your existing download + extract method
+        //                DownloadAndExtract();
+        //            }
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        MessageBox.Show("Update check failed: " + ex.Message);
+        //    }
+        //}
+
+        ///// <summary>
+        ///// Downloads and extracts the setup files.
+        ///// </summary>
+        //public void DownloadAndExtract()
+        //{
+        //    try
+        //    {
+        //        string baseFolder = ;
+
+        //        // Ensure base folder exists
+        //        if (!Directory.Exists(baseFolder))
+        //            Directory.CreateDirectory(baseFolder);
+
+        //        string tempZipPath = Path.Combine(baseFolder, "thecalcify.zip");
+        //        string extractPath = Path.Combine(baseFolder, "thecalcify");
+
+        //        using (var httpClient = new HttpClient())
+        //        {
+        //            Stopwatch sw = new Stopwatch();
+        //            sw.Start();
+
+        //            var response = httpClient.GetAsync(APIUrl.SetupUrlPath).Result;
+
+        //            sw.Stop();
                     
-                    ApplicationLogger.Log($"Download completed in {sw.ElapsedMilliseconds} ms");
+        //            ApplicationLogger.Log($"Download completed in {sw.ElapsedMilliseconds} ms");
 
-                    if (response.IsSuccessStatusCode)
-                    {
-                        var zipBytes = response.Content.ReadAsByteArrayAsync().Result;
+        //            if (response.IsSuccessStatusCode)
+        //            {
+        //                var zipBytes = response.Content.ReadAsByteArrayAsync().Result;
 
-                        // If ZIP exists, delete it (avoids lock + access denied)
-                        if (File.Exists(tempZipPath))
-                        {
-                            File.SetAttributes(tempZipPath, FileAttributes.Normal);
-                            File.Delete(tempZipPath);
-                        }
+        //                // If ZIP exists, delete it (avoids lock + access denied)
+        //                if (File.Exists(tempZipPath))
+        //                {
+        //                    File.SetAttributes(tempZipPath, FileAttributes.Normal);
+        //                    File.Delete(tempZipPath);
+        //                }
 
-                        // Save ZIP file
-                        File.WriteAllBytes(tempZipPath, zipBytes);
+        //                // Save ZIP file
+        //                File.WriteAllBytes(tempZipPath, zipBytes);
 
-                        // Rebuild extract folder
-                        if (Directory.Exists(extractPath))
-                            Directory.Delete(extractPath, true);
+        //                // Rebuild extract folder
+        //                if (Directory.Exists(extractPath))
+        //                    Directory.Delete(extractPath, true);
 
-                        Directory.CreateDirectory(extractPath);
+        //                Directory.CreateDirectory(extractPath);
 
-                        // Extract ZIP
-                        ZipFile.ExtractToDirectory(tempZipPath, extractPath);
-                    }
-                    else
-                    {
-                        MessageBox.Show("Already updated.");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error: " + ex.Message);
-            }
-        }
+        //                // Extract ZIP
+        //                ZipFile.ExtractToDirectory(tempZipPath, extractPath);
 
+        //                newInstallerPath = extractPath;
 
-        /// <summary>
-        /// Get Msi Version
-        /// </summary>
-        /// <param name="msiPath"></param>
-        /// <returns>sb</returns>
-        /// 
-        public string GetMsiVersion(string msiPath)
-        {
-            IntPtr hDatabase = IntPtr.Zero;
-            IntPtr hView = IntPtr.Zero;
-            IntPtr hRecord = IntPtr.Zero;
+        //                UninstallOldVersion("thecalcify");
 
-            try
-            {
-                uint rc = MsiOpenDatabase(msiPath, IntPtr.Zero, out hDatabase);
-                if (rc != 0 || hDatabase == IntPtr.Zero) return null;
+        //            }
+        //            else
+        //            {
+        //                MessageBox.Show("Already updated.");
+        //            }
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        MessageBox.Show("Error: " + ex.Message);
+        //    }
+        //}
 
-                string sql = "SELECT `Value` FROM `Property` WHERE `Property`='ProductVersion'";
-                int viewRc = MsiDatabaseOpenViewW(hDatabase, sql, out hView);
-                if (viewRc != 0 || hView == IntPtr.Zero) return null;
+        ///// <summary>
+        ///// Get Msi Version
+        ///// </summary>
+        ///// <param name="msiPath"></param>
+        ///// <returns>sb</returns>
+        ///// 
+        //public string GetMsiVersion(string msiPath)
+        //{
+        //    IntPtr hDatabase = IntPtr.Zero;
+        //    IntPtr hView = IntPtr.Zero;
+        //    IntPtr hRecord = IntPtr.Zero;
 
-                int execRc = MsiViewExecute(hView, IntPtr.Zero);
-                if (execRc != 0) return null;
+        //    try
+        //    {
+        //        uint rc = MsiOpenDatabase(msiPath, IntPtr.Zero, out hDatabase);
+        //        if (rc != 0 || hDatabase == IntPtr.Zero) return null;
 
-                uint fetchRc = MsiViewFetch(hView, out hRecord);
-                if (fetchRc != 0 || hRecord == IntPtr.Zero) return null;
+        //        string sql = "SELECT `Value` FROM `Property` WHERE `Property`='ProductVersion'";
+        //        int viewRc = MsiDatabaseOpenViewW(hDatabase, sql, out hView);
+        //        if (viewRc != 0 || hView == IntPtr.Zero) return null;
 
-                // Read value (field 1 because we SELECT Value)
-                int bufSize = 256;
-                var sb = new StringBuilder(bufSize);
-                int pcch = sb.Capacity;
-                int recRc = MsiRecordGetString(hRecord, 1, sb, ref pcch);
+        //        int execRc = MsiViewExecute(hView, IntPtr.Zero);
+        //        if (execRc != 0) return null;
 
-                const int ERROR_MORE_DATA = 234;
-                if (recRc == ERROR_MORE_DATA)
-                {
-                    sb = new StringBuilder(pcch + 1);
-                    pcch = sb.Capacity;
-                    recRc = MsiRecordGetString(hRecord, 1, sb, ref pcch);
-                }
+        //        uint fetchRc = MsiViewFetch(hView, out hRecord);
+        //        if (fetchRc != 0 || hRecord == IntPtr.Zero) return null;
 
-                if (recRc != 0) return null;
-                return sb.ToString();
-            }
-            catch (Exception ex)
-            {
-                ApplicationLogger.LogException(ex);
-                return null; // Return null if exception occurs
-            }
-            finally
-            {
-                // Ensure unmanaged resources are released even if error occurs
-                if (hRecord != IntPtr.Zero) MsiCloseHandle(hRecord);
-                if (hView != IntPtr.Zero) MsiCloseHandle(hView);
-                if (hDatabase != IntPtr.Zero) MsiCloseHandle(hDatabase);
-            }
-        }
+        //        // Read value (field 1 because we SELECT Value)
+        //        int bufSize = 256;
+        //        var sb = new StringBuilder(bufSize);
+        //        int pcch = sb.Capacity;
+        //        int recRc = MsiRecordGetString(hRecord, 1, sb, ref pcch);
 
-        /// <summary>
-        /// Setup Version Reader
-        /// </summary>
-        public void SetupVersionReader(string setupFolder)
-        {
-            try
-            {
-                string msiPath = string.Empty;
-                string[] files = Directory.GetFiles(setupFolder, "*.msi", SearchOption.AllDirectories);
-                foreach (string file in files)
-                {
-                    msiPath = file;
-                }
+        //        const int ERROR_MORE_DATA = 234;
+        //        if (recRc == ERROR_MORE_DATA)
+        //        {
+        //            sb = new StringBuilder(pcch + 1);
+        //            pcch = sb.Capacity;
+        //            recRc = MsiRecordGetString(hRecord, 1, sb, ref pcch);
+        //        }
 
-                string version = GetMsiVersion(msiPath);
-                ApplicationLogger.Log($"Version {version}");
-                if (version != null)
-                {
-                    currentveriosn = version;
-                }
-            }
-            catch (Exception ex)
-            {
-                ApplicationLogger.LogException(ex);
-            }
-        }
+        //        if (recRc != 0) return null;
+        //        return sb.ToString();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        ApplicationLogger.LogException(ex);
+        //        return null; // Return null if exception occurs
+        //    }
+        //    finally
+        //    {
+        //        // Ensure unmanaged resources are released even if error occurs
+        //        if (hRecord != IntPtr.Zero) MsiCloseHandle(hRecord);
+        //        if (hView != IntPtr.Zero) MsiCloseHandle(hView);
+        //        if (hDatabase != IntPtr.Zero) MsiCloseHandle(hDatabase);
+        //    }
+        //}
 
-        /// <summary>
-        /// Check exe Installed Or Not For IsSoftwareInstalled Method
-        /// </summary>
-        /// <param name="displayName"></param>
-        /// <returns></returns>
-        public bool IsSoftwareInstalled(string displayName)
-        {
-            RegistryView[] views = new[] { RegistryView.Registry64, RegistryView.Registry32 };
-            string uninstallPath = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall";
+        ///// <summary>
+        ///// Setup Version Reader
+        ///// </summary>
+        //public void SetupVersionReader(string setupFolder)
+        //{
+        //    try
+        //    {
+        //        string msiPath = string.Empty;
+        //        string[] files = Directory.GetFiles(setupFolder, "*.msi", SearchOption.AllDirectories);
+        //        foreach (string file in files)
+        //        {
+        //            msiPath = file;
+        //        }
 
-            foreach (var view in views)
-            {
-                try
-                {
-                    using (var baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, view))
-                    using (var rk = baseKey.OpenSubKey(uninstallPath))
-                    {
-                        if (rk == null) continue;
+        //        string version = GetMsiVersion(msiPath);
+        //        ApplicationLogger.Log($"Version {version}");
+        //        if (version != null)
+        //        {
+        //            currentveriosn = version;
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        ApplicationLogger.LogException(ex);
+        //    }
+        //}
 
-                        foreach (string subKeyName in rk.GetSubKeyNames())
-                        {
-                            using (var subKey = rk.OpenSubKey(subKeyName))
-                            {
-                                string name = subKey?.GetValue("DisplayName") as string;
-                                displayversion = subKey?.GetValue("DisplayVersion") as string;
+        ///// <summary>
+        ///// Check exe Installed Or Not For IsSoftwareInstalled Method
+        ///// </summary>
+        ///// <param name="displayName"></param>
+        ///// <returns></returns>
+        //public bool IsSoftwareInstalled(string displayName)
+        //{
+        //    RegistryView[] views = new[] { RegistryView.Registry64, RegistryView.Registry32 };
+        //    string uninstallPath = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall";
 
-                                if (!string.IsNullOrEmpty(name) && name.Equals(displayName, StringComparison.OrdinalIgnoreCase))
-                                {
-                                    return true;
-                                }
-                            }
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    ApplicationLogger.Log($"Error reading registry ({view}): {ex.Message}");
-                }
-            }
+        //    foreach (var view in views)
+        //    {
+        //        try
+        //        {
+        //            using (var baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, view))
+        //            using (var rk = baseKey.OpenSubKey(uninstallPath))
+        //            {
+        //                if (rk == null) continue;
 
-            ApplicationLogger.Log("Software not found in any registry view.");
-            return false;
-        }
+        //                foreach (string subKeyName in rk.GetSubKeyNames())
+        //                {
+        //                    using (var subKey = rk.OpenSubKey(subKeyName))
+        //                    {
+        //                        string name = subKey?.GetValue("DisplayName") as string;
+        //                        displayversion = subKey?.GetValue("DisplayVersion") as string;
+
+        //                        if (!string.IsNullOrEmpty(name) && name.Equals(displayName, StringComparison.OrdinalIgnoreCase))
+        //                        {
+        //                            return true;
+        //                        }
+        //                    }
+        //                }
+        //            }
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            ApplicationLogger.Log($"Error reading registry ({view}): {ex.Message}");
+        //        }
+        //    }
+
+        //    ApplicationLogger.Log("Software not found in any registry view.");
+        //    return false;
+        //}
 
         /// <summary>
         /// Uninstall Old Version
         /// </summary>
         /// <param name="displayName"></param>
         /// <param name="displayversion"></param>
-        public void UninstallOldVersion(string displayName, string displayversion)
+        public void UninstallOldVersion(string displayName)
         {
             try
             {
@@ -422,14 +407,14 @@ namespace thecalcify.Helper
 
                                     if (!string.IsNullOrEmpty(name) && name.Equals(displayName, StringComparison.OrdinalIgnoreCase))
                                     {
-                                        ApplicationLogger.Log($"Found installed software: {name}, Version: {displayversion}");
+                                        ApplicationLogger.Log($"Found installed software: {name} ");
 
                                         if ((string.IsNullOrEmpty(uninstallString)))
                                             ApplicationLogger.Log($"Uninstalling {name}'s Uninstall String is Empty");
 
                                         uninstallString = uninstallString.Replace("MsiExec.exe /I", "MsiExec.exe /X");
                                         ApplicationLogger.Log($"Uninstalling {name}...");
-                                        CreateUninstallTask(uninstallString, Path.GetDirectoryName(newInstallerPath));
+                                        CreateUninstallTask(uninstallString);
                                         ApplicationLogger.Log("Old version uninstalled.");
                                         break;
                                     }
@@ -454,7 +439,7 @@ namespace thecalcify.Helper
         /// </summary>
         /// <param name="uninstallString"></param>
         /// <param name="tempDir"></param>
-        public void CreateUninstallTask(string uninstallString, string tempDir)
+        public void CreateUninstallTask(string uninstallString)
         {
             try
             {
@@ -511,7 +496,7 @@ namespace thecalcify.Helper
                 //    Verb = "runas", // Triggers UAC
                 //})?.WaitForExit();
 
-                string installerExe = Path.Combine(tempDir, "thecalcify.exe");
+                string installerExe = Path.Combine(APIUrl.SystemTempPath, "thecalcify", "thecalcify.exe");
                 string currentExe = @"C:\Program Files\thecalcify\thecalcify\thecalcify.exe";
 
                 // Command sequence:

@@ -256,6 +256,10 @@
     <None Include="Resources\Starline Solution.png" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="thecalcify Update Agent\thecalcify Update Service.csproj">
+      <Project>{8d7c34c3-931c-4a1a-9d9c-1b9c44400be2}</Project>
+      <Name>thecalcify Update Service</Name>
+    </ProjectReference>
     <ProjectReference Include="thecalcify.Shared\thecalcify.Shared.csproj">
       <Project>{9c94e29f-d5ee-4604-bea6-0c4d67f0b50b}</Project>
       <Name>thecalcify.Shared</Name>

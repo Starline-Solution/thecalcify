@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Web;
 using thecalcify.Helper;
 
 namespace thecalcify.CustomActions
@@ -36,13 +37,13 @@ namespace thecalcify.CustomActions
                 // Log what path was found
                 ApplicationLogger.Log($"Installing RTW service using path: {exePath}");
 
-                // Install service
-                Process.Start("sc", $"create thecalcifyRTW binPath= \"{exePath}\" start= auto")
-                    ?.WaitForExit();
+                // Install services
+                Process.Start("sc", $"create thecalcifyRTW binPath= \"{exePath}\" start= auto displayname= \"theCalcify RTW Service\"")?.WaitForExit();
+
+                Process.Start("sc",$"description thecalcifyRTW \"Real-Time Watcher service for TheCalcify\"")?.WaitForExit();
 
                 // Start service
-                Process.Start("sc", $"start thecalcifyRTW")
-                    ?.WaitForExit();
+                Process.Start("sc", $"start thecalcifyRTW")?.WaitForExit();
             }
             catch (Exception ex)
             {

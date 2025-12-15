@@ -110,10 +110,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\CalcifyRTD\CalcifyRTD.csproj">
-      <Project>{F4A66669-5355-42C9-BD9A-B74ACD678F09}</Project>
-      <Name>CalcifyRTD</Name>
-    </ProjectReference>
     <ProjectReference Include="..\thecalcify.csproj">
       <Project>{69279280-0d7f-4eca-9ebc-04bf8afb943f}</Project>
       <Name>thecalcify</Name>
