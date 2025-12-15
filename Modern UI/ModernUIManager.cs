@@ -353,7 +353,7 @@ namespace thecalcify
                 foreach (ToolStripItem originalItem in _form.viewToolStripMenuItem.DropDownItems)
                 {
                     // Create visual copy
-                    ToolStripMenuItem modernItem = new ToolStripMenuItem("👁 " + originalItem.Text);
+                    ToolStripMenuItem modernItem = new ToolStripMenuItem("👁️‍🗨️ " + originalItem.Text);
 
                     // PROXY CLICK: Run the logic defined in Home.cs
                     modernItem.Click += (s, e) => originalItem.PerformClick();

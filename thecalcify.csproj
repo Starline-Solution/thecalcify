@@ -96,8 +96,8 @@
     <Compile Include="Helper\Common.cs" />
     <Compile Include="Helper\CredentialManager.cs" />
     <Compile Include="Helper\Encryption.cs" />
-    <Compile Include="Helper\ModernMenuRenderer.cs" />
-    <Compile Include="Helper\ModernUIManager.cs" />
+    <Compile Include="Modern UI\ModernMenuRenderer.cs" />
+    <Compile Include="Modern UI\ModernUIManager.cs" />
     <Compile Include="News\Chip.cs">
       <SubType>Component</SubType>
     </Compile>

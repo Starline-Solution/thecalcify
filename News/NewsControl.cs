@@ -102,7 +102,7 @@ namespace thecalcify.News
             //dgvNews.Columns[2].FillWeight = 15;  // Category
             //dgvNews.Columns[3].FillWeight = 15;  // SubCategory
 
-            dgvNews.Columns[0].MinimumWidth = 300;
+            dgvNews.Columns[0].MinimumWidth = 330;
 
             // Configure HttpClient once
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
