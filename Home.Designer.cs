@@ -15,11 +15,11 @@ namespace thecalcify
         /// <summary>
         /// Required designer variable.
         /// </summary>
-        private System.ComponentModel.IContainer components = null;
-        //private int rowIndexFromMouseDown = -1;
-        //private int rowIndexOfItemUnderMouseToDrop = -1;
-        private List<DataGridViewRow> draggedRows = new List<DataGridViewRow>();
-        private int dragSourceIndex = -1;
+        public System.ComponentModel.IContainer components = null;
+        //public int rowIndexFromMouseDown = -1;
+        //public int rowIndexOfItemUnderMouseToDrop = -1;
+        public List<DataGridViewRow> draggedRows = new List<DataGridViewRow>();
+        public int dragSourceIndex = -1;
 
 
         /// <summary>
@@ -41,7 +41,7 @@ namespace thecalcify
         /// Required method for Designer support - do not modify
         /// the contents of this method with the code editor.
         /// </summary>
-        private void InitializeComponent()
+        public void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
@@ -366,8 +366,8 @@ namespace thecalcify
             // 
             // titleLabel
             // 
+            this.titleLabel.Anchor = AnchorStyles.None;
             this.titleLabel.BackColor = System.Drawing.Color.WhiteSmoke;
-            this.titleLabel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.titleLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 13F, System.Drawing.FontStyle.Bold);
             this.titleLabel.ForeColor = System.Drawing.Color.Black;
             this.titleLabel.Location = new System.Drawing.Point(0, 0);
@@ -494,7 +494,7 @@ namespace thecalcify
 
         }
 
-        private void SaveMarketWatchHost_Click(object sender, EventArgs e)
+        public void SaveMarketWatchHost_Click(object sender, EventArgs e)
         {
             if (saveMarketWatchHost.Text == "Save MarketWatch")
             {
@@ -512,7 +512,7 @@ namespace thecalcify
             }
         }
 
-        private void Txtsearch_TextChanged(object sender, EventArgs e)
+        public void Txtsearch_TextChanged(object sender, EventArgs e)
         {
             string filterText = txtsearch.Text.Trim();
 
@@ -588,17 +588,17 @@ namespace thecalcify
             }
         }
 
-        private void FontSizeComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        public void FontSizeComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             ApplyFontSizeFromComboBox();
         }
 
-        private void FontSizeComboBox_TextChanged(object sender, EventArgs e)
+        public void FontSizeComboBox_TextChanged(object sender, EventArgs e)
         {
             ApplyFontSizeFromComboBox();
         }
 
-        private void ApplyFontSizeFromComboBox()
+        public void ApplyFontSizeFromComboBox()
         {
             int _fontSize;
 
@@ -667,7 +667,7 @@ namespace thecalcify
             return string.Empty;
         }
 
-        private void DefaultGrid_MouseDown(object sender, MouseEventArgs e)
+        public void DefaultGrid_MouseDown(object sender, MouseEventArgs e)
         {
             var hit = defaultGrid.HitTest(e.X, e.Y);
 
@@ -689,7 +689,7 @@ namespace thecalcify
             }
         }
 
-        private void DefaultGrid_MouseMove(object sender, MouseEventArgs e)
+        public void DefaultGrid_MouseMove(object sender, MouseEventArgs e)
         {
             if ((e.Button & MouseButtons.Left) == MouseButtons.Left && dragSourceIndex >= 0)
             {
@@ -698,12 +698,12 @@ namespace thecalcify
         }
 
 
-        private void DefaultGrid_DragOver(object sender, DragEventArgs e)
+        public void DefaultGrid_DragOver(object sender, DragEventArgs e)
         {
             e.Effect = DragDropEffects.Move;
         }
 
-        private void DefaultGrid_DragDrop(object sender, DragEventArgs e)
+        public void DefaultGrid_DragDrop(object sender, DragEventArgs e)
         {
             Point clientPoint = defaultGrid.PointToClient(new Point(e.X, e.Y));
             int dropIndex = defaultGrid.HitTest(clientPoint.X, clientPoint.Y).RowIndex;
@@ -739,7 +739,7 @@ namespace thecalcify
             RebuildSymbolRowMap();
         }
 
-        private void RebuildSymbolRowMap()
+        public void RebuildSymbolRowMap()
         {
             symbolRowMap.Clear();
 
@@ -767,35 +767,35 @@ namespace thecalcify
         public ToolStripMenuItem ExportToExcelToolStripMenuItem;
         public ToolStripMenuItem addEditSymbolsToolStripMenuItem;
         public ToolStripMenuItem addEditColumnsToolStripMenuItem;
-        private ToolStripMenuItem fullScreenF11ToolStripMenuItem;
-        private ToolStripMenuItem aboutToolStripMenuItem;
-        private Panel panelAddColumns;
-        private Panel panelAddSymbols;
-        private CheckedListBox checkedListSymbols;
-        private Button btnSelectAllSymbols;
-        private Button btnConfirmAddSymbols;
-        private Button btnCancelAddSymbols;
-        private TextBox txtsearch;
-        private Label searchTextLabel;
-        private ComboBox fontSizeComboBox;
-        private System.Windows.Forms.ToolStripMenuItem newMarketWatchMenuItem;
-        private System.Windows.Forms.Panel headerPanel;
+        public ToolStripMenuItem fullScreenF11ToolStripMenuItem;
+        public ToolStripMenuItem aboutToolStripMenuItem;
+        public Panel panelAddColumns;
+        public Panel panelAddSymbols;
+        public CheckedListBox checkedListSymbols;
+        public Button btnSelectAllSymbols;
+        public Button btnConfirmAddSymbols;
+        public Button btnCancelAddSymbols;
+        public TextBox txtsearch;
+        public Label searchTextLabel;
+        public ComboBox fontSizeComboBox;
+        public System.Windows.Forms.ToolStripMenuItem newMarketWatchMenuItem;
+        public System.Windows.Forms.Panel headerPanel;
         public System.Windows.Forms.Label titleLabel;
-        private ToolStripMenuItem saveMarketWatchHost;
-        private ToolStripMenuItem newCTRLNToolStripMenuItem;
-        private ToolStripMenuItem newCTRLNToolStripMenuItem1;
-        private ToolStripMenuItem viewToolStripMenuItem;
-        private ToolStripMenuItem deleteToolStripMenuItem;
-        private ToolStripMenuItem clearExcelToolStripMenuItem;
-        private Label savelabel;
-        private ToolStripMenuItem newsToolStripMenuItem;
-        private ToolStripMenuItem alertToolStripMenuItem;
-        private ToolStripMenuItem refreshMarketWatchHost;
-        private ToolStripMenuItem newswatchListToolStripMenuItem;
-        private ToolStripMenuItem notificationSettings;
-        private ToolStripMenuItem newsListToolStripMenuItem;
-        private ToolStripMenuItem newsHistoryToolStripMenuItem;
-        private ToolStripMenuItem copyRowToolStripMenuItem;
-        private ToolStripMenuItem exportWorksheetsToolStripMenuItem;
+        public ToolStripMenuItem saveMarketWatchHost;
+        public ToolStripMenuItem newCTRLNToolStripMenuItem;
+        public ToolStripMenuItem newCTRLNToolStripMenuItem1;
+        public ToolStripMenuItem viewToolStripMenuItem;
+        public ToolStripMenuItem deleteToolStripMenuItem;
+        public ToolStripMenuItem clearExcelToolStripMenuItem;
+        public Label savelabel;
+        public ToolStripMenuItem newsToolStripMenuItem;
+        public ToolStripMenuItem alertToolStripMenuItem;
+        public ToolStripMenuItem refreshMarketWatchHost;
+        public ToolStripMenuItem newswatchListToolStripMenuItem;
+        public ToolStripMenuItem notificationSettings;
+        public ToolStripMenuItem newsListToolStripMenuItem;
+        public ToolStripMenuItem newsHistoryToolStripMenuItem;
+        public ToolStripMenuItem copyRowToolStripMenuItem;
+        public ToolStripMenuItem exportWorksheetsToolStripMenuItem;
     }
 }

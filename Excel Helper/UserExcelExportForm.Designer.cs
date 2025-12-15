@@ -6,7 +6,7 @@ namespace thecalcify.Excel_Helper
 {
     partial class UserExcelExportForm
     {
-        private System.Windows.Forms.Panel panelContainer;
+        //private System.Windows.Forms.Panel panelContainer;
         private System.Windows.Forms.Panel panelCard;
         private System.Windows.Forms.CheckedListBox clbSheets;
         private System.Windows.Forms.Button btnExport;

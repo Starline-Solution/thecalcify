@@ -102,6 +102,8 @@ namespace thecalcify.News
             //dgvNews.Columns[2].FillWeight = 15;  // Category
             //dgvNews.Columns[3].FillWeight = 15;  // SubCategory
 
+            dgvNews.Columns[0].MinimumWidth = 330;
+
             // Configure HttpClient once
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
@@ -347,10 +349,10 @@ namespace thecalcify.News
             {
                 try
                 {
-                  
+
                     if (this.InvokeRequired)
                     {
-                        this.Invoke(new Action(async() =>
+                        this.Invoke(new Action(async () =>
                         {
                             // Fetch periodically and update cursor
                             await FetchNewsDataAndUpdateGrid(categoryCode, subcategoryCode, pageSize, string.Empty, string.Empty);
@@ -729,7 +731,7 @@ namespace thecalcify.News
                     HttpResponseMessage response = await client.SendAsync(request);
                     response.EnsureSuccessStatusCode();
 
-                    if (response.StatusCode  == HttpStatusCode.Forbidden ||
+                    if (response.StatusCode == HttpStatusCode.Forbidden ||
                              response.StatusCode == HttpStatusCode.Unauthorized ||
                              response.StatusCode == HttpStatusCode.NotFound)
                     {
@@ -958,5 +960,174 @@ namespace thecalcify.News
             return string.Empty;
         }
 
+
+        private void BtnRefresh_Click(object sender, EventArgs e)
+        {
+            _cts?.Cancel(); // stop previous periodic fetch
+                            // Restart periodic fetch after reload
+            _cts = new CancellationTokenSource();
+            _fetchTask = Task.Run(() => PeriodicFetchAsync(_cts.Token));
+
+            Common.ShowWindowsToast("News Refreshed", DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff"));
+
+        }
+
+        private void TextBox1_TextChanged(object sender, EventArgs e)
+        {
+            string filterText = newsSearch.Text.Trim();
+
+            // Split filter by comma, trim each part, and remove empty strings
+            var keywords = filterText.Split(',')
+                                     .Select(k => k.Trim())
+                                     .Where(k => !string.IsNullOrEmpty(k))
+                                     .ToList();
+
+            if (keywords.Count == 0)
+            {
+                // Reset all rows visible in defaultGrid
+                if (dgvNews != null)
+                {
+                    foreach (DataGridViewRow row in dgvNews.Rows)
+                    {
+                        if (!row.IsNewRow)
+                            row.Visible = true;
+                    }
+                }
+            }
+            else
+            {
+                // Filter rows in defaultGrid based on "Name" column
+                if (dgvNews != null)
+                {
+                    foreach (DataGridViewRow row in dgvNews.Rows)
+                    {
+                        if (!row.IsNewRow && row.Cells["DGVTitle"].Value != null)
+                        {
+                            string name = row.Cells["DGVTitle"].Value.ToString();
+                            bool match = keywords.Any(k => name.IndexOf(k, StringComparison.OrdinalIgnoreCase) >= 0);
+                            row.Visible = match;
+                        }
+                    }
+                }
+            }
+
+        }
+
+        private void textBox1_KeyDown(object sender, System.Windows.Forms.KeyEventArgs e)
+        {
+            // Check if Ctrl + Backspace is pressed
+            if (e.Control && e.KeyCode == Keys.Back)
+            {
+                newsSearch.Clear();  // Clear all text 
+                e.SuppressKeyPress = true; // Prevent default backspace behavior 
+            }
+        }
+
+        private void fromTextbox_Click(object sender, EventArgs e)
+        {
+            tocalender.Visible = false; // hide other calendar
+            fromcalender.Visible = true;
+            startDate = null;
+            fromcalender.BringToFront();
+            fromcalender.MaxDate = DateTime.Today;
+            fromcalender.MinDate = DateTime.Today.AddMonths(-1); // optional, limit range
+        }
+
+        private void todateTextbox_Click(object sender, EventArgs e)
+        {
+            fromcalender.Visible = false; // hide other calendar
+            tocalender.Visible = true;
+            endDate = null;
+            tocalender.BringToFront();
+            tocalender.MaxDate = DateTime.Today;
+            tocalender.MinDate = DateTime.Today.AddMonths(-1);
+        }
+
+        private void fromcalender_DateSelected(object sender, DateRangeEventArgs e)
+        {
+            startDate = e.Start.Date;
+            fromTextbox.Text = startDate?.ToString("yyyy.MM.dd");
+            fromcalender.Visible = false;
+
+            // Auto adjust To Date if before From Date
+            if (endDate.HasValue && endDate < startDate)
+            {
+                endDate = startDate;
+                todateTextbox.Text = endDate?.ToString("yyyy.MM.dd");
+            }
+
+            UpdateRangeTextbox();
+        }
+
+        private void tocalender_DateSelected(object sender, DateRangeEventArgs e)
+        {
+            endDate = e.Start.Date;
+            if (endDate > DateTime.Today)
+                endDate = DateTime.Today; // never greater than today
+
+            // Auto fix if To < From
+            if (startDate.HasValue && endDate < startDate)
+                endDate = startDate;
+
+            todateTextbox.Text = endDate?.ToString("yyyy.MM.dd");
+            tocalender.Visible = false;
+            UpdateRangeTextbox();
+        }
+
+        private void fromTextbox_Leave(object sender, EventArgs e)
+        {
+            DateTime parsedDate;
+            if (DateTime.TryParse(fromTextbox.Text, out parsedDate))
+            {
+                if (parsedDate > DateTime.Today)
+                    parsedDate = DateTime.Today;
+
+                startDate = parsedDate;
+                fromTextbox.Text = startDate?.ToString("yyyy.MM.dd");
+            }
+            else
+            {
+                fromTextbox.Text = "yyyy.MM.dd";
+                startDate = null;
+            }
+            UpdateRangeTextbox();
+        }
+
+        private void todateTextbox_Leave(object sender, EventArgs e)
+        {
+            DateTime parsedDate;
+            if (DateTime.TryParse(todateTextbox.Text, out parsedDate))
+            {
+                if (parsedDate > DateTime.Today)
+                    parsedDate = DateTime.Today;
+
+                if (startDate.HasValue && parsedDate < startDate)
+                    parsedDate = startDate.Value;
+
+                endDate = parsedDate;
+                todateTextbox.Text = endDate?.ToString("yyyy.MM.dd");
+            }
+            else
+            {
+                todateTextbox.Text = "yyyy.MM.dd";
+                endDate = null;
+            }
+            UpdateRangeTextbox();
+        }
+
+        private void UpdateRangeTextbox()
+        {
+            string from = startDate?.ToString("yyyy.MM.dd") ?? "yyyy.MM.dd";
+            string to = endDate?.ToString("yyyy.MM.dd") ?? "yyyy.MM.dd";
+
+            if (from == "yyyy.MM.dd")
+            {
+                fromcalender.Visible = true;
+            }
+            else if (to == "yyyy.MM.dd")
+            {
+                tocalender.Visible = true;
+            }
+        }
     }
 }

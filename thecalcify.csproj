@@ -102,6 +102,7 @@
     <Compile Include="Helper\Common.cs" />
     <Compile Include="Helper\CredentialManager.cs" />
     <Compile Include="Helper\Encryption.cs" />
+    <Compile Include="Modern UI\ModernMenuRenderer.cs" />
     <Compile Include="News\Chip.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -212,6 +213,7 @@
     </Compile>
     <None Include="app.manifest" />
     <None Include="excel_model.json" />
+    <Compile Include="Modern UI\ModernUIManager.cs" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
