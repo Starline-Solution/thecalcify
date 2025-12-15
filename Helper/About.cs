@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
@@ -21,7 +20,6 @@ namespace thecalcify.Helper
             this.token = token;
         }
 
-        // Center the card panel when the control loads
         private void About_Load(object sender, EventArgs e)
         {
             // Fill labels
@@ -42,9 +40,19 @@ namespace thecalcify.Helper
 
             var filePath = System.Reflection.Assembly.GetExecutingAssembly().Location;
             lblModified.Text = $"Version Modified Date:   {File.GetLastWriteTime(filePath):dd:MM:yyyy}";
+
+            // ⭐ Center cardPanel
+            cardPanel.Left = (this.Width - cardPanel.Width) / 2;
+            cardPanel.Top = (this.Height - cardPanel.Height) / 2 - 40;
+
+            // ⭐ Center update button under card
+            updateButton.Left = (this.Width - updateButton.Width) / 2;
+            updateButton.Top = cardPanel.Bottom + 20;
+
+            // rightsLabel stays bottom-left automatically
         }
 
-        private void btnUpdate_Click(object sender, EventArgs e)
+        private void UpdateButton_Click(object sender, EventArgs e)
         {
             bool isInternetAvailable = Common.InternetAvilable();
             if (!isInternetAvailable)
@@ -65,80 +73,37 @@ namespace thecalcify.Helper
 
             if (response == DialogResult.OK)
             {
-                btnUpdate.Enabled = false;
+                updateButton.Enabled = false;
                 Form parent = this.FindForm();
                 _ = new UpdateAgent(token, parent);
-                btnUpdate.Enabled = true;
+                updateButton.Enabled = true;
             }
         }
-        // Recenter when the control is resized
-        private void About_Resize(object sender, EventArgs e)
-        {
-            CenterCardPanel();
-        }
 
-        // Method to center the card panel
-        private void CenterCardPanel()
-        {
-            int x = (this.Width - cardPanel.Width) / 2;
-            int y = (this.Height - cardPanel.Height) / 2;
-            cardPanel.Location = new Point(x, y);
-        }
-
-        // Rounded corners for card panel with shadow effect
         private void cardPanel_Paint(object sender, PaintEventArgs e)
         {
-            Panel panel = sender as Panel;
             int radius = 20;
+            Panel panel = sender as Panel;
 
-            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+            Rectangle rect = panel.ClientRectangle;
+            rect.Inflate(-1, -1);
 
-            GraphicsPath path = GetRoundedRectangle(panel.ClientRectangle, radius);
-
-            panel.Region = new Region(path);
-
-            using (Pen borderPen = new Pen(Color.FromArgb(30, 0, 0, 0), 1))
+            using (var path = new System.Drawing.Drawing2D.GraphicsPath())
             {
-                e.Graphics.DrawPath(borderPen, path);
+                path.AddArc(rect.X, rect.Y, radius, radius, 180, 90);
+                path.AddArc(rect.Right - radius, rect.Y, radius, radius, 270, 90);
+                path.AddArc(rect.Right - radius, rect.Bottom - radius, radius, radius, 0, 90);
+                path.AddArc(rect.X, rect.Bottom - radius, radius, radius, 90, 90);
+                path.CloseFigure();
+
+                e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+
+                using (Pen pen = new Pen(Color.LightGray, 2))
+                {
+                    e.Graphics.DrawPath(pen, path);
+                }
             }
         }
-
-        // Rounded button
-        private void btnUpdate_Paint(object sender, PaintEventArgs e)
-        {
-            Button btn = sender as Button;
-            int radius = 10;
-
-            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-            GraphicsPath path = GetRoundedRectangle(btn.ClientRectangle, radius);
-            btn.Region = new Region(path);
-        }
-
-        private GraphicsPath GetRoundedRectangle(Rectangle rect, int radius)
-        {
-            GraphicsPath path = new GraphicsPath();
-            int diameter = radius * 2;
-
-            rect.Width -= 1;
-            rect.Height -= 1;
-
-            // Top-left corner
-            path.AddArc(rect.X, rect.Y, diameter, diameter, 180, 90);
-
-            // Top-right corner
-            path.AddArc(rect.Right - diameter, rect.Y, diameter, diameter, 270, 90);
-
-            // Bottom-right corner
-            path.AddArc(rect.Right - diameter, rect.Bottom - diameter, diameter, diameter, 0, 90);
-
-            // Bottom-left corner
-            path.AddArc(rect.X, rect.Bottom - diameter, diameter, diameter, 90, 90);
-
-            path.CloseFigure();
-
-            return path;
-        }
-
 
     }
 }

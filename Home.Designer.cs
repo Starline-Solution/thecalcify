@@ -366,8 +366,8 @@ namespace thecalcify
             // 
             // titleLabel
             // 
-            this.titleLabel.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.titleLabel.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.titleLabel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.titleLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 13F, System.Drawing.FontStyle.Bold);
             this.titleLabel.ForeColor = System.Drawing.Color.Black;
             this.titleLabel.Location = new System.Drawing.Point(0, 0);
@@ -494,7 +494,7 @@ namespace thecalcify
 
         }
 
-        public void SaveMarketWatchHost_Click(object sender, EventArgs e)
+        private void SaveMarketWatchHost_Click(object sender, EventArgs e)
         {
             if (saveMarketWatchHost.Text == "Save MarketWatch")
             {
@@ -768,31 +768,31 @@ namespace thecalcify
         public ToolStripMenuItem addEditSymbolsToolStripMenuItem;
         public ToolStripMenuItem addEditColumnsToolStripMenuItem;
         private ToolStripMenuItem fullScreenF11ToolStripMenuItem;
-        public ToolStripMenuItem aboutToolStripMenuItem;
+        private ToolStripMenuItem aboutToolStripMenuItem;
         private Panel panelAddColumns;
         private Panel panelAddSymbols;
         private CheckedListBox checkedListSymbols;
         private Button btnSelectAllSymbols;
         private Button btnConfirmAddSymbols;
         private Button btnCancelAddSymbols;
-        public TextBox txtsearch;
-        public Label searchTextLabel;
-        public ComboBox fontSizeComboBox;
+        private TextBox txtsearch;
+        private Label searchTextLabel;
+        private ComboBox fontSizeComboBox;
         private System.Windows.Forms.ToolStripMenuItem newMarketWatchMenuItem;
         private System.Windows.Forms.Panel headerPanel;
         public System.Windows.Forms.Label titleLabel;
-        public ToolStripMenuItem saveMarketWatchHost;
-        public ToolStripMenuItem newCTRLNToolStripMenuItem;
-        public ToolStripMenuItem newCTRLNToolStripMenuItem1;
-        public ToolStripMenuItem viewToolStripMenuItem;
+        private ToolStripMenuItem saveMarketWatchHost;
+        private ToolStripMenuItem newCTRLNToolStripMenuItem;
+        private ToolStripMenuItem newCTRLNToolStripMenuItem1;
+        private ToolStripMenuItem viewToolStripMenuItem;
         private ToolStripMenuItem deleteToolStripMenuItem;
         private ToolStripMenuItem clearExcelToolStripMenuItem;
         private Label savelabel;
         private ToolStripMenuItem newsToolStripMenuItem;
         private ToolStripMenuItem alertToolStripMenuItem;
-        public ToolStripMenuItem refreshMarketWatchHost;
+        private ToolStripMenuItem refreshMarketWatchHost;
         private ToolStripMenuItem newswatchListToolStripMenuItem;
-        public ToolStripMenuItem notificationSettings;
+        private ToolStripMenuItem notificationSettings;
         private ToolStripMenuItem newsListToolStripMenuItem;
         private ToolStripMenuItem newsHistoryToolStripMenuItem;
         private ToolStripMenuItem copyRowToolStripMenuItem;
