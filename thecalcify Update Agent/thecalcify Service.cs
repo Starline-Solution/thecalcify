@@ -4,7 +4,6 @@ using System.IO;
 using System.IO.Compression;
 using System.IO.Pipes;
 using System.Net.Http;
-using System.Security.AccessControl;
 using System.ServiceProcess;
 using System.Threading.Tasks;
 using System.Timers;
@@ -24,9 +23,9 @@ namespace thecalcify_Update_Service
         {
             ApplicationLogger.Log("thecalcify Update Service started.");
 
-            ApplicationLogger.Log($"Extraction completed at {Path.GetTempPath()}");
+            ApplicationLogger.Log($"Extraction completed at {UpdateApiUrl.TempPath}");
 
-            updateTimer.Interval = 1000 * 60 * 20; // 20 minutes
+            updateTimer.Interval = 1000 * 60 * 3; // 20 minutes
             updateTimer.Elapsed += CheckForUpdateElapsed;
             updateTimer.Start();
 
@@ -96,35 +95,43 @@ namespace thecalcify_Update_Service
                     if (!updateNeeded)
                         return;
 
-                    // STEP 4: Check if installer access version matches local version
-                    if (File.Exists(Path.Combine(Path.GetTempPath(), "thecalcify", "thecalcify.exe")))
+
+                    if (File.Exists(Path.Combine(UpdateApiUrl.TempPath, "thecalcify", "thecalcify.exe")))
                     {
-                        DateTime modified = File.GetLastWriteTime(Path.Combine(Path.GetTempPath(), "thecalcify", "thecalcify.exe"));
+                        DateTime installedModified = File.GetLastWriteTime(Path.Combine(UpdateApiUrl.TempPath, "thecalcify", "thecalcify.exe"));
 
-                        // Parse local version back into DateTime
-                        // assuming localVersion is in "yyyyMMddHHmm"
-                        if (DateTime.TryParseExact(localVersion, "yyyyMMddHHmm",
-                                                   null, System.Globalization.DateTimeStyles.None,
-                                                   out DateTime localVersionTime))
+                        // Parse remote version string (yyyyMMddHHmm)
+                        if (DateTime.TryParseExact(
+                                remoteComparable,
+                                "yyyyMMddHHmm",
+                                null,
+                                System.Globalization.DateTimeStyles.None,
+                                out DateTime remoteVersionTime))
                         {
-                            // Calculate difference
-                            double minutesDiff = Math.Abs((localVersionTime - modified).TotalMinutes);
+                            TimeSpan diff = remoteVersionTime - installedModified;
+                            double minutesDiff = Math.Abs(diff.TotalMinutes);
 
-                            // If difference <= 2 minutes, treat them as equal
+                            // Treat small timestamp differences as same version
                             bool effectivelySameVersion = minutesDiff <= 2;
 
-                            if (effectivelySameVersion)
-                            { 
-                                ApplicationLogger.Log("Installer version matches local version. Skipping download.");
-                                return; 
+                            // CASE 1: Same version / remote version is older then downloaded → skip
+                            if (effectivelySameVersion || remoteVersionTime < installedModified)
+                            {
+                                ApplicationLogger.Log(
+                                    "Installer version matches local version. Skipping download.");
+                                return;
                             }
+
+                            // CASE 2: Remote is newer → continue download
+                            ApplicationLogger.Log(
+                                "Remote installer is newer. Proceeding with download.");
                         }
                     }
 
 
 
                     // Step 5: Download and extract setup files
-                    DownloadAndExtract(data.fileUrl.ToString());
+                    DownloadAndExtract(data.fileUrl.ToString(), forceUpdate);
                 }
             }
             catch (Exception ex)
@@ -136,11 +143,11 @@ namespace thecalcify_Update_Service
         /// <summary>
         /// Downloads and extracts the setup files.
         /// </summary>
-        public static void DownloadAndExtract(string fileUrl)
+        public static void DownloadAndExtract(string fileUrl, bool forceUpdate)
         {
             try
             {
-                string baseFolder = Path.GetTempPath();
+                string baseFolder = UpdateApiUrl.TempPath;
 
                 // Ensure base folder exists
                 if (!Directory.Exists(baseFolder))
@@ -189,14 +196,23 @@ namespace thecalcify_Update_Service
                         ApplicationLogger.Log($"tempZip file located at: {tempZipPath}");
 
                         // Rename setup.exe to thecalcify.exe
-                        if (File.Exists(Path.Combine(extractPath,"setup.exe"))) 
+                        if (File.Exists(Path.Combine(extractPath, "setup.exe")))
                         {
                             File.Move(Path.Combine(extractPath, "setup.exe"), Path.Combine(extractPath, "thecalcify.exe"));
                         }
 
-                        // STEP 6: Send Signal to thecalcify Application
-                        SendSignal("UpdateCompleted");
-
+                        // STEP 6: Send Signal to thecalcify Application if forceUpdate is true
+                        if (forceUpdate)
+                        {
+                            try
+                            {
+                                SendSignal("Update Downloaded");
+                            }
+                            catch (Exception)
+                            {
+                                ApplicationLogger.Log($"Application Not Open and File Download at {DateTime.Now}");
+                            }
+                        }
                     }
                 }
             }

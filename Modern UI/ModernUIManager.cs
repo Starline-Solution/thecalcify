@@ -259,7 +259,7 @@ namespace thecalcify.Modern_UI
 				{
 					titleLabel.Left = (pnlLower.Width - titleLabel.Width) / 2;
 					titleLabel.Top = (pnlLower.Height - titleLabel.Height) / 2;
-				}
+                }
 
 				_form.Shown += (s, e) => CenterTitle();
 
@@ -346,10 +346,12 @@ namespace thecalcify.Modern_UI
 
 			ToolStripMenuItem viewItem = new ToolStripMenuItem("📈 View Watchlist");
 			cm.Items.Add(viewItem);
-			cm.Items.Add(new ToolStripSeparator());
 			cm.Items.Add("🗑 Delete", null, (s, e) => _form.DeleteToolStripMenuItem_Click(s, e));
+			cm.Items.Add(new ToolStripSeparator());
+            cm.Items.Add("🗃️ Export Worksheets", null, (modernUI, exportExcel) => _form.exportWorksheetsToolStripMenuItem_Click(modernUI, exportExcel));
 
-			if (_form.viewToolStripMenuItem != null && _form.viewToolStripMenuItem.DropDownItems.Count > 0)
+            // Populate View Submenu Dynamically
+            if (_form.viewToolStripMenuItem != null && _form.viewToolStripMenuItem.DropDownItems.Count > 0)
 			{
 				foreach (ToolStripItem originalItem in _form.viewToolStripMenuItem.DropDownItems)
 				{

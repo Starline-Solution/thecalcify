@@ -38,9 +38,9 @@ namespace thecalcify.CustomActions
                 ApplicationLogger.Log($"Installing RTW service using path: {exePath}");
 
                 // Install services
-                Process.Start("sc", $"create thecalcifyRTW binPath= \"{exePath}\" start= auto displayname= \"theCalcify RTW Service\"")?.WaitForExit();
+                Process.Start("sc", $"create thecalcifyRTW binPath= \"{exePath}\" start= auto displayname= \"thecalcify RTW Service\"")?.WaitForExit();
 
-                Process.Start("sc",$"description thecalcifyRTW \"Real-Time Watcher service for TheCalcify\"")?.WaitForExit();
+                Process.Start("sc",$"description thecalcifyRTW \"Real-Time Watcher service for thecalcify\"")?.WaitForExit();
 
                 // Start service
                 Process.Start("sc", $"start thecalcifyRTW")?.WaitForExit();

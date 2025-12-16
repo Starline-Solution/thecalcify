@@ -33,6 +33,7 @@ using thecalcify.Modern_UI;
 using thecalcify.News;
 using thecalcify.RTDWorker;
 using thecalcify.Shared;
+using thecalcify.Update_Service;
 using Application = System.Windows.Forms.Application;
 using CellData = thecalcify.Helper.CellData;
 
@@ -224,6 +225,12 @@ namespace thecalcify
 
                 startRTWService();
                 ExcelNotifier.StartExcelMonitor();
+
+                PipeSignalReceiver.Start(message =>
+                {
+                    // OPTIONAL: logging / UI status only
+                    ApplicationLogger.Log($"Pipe message received: {message}");
+                });
 
                 uiManager = new ModernUIManager(this);
                 uiManager?.ApplyModernUI();
@@ -497,7 +504,6 @@ namespace thecalcify
 
             try
             {
-
                 //_cancellationTokenSource?.Cancel();
                 await LogoutAsync();
                 KillProcess();
@@ -1691,7 +1697,7 @@ namespace thecalcify
             }
         }
 
-        private async void exportWorksheetsToolStripMenuItem_Click(object sender, EventArgs e)
+        public async void exportWorksheetsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             try
             {
@@ -3446,7 +3452,8 @@ namespace thecalcify
             try
             {
                 string officeVersion = GetOfficeVersion();
-
+                
+                string AppIcon = $@"Software\Microsoft\Windows\CurrentVersion\Uninstall\{{45A18102-1652-4AAA-8C62-4306D49EF5AB}}";
                 string excelOptionsPath = $@"Software\Microsoft\Office\{officeVersion}\Excel\Options";
                 string graphicsPath = $@"Software\Microsoft\Office\{officeVersion}\Common\Graphics";
                 string securityPath = $@"Software\Microsoft\Office\{officeVersion}\Excel\Security";
@@ -3504,6 +3511,21 @@ namespace thecalcify
                         {
                             newKey.SetValue("AccessVBOM", 1, RegistryValueKind.DWord);
                         }
+                    }
+                }
+
+
+                //
+                //---- Add Icon to Winforms Open File Dialog (Optional) ----
+                //
+                using (RegistryKey key = Registry.LocalMachine.OpenSubKey(AppIcon, writable: true))
+                {
+                    if (key == null || key.GetValue("DisplayIcon") == null)
+                    {
+                        key.SetValue(
+                            "DisplayIcon",
+                            $"{AppDomain.CurrentDomain.BaseDirectory}AppIcon.ico,0",
+                            RegistryValueKind.String);
                     }
                 }
             }
@@ -4559,10 +4581,27 @@ namespace thecalcify
                     {
                         sc.Start();
                         sc.WaitForStatus(ServiceControllerStatus.Running, TimeSpan.FromSeconds(10));
+
+                        ApplicationLogger.Log("[RTW] Service started successfully by thecalcify.");
                     }
 
-                    ApplicationLogger.Log("[RTW] Service started successfully by thecalcify.");
                 }
+
+                string updateServiceName = "thecalcifyUpdate";
+                
+                using (ServiceController sc = new ServiceController(updateServiceName))
+                {
+                    if (sc.Status == ServiceControllerStatus.Stopped || sc.Status == ServiceControllerStatus.Paused)
+                    {
+                        sc.Start();
+                        sc.WaitForStatus(ServiceControllerStatus.Running, TimeSpan.FromSeconds(10));
+
+                        ApplicationLogger.Log("[Update thecalcifyUpdate] Service started successfully by thecalcify.");
+                    }
+
+                }
+
+
             }
             catch (Exception ex)
             {

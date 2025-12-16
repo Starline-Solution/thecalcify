@@ -25,11 +25,13 @@ namespace thecalcify.Helper
 
         public static string InstallationPath => @"C:\Program Files\thecalcify\thecalcify\thecalcify.exe";
 
-        public static string SystemTempPath =>
-            Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.Windows),
-            "SystemTemp"
-        );
+        //public static string SystemTempPath =>
+        //    Path.Combine(
+        //    Environment.GetFolderPath(Environment.SpecialFolder.Windows),
+        //    "SystemTemp"
+        //);
+
+        public static string TempPath => Path.GetTempPath();
 
 
     }

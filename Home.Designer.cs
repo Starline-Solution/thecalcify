@@ -12,10 +12,6 @@ namespace thecalcify
 {
     partial class thecalcify
     {
-        /// <summary>
-        /// Required designer variable.
-        /// </summary>
-        public System.ComponentModel.IContainer components = null;
         //public int rowIndexFromMouseDown = -1;
         //public int rowIndexOfItemUnderMouseToDrop = -1;
         public List<DataGridViewRow> draggedRows = new List<DataGridViewRow>();
@@ -366,7 +362,7 @@ namespace thecalcify
             // 
             // titleLabel
             // 
-            this.titleLabel.Anchor = AnchorStyles.None;
+            this.titleLabel.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.titleLabel.BackColor = System.Drawing.Color.WhiteSmoke;
             this.titleLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 13F, System.Drawing.FontStyle.Bold);
             this.titleLabel.ForeColor = System.Drawing.Color.Black;
@@ -797,5 +793,6 @@ namespace thecalcify
         public ToolStripMenuItem newsHistoryToolStripMenuItem;
         public ToolStripMenuItem copyRowToolStripMenuItem;
         public ToolStripMenuItem exportWorksheetsToolStripMenuItem;
+        private System.ComponentModel.IContainer components;
     }
 }

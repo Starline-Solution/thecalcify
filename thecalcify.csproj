@@ -91,10 +91,10 @@
     <Compile Include="Excel Helper\UserExcelExportForm.Designer.cs">
       <DependentUpon>UserExcelExportForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Helper\About.cs">
+    <Compile Include="Update Service\About.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Helper\About.Designer.cs">
+    <Compile Include="Update Service\About.Designer.cs">
       <DependentUpon>About.cs</DependentUpon>
     </Compile>
     <Compile Include="Helper\APIUrl.cs" />
@@ -115,7 +115,8 @@
     </Compile>
     <Compile Include="Helper\SplashManager.cs" />
     <Compile Include="Helper\StringOrNumberConverter.cs" />
-    <Compile Include="Helper\UpdateAgent.cs" />
+    <Compile Include="Update Service\PipeSignalReceiver.cs" />
+    <Compile Include="Update Service\UpdateAgent.cs" />
     <Compile Include="Home.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -173,7 +174,7 @@
     <EmbeddedResource Include="Excel Helper\UserExcelExportForm.resx">
       <DependentUpon>UserExcelExportForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Helper\About.resx">
+    <EmbeddedResource Include="Update Service\About.resx">
       <DependentUpon>About.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Helper\SplashForm.resx">

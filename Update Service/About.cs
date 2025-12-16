@@ -67,7 +67,7 @@ namespace thecalcify.Helper
             {
                 btnUpdate.Enabled = false;
                 Form parent = this.FindForm();
-                _ = new UpdateAgent(token, parent);
+                _ = new UpdateAgent(parent);
                 btnUpdate.Enabled = true;
             }
         }
