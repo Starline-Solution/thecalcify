@@ -53,10 +53,16 @@ namespace thecalcify.Charts
 
         private ChartType _chartType = ChartType.Candle;
 
+        private ShapeTool _shapeTool = ShapeTool.None;
+        private readonly List<Shape> _shapes = new List<Shape>();
+        private Shape _currentShape = null;
+        private bool _isDrawingShape = false;
+
         private DrawingMode _drawingMode = DrawingMode.None;
         private readonly List<TrendLine> _trendLines = new List<TrendLine>();
         private TrendLine _currentTrendLine = null;
         private bool _isDrawingTrendLine = false;
+        private CursorTool _cursorTool = CursorTool.Arrow;
 
         public SKColor ChartBackground { get; set; } = new SKColor(18, 18, 18);
 
@@ -197,6 +203,121 @@ namespace thecalcify.Charts
 
         #region Public API
 
+        public void SetCursorTool(CursorTool tool)
+        {
+            _cursorTool = tool;
+            UpdateCursor();
+        }
+
+        private void UpdateCursor()
+        {
+            switch (_cursorTool)
+            {
+                case CursorTool.Arrow:
+                    _skControl.Cursor = Cursors.Default;
+                    break;
+
+                case CursorTool.Cross:
+                    _skControl.Cursor = CreateCrossCursor();
+                    break;
+
+                case CursorTool.Dot:
+                    _skControl.Cursor = CreateDotCursor();
+                    break;
+
+            }
+        }
+
+        private Cursor CreateDotCursor()
+        {
+            int size = 32;
+            int dotSize = 8;
+
+            using (Bitmap bmp = new Bitmap(size, size))
+            using (Graphics g = Graphics.FromImage(bmp))
+            {
+                g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+                g.Clear(Color.Transparent);
+
+                // Draw dot (white with black border)
+                using (Brush whiteBrush = new SolidBrush(Color.White))
+                using (Pen blackPen = new Pen(Color.Black, 2))
+                {
+                    int center = size / 2;
+                    int radius = dotSize / 2;
+
+                    // White filled circle
+                    g.FillEllipse(whiteBrush,
+                        center - radius,
+                        center - radius,
+                        dotSize,
+                        dotSize);
+
+                    // Black border
+                    g.DrawEllipse(blackPen,
+                        center - radius,
+                        center - radius,
+                        dotSize,
+                        dotSize);
+                }
+
+                // Create cursor
+                IntPtr hIcon = bmp.GetHicon();
+                Icon icon = Icon.FromHandle(hIcon);
+                return new Cursor(icon.Handle);
+            }
+        }
+
+        public void SetShapeTool(ShapeTool tool)
+        {
+            _shapeTool = tool;
+            _currentShape = null;
+            _isDrawingShape = false;
+        }
+
+        public void ClearShapes()
+        {
+            _shapes.Clear();
+            _currentShape = null;
+            _isDrawingShape = false;
+            _skControl.Invalidate();
+        }
+
+        private Cursor CreateCrossCursor()
+        {
+            int size = 32;
+            int lineLength = 12;
+            int lineWidth = 2;
+
+            using (Bitmap bmp = new Bitmap(size, size))
+            using (Graphics g = Graphics.FromImage(bmp))
+            {
+                g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+                g.Clear(Color.Transparent);
+
+                int center = size / 2;
+
+                // Black outline
+                using (Pen pen = new Pen(Color.Black, lineWidth + 1))
+                {
+                    g.DrawLine(pen, center, center - lineLength, center, center + lineLength);
+                    g.DrawLine(pen, center - lineLength, center, center + lineLength, center);
+                }
+
+                // White crosshair
+                using (Pen pen = new Pen(Color.White, lineWidth))
+                {
+                    g.DrawLine(pen, center, center - lineLength, center, center + lineLength);
+                    g.DrawLine(pen, center - lineLength, center, center + lineLength, center);
+                }
+
+                IntPtr hIcon = bmp.GetHicon();
+                Icon icon = Icon.FromHandle(hIcon);
+                return new Cursor(icon.Handle);
+            }
+        }
+
+
         public void SetCandles(IReadOnlyList<Candle> candles, bool autoFit = true)
         {
             _candles.Clear();
@@ -224,7 +345,17 @@ namespace thecalcify.Charts
             _currentTrendLine = null;
             _isDrawingTrendLine = false;
             _isSelectingRegression = false;
+
+            if (mode != DrawingMode.None)
+            {
+                _skControl.Cursor = Cursors.Cross;
+            }
+            else
+            {
+                UpdateCursor(); 
+            }
         }
+
 
         public DrawingMode GetDrawingMode()
         {
@@ -426,6 +557,17 @@ namespace thecalcify.Charts
                 DrawTrendLine(canvas, priceRect, _currentTrendLine, isDashed: true);
             }
 
+            foreach (var shape in _shapes)
+            {
+                DrawShape(canvas, priceRect, shape);
+            }
+
+            // Draw current shape preview
+            if (_isDrawingShape && _currentShape != null)
+            {
+                DrawShape(canvas, priceRect, _currentShape, isPreview: true);
+            }
+
             // Draw regression selection highlight
             if (_drawingMode == DrawingMode.RegressionTrend && _isSelectingRegression)
             {
@@ -459,15 +601,233 @@ namespace thecalcify.Charts
                 }
             }
 
+            // Draw custom cursor on canvas
+            if (_cursorTool == CursorTool.Dot && _crosshair.HasValue)
+            {
+                var p = _crosshair.Value;
+
+                using (var paint = new SKPaint())
+                {
+                    // Outer white circle
+                    paint.Style = SKPaintStyle.Fill;
+                    paint.Color = SKColors.White;
+                    paint.IsAntialias = true;
+                    canvas.DrawCircle(p.X, p.Y, 6, paint);
+
+                    // Black border
+                    paint.Style = SKPaintStyle.Stroke;
+                    paint.Color = SKColors.Black;
+                    paint.StrokeWidth = 2f;
+                    canvas.DrawCircle(p.X, p.Y, 6, paint);
+
+                    // Inner red dot
+                    paint.Style = SKPaintStyle.Fill;
+                    paint.Color = new SKColor(255, 0, 0);
+                    canvas.DrawCircle(p.X, p.Y, 2, paint);
+                }
+            }
+
+        }
+
+        private void DrawShape(SKCanvas canvas, SKRect rect, Shape shape, bool isPreview = false)
+        {
+            float x1 = TimeToPixelX(shape.StartTime, rect);
+            float y1 = PriceToPixelY(shape.StartPrice, rect);
+            float x2 = TimeToPixelX(shape.EndTime, rect);
+            float y2 = PriceToPixelY(shape.EndPrice, rect);
+
+            using (var paint = new SKPaint())
+            {
+                paint.IsAntialias = true;
+                paint.Color = shape.StrokeColor;
+                paint.StrokeWidth = shape.StrokeWidth;
+
+                if (isPreview)
+                {
+                    paint.PathEffect = SKPathEffect.CreateDash(new float[] { 5, 5 }, 0);
+                }
+
+                switch (shape.ShapeType)
+                {
+                    case ShapeTool.Circle:
+                        DrawCircleShape(canvas, x1, y1, x2, y2, paint, shape);
+                        break;
+                    case ShapeTool.Rectangle:
+                        DrawRectangleShape(canvas, x1, y1, x2, y2, paint, shape);
+                        break;
+                    case ShapeTool.Ellipse:
+                        DrawEllipseShape(canvas, x1, y1, x2, y2, paint, shape);
+                        break;
+                    case ShapeTool.Path:
+                        DrawPathShape(canvas, rect, shape, paint);
+                        break;
+                }
+            }
+        }
+
+        private void DrawCircleShape(SKCanvas canvas, float x1, float y1, float x2, float y2,
+    SKPaint paint, Shape shape)
+        {
+            float centerX = (x1 + x2) / 2;
+            float centerY = (y1 + y2) / 2;
+            float radius = Math.Min(Math.Abs(x2 - x1), Math.Abs(y2 - y1)) / 2;
+
+            if (shape.IsFilled)
+            {
+                paint.Style = SKPaintStyle.Fill;
+                paint.Color = shape.FillColor;
+                canvas.DrawCircle(centerX, centerY, radius, paint);
+            }
+
+            paint.Style = SKPaintStyle.Stroke;
+            paint.Color = shape.StrokeColor;
+            canvas.DrawCircle(centerX, centerY, radius, paint);
+        }
+
+        private void DrawRectangleShape(SKCanvas canvas, float x1, float y1, float x2, float y2,
+            SKPaint paint, Shape shape)
+        {
+            var rect = new SKRect(
+                Math.Min(x1, x2), Math.Min(y1, y2),
+                Math.Max(x1, x2), Math.Max(y1, y2)
+            );
+
+            if (shape.IsFilled)
+            {
+                paint.Style = SKPaintStyle.Fill;
+                paint.Color = shape.FillColor;
+                canvas.DrawRect(rect, paint);
+            }
+
+            paint.Style = SKPaintStyle.Stroke;
+            paint.Color = shape.StrokeColor;
+            canvas.DrawRect(rect, paint);
+        }
+
+        private void DrawEllipseShape(SKCanvas canvas, float x1, float y1, float x2, float y2,
+            SKPaint paint, Shape shape)
+        {
+            var rect = new SKRect(
+                Math.Min(x1, x2), Math.Min(y1, y2),
+                Math.Max(x1, x2), Math.Max(y1, y2)
+            );
+
+            if (shape.IsFilled)
+            {
+                paint.Style = SKPaintStyle.Fill;
+                paint.Color = shape.FillColor;
+                canvas.DrawOval(rect, paint);
+            }
+
+            paint.Style = SKPaintStyle.Stroke;
+            paint.Color = shape.StrokeColor;
+            canvas.DrawOval(rect, paint);
+        }
+
+        private void DrawPathShape(SKCanvas canvas, SKRect rect, Shape shape, SKPaint paint)
+        {
+            if (shape.PathPoints.Count < 2)
+                return;
+
+            using (var path = new SKPath())
+            {
+                var firstPoint = shape.PathPoints[0];
+                path.MoveTo(
+                    TimeToPixelX(firstPoint.Time, rect),
+                    PriceToPixelY(firstPoint.Price, rect)
+                );
+
+                for (int i = 1; i < shape.PathPoints.Count; i++)
+                {
+                    var point = shape.PathPoints[i];
+                    path.LineTo(
+                        TimeToPixelX(point.Time, rect),
+                        PriceToPixelY(point.Price, rect)
+                    );
+                }
+
+                paint.Style = SKPaintStyle.Stroke;
+                canvas.DrawPath(path, paint);
+            }
+        }
+
+
+        private void DrawArrow(
+    SKCanvas canvas,
+    float x1, float y1,    // Line start
+    float x2, float y2,    // Line end (arrow location)
+    SKPaint paint,
+    float arrowSize = 12f)
+        {
+            // Calculate angle of the line
+            double angle = Math.Atan2(y2 - y1, x2 - x1);
+
+            // Calculate arrow points (triangle)
+            float angle1 = (float)(angle + Math.PI * 0.85);  // 150 degrees
+            float angle2 = (float)(angle - Math.PI * 0.85);  // -150 degrees
+
+            float x_left = x2 + arrowSize * (float)Math.Cos(angle1);
+            float y_left = y2 + arrowSize * (float)Math.Sin(angle1);
+
+            float x_right = x2 + arrowSize * (float)Math.Cos(angle2);
+            float y_right = y2 + arrowSize * (float)Math.Sin(angle2);
+
+            // Draw filled triangle arrow
+            using (var path = new SKPath())
+            {
+                path.MoveTo(x2, y2);          // Arrow tip
+                path.LineTo(x_left, y_left);  // Left wing
+                path.LineTo(x_right, y_right); // Right wing
+                path.Close();
+
+                var arrowPaint = new SKPaint
+                {
+                    Style = SKPaintStyle.Fill,
+                    Color = paint.Color,
+                    IsAntialias = true
+                };
+
+                canvas.DrawPath(path, arrowPaint);
+            }
         }
 
         private void DrawTrendLine(SKCanvas canvas, SKRect rect, TrendLine line, bool isDashed = false)
         {
-            float x1 = TimeToPixelX(line.StartTime, rect);
-            float y1 = PriceToPixelY(line.StartPrice, rect);
-            float x2 = TimeToPixelX(line.EndTime, rect);
-            float y2 = PriceToPixelY(line.EndPrice, rect);
+            float x1, y1, x2, y2;
 
+            if (line.ExtendLine)
+            {
+                // Extended line logic (existing code)
+                double totalSeconds = (line.EndTime - line.StartTime).TotalSeconds;
+                if (totalSeconds <= 0)
+                    totalSeconds = 1;
+
+                double pricePerSecond = (line.EndPrice - line.StartPrice) / totalSeconds;
+
+                DateTime extendedStartTime = _viewMin;
+                DateTime extendedEndTime = _viewMax;
+
+                double deltaStart = (extendedStartTime - line.StartTime).TotalSeconds;
+                double deltaEnd = (extendedEndTime - line.StartTime).TotalSeconds;
+
+                double extendedStartPrice = line.StartPrice + (pricePerSecond * deltaStart);
+                double extendedEndPrice = line.StartPrice + (pricePerSecond * deltaEnd);
+
+                x1 = TimeToPixelX(extendedStartTime, rect);
+                y1 = PriceToPixelY(extendedStartPrice, rect);
+                x2 = TimeToPixelX(extendedEndTime, rect);
+                y2 = PriceToPixelY(extendedEndPrice, rect);
+            }
+            else
+            {
+                // Normal line logic (existing code)
+                x1 = TimeToPixelX(line.StartTime, rect);
+                y1 = PriceToPixelY(line.StartPrice, rect);
+                x2 = TimeToPixelX(line.EndTime, rect);
+                y2 = PriceToPixelY(line.EndPrice, rect);
+            }
+
+            // Draw the line
             using (var paint = new SKPaint())
             {
                 paint.Style = SKPaintStyle.Stroke;
@@ -480,46 +840,63 @@ namespace thecalcify.Charts
                     paint.PathEffect = SKPathEffect.CreateDash(new float[] { 8, 4 }, 0);
                 }
 
-                if (line.RSquared.HasValue)
+                canvas.DrawLine(x1, y1, x2, y2, paint);
+
+                // ========== NEW: DRAW ARROWS ==========
+                if (line.ShowArrows)
                 {
-                    float midX = (x1 + x2) / 2;
-                    float midY = (y1 + y2) / 2;
-
-                    string label = string.Format("R² = {0:0.000}", line.RSquared.Value);
-
-                    using (var textPaint = new SKPaint())
+                    if (line.ArrowStyle == ArrowStyle.End || line.ArrowStyle == ArrowStyle.Both)
                     {
-                        textPaint.Color = SKColors.Black;
-                        textPaint.TextSize = 11f;
-                        textPaint.IsAntialias = true;
+                        DrawArrow(canvas, x1, y1, x2, y2, paint);
+                    }
 
-                        var bounds = new SKRect();
-                        textPaint.MeasureText(label, ref bounds);
-
-                        // Background box
-                        using (var bgPaint = new SKPaint())
-                        {
-                            bgPaint.Style = SKPaintStyle.Fill;
-                            bgPaint.Color = new SKColor(255, 255, 255, 220);
-                            var bg = new SKRect(
-                                midX - 2,
-                                midY - bounds.Height - 2,
-                                midX + bounds.Width + 2,
-                                midY + 2
-                            );
-                            canvas.DrawRect(bg, bgPaint);
-                        }
-
-                        canvas.DrawText(label, midX, midY, textPaint);
+                    if (line.ArrowStyle == ArrowStyle.Start || line.ArrowStyle == ArrowStyle.Both)
+                    {
+                        DrawArrow(canvas, x2, y2, x1, y1, paint);
                     }
                 }
 
-                canvas.DrawLine(x1, y1, x2, y2, paint);
+                // Draw endpoint circles ONLY if not extended and no arrows
+                if (!line.ExtendLine && !line.ShowArrows)
+                {
+                    paint.Style = SKPaintStyle.Fill;
+                    canvas.DrawCircle(x1, y1, 4, paint);
+                    canvas.DrawCircle(x2, y2, 4, paint);
+                }
+            }
 
-                // Draw small circles at endpoints
-                paint.Style = SKPaintStyle.Fill;
-                canvas.DrawCircle(x1, y1, 4, paint);
-                canvas.DrawCircle(x2, y2, 4, paint);
+            // R² label (existing code remains same)
+            if (line.RSquared.HasValue)
+            {
+                float midX = (x1 + x2) / 2;
+                float midY = (y1 + y2) / 2;
+
+                string label = string.Format("R² = {0:0.000}", line.RSquared.Value);
+
+                using (var textPaint = new SKPaint())
+                {
+                    textPaint.Color = SKColors.Black;
+                    textPaint.TextSize = 11f;
+                    textPaint.IsAntialias = true;
+
+                    var bounds = new SKRect();
+                    textPaint.MeasureText(label, ref bounds);
+
+                    using (var bgPaint = new SKPaint())
+                    {
+                        bgPaint.Style = SKPaintStyle.Fill;
+                        bgPaint.Color = new SKColor(255, 255, 255, 220);
+                        var bg = new SKRect(
+                            midX - 2,
+                            midY - bounds.Height - 2,
+                            midX + bounds.Width + 2,
+                            midY + 2
+                        );
+                        canvas.DrawRect(bg, bgPaint);
+                    }
+
+                    canvas.DrawText(label, midX, midY, textPaint);
+                }
             }
         }
 
@@ -709,6 +1086,65 @@ namespace thecalcify.Charts
                 _crosshair = e.Location;
                 _skControl.Invalidate();
             }
+
+            // ========== SHAPE DRAWING MODE ==========
+            if (_shapeTool != ShapeTool.None && e.Button == MouseButtons.Left)
+            {
+                if (_shapeTool == ShapeTool.Path)
+                {
+                    // Path: Freehand drawing
+                    if (!_isDrawingShape)
+                    {
+                        _currentShape = new Shape
+                        {
+                            ShapeType = ShapeTool.Path,
+                            StartTime = PixelToTime(e.X),
+                            StartPrice = PixelToPrice(e.Y)
+                        };
+                        _currentShape.PathPoints.Add((
+                            PixelToTime(e.X),
+                            PixelToPrice(e.Y)
+                        ));
+                        _isDrawingShape = true;
+                    }
+                    else
+                    {
+                        // Finish path
+                        _shapes.Add(_currentShape);
+                        _currentShape = null;
+                        _isDrawingShape = false;
+                    }
+                }
+                else
+                {
+                    // Other shapes: Two-click drawing
+                    if (!_isDrawingShape)
+                    {
+                        _currentShape = new Shape
+                        {
+                            ShapeType = _shapeTool,
+                            StartTime = PixelToTime(e.X),
+                            StartPrice = PixelToPrice(e.Y),
+                            EndTime = PixelToTime(e.X),
+                            EndPrice = PixelToPrice(e.Y)
+                        };
+                        _isDrawingShape = true;
+                    }
+                    else
+                    {
+                        // Finish shape
+                        _currentShape.EndTime = PixelToTime(e.X);
+                        _currentShape.EndPrice = PixelToPrice(e.Y);
+                        _shapes.Add(_currentShape);
+                        _currentShape = null;
+                        _isDrawingShape = false;
+                    }
+                }
+
+                _skControl.Invalidate();
+                return;
+            }
+
         }
 
         private TrendLine CalculateLinearRegression(List<Candle> candles)
@@ -769,7 +1205,25 @@ namespace thecalcify.Charts
 
         private void SkControl_MouseMove(object sender, MouseEventArgs e)
         {
-            // TREND LINE MODE - Update preview
+            if (_shapeTool != ShapeTool.None && _isDrawingShape)
+            {
+                if (_shapeTool == ShapeTool.Path && _currentShape != null)
+                {
+                    _currentShape.PathPoints.Add((
+                        PixelToTime(e.X),
+                        PixelToPrice(e.Y)
+                    ));
+                }
+                else if (_currentShape != null)
+                {
+                    _currentShape.EndTime = PixelToTime(e.X);
+                    _currentShape.EndPrice = PixelToPrice(e.Y);
+                }
+
+                _skControl.Invalidate();
+                return;
+            }
+
             if (_drawingMode == DrawingMode.TrendLine && _isDrawingTrendLine)
             {
                 if (_currentTrendLine != null)
@@ -781,7 +1235,6 @@ namespace thecalcify.Charts
                 return;
             }
 
-            // NORMAL MODE (existing pan code...)
             if (_isPanning && _candles.Count > 0)
             {
                 int dx = e.Location.X - _lastMouse.X;

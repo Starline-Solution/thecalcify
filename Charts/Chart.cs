@@ -4,8 +4,8 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using thecalcify.Charts.DTOs;   // Tick
-using thecalcify.Charts.Helper; // TimeFrame → ToTimeSpan()
+using thecalcify.Charts.DTOs;   
+using thecalcify.Charts.Helper; 
 
 namespace thecalcify.Charts
 {
@@ -17,7 +17,7 @@ namespace thecalcify.Charts
         private readonly FlowLayoutPanel _topPanel;
         private ComboBox _timeframeDropdown;
         private ComboBox _drawingToolDropdown;
-
+        private ComboBox _cursorToolDropdown;
         private CandleBuilder _builder;
         private TimeFrame _currentTF = TimeFrame.Min1;
 
@@ -27,6 +27,7 @@ namespace thecalcify.Charts
         private readonly List<Tick> _ticksHistory = new List<Tick>();
         private readonly object _sync = new object();
         private const int MaxTicksHistory = 50000; // adjust as you like
+        private ComboBox _shapesDropdown;
 
         private ComboBox _chartTypeDropdown;
         private ChartType _currentChartType = ChartType.Candle;
@@ -62,6 +63,8 @@ namespace thecalcify.Charts
             // ✅ Replace button method with dropdown
             CreateTimeFrameDropdown();
             CreateDrawingToolDropdown();
+            CreateCursorToolDropdown();
+            CreateShapesDropdown();
             CreateChartTypeDropdown();
 
 
@@ -292,10 +295,148 @@ namespace thecalcify.Charts
                 Cursor = Cursors.Hand
             };
             clearBtn.FlatAppearance.BorderSize = 0;
-            clearBtn.Click += (s, e) => _chartView.ClearTrendLines();
+            clearBtn.Click += (s, e) => {
+                _chartView.ClearTrendLines();
+                _chartView.ClearShapes();
+            };
             _topPanel.Controls.Add(clearBtn);
         }
 
+        private void CreateShapesDropdown()
+        {
+            var separator = new Label
+            {
+                Text = " | ",
+                AutoSize = true,
+                Margin = new Padding(10, 7, 10, 3),
+                ForeColor = Color.FromArgb(60, 60, 60),
+                Font = new Font("Segoe UI", 10f, FontStyle.Bold)
+            };
+            _topPanel.Controls.Add(separator);
+
+            var label = new Label
+            {
+                Text = "Shapes:",
+                AutoSize = true,
+                Margin = new Padding(5, 7, 3, 3),
+                ForeColor = Color.FromArgb(30, 30, 30),
+                Font = new Font("Segoe UI", 9f, FontStyle.Bold)
+            };
+            _topPanel.Controls.Add(label);
+
+            _shapesDropdown = new ComboBox
+            {
+                Width = 120,
+                Height = 24,
+                Margin = new Padding(0, 3, 15, 3),
+                DropDownStyle = ComboBoxStyle.DropDownList,
+                BackColor = Color.FromArgb(45, 45, 45),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 9f)
+            };
+
+            _shapesDropdown.Items.Add("None");
+            _shapesDropdown.Items.Add("⭕ Circle");
+            _shapesDropdown.Items.Add("▭ Rectangle");
+            _shapesDropdown.Items.Add("⬭ Ellipse");
+            _shapesDropdown.Items.Add("✏️ Path");
+
+            _shapesDropdown.SelectedIndex = 0; // Default: None
+            _shapesDropdown.SelectedIndexChanged += ShapesDropdown_Changed;
+
+            _topPanel.Controls.Add(_shapesDropdown);
+        }
+
+        private void ShapesDropdown_Changed(object sender, EventArgs e)
+        {
+            ShapeTool tool;
+
+            switch (_shapesDropdown.SelectedIndex)
+            {
+                case 0:
+                    tool = ShapeTool.None;
+                    break;
+                case 1:
+                    tool = ShapeTool.Circle;
+                    break;
+                case 2:
+                    tool = ShapeTool.Rectangle;
+                    break;
+                case 3:
+                    tool = ShapeTool.Ellipse;
+                    break;
+                case 4:
+                    tool = ShapeTool.Path;
+                    break;
+                default:
+                    tool = ShapeTool.None;
+                    break;
+            }
+
+            _chartView.SetShapeTool(tool);
+        }
+
+
+        private void CreateCursorToolDropdown()
+        {
+            // Label
+            var label = new Label
+            {
+                Text = "Cursor:",
+                AutoSize = true,
+                Margin = new Padding(5, 7, 3, 3),
+                ForeColor = Color.FromArgb(30, 30, 30),
+                Font = new Font("Segoe UI", 9f, FontStyle.Bold)
+            };
+            _topPanel.Controls.Add(label);
+
+            // Dropdown
+            _cursorToolDropdown = new ComboBox
+            {
+                Width = 100,
+                Height = 24,
+                Margin = new Padding(0, 3, 15, 3),
+                DropDownStyle = ComboBoxStyle.DropDownList,
+                BackColor = Color.FromArgb(45, 45, 45),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 9f)
+            };
+
+            // Items with icons
+            _cursorToolDropdown.Items.Add("➤ Arrow");
+            _cursorToolDropdown.Items.Add("✛ Cross");
+            _cursorToolDropdown.Items.Add("● Dot");
+
+            _cursorToolDropdown.SelectedIndex = 0; // Default: Arrow
+            _cursorToolDropdown.SelectedIndexChanged += CursorToolDropdown_Changed;
+
+            _topPanel.Controls.Add(_cursorToolDropdown);
+        }
+
+        private void CursorToolDropdown_Changed(object sender, EventArgs e)
+        {
+            CursorTool tool;
+
+            switch (_cursorToolDropdown.SelectedIndex)
+            {
+                case 0:
+                    tool = CursorTool.Arrow;
+                    break;
+                case 1:
+                    tool = CursorTool.Cross;
+                    break;
+                case 2:
+                    tool = CursorTool.Dot;
+                    break;
+                default:
+                    tool = CursorTool.Arrow;
+                    break;
+            }
+
+            _chartView.SetCursorTool(tool);
+        }
 
         private void DrawingToolDropdown_Changed(object sender, EventArgs e)
         {
@@ -340,8 +481,6 @@ namespace thecalcify.Charts
             _chartView.SetChartType(_currentChartType);
         }
 
-
-        // Called from your Global dispatcher
         private void OnTick(Tick t)
         {
             if (!string.Equals(t.Symbol, _symbol, StringComparison.OrdinalIgnoreCase))
@@ -353,7 +492,6 @@ namespace thecalcify.Charts
                 if (_ticksHistory.Count > MaxTicksHistory)
                     _ticksHistory.RemoveRange(0, _ticksHistory.Count - MaxTicksHistory);
 
-                // update builder with real-time tick
                 _builder.AddTick(t.Time, t.Price, t.Volume);
             }
         }
