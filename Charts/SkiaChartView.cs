@@ -62,9 +62,10 @@ namespace thecalcify.Charts
         private readonly List<TrendLine> _trendLines = new List<TrendLine>();
         private TrendLine _currentTrendLine = null;
         private bool _isDrawingTrendLine = false;
-        private CursorTool _cursorTool = CursorTool.Arrow;
+        private CursorTool _cursorTool = CursorTool.Cross;
 
         public SKColor ChartBackground { get; set; } = new SKColor(18, 18, 18);
+        public event Action DrawingCompleted;
 
         public SkiaChartView()
         {
@@ -1033,6 +1034,16 @@ namespace thecalcify.Charts
                     _trendLines.Add(_currentTrendLine);
                     _currentTrendLine = null;
                     _isDrawingTrendLine = false;
+
+                    // 🔥 RESET MODE
+                    _drawingMode = DrawingMode.None;
+                    UpdateCursor();
+
+                    // 🔔 NOTIFY
+                    DrawingCompleted?.Invoke();
+
+                    _skControl.Invalidate();
+                    return;
                 }
 
                 _skControl.Invalidate();
@@ -1068,7 +1079,16 @@ namespace thecalcify.Charts
                     }
 
                     _isSelectingRegression = false;
+
+                    // 🔥 RESET MODE
+                    _drawingMode = DrawingMode.None;
+                    UpdateCursor();
+
+                    // 🔔 NOTIFY
+                    DrawingCompleted?.Invoke();
+
                     _skControl.Invalidate();
+                    return;
                 }
                 return;
             }
@@ -1113,6 +1133,17 @@ namespace thecalcify.Charts
                         _shapes.Add(_currentShape);
                         _currentShape = null;
                         _isDrawingShape = false;
+
+                        // 🔥 RESET SHAPE TOOL
+                        _shapeTool = ShapeTool.None;
+                        UpdateCursor();
+
+                        // 🔔 NOTIFY
+                        DrawingCompleted?.Invoke();
+
+                        _skControl.Invalidate();
+                        return;
+
                     }
                 }
                 else
@@ -1135,9 +1166,21 @@ namespace thecalcify.Charts
                         // Finish shape
                         _currentShape.EndTime = PixelToTime(e.X);
                         _currentShape.EndPrice = PixelToPrice(e.Y);
+
                         _shapes.Add(_currentShape);
                         _currentShape = null;
                         _isDrawingShape = false;
+
+                        // 🔥 RESET SHAPE TOOL
+                        _shapeTool = ShapeTool.None;
+                        UpdateCursor();
+
+                        // 🔔 NOTIFY
+                        DrawingCompleted?.Invoke();
+
+                        _skControl.Invalidate();
+                        return;
+
                     }
                 }
 

@@ -157,7 +157,7 @@ namespace thecalcify.Charts
         private async Task ChangeTimeFrame(TimeFrame tf)
         {
             _currentTF = tf;
-            await LoadAndApplyHistorical();
+            //await LoadAndApplyHistorical();
         }
 
         #endregion
@@ -175,20 +175,35 @@ namespace thecalcify.Charts
             base.OnLoad(e);
 
             // 1️⃣ Load historical candles for initial timeframe
-            await LoadAndApplyHistorical();
+            //await LoadAndApplyHistorical();
 
             // 2️⃣ Start listening to live ticks
             GlobalTickDispatcher.TickReceived += OnTick;
 
             // 3️⃣ Start chart UI updates
             _uiTimer.Start();
+
+            _chartView.DrawingCompleted += OnDrawingCompleted;
+
         }
 
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
+            _chartView.DrawingCompleted -= OnDrawingCompleted;
             GlobalTickDispatcher.TickReceived -= OnTick;
             _uiTimer.Stop();
             base.OnFormClosing(e);
+        }
+
+        private void OnDrawingCompleted()
+        {
+            // Reset drawing dropdown
+            if (_drawingToolDropdown != null)
+                _drawingToolDropdown.SelectedIndex = 0; // None
+
+            // Reset shapes dropdown
+            if (_shapesDropdown != null)
+                _shapesDropdown.SelectedIndex = 0; // None
         }
 
         #endregion
@@ -221,11 +236,12 @@ namespace thecalcify.Charts
                 Font = new Font("Segoe UI", 9f)
             };
 
-            _chartTypeDropdown.Items.Add("Candlestick");
-            _chartTypeDropdown.Items.Add("OHLC Bar");
-            _chartTypeDropdown.Items.Add("Column");
-            _chartTypeDropdown.Items.Add("High-Low");
-            _chartTypeDropdown.Items.Add("Line");
+            _chartTypeDropdown.Items.Add("▮▯ Candles");
+            _chartTypeDropdown.Items.Add("┼  OHLC Bar");
+            _chartTypeDropdown.Items.Add("▌  Column");
+            _chartTypeDropdown.Items.Add("│  High–Low");
+            _chartTypeDropdown.Items.Add("╱  Line");
+
 
             _chartTypeDropdown.SelectedIndex = 0;
             _chartTypeDropdown.SelectedIndexChanged += ChartTypeDropdown_Changed;
@@ -377,7 +393,6 @@ namespace thecalcify.Charts
             _chartView.SetShapeTool(tool);
         }
 
-
         private void CreateCursorToolDropdown()
         {
             // Label
@@ -405,12 +420,13 @@ namespace thecalcify.Charts
             };
 
             // Items with icons
-            _cursorToolDropdown.Items.Add("➤ Arrow");
             _cursorToolDropdown.Items.Add("✛ Cross");
+            _cursorToolDropdown.Items.Add("➤ Arrow"); 
             _cursorToolDropdown.Items.Add("● Dot");
 
-            _cursorToolDropdown.SelectedIndex = 0; // Default: Arrow
+            _cursorToolDropdown.SelectedIndex = 0; // Default: Cross
             _cursorToolDropdown.SelectedIndexChanged += CursorToolDropdown_Changed;
+            _chartView.SetCursorTool(CursorTool.Cross);
 
             _topPanel.Controls.Add(_cursorToolDropdown);
         }
@@ -422,16 +438,16 @@ namespace thecalcify.Charts
             switch (_cursorToolDropdown.SelectedIndex)
             {
                 case 0:
-                    tool = CursorTool.Arrow;
+                    tool = CursorTool.Cross;
                     break;
                 case 1:
-                    tool = CursorTool.Cross;
+                    tool = CursorTool.Arrow;
                     break;
                 case 2:
                     tool = CursorTool.Dot;
                     break;
                 default:
-                    tool = CursorTool.Arrow;
+                    tool = CursorTool.Cross;
                     break;
             }
 
@@ -526,7 +542,7 @@ namespace thecalcify.Charts
                 DateTime now = DateTime.UtcNow.AddMinutes(-3);
 
                 var rnd = new Random();
-                double price = 182793;
+                double price = 5090;
 
                 TimeSpan span = _currentTF.ToTimeSpan();
 

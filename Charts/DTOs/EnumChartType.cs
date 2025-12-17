@@ -1,9 +1,6 @@
 ﻿using SkiaSharp;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace thecalcify.Charts.DTOs
 {
@@ -34,8 +31,8 @@ namespace thecalcify.Charts.DTOs
 
     public enum CursorTool
     {
-        Arrow,     
         Cross,     
+        Arrow,
         Dot
         
     }

@@ -99,7 +99,6 @@
     <Compile Include="Charts\GlobalTickDispatcher.cs" />
     <Compile Include="Charts\Helper\TimeFrameHelper.cs" />
     <Compile Include="Charts\Helper\TrendLine.cs" />
-    <Compile Include="Charts\IRealtimeTickSource.cs" />
     <Compile Include="Charts\SkiaChartView.cs">
       <SubType>UserControl</SubType>
     </Compile>
