@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Globalization;
 using System.Linq;
 using System.Net;
@@ -88,6 +89,41 @@ namespace thecalcify.News
 
             }
 
+            dgvNews.EnableHeadersVisualStyles = false;
+            dgvNews.CellBorderStyle = DataGridViewCellBorderStyle.Raised;
+            dgvNews.GridColor = Color.Gainsboro;
+            dgvNews.RowHeadersVisible = false;
+            dgvNews.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+
+            // 2. Header Style (Teal Background, WhiteSmoke Text, Sans Serif Bold 10pt)
+            DataGridViewCellStyle headerStyle = new DataGridViewCellStyle();
+            headerStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            headerStyle.BackColor = Color.FromArgb(81, 213, 220); // Teal
+            headerStyle.ForeColor = Color.WhiteSmoke;
+            headerStyle.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Bold);
+            headerStyle.SelectionBackColor = Color.FromArgb(81, 213, 220);
+            headerStyle.SelectionForeColor = Color.WhiteSmoke;
+            headerStyle.WrapMode = DataGridViewTriState.True;
+
+            dgvNews.ColumnHeadersDefaultCellStyle = headerStyle;
+            dgvNews.ColumnHeadersHeight = 40; // Match Home Height
+
+            // 3. Default Row Style (White Background, Black Text, Sans Serif 10pt)
+            DataGridViewCellStyle rowStyle = new DataGridViewCellStyle();
+            rowStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            rowStyle.BackColor = Color.White;
+            rowStyle.ForeColor = Color.Black;
+            rowStyle.Font = new Font("Microsoft Sans Serif", 11F, FontStyle.Regular);
+            rowStyle.SelectionBackColor = Color.FromArgb(81, 213, 220); // Hover/Select Color
+            rowStyle.SelectionForeColor = Color.WhiteSmoke;
+            rowStyle.WrapMode = DataGridViewTriState.False;
+
+            dgvNews.DefaultCellStyle = rowStyle;
+            dgvNews.RowTemplate.Height = 36; // Match Home Row Height
+
+            // 4. Alternating Row Style (Very Light Gray)
+            dgvNews.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(250, 250, 250);
+
             // Loop through all columns and disable sorting
             foreach (DataGridViewColumn column in dgvNews.Columns)
             {
@@ -99,8 +135,7 @@ namespace thecalcify.News
             // Explicitly set column FillWeights again
             dgvNews.Columns[0].FillWeight = 20;  // Time
             dgvNews.Columns[1].FillWeight = 80;  // Title
-            //dgvNews.Columns[2].FillWeight = 15;  // Category
-            //dgvNews.Columns[3].FillWeight = 15;  // SubCategory
+
 
             dgvNews.Columns[0].MinimumWidth = 330;
 
