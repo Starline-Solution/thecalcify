@@ -1,0 +1,111 @@
+﻿<!DOCTYPE html>
+<html style="height: 100%;">
+<head>
+    <meta charset="utf-8" />
+    <title>Chart</title>
+    <style>
+        html, body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: sans-serif;
+        }
+
+        #tv_chart_container {
+            width: 100%;
+            height: 100%;
+            background: #ffffff;
+        }
+    </style>
+
+    <script src="charting_library/charting_library.standalone.js"></script>
+</head>
+<body>
+    <div id="tv_chart_container"></div>
+
+    <script>
+        var _widget = null;
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const displaySymbol = urlParams.get('symbol');
+
+        window.onload = function() {
+            if (typeof TradingView === 'undefined') {
+                document.body.innerHTML = "<h2 style='color:red'>Library Not Found</h2>";
+                return;
+            }
+
+            try {
+                const Datafeed = {
+                    onReady: (cb) => setTimeout(() => cb({supported_resolutions: ['1', '5', '15', '60', 'D']}), 0),
+                    resolveSymbol: (symbolName, onSymbolResolvedCallback, onResolveErrorCallback) => {
+                        setTimeout(() => {
+                            onSymbolResolvedCallback({
+                                name: symbolName,
+                                description: symbolName,
+                                type: 'forex',
+                                session: '24x7',
+                                timezone: 'Asia/Kolkata',
+                                minmov: 1,
+                                pricescale: 100,
+                                has_intraday: true,
+                                supported_resolutions: ['1', '5', '15', '60', 'D'],
+                                data_status: 'streaming',
+                            });
+                        }, 0);
+                    },
+                    getBars: (symbolInfo, resolution, periodParams, onResult, onError) => {
+                        // History API integration
+                        console.log('[Datafeed] getBars called');
+                        setTimeout(() => onResult([], { noData: true }), 0);
+                    },
+                    subscribeBars: (symbolInfo, resolution, onTick, listenerGuid) => {
+                        window.currentSubscription = { onTick, listenerGuid };
+                    },
+                    unsubscribeBars: (listenerGuid) => {
+                        window.currentSubscription = null;
+                    }
+                };
+
+                _widget = new TradingView.widget({
+                    symbol: displaySymbol,
+                    interval: '1',
+                    container: 'tv_chart_container',
+                    datafeed: Datafeed,
+                    library_path: 'charting_library/',
+                    locale: 'en',
+                    disabled_features: ['header_symbol_search', 'header_screenshot', 'header_compare','header_settings', 'widget_logo'],
+                    enabled_features: ['study_templates'],
+                    fullscreen: true,
+                    autosize: true,
+                    theme: 'Light',
+                    timezone: 'Asia/Kolkata',
+                    debug: true
+                });
+
+            } catch(e) {
+                console.error(e);
+            }
+        };
+
+        window.updateTick = function(tickJson) {
+            try {
+                var tick = JSON.parse(tickJson);
+                if (window.currentSubscription && window.currentSubscription.onTick) {
+                    var bar = {
+                        time: tick.time,
+                        close: tick.ask,
+                        open: tick.ask,
+                        high: tick.ask,
+                        low: tick.ask,
+                        volume: tick.volume || 0
+                    };
+                    window.currentSubscription.onTick(bar);
+                }
+            } catch(e) { console.error(e); }
+        };
+    </script>
+</body>
+</html>

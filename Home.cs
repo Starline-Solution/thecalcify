@@ -24,6 +24,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using thecalcify.Alert;
+using thecalcify.Charts.Models;
+using thecalcify.Charts.Services;
+using thecalcify.Charts.Views;
 using thecalcify.Excel_Helper;
 using thecalcify.Helper;
 using thecalcify.MarketWatch;
@@ -168,6 +171,7 @@ namespace thecalcify
         private readonly ConcurrentDictionary<string, MarketDataDto> _latestTicks = new ConcurrentDictionary<string, MarketDataDto>(StringComparer.OrdinalIgnoreCase);
         private bool _isGridBuilding = false;
         private static bool _excelWarmedUp = false;
+        private int _rightClickedRowIndex = -1;
 
         #endregion Declaration and Initialization
 
@@ -627,6 +631,9 @@ namespace thecalcify
                 // ✔ Set the current cell (important!)
                 defaultGrid.CurrentCell = defaultGrid.Rows[e.RowIndex].Cells[1];
 
+                // ⭐ Store row index for context menu
+                _rightClickedRowIndex = e.RowIndex;
+
                 // ✔ Show your context menu NEXT
                 Tools.Show(Cursor.Position);
             }
@@ -1006,10 +1013,12 @@ namespace thecalcify
                     };
 
                     // Search Placeholder Logic
-                    searchBox.Enter += (s, args) => {
+                    searchBox.Enter += (s, args) =>
+                    {
                         if (searchBox.Text == "Search...") { searchBox.Text = ""; searchBox.ForeColor = Color.Black; }
                     };
-                    searchBox.Leave += (s, args) => {
+                    searchBox.Leave += (s, args) =>
+                    {
                         if (string.IsNullOrWhiteSpace(searchBox.Text)) { searchBox.Text = "Search..."; searchBox.ForeColor = Color.Gray; }
                     };
 
@@ -1415,7 +1424,7 @@ namespace thecalcify
 
                         var clickedItem = (ToolStripMenuItem)sender;
 
-                        saveFileName = clickedItem.Text.Replace("👁️‍🗨️","").Trim();
+                        saveFileName = clickedItem.Text.Replace("👁️‍🗨️", "").Trim();
                         addEditSymbolsToolStripMenuItem.Enabled = true;
                         lastOpenMarketWatch = saveFileName;
 
@@ -3200,7 +3209,7 @@ namespace thecalcify
 
 
                 // Try to find existing sheet
-                Microsoft.Office.Interop.Excel.Worksheet costCalcWs = GetSheetIfExists("Cost.Cal"); 
+                Microsoft.Office.Interop.Excel.Worksheet costCalcWs = GetSheetIfExists("Cost.Cal");
 
                 if (costCalcWs == null)
                 {
@@ -3455,7 +3464,7 @@ namespace thecalcify
             try
             {
                 string officeVersion = GetOfficeVersion();
-                
+
                 string AppIcon = $@"Software\Microsoft\Windows\CurrentVersion\Uninstall\{{45A18102-1652-4AAA-8C62-4306D49EF5AB}}";
                 string excelOptionsPath = $@"Software\Microsoft\Office\{officeVersion}\Excel\Options";
                 string graphicsPath = $@"Software\Microsoft\Office\{officeVersion}\Common\Graphics";
@@ -3675,7 +3684,7 @@ namespace thecalcify
         #endregion Excel Export
 
         #region News
-        
+
         public async void NewsListToolStripMenuItem_Click(object sender, EventArgs e)
         {
             try
@@ -4127,7 +4136,7 @@ namespace thecalcify
             {
                 List<SheetWrapperDto> sheets = await UserExcelExportForm.GetSheetListAsync(token);
 
-                foreach (SheetWrapperDto sheetWrapper in sheets) 
+                foreach (SheetWrapperDto sheetWrapper in sheets)
                 {
                     if (sheetWrapper != null && sheetWrapper.Type == "json")
                     {
@@ -4500,7 +4509,34 @@ namespace thecalcify
             // 6️⃣ ARROW UPDATE (safe)
             // ======================================
             if (double.TryParse(dto.a, out var ask))
+            {
                 UpdateAskArrow(row, dto.i, ask);
+
+                DateTime tickTime;
+
+                if (long.TryParse(dto.t, out long ts))
+                {
+                    if (ts > 1000000000000)
+                        tickTime = DateTimeOffset.FromUnixTimeMilliseconds(ts).ToOffset(TimeSpan.FromHours(5.5)).DateTime;
+                    else
+                        tickTime = DateTimeOffset.FromUnixTimeSeconds(ts).ToOffset(TimeSpan.FromHours(5.5)).DateTime;
+                }
+                else
+                {
+                    tickTime = DateTime.Now; // IST already
+                }
+
+
+                var tick = new Tick
+                {
+                    Symbol = dto.i,
+                    Time = tickTime,
+                    Price = ask,
+                    Volume = Convert.ToDouble(dto.vt)
+                };
+
+                GlobalTickDispatcher.Publish(tick);
+            }
         }
 
         private double FastParse(object val)
@@ -4635,7 +4671,7 @@ namespace thecalcify
                 }
 
                 string updateServiceName = "thecalcifyUpdate";
-                
+
                 using (ServiceController sc = new ServiceController(updateServiceName))
                 {
                     if (sc.Status == ServiceControllerStatus.Stopped || sc.Status == ServiceControllerStatus.Paused)
@@ -4736,6 +4772,29 @@ namespace thecalcify
             { return; }
 
             CopySelectedRowsToClipboard();
+        }
+
+        #endregion
+
+        #region Chart
+        private void ChartWindowToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (_rightClickedRowIndex < 0)
+                return;
+
+            string symbol = defaultGrid.Rows[_rightClickedRowIndex].Cells["Symbol"].Value.ToString();
+            string displaySymbol = defaultGrid.Rows[_rightClickedRowIndex].Cells["Name"].Value.ToString().Replace(" ▲", "").Replace(" ▼", "").Trim();
+
+
+            var chartForm = new Chart(symbol, displaySymbol);
+
+            if (isFullScreen)
+            {
+                chartForm.StartPosition = FormStartPosition.CenterParent;
+                chartForm.TopMost = true;
+            }
+
+            chartForm.Show();
         }
 
         #endregion
