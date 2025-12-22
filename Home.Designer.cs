@@ -6,6 +6,7 @@ using System.Linq;
 using System.Windows.Forms;
 using thecalcify.Helper;
 using thecalcify.MarketWatch;
+using thecalcify.Modern_UI;
 
 
 namespace thecalcify
@@ -71,17 +72,19 @@ namespace thecalcify
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.headerPanel = new System.Windows.Forms.Panel();
             this.titleLabel = new System.Windows.Forms.Label();
+            this.pnlSearch = new System.Windows.Forms.Panel();
+            this.txtsearch = new System.Windows.Forms.TextBox();
+            this.searchTextLabel = new System.Windows.Forms.Label();
             this.licenceExpire = new System.Windows.Forms.Label();
             this.bottomPanel = new System.Windows.Forms.Panel();
             this.savelabel = new System.Windows.Forms.Label();
-            this.searchTextLabel = new System.Windows.Forms.Label();
-            this.fontSizeComboBox = new System.Windows.Forms.ComboBox();
+            this.fontSizeComboBox = new ModernComboBox();
             this.newMarketWatchMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.txtsearch = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.defaultGrid)).BeginInit();
             this.Tools.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.headerPanel.SuspendLayout();
+            this.pnlSearch.SuspendLayout();
             this.bottomPanel.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -100,9 +103,9 @@ namespace thecalcify
             dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
             dataGridViewCellStyle2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(81)))), ((int)(((byte)(213)))), ((int)(((byte)(220)))));
             dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold);
-            dataGridViewCellStyle2.ForeColor = Color.WhiteSmoke;
+            dataGridViewCellStyle2.ForeColor = System.Drawing.Color.WhiteSmoke;
             dataGridViewCellStyle2.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(81)))), ((int)(((byte)(213)))), ((int)(((byte)(220)))));
-            dataGridViewCellStyle2.SelectionForeColor = Color.WhiteSmoke;
+            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.Color.WhiteSmoke;
             dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
             this.defaultGrid.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
             this.defaultGrid.ColumnHeadersHeight = 40;
@@ -113,7 +116,7 @@ namespace thecalcify
             dataGridViewCellStyle3.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F);
             dataGridViewCellStyle3.ForeColor = System.Drawing.Color.Black;
             dataGridViewCellStyle3.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(81)))), ((int)(((byte)(213)))), ((int)(((byte)(220)))));
-            dataGridViewCellStyle3.SelectionForeColor = Color.WhiteSmoke; 
+            dataGridViewCellStyle3.SelectionForeColor = System.Drawing.Color.WhiteSmoke;
             dataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
             this.defaultGrid.DefaultCellStyle = dataGridViewCellStyle3;
             this.defaultGrid.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -374,6 +377,46 @@ namespace thecalcify
             this.titleLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.titleLabel.TextChanged += new System.EventHandler(this.TitleLabel_TextChanged);
             // 
+            // pnlSearch
+            // 
+            this.pnlSearch.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.pnlSearch.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(248)))), ((int)(((byte)(250)))));
+            this.pnlSearch.Controls.Add(this.txtsearch);
+            this.pnlSearch.Controls.Add(this.searchTextLabel);
+            this.pnlSearch.Cursor = System.Windows.Forms.Cursors.IBeam;
+            this.pnlSearch.Location = new System.Drawing.Point(690, 27);
+            this.pnlSearch.Name = "pnlSearch";
+            this.pnlSearch.Size = new System.Drawing.Size(220, 30);
+            this.pnlSearch.TabIndex = 6;
+            this.pnlSearch.Click += new System.EventHandler(this.PnlSearch_Click);
+            this.pnlSearch.Paint += new System.Windows.Forms.PaintEventHandler(this.PnlSearch_Paint);
+            // 
+            // txtsearch
+            // 
+            this.txtsearch.BackColor = System.Drawing.Color.White;
+            this.txtsearch.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.txtsearch.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.txtsearch.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.txtsearch.Location = new System.Drawing.Point(0, 0);
+            this.txtsearch.Name = "txtsearch";
+            this.txtsearch.Size = new System.Drawing.Size(220, 20);
+            this.txtsearch.TabIndex = 0;
+            this.txtsearch.TextChanged += new System.EventHandler(this.Txtsearch_TextChanged);
+            this.txtsearch.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Txtsearch_KeyDown);
+            // 
+            // searchTextLabel
+            // 
+            this.searchTextLabel.AutoSize = true;
+            this.searchTextLabel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(248)))), ((int)(((byte)(250)))));
+            this.searchTextLabel.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.searchTextLabel.ForeColor = System.Drawing.Color.Gray;
+            this.searchTextLabel.Location = new System.Drawing.Point(8, 7);
+            this.searchTextLabel.Name = "searchTextLabel";
+            this.searchTextLabel.Size = new System.Drawing.Size(87, 20);
+            this.searchTextLabel.TabIndex = 1;
+            this.searchTextLabel.Text = "Search Text:";
+            this.searchTextLabel.Click += new System.EventHandler(this.PnlSearch_Click);
+            // 
             // licenceExpire
             // 
             this.licenceExpire.AutoSize = true;
@@ -408,19 +451,15 @@ namespace thecalcify
             this.savelabel.Text = "Save MarketWatch (CTRL + S)";
             this.savelabel.Visible = false;
             // 
-            // searchTextLabel
-            // 
-            this.searchTextLabel.AutoSize = true;
-            this.searchTextLabel.Location = new System.Drawing.Point(464, 33);
-            this.searchTextLabel.Name = "searchTextLabel";
-            this.searchTextLabel.Size = new System.Drawing.Size(89, 16);
-            this.searchTextLabel.TabIndex = 7;
-            this.searchTextLabel.Text = "Search Text :-";
-            // 
             // fontSizeComboBox
             // 
+            this.fontSizeComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.fontSizeComboBox.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
+            this.fontSizeComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.fontSizeComboBox.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.fontSizeComboBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.fontSizeComboBox.FormattingEnabled = true;
+            this.fontSizeComboBox.ItemHeight = 20;
             this.fontSizeComboBox.Items.AddRange(new object[] {
             "10",
             "12",
@@ -433,12 +472,11 @@ namespace thecalcify
             "26",
             "28",
             "30"});
-            this.fontSizeComboBox.Location = new System.Drawing.Point(757, 29);
+            this.fontSizeComboBox.Location = new System.Drawing.Point(902, 26);
             this.fontSizeComboBox.Margin = new System.Windows.Forms.Padding(4);
             this.fontSizeComboBox.Name = "fontSizeComboBox";
-            this.fontSizeComboBox.Size = new System.Drawing.Size(160, 24);
+            this.fontSizeComboBox.Size = new System.Drawing.Size(160, 26);
             this.fontSizeComboBox.TabIndex = 5;
-            this.fontSizeComboBox.Text = "Font Size";
             this.fontSizeComboBox.SelectedIndexChanged += new System.EventHandler(this.FontSizeComboBox_SelectedIndexChanged);
             this.fontSizeComboBox.TextChanged += new System.EventHandler(this.FontSizeComboBox_TextChanged);
             // 
@@ -447,24 +485,13 @@ namespace thecalcify
             this.newMarketWatchMenuItem.Name = "newMarketWatchMenuItem";
             this.newMarketWatchMenuItem.Size = new System.Drawing.Size(32, 19);
             // 
-            // txtsearch
-            // 
-            this.txtsearch.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtsearch.Location = new System.Drawing.Point(561, 27);
-            this.txtsearch.Name = "txtsearch";
-            this.txtsearch.Size = new System.Drawing.Size(176, 27);
-            this.txtsearch.TabIndex = 6;
-            this.txtsearch.TextChanged += new System.EventHandler(this.Txtsearch_TextChanged);
-            this.txtsearch.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Txtsearch_KeyDown);
-            // 
             // thecalcify
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoScroll = true;
             this.ClientSize = new System.Drawing.Size(1115, 708);
-            this.Controls.Add(this.searchTextLabel);
-            this.Controls.Add(this.txtsearch);
+            this.Controls.Add(this.pnlSearch);
             this.Controls.Add(this.fontSizeComboBox);
             this.Controls.Add(this.defaultGrid);
             this.Controls.Add(this.menuStrip1);
@@ -483,6 +510,8 @@ namespace thecalcify
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.headerPanel.ResumeLayout(false);
+            this.pnlSearch.ResumeLayout(false);
+            this.pnlSearch.PerformLayout();
             this.bottomPanel.ResumeLayout(false);
             this.bottomPanel.PerformLayout();
             this.ResumeLayout(false);
@@ -586,6 +615,8 @@ namespace thecalcify
 
         public void FontSizeComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
+            if (fontSizeComboBox.SelectedIndex == -1) return;
+
             ApplyFontSizeFromComboBox();
         }
 
@@ -776,7 +807,7 @@ namespace thecalcify
         public Button btnCancelAddSymbols;
         public TextBox txtsearch;
         public Label searchTextLabel;
-        public ComboBox fontSizeComboBox;
+        public ModernComboBox fontSizeComboBox;
         public System.Windows.Forms.ToolStripMenuItem newMarketWatchMenuItem;
         public System.Windows.Forms.Panel headerPanel;
         public System.Windows.Forms.Label titleLabel;
@@ -797,5 +828,6 @@ namespace thecalcify
         public ToolStripMenuItem copyRowToolStripMenuItem;
         public ToolStripMenuItem exportWorksheetsToolStripMenuItem;
         private System.ComponentModel.IContainer components;
+        private Panel pnlSearch;
     }
 }

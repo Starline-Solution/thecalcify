@@ -27,7 +27,7 @@ using thecalcify.Alert;
 using thecalcify.Excel_Helper;
 using thecalcify.Helper;
 using thecalcify.MarketWatch;
-//using thecalcify.Modern_UI;
+using thecalcify.Modern_UI;
 using thecalcify.News;
 using thecalcify.RTDWorker;
 using thecalcify.Shared;
@@ -203,6 +203,12 @@ namespace thecalcify
                 // --- PARALLEL INITIALIZATION ---
                 var initializationTasks = new List<Task>();
 
+                menuStrip1.Renderer = new ModernMenuRenderer();
+                Tools.Renderer = new ModernMenuRenderer();
+
+                fontSizeComboBox.SelectedIndex = -1;
+
+                SetupModernSearchBox();
 
                 initializationTasks.Add(Task.Run(() =>
                 {
@@ -216,6 +222,8 @@ namespace thecalcify
                     columnPreferences = (currentColumns?.Count == 0 || currentColumns == null) ?
                         (columnPreferencesDefault ?? new List<string>()) : currentColumns;
                 }));
+
+                pnlSearch.Paint += PnlSearch_Paint;
 
                 //// Warm up Excel COM server (faster first export)
                 //var app = new Microsoft.Office.Interop.Excel.Application();
@@ -426,8 +434,6 @@ namespace thecalcify
 
                 CurrentInstance = this;
 
-
-
                 // --- GLOBAL EVENTS ---
                 //NetworkChange.NetworkAvailabilityChanged += OnNetworkAvailabilityChanged;
                 //NetworkChange.NetworkAddressChanged += OnNetworkAddressChanged;
@@ -442,6 +448,58 @@ namespace thecalcify
             {
                 ApplicationLogger.LogException(ex);
             }
+        }
+
+        private void PnlSearch_Paint(object sender, PaintEventArgs e)
+        {
+            ControlPaint.DrawBorder(e.Graphics, pnlSearch.ClientRectangle, Color.FromArgb(220, 220, 220), ButtonBorderStyle.Solid);
+        }
+
+        private void PnlSearch_Click(object sender, EventArgs e)
+        {
+            txtsearch.Focus();
+        }
+
+        private void SetupModernSearchBox()
+        {
+            Color inputBg = Color.FromArgb(245, 248, 250);
+            Color borderColor = Color.FromArgb(220, 220, 220);
+
+            pnlSearch.BackColor = inputBg;
+
+            pnlSearch.Size = new Size(270, 25);
+            pnlSearch.Location = new Point(pnlSearch.Location.X - 70, pnlSearch.Location.Y );    
+
+            pnlSearch.Padding = new Padding(0);
+            pnlSearch.Cursor = Cursors.IBeam;
+
+            pnlSearch.Paint -= PnlSearch_Paint;
+            pnlSearch.Paint += (s, e) =>
+            {
+                ControlPaint.DrawBorder(e.Graphics, pnlSearch.ClientRectangle, borderColor, ButtonBorderStyle.Solid);
+            };
+
+            searchTextLabel.Parent = pnlSearch;
+            searchTextLabel.ForeColor = Color.Gray;
+            searchTextLabel.BackColor = inputBg;
+            searchTextLabel.Location = new Point(8, (pnlSearch.Height - searchTextLabel.Height) / 2);
+
+            txtsearch.Parent = pnlSearch;
+            txtsearch.BorderStyle = BorderStyle.None;
+            txtsearch.BackColor = inputBg;
+            txtsearch.Font = new Font("Segoe UI", 9F, FontStyle.Regular);
+
+            // Position TextBox to the right of the Label
+            int textX = searchTextLabel.Right + 5;
+            txtsearch.Location = new Point(textX, (pnlSearch.Height - txtsearch.Height) / 2 + 1);
+
+            // ✅ Auto-width: Fills the remaining space of the smaller panel
+            txtsearch.Width = pnlSearch.Width - textX - 10;
+            txtsearch.Anchor = AnchorStyles.Left | AnchorStyles.Right;
+
+            // 4. Focus Events
+            pnlSearch.Click += (s, e) => txtsearch.Focus();
+            searchTextLabel.Click += (s, e) => txtsearch.Focus();
         }
 
         public static void WarmUpExcelLazy()
