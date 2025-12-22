@@ -1,7 +1,5 @@
-﻿using DocumentFormat.OpenXml.ExtendedProperties;
-using Microsoft.AspNetCore.SignalR.Client;
+﻿using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.Logging;
-using Microsoft.Vbe.Interop;
 using Microsoft.Win32;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -29,7 +27,7 @@ using thecalcify.Alert;
 using thecalcify.Excel_Helper;
 using thecalcify.Helper;
 using thecalcify.MarketWatch;
-using thecalcify.Modern_UI;
+//using thecalcify.Modern_UI;
 using thecalcify.News;
 using thecalcify.RTDWorker;
 using thecalcify.Shared;
@@ -134,7 +132,7 @@ namespace thecalcify
         private Button btnSelectAllColumns;
         private Button btnConfirmAddColumns;
         private Button btnCancelAddColumns;
-        private ModernUIManager uiManager;
+        //private ModernUIManager uiManager;
 
 
         // ======================
@@ -232,8 +230,8 @@ namespace thecalcify
                     ApplicationLogger.Log($"Pipe message received: {message}");
                 });
 
-                uiManager = new ModernUIManager(this);
-                uiManager?.ApplyModernUI();
+                //uiManager = new ModernUIManager(this);
+                //uiManager?.ApplyModernUI();
 
                 // --- MENU SETUP ---
                 if (LoginInfo.IsRate && LoginInfo.IsNews && LoginInfo.RateExpiredDate.Date >= DateTime.Today.Date && LoginInfo.NewsExpiredDate >= DateTime.Today.Date)
@@ -788,14 +786,14 @@ namespace thecalcify
                 fontSizeComboBox.Visible = true;
                 savelabel.Visible = false;
 
-                uiManager?.SetFontSizeComboBoxVisibility(true);
+                //uiManager?.SetFontSizeComboBoxVisibility(true);
 
 
                 searchTextLabel.Visible = true;
                 txtsearch.Visible = true;
                 txtsearch.Text = string.Empty;
 
-                uiManager?.SetSearchBoxVisibility(true);
+                //uiManager?.SetSearchBoxVisibility(true);
 
 
                 // Close editable grid if open
@@ -1386,7 +1384,7 @@ namespace thecalcify
                 // Clear existing menu items
                 viewToolStripMenuItem.DropDownItems.Clear();
                 // Add Default menu item with click handler
-                ToolStripMenuItem defaultMenuItem = new ToolStripMenuItem("Default");
+                ToolStripMenuItem defaultMenuItem = new ToolStripMenuItem("👁️‍🗨️ Default");
                 defaultMenuItem.Click += async (sender, e) =>
                 {
                     selectedSymbols.Clear();
@@ -1407,7 +1405,7 @@ namespace thecalcify
                 // Add each file as a menu item with a click handler
                 foreach (string fileName in fileNames)
                 {
-                    ToolStripMenuItem menuItem = new ToolStripMenuItem(fileName);
+                    ToolStripMenuItem menuItem = new ToolStripMenuItem("👁️‍🗨️ " + fileName);
                     menuItem.Click += async (sender, e) =>
                     {
                         selectedSymbols.Clear();
@@ -1417,7 +1415,7 @@ namespace thecalcify
 
                         var clickedItem = (ToolStripMenuItem)sender;
 
-                        saveFileName = clickedItem.Text;
+                        saveFileName = clickedItem.Text.Replace("👁️‍🗨️","").Trim();
                         addEditSymbolsToolStripMenuItem.Enabled = true;
                         lastOpenMarketWatch = saveFileName;
 
@@ -1501,12 +1499,12 @@ namespace thecalcify
             {
                 savelabel.Visible = false;
                 fontSizeComboBox.Visible = true;
-                uiManager?.SetFontSizeComboBoxVisibility(true);
+                //uiManager?.SetFontSizeComboBoxVisibility(true);
 
                 searchTextLabel.Visible = true;
                 txtsearch.Clear();
                 txtsearch.Visible = true;
-                uiManager?.SetSearchBoxVisibility(true);
+                //uiManager?.SetSearchBoxVisibility(true);
 
 
                 string finalPath = Path.Combine(AppFolder, username);
@@ -1574,7 +1572,7 @@ namespace thecalcify
                 refreshMarketWatchHost.Visible = false;
 
                 fontSizeComboBox.Visible = false;
-                uiManager?.SetFontSizeComboBoxVisibility(false);
+                //uiManager?.SetFontSizeComboBoxVisibility(false);
 
                 // Update title based on edit mode
                 titleLabel.Text = isEdit
@@ -1723,7 +1721,7 @@ namespace thecalcify
 
 
                 // 2. Create new ExportControl
-                var exportControl = new UserExcelExportForm()
+                var exportControl = new UserExcelExportForm(token)
                 {
                     Name = "exportControlView",
                     Dock = DockStyle.Fill
@@ -2937,11 +2935,11 @@ namespace thecalcify
                 };
                 saveMarketWatchHost.Visible = false;
                 fontSizeComboBox.Visible = false;
-                uiManager?.SetFontSizeComboBoxVisibility(false);
+                //uiManager?.SetFontSizeComboBoxVisibility(false);
 
                 searchTextLabel.Visible = false;
                 txtsearch.Visible = false;
-                uiManager?.SetSearchBoxVisibility(false);
+                //uiManager?.SetSearchBoxVisibility(false);
 
                 refreshMarketWatchHost.Visible = false;
                 newCTRLNToolStripMenuItem1.Enabled = true;
@@ -3080,8 +3078,8 @@ namespace thecalcify
 
                 if (!File.Exists(marketInitDataPath))
                 {
-                    MessageBox.Show("initdata.dat not found.");
                     SplashManager.Hide();
+                    MessageBox.Show("initdata.dat not found.");
                     return;
                 }
 
@@ -3146,6 +3144,7 @@ namespace thecalcify
                             File.Copy(excelFilePath, destExcelPath);
                         else
                         {
+                            SplashManager.Hide();
                             MessageBox.Show("thecalcify Excel file not found.");
                             return;
                         }
@@ -3188,13 +3187,17 @@ namespace thecalcify
                 // Try to get the sheet if it already exists
                 Microsoft.Office.Interop.Excel.Worksheet GetSheetIfExists(string name)
                 {
-                    foreach (Microsoft.Office.Interop.Excel.Worksheet s in wb.Sheets)
+                    foreach (object sheetObj in wb.Sheets)
                     {
-                        if (s.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
-                            return s;
+                        if (sheetObj is Microsoft.Office.Interop.Excel.Worksheet sheet)
+                        {
+                            if (sheet.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
+                                return sheet;
+                        }
                     }
                     return null;
                 }
+
 
                 // Try to find existing sheet
                 Microsoft.Office.Interop.Excel.Worksheet costCalcWs = GetSheetIfExists("Cost.Cal"); 
@@ -3258,9 +3261,9 @@ namespace thecalcify
             }
             catch (Exception ex)
             {
+                SplashManager.Hide();
                 MessageBox.Show("An error occurred while exporting. Please retry.");
                 ApplicationLogger.LogException(ex);
-                SplashManager.Hide();
             }
             finally
             {
@@ -3708,11 +3711,11 @@ namespace thecalcify
                 //DisposeSignalRConnection();
                 saveMarketWatchHost.Visible = false;
                 fontSizeComboBox.Visible = false;
-                uiManager?.SetFontSizeComboBoxVisibility(false);
+                //uiManager?.SetFontSizeComboBoxVisibility(false);
 
                 searchTextLabel.Visible = false;
                 txtsearch.Visible = false;
-                uiManager?.SetSearchBoxVisibility(false);
+                //uiManager?.SetSearchBoxVisibility(false);
 
                 refreshMarketWatchHost.Visible = false;
                 newCTRLNToolStripMenuItem1.Enabled = true;
@@ -3741,6 +3744,7 @@ namespace thecalcify
             }
             catch (Exception ex)
             {
+                SplashManager.Hide();
                 ApplicationLogger.LogException(ex);
                 MessageBox.Show($"Error loading News view: {ex.Message}");
             }
@@ -3795,11 +3799,11 @@ namespace thecalcify
                 //DisposeSignalRConnection();
                 saveMarketWatchHost.Visible = false;
                 fontSizeComboBox.Visible = false;
-                uiManager?.SetFontSizeComboBoxVisibility(false);
+                //uiManager?.SetFontSizeComboBoxVisibility(false);
 
                 searchTextLabel.Visible = false;
                 txtsearch.Visible = false;
-                uiManager?.SetSearchBoxVisibility(false);
+                //uiManager?.SetSearchBoxVisibility(false);
 
                 refreshMarketWatchHost.Visible = false;
                 // Update status label
@@ -3830,6 +3834,7 @@ namespace thecalcify
             }
             catch (Exception ex)
             {
+                SplashManager.Hide();
                 ApplicationLogger.LogException(ex);
                 MessageBox.Show($"Error loading News view: {ex.Message}");
             }
@@ -3884,11 +3889,11 @@ namespace thecalcify
                 //DisposeSignalRConnection();
                 saveMarketWatchHost.Visible = false;
                 fontSizeComboBox.Visible = false;
-                uiManager?.SetFontSizeComboBoxVisibility(false);
+                //uiManager?.SetFontSizeComboBoxVisibility(false);
 
                 searchTextLabel.Visible = false;
                 txtsearch.Visible = false;
-                uiManager?.SetSearchBoxVisibility(false);
+                //uiManager?.SetSearchBoxVisibility(false);
 
                 refreshMarketWatchHost.Visible = false;
                 // Update status label
@@ -3918,6 +3923,7 @@ namespace thecalcify
             {
                 // Catch other unexpected issues
                 //Console.WriteLine("Error stopping background tasks: " + ex.Message);
+                SplashManager.Hide();
                 ApplicationLogger.LogException(ex);
                 MessageBox.Show($"Error loading News view: {ex.Message}");
             }
@@ -4114,6 +4120,47 @@ namespace thecalcify
                 catch (Exception ex)
                 {
                     ApplicationLogger.Log("❌ Error processing rate alert: " + ex);
+                }
+            });
+
+            userconnection.On<bool>("SheetUpdated", async (status) =>
+            {
+                List<SheetWrapperDto> sheets = await UserExcelExportForm.GetSheetListAsync(token);
+
+                foreach (SheetWrapperDto sheetWrapper in sheets) 
+                {
+                    if (sheetWrapper != null && sheetWrapper.Type == "json")
+                    {
+
+                        Dictionary<string, decimal> editedCells = sheetWrapper.Data.EditedCells;
+                        var excelApp = ExcelAppManager.GetExcelApp();
+                        try
+                        {
+
+                            excelApp.app.ScreenUpdating = false;
+                            excelApp.app.Calculation = Microsoft.Office.Interop.Excel.XlCalculation.xlCalculationManual;
+
+                            Microsoft.Office.Interop.Excel.Workbook workbook = excelApp.workbook;
+                            Microsoft.Office.Interop.Excel.Worksheet worksheet = workbook.Sheets[sheetWrapper.SheetName];
+                            foreach (var cellEntry in editedCells)
+                            {
+                                string cellAddress = cellEntry.Key;
+                                decimal cellValue = cellEntry.Value;
+                                Microsoft.Office.Interop.Excel.Range cell = worksheet.get_Range(cellAddress);
+                                //cell.Value = cellValue;
+                                //cell.Value2 = cellValue;
+
+                                var rng = worksheet.Range[cellAddress];
+                                rng.Value2 = (double)cellValue;
+                            }
+                            workbook.Save();
+                        }
+                        finally
+                        {
+                            excelApp.app.ScreenUpdating = true;
+                            excelApp.app.Calculation = Microsoft.Office.Interop.Excel.XlCalculation.xlCalculationAutomatic;
+                        }
+                    }
                 }
             });
 

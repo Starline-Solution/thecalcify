@@ -82,14 +82,12 @@ namespace thecalcify.Update_Service
                 if (!File.Exists(installedExe))
                     return;
 
-                DateTime installerModified = File.GetLastWriteTime(APIUrl.InstallationPath);
-                DateTime installedModified = File.GetLastWriteTime(installedExe);
+                DateTime installedModified = File.GetLastWriteTime(APIUrl.InstallationPath);
+                DateTime installerModified = File.GetLastWriteTime(installedExe);
 
-                double minutesDiff = Math.Abs((installerModified - installedModified).TotalMinutes);
-
-                if (minutesDiff > 2)
+                if (installerModified > installedModified.AddMinutes(2))
                 {
-                    TriggerUpdate("Version Mismatch");
+                    TriggerUpdate("Installer is newer");
                 }
             }
             catch (Exception ex)
@@ -111,7 +109,7 @@ namespace thecalcify.Update_Service
             form.Invoke(new Action(() =>
             {
                 var result = MessageBox.Show(
-                    $"Update required ({source}).\nPlease restart the application to apply updates.",
+                    $"Update required.\nPlease restart the application to apply updates.",
                     "thecalcify Update",
                     MessageBoxButtons.YesNo,
                     MessageBoxIcon.Warning);

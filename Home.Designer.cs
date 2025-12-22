@@ -100,9 +100,9 @@ namespace thecalcify
             dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
             dataGridViewCellStyle2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(81)))), ((int)(((byte)(213)))), ((int)(((byte)(220)))));
             dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold);
-            dataGridViewCellStyle2.ForeColor = System.Drawing.Color.WhiteSmoke;
-            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle2.ForeColor = Color.Black;
+            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(81)))), ((int)(((byte)(213)))), ((int)(((byte)(220)))));
+            dataGridViewCellStyle2.SelectionForeColor = Color.WhiteSmoke;
             dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
             this.defaultGrid.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
             this.defaultGrid.ColumnHeadersHeight = 40;
@@ -112,8 +112,8 @@ namespace thecalcify
             dataGridViewCellStyle3.BackColor = System.Drawing.Color.White;
             dataGridViewCellStyle3.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F);
             dataGridViewCellStyle3.ForeColor = System.Drawing.Color.Black;
-            dataGridViewCellStyle3.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle3.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle3.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(81)))), ((int)(((byte)(213)))), ((int)(((byte)(220)))));
+            dataGridViewCellStyle3.SelectionForeColor = Color.WhiteSmoke; 
             dataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
             this.defaultGrid.DefaultCellStyle = dataGridViewCellStyle3;
             this.defaultGrid.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -221,15 +221,15 @@ namespace thecalcify
             // disconnectESCToolStripMenuItem
             // 
             this.disconnectESCToolStripMenuItem.Name = "disconnectESCToolStripMenuItem";
-            this.disconnectESCToolStripMenuItem.Size = new System.Drawing.Size(287, 26);
-            this.disconnectESCToolStripMenuItem.Text = "Disconnect  (Shift + ESC)";
+            this.disconnectESCToolStripMenuItem.Size = new System.Drawing.Size(308, 26);
+            this.disconnectESCToolStripMenuItem.Text = "❌ Disconnect  (Shift + ESC)";
             this.disconnectESCToolStripMenuItem.Click += new System.EventHandler(this.DisconnectESCToolStripMenuItem_Click);
             // 
             // fullScreenF11ToolStripMenuItem
             // 
             this.fullScreenF11ToolStripMenuItem.Name = "fullScreenF11ToolStripMenuItem";
-            this.fullScreenF11ToolStripMenuItem.Size = new System.Drawing.Size(287, 26);
-            this.fullScreenF11ToolStripMenuItem.Text = "Full Screen (ESC)";
+            this.fullScreenF11ToolStripMenuItem.Size = new System.Drawing.Size(308, 26);
+            this.fullScreenF11ToolStripMenuItem.Text = "🔲 Full Screen (ESC)";
             this.fullScreenF11ToolStripMenuItem.Click += new System.EventHandler(this.FullScreenF11ToolStripMenuItem_Click);
             // 
             // saveMarketWatchHost
@@ -270,28 +270,28 @@ namespace thecalcify
             // newCTRLNToolStripMenuItem1
             // 
             this.newCTRLNToolStripMenuItem1.Name = "newCTRLNToolStripMenuItem1";
-            this.newCTRLNToolStripMenuItem1.Size = new System.Drawing.Size(234, 26);
-            this.newCTRLNToolStripMenuItem1.Text = "New      (CTRL+N)";
+            this.newCTRLNToolStripMenuItem1.Size = new System.Drawing.Size(255, 26);
+            this.newCTRLNToolStripMenuItem1.Text = "➕ New      (CTRL+N)";
             this.newCTRLNToolStripMenuItem1.Click += new System.EventHandler(this.NewCTRLNToolStripMenuItem1_Click);
             // 
             // viewToolStripMenuItem
             // 
             this.viewToolStripMenuItem.Name = "viewToolStripMenuItem";
-            this.viewToolStripMenuItem.Size = new System.Drawing.Size(234, 26);
-            this.viewToolStripMenuItem.Text = "View";
+            this.viewToolStripMenuItem.Size = new System.Drawing.Size(255, 26);
+            this.viewToolStripMenuItem.Text = "📈 View Watchlist";
             // 
             // deleteToolStripMenuItem
             // 
             this.deleteToolStripMenuItem.Name = "deleteToolStripMenuItem";
-            this.deleteToolStripMenuItem.Size = new System.Drawing.Size(234, 26);
-            this.deleteToolStripMenuItem.Text = "Delete";
+            this.deleteToolStripMenuItem.Size = new System.Drawing.Size(255, 26);
+            this.deleteToolStripMenuItem.Text = "🗑 Delete";
             this.deleteToolStripMenuItem.Click += new System.EventHandler(this.DeleteToolStripMenuItem_Click);
             // 
             // exportWorksheetsToolStripMenuItem
             // 
             this.exportWorksheetsToolStripMenuItem.Name = "exportWorksheetsToolStripMenuItem";
-            this.exportWorksheetsToolStripMenuItem.Size = new System.Drawing.Size(234, 26);
-            this.exportWorksheetsToolStripMenuItem.Text = "Export Worksheets";
+            this.exportWorksheetsToolStripMenuItem.Size = new System.Drawing.Size(255, 26);
+            this.exportWorksheetsToolStripMenuItem.Text = "🗃️ Export Worksheets";
             this.exportWorksheetsToolStripMenuItem.Click += new System.EventHandler(this.exportWorksheetsToolStripMenuItem_Click);
             // 
             // newsToolStripMenuItem
@@ -309,28 +309,28 @@ namespace thecalcify
             this.newsListToolStripMenuItem,
             this.newsHistoryToolStripMenuItem});
             this.newswatchListToolStripMenuItem.Name = "newswatchListToolStripMenuItem";
-            this.newswatchListToolStripMenuItem.Size = new System.Drawing.Size(242, 26);
-            this.newswatchListToolStripMenuItem.Text = "News";
+            this.newswatchListToolStripMenuItem.Size = new System.Drawing.Size(263, 26);
+            this.newswatchListToolStripMenuItem.Text = "📰 News Watchlist";
             // 
             // newsListToolStripMenuItem
             // 
             this.newsListToolStripMenuItem.Name = "newsListToolStripMenuItem";
-            this.newsListToolStripMenuItem.Size = new System.Drawing.Size(193, 26);
-            this.newsListToolStripMenuItem.Text = "News List";
+            this.newsListToolStripMenuItem.Size = new System.Drawing.Size(214, 26);
+            this.newsListToolStripMenuItem.Text = "📋 News List";
             this.newsListToolStripMenuItem.Click += new System.EventHandler(this.NewsListToolStripMenuItem_Click);
             // 
             // newsHistoryToolStripMenuItem
             // 
             this.newsHistoryToolStripMenuItem.Name = "newsHistoryToolStripMenuItem";
-            this.newsHistoryToolStripMenuItem.Size = new System.Drawing.Size(193, 26);
-            this.newsHistoryToolStripMenuItem.Text = "News History";
+            this.newsHistoryToolStripMenuItem.Size = new System.Drawing.Size(214, 26);
+            this.newsHistoryToolStripMenuItem.Text = "📜 News History";
             this.newsHistoryToolStripMenuItem.Click += new System.EventHandler(this.NewsHistoryToolStripMenuItem_Click);
             // 
             // notificationSettings
             // 
             this.notificationSettings.Name = "notificationSettings";
-            this.notificationSettings.Size = new System.Drawing.Size(242, 26);
-            this.notificationSettings.Text = "Notification Settings";
+            this.notificationSettings.Size = new System.Drawing.Size(263, 26);
+            this.notificationSettings.Text = "🔔 Notification Settings";
             this.notificationSettings.Visible = false;
             this.notificationSettings.Click += new System.EventHandler(this.NewsSettingsToolStrip_Click);
             // 
@@ -362,8 +362,8 @@ namespace thecalcify
             // 
             // titleLabel
             // 
-            this.titleLabel.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.titleLabel.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.titleLabel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.titleLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 13F, System.Drawing.FontStyle.Bold);
             this.titleLabel.ForeColor = System.Drawing.Color.Black;
             this.titleLabel.Location = new System.Drawing.Point(0, 0);
@@ -726,6 +726,9 @@ namespace thecalcify
                 defaultGrid.Rows.Insert(insertIndex, row);
                 insertIndex++;
             }
+
+            defaultGrid.ClearSelection();
+
 
             // 3️⃣ Reselect dragged rows
             foreach (var row in draggedRows)
