@@ -357,8 +357,8 @@ namespace thecalcify.News
                             // Fetch periodically and update cursor
                             await FetchNewsDataAndUpdateGrid(categoryCode, subcategoryCode, pageSize, string.Empty, string.Empty);
 
-                            newsUpdateLable.Visible = true;
-                            newsUpdateLable.Text = $"Last News Updated At: {Common.ParseToDate(DateTime.Now.ToString()).ToString()}";
+                            //newsUpdateLable.Visible = true;
+                            //newsUpdateLable.Text = $"Last News Updated At: {Common.ParseToDate(DateTime.Now.ToString()).ToString()}";
                         }));
                     }
                     else
@@ -366,8 +366,8 @@ namespace thecalcify.News
                         // Fetch periodically and update cursor
                         await FetchNewsDataAndUpdateGrid(categoryCode, subcategoryCode, pageSize, string.Empty, string.Empty);
 
-                        newsUpdateLable.Visible = true;
-                        newsUpdateLable.Text = $"Last News Updated At: {Common.ParseToDate(DateTime.Now.ToString()).ToString()}";
+                        //newsUpdateLable.Visible = true;
+                        //newsUpdateLable.Text = $"Last News Updated At: {Common.ParseToDate(DateTime.Now.ToString()).ToString()}";
                     }
 
                     //UpdatePageInfo(1, pageSize);
@@ -963,6 +963,7 @@ namespace thecalcify.News
 
         private void BtnRefresh_Click(object sender, EventArgs e)
         {
+            MessagePopup.ShowPopup("News Refreshed  "+ DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss:fff"), true);
             _cts?.Cancel(); // stop previous periodic fetch
                             // Restart periodic fetch after reload
             _cts = new CancellationTokenSource();
