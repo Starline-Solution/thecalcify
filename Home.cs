@@ -459,7 +459,7 @@ namespace thecalcify
         {
             txtsearch.Focus();
         }
-        
+
         private void SetupModernSearchBox()
         {
             Color inputBg = Color.FromArgb(245, 248, 250);
@@ -469,7 +469,7 @@ namespace thecalcify
             pnlSearch.BackColor = inputBg;
 
             pnlSearch.Size = new Size(270, 28);
-            pnlSearch.Location = new Point(pnlSearch.Location.X - 70, pnlSearch.Location.Y + 5);    
+            pnlSearch.Location = new Point(pnlSearch.Location.X - 70, pnlSearch.Location.Y + 5);
 
             pnlSearch.Padding = new Padding(0);
             pnlSearch.Cursor = Cursors.IBeam;
@@ -1066,10 +1066,12 @@ namespace thecalcify
                     };
 
                     // Search Placeholder Logic
-                    searchBox.Enter += (s, args) => {
+                    searchBox.Enter += (s, args) =>
+                    {
                         if (searchBox.Text == "Search...") { searchBox.Text = ""; searchBox.ForeColor = Color.Black; }
                     };
-                    searchBox.Leave += (s, args) => {
+                    searchBox.Leave += (s, args) =>
+                    {
                         if (string.IsNullOrWhiteSpace(searchBox.Text)) { searchBox.Text = "Search..."; searchBox.ForeColor = Color.Gray; }
                     };
 
@@ -1475,7 +1477,7 @@ namespace thecalcify
 
                         var clickedItem = (ToolStripMenuItem)sender;
 
-                        saveFileName = clickedItem.Text.Replace("👁️‍🗨️","").Trim();
+                        saveFileName = clickedItem.Text.Replace("👁️‍🗨️", "").Trim();
                         addEditSymbolsToolStripMenuItem.Enabled = true;
                         lastOpenMarketWatch = saveFileName;
 
@@ -2885,7 +2887,7 @@ namespace thecalcify
                 // Find and click the matching menu item
                 foreach (ToolStripMenuItem item in viewToolStripMenuItem.DropDownItems)
                 {
-                    if (item.Text == lastOpenMarketWatch)
+                    if (item.Text.Replace("👁️‍🗨️", "").Trim() == lastOpenMarketWatch)
                     {
                         item.PerformClick();
                         break;
@@ -2897,6 +2899,7 @@ namespace thecalcify
                 ApplicationLogger.LogException(ex);
             }
         }
+
 
         private void SafeInvoke(Action action)
         {
@@ -3263,7 +3266,7 @@ namespace thecalcify
 
 
                 // Try to find existing sheet
-                Microsoft.Office.Interop.Excel.Worksheet costCalcWs = GetSheetIfExists("Cost.Cal"); 
+                Microsoft.Office.Interop.Excel.Worksheet costCalcWs = GetSheetIfExists("Cost.Cal");
 
                 if (costCalcWs == null)
                 {
@@ -3518,7 +3521,7 @@ namespace thecalcify
             try
             {
                 string officeVersion = GetOfficeVersion();
-                
+
                 string AppIcon = $@"Software\Microsoft\Windows\CurrentVersion\Uninstall\{{45A18102-1652-4AAA-8C62-4306D49EF5AB}}";
                 string excelOptionsPath = $@"Software\Microsoft\Office\{officeVersion}\Excel\Options";
                 string graphicsPath = $@"Software\Microsoft\Office\{officeVersion}\Common\Graphics";
@@ -3738,7 +3741,7 @@ namespace thecalcify
         #endregion Excel Export
 
         #region News
-        
+
         public async void NewsListToolStripMenuItem_Click(object sender, EventArgs e)
         {
             try
@@ -4193,7 +4196,7 @@ namespace thecalcify
             {
                 List<SheetWrapperDto> sheets = await UserExcelExportForm.GetSheetListAsync(token);
 
-                foreach (SheetWrapperDto sheetWrapper in sheets) 
+                foreach (SheetWrapperDto sheetWrapper in sheets)
                 {
                     if (sheetWrapper != null && sheetWrapper.Type == "json")
                     {
@@ -4701,7 +4704,7 @@ namespace thecalcify
                 }
 
                 string updateServiceName = "thecalcifyUpdate";
-                
+
                 using (ServiceController sc = new ServiceController(updateServiceName))
                 {
                     if (sc.Status == ServiceControllerStatus.Stopped || sc.Status == ServiceControllerStatus.Paused)
