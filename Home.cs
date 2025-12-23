@@ -685,7 +685,11 @@ namespace thecalcify
                 defaultGrid.Rows[e.RowIndex].Selected = true;
 
                 // ✔ Set the current cell (important!)
-                defaultGrid.CurrentCell = defaultGrid.Rows[e.RowIndex].Cells[1];
+                var col = defaultGrid.Columns["Name"];
+                if (col != null && col.Visible)
+                {
+                    defaultGrid.CurrentCell = defaultGrid.Rows[e.RowIndex].Cells[col.Index];
+                }
 
                 // ✔ Show your context menu NEXT
                 Tools.Show(Cursor.Position);
