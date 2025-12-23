@@ -1629,6 +1629,10 @@ namespace thecalcify
                 toolsToolStripMenuItem.Enabled = true;
                 newCTRLNToolStripMenuItem1.Enabled = false;
 
+                pnlSearch.Visible = true;
+                searchTextLabel.Visible = true;
+                txtsearch.Visible = true;
+
                 // Update save button visibility
                 saveMarketWatchHost.Visible = true;
                 saveMarketWatchHost.Text = "Save MarketWatch";
