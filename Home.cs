@@ -24,6 +24,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using thecalcify.Alert;
+using thecalcify.Charts.Models;
+using thecalcify.Charts.Services;
+using thecalcify.Charts.Views;
 using thecalcify.Excel_Helper;
 using thecalcify.Helper;
 using thecalcify.MarketWatch;
@@ -168,6 +171,7 @@ namespace thecalcify
         private readonly ConcurrentDictionary<string, MarketDataDto> _latestTicks = new ConcurrentDictionary<string, MarketDataDto>(StringComparer.OrdinalIgnoreCase);
         private bool _isGridBuilding = false;
         private static bool _excelWarmedUp = false;
+        private int _rightClickedRowIndex = -1;
 
         #endregion Declaration and Initialization
 
@@ -690,6 +694,9 @@ namespace thecalcify
                 {
                     defaultGrid.CurrentCell = defaultGrid.Rows[e.RowIndex].Cells[col.Index];
                 }
+
+                // ⭐ Store row index for context menu
+                _rightClickedRowIndex = e.RowIndex;
 
                 // ✔ Show your context menu NEXT
                 Tools.Show(Cursor.Position);
@@ -4577,7 +4584,34 @@ namespace thecalcify
             // 6️⃣ ARROW UPDATE (safe)
             // ======================================
             if (double.TryParse(dto.a, out var ask))
+            {
                 UpdateAskArrow(row, dto.i, ask);
+
+                DateTime tickTime;
+
+                if (long.TryParse(dto.t, out long ts))
+                {
+                    if (ts > 1000000000000)
+                        tickTime = DateTimeOffset.FromUnixTimeMilliseconds(ts).ToOffset(TimeSpan.FromHours(5.5)).DateTime;
+                    else
+                        tickTime = DateTimeOffset.FromUnixTimeSeconds(ts).ToOffset(TimeSpan.FromHours(5.5)).DateTime;
+                }
+                else
+                {
+                    tickTime = DateTime.Now; // IST already
+                }
+
+
+                var tick = new Tick
+                {
+                    Symbol = dto.i,
+                    Time = tickTime,
+                    Price = ask,
+                    Volume = Convert.ToDouble(dto.vt)
+                };
+
+                GlobalTickDispatcher.Publish(tick);
+            }
         }
 
         private double FastParse(object val)
@@ -4813,6 +4847,29 @@ namespace thecalcify
             { return; }
 
             CopySelectedRowsToClipboard();
+        }
+
+        #endregion
+
+        #region Chart
+        private void ChartWindowToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (_rightClickedRowIndex < 0)
+                return;
+
+            string symbol = defaultGrid.Rows[_rightClickedRowIndex].Cells["Symbol"].Value.ToString();
+            string displaySymbol = defaultGrid.Rows[_rightClickedRowIndex].Cells["Name"].Value.ToString().Replace(" ▲", "").Replace(" ▼", "").Trim();
+
+
+            var chartForm = new Chart(symbol, displaySymbol);
+
+            if (isFullScreen)
+            {
+                chartForm.StartPosition = FormStartPosition.CenterParent;
+                chartForm.TopMost = true;
+            }
+
+            chartForm.Show();
         }
 
         #endregion
