@@ -6,6 +6,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Security.AccessControl;
+using System.Security.Principal;
 using System.Web;
 using thecalcify.Helper;
 
@@ -25,6 +27,8 @@ namespace thecalcify.CustomActions
             try
             {
                 string targetDir = Context.Parameters["targetdir"].TrimEnd('\\');
+                if (Directory.Exists(targetDir))
+                    GrantDirectoryAccess(targetDir);
 
                 // 🔥 AUTO-DETECT thecalcifyRTW.exe (very important)
                 string exePath =
@@ -40,7 +44,7 @@ namespace thecalcify.CustomActions
                 // Install services
                 Process.Start("sc", $"create thecalcifyRTW binPath= \"{exePath}\" start= auto displayname= \"thecalcify RTW Service\"")?.WaitForExit();
 
-                Process.Start("sc",$"description thecalcifyRTW \"Real-Time Watcher service for thecalcify\"")?.WaitForExit();
+                Process.Start("sc", $"description thecalcifyRTW \"Real-Time Watcher service for thecalcify\"")?.WaitForExit();
 
                 // Start service
                 Process.Start("sc", $"start thecalcifyRTW")?.WaitForExit();
@@ -84,6 +88,29 @@ namespace thecalcify.CustomActions
                 {
                     ApplicationLogger.LogException(ex);
                 }
+            }
+        }
+
+        public static void GrantDirectoryAccess(string fullPath)
+        {
+            try
+            {
+                DirectoryInfo dInfo = new DirectoryInfo(fullPath);
+                DirectorySecurity dSecurity = dInfo.GetAccessControl();
+
+                var accessRule = new FileSystemAccessRule(
+                    new SecurityIdentifier(WellKnownSidType.WorldSid, null),
+                    FileSystemRights.FullControl,
+                    InheritanceFlags.ObjectInherit | InheritanceFlags.ContainerInherit,
+                    PropagationFlags.None,
+                    AccessControlType.Allow);
+
+                dSecurity.AddAccessRule(accessRule);
+                dInfo.SetAccessControl(dSecurity);
+            }
+            catch (Exception ex)
+            {
+                ApplicationLogger.LogException(ex);
             }
         }
     }

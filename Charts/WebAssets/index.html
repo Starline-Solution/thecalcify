@@ -39,20 +39,30 @@
 
             try {
                 const Datafeed = {
-                    onReady: (cb) => setTimeout(() => cb({supported_resolutions: ['1', '5', '15', '60', 'D']}), 0),
+                    onReady: (cb) => {
+                        setTimeout(() => cb({
+                            supported_resolutions: ['1', '5', '15', '30', '60', '1D'],
+                            supports_marks: true,
+                            supports_timescale_marks: true,
+                            supports_time: true
+                        }), 0)
+                    },
                     resolveSymbol: (symbolName, onSymbolResolvedCallback, onResolveErrorCallback) => {
                         setTimeout(() => {
                             onSymbolResolvedCallback({
                                 name: symbolName,
                                 description: symbolName,
-                                type: 'forex',
+                                type: 'MCX',
                                 session: '24x7',
                                 timezone: 'Asia/Kolkata',
+                                //// exchange: 'MetaOdds',
                                 minmov: 1,
                                 pricescale: 100,
                                 has_intraday: true,
-                                supported_resolutions: ['1', '5', '15', '60', 'D'],
-                                data_status: 'streaming',
+                                has_no_volume: true,
+                                has_weekly_and_monthly: true,
+                                supported_resolutions: ['1', '5', '15', '30', '60', '1D'],
+                                data_status: 'streaming'
                             });
                         }, 0);
                     },
@@ -76,13 +86,49 @@
                     datafeed: Datafeed,
                     library_path: 'charting_library/',
                     locale: 'en',
-                    disabled_features: ['header_symbol_search', 'header_screenshot', 'header_compare','header_settings', 'widget_logo'],
-                    enabled_features: ['study_templates'],
                     fullscreen: true,
                     autosize: true,
+                    load_last_chart: true,
+                    allow_symbol_change: false,
+                    hideideas: true,
+                    save_image: false,
                     theme: 'Light',
                     timezone: 'Asia/Kolkata',
-                    debug: true
+                    debug: true,
+                    displayedPriceScale: {
+                        timeVisible: true,
+                    },
+                    disabled_features: [
+                        'use_localstorage_for_settings',
+                        'header_compare',
+                        'header_settings',
+                        'symbol_search_hot_key',
+                        'header_saveload',
+                        'show_exchange_logos',
+                        'chart_template_storage',
+                        'save_shortcut',
+                        'header_symbol_search',
+                        'symbol_info',
+                        'timezone_menu',
+                        'widget_logo',
+                        'header_screenshot'
+                    ]
+                });
+
+                _widget.onChartReady(function () {
+                    try {
+                        var iframe = document.querySelector('#tv_chart_container iframe');
+                        if (iframe) {
+                            var doc = iframe.contentDocument || iframe.contentWindow.document;
+                            var style = doc.createElement('style');
+                            style.innerHTML = `.tv-chart-container__left-badge-container { display: none !important; }
+                                                .tv-logo { display: none !important; opacity: 0 !important; }
+                                                .branding-logo { display: none !important; }
+                                                a[href*="tradingview.com"] { display: none !important; pointer-events: none !important; }
+                                                div[data-name="legend-more-action"] { display: none !important; }`;
+                            doc.head.appendChild(style);
+                        }
+                    } catch (e) { console.log("Logo Error: " + e); }
                 });
 
             } catch(e) {
