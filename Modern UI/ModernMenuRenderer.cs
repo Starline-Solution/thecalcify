@@ -30,6 +30,68 @@ namespace thecalcify.Modern_UI
         }
     }
 
+    // 🎨 Updated Custom ComboBox
+    public class ModernComboBox : ComboBox
+    {
+        private Color borderColor = Color.LightGray;
+
+        public ModernComboBox()
+        {
+            this.DrawMode = DrawMode.OwnerDrawFixed;
+            this.DropDownStyle = ComboBoxStyle.DropDownList;
+            this.FlatStyle = FlatStyle.Flat;
+            this.Font = new Font("Segoe UI", 10F);
+        }
+
+        // Draws the items IN the list
+        protected override void OnDrawItem(DrawItemEventArgs e)
+        {
+            if (e.Index < 0) return;
+
+            // Draw Background & Text
+            if ((e.State & DrawItemState.Selected) == DrawItemState.Selected)
+            {
+                // Hovered: Teal Background, White Text
+                e.Graphics.FillRectangle(new SolidBrush(Color.FromArgb(81, 213, 220)), e.Bounds);
+                TextRenderer.DrawText(e.Graphics, this.Items[e.Index].ToString(), this.Font, e.Bounds, Color.White, TextFormatFlags.VerticalCenter | TextFormatFlags.Left);
+            }
+            else
+            {
+                // Normal: White Background, Black Text
+                e.Graphics.FillRectangle(Brushes.White, e.Bounds);
+                TextRenderer.DrawText(e.Graphics, this.Items[e.Index].ToString(), this.Font, e.Bounds, Color.Black, TextFormatFlags.VerticalCenter | TextFormatFlags.Left);
+            }
+        }
+
+        // Draws the Border and Placeholder Text (Closed State)
+        protected override void WndProc(ref Message m)
+        {
+            base.WndProc(ref m);
+            if (m.Msg == 0xF || m.Msg == 0x85) // WM_PAINT
+            {
+                using (var g = Graphics.FromHwnd(this.Handle))
+                {
+                    // 1. Draw Border
+                    using (var p = new Pen(borderColor, 1))
+                    {
+                        g.DrawRectangle(p, 0, 0, Width - 1, Height - 1);
+                    }
+
+                    // 2. ✅ Draw Placeholder "Font Size" if nothing is selected
+                    if (this.SelectedIndex == -1)
+                    {
+                        TextFormatFlags flags = TextFormatFlags.VerticalCenter | TextFormatFlags.Left | TextFormatFlags.NoPadding;
+                        Rectangle rect = this.ClientRectangle;
+                        rect.X += 4; // Padding left
+
+                        // Draw the Gray Placeholder Text
+                        TextRenderer.DrawText(g, "Font Size", this.Font, rect, Color.Gray, flags);
+                    }
+                }
+            }
+        }
+    }
+
     public class ModernColorTable : ProfessionalColorTable
     {
         public override Color MenuItemSelected => Color.FromArgb(241, 245, 249);

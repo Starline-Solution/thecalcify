@@ -27,7 +27,7 @@ using thecalcify.Alert;
 using thecalcify.Excel_Helper;
 using thecalcify.Helper;
 using thecalcify.MarketWatch;
-//using thecalcify.Modern_UI;
+using thecalcify.Modern_UI;
 using thecalcify.News;
 using thecalcify.RTDWorker;
 using thecalcify.Shared;
@@ -203,6 +203,12 @@ namespace thecalcify
                 // --- PARALLEL INITIALIZATION ---
                 var initializationTasks = new List<Task>();
 
+                menuStrip1.Renderer = new ModernMenuRenderer();
+                Tools.Renderer = new ModernMenuRenderer();
+
+                fontSizeComboBox.SelectedIndex = -1;
+
+                SetupModernSearchBox();
 
                 initializationTasks.Add(Task.Run(() =>
                 {
@@ -216,6 +222,8 @@ namespace thecalcify
                     columnPreferences = (currentColumns?.Count == 0 || currentColumns == null) ?
                         (columnPreferencesDefault ?? new List<string>()) : currentColumns;
                 }));
+
+                pnlSearch.Paint += PnlSearch_Paint;
 
                 //// Warm up Excel COM server (faster first export)
                 //var app = new Microsoft.Office.Interop.Excel.Application();
@@ -426,8 +434,6 @@ namespace thecalcify
 
                 CurrentInstance = this;
 
-
-
                 // --- GLOBAL EVENTS ---
                 //NetworkChange.NetworkAvailabilityChanged += OnNetworkAvailabilityChanged;
                 //NetworkChange.NetworkAddressChanged += OnNetworkAddressChanged;
@@ -442,6 +448,60 @@ namespace thecalcify
             {
                 ApplicationLogger.LogException(ex);
             }
+        }
+
+        private void PnlSearch_Paint(object sender, PaintEventArgs e)
+        {
+            ControlPaint.DrawBorder(e.Graphics, pnlSearch.ClientRectangle, Color.FromArgb(220, 220, 220), ButtonBorderStyle.Solid);
+        }
+
+        private void PnlSearch_Click(object sender, EventArgs e)
+        {
+            txtsearch.Focus();
+        }
+
+        private void SetupModernSearchBox()
+        {
+            Color inputBg = Color.FromArgb(245, 248, 250);
+            Color inputBg1 = Color.FromArgb(245, 248, 250);
+            Color borderColor = Color.FromArgb(220, 220, 220);
+
+            pnlSearch.BackColor = inputBg;
+
+            pnlSearch.Size = new Size(270, 28);
+            pnlSearch.Location = new Point(pnlSearch.Location.X - 70, pnlSearch.Location.Y + 5);
+
+            pnlSearch.Padding = new Padding(0);
+            pnlSearch.Cursor = Cursors.IBeam;
+
+            this.MinimumSize = new Size(1100, 700);
+            pnlSearch.Paint -= PnlSearch_Paint;
+            pnlSearch.Paint += (s, e) =>
+            {
+                ControlPaint.DrawBorder(e.Graphics, pnlSearch.ClientRectangle, borderColor, ButtonBorderStyle.Solid);
+            };
+
+            searchTextLabel.Parent = pnlSearch;
+            searchTextLabel.ForeColor = Color.Gray;
+            searchTextLabel.BackColor = inputBg;
+            searchTextLabel.Location = new Point(8, (pnlSearch.Height - searchTextLabel.Height) / 2);
+
+            txtsearch.Parent = pnlSearch;
+            txtsearch.BorderStyle = BorderStyle.None;
+            txtsearch.BackColor = inputBg;
+            txtsearch.Font = new Font("Segoe UI", 9F, FontStyle.Regular);
+
+            // Position TextBox to the right of the Label
+            int textX = searchTextLabel.Right + 5;
+            txtsearch.Location = new Point(textX, (pnlSearch.Height - txtsearch.Height) / 2 + 1);
+
+            // ✅ Auto-width: Fills the remaining space of the smaller panel
+            txtsearch.Width = pnlSearch.Width - textX - 10;
+            txtsearch.Anchor = AnchorStyles.Left | AnchorStyles.Right;
+
+            // 4. Focus Events
+            pnlSearch.Click += (s, e) => txtsearch.Focus();
+            searchTextLabel.Click += (s, e) => txtsearch.Focus();
         }
 
         public static void WarmUpExcelLazy()
@@ -625,7 +685,11 @@ namespace thecalcify
                 defaultGrid.Rows[e.RowIndex].Selected = true;
 
                 // ✔ Set the current cell (important!)
-                defaultGrid.CurrentCell = defaultGrid.Rows[e.RowIndex].Cells[1];
+                var col = defaultGrid.Columns["Name"];
+                if (col != null && col.Visible)
+                {
+                    defaultGrid.CurrentCell = defaultGrid.Rows[e.RowIndex].Cells[col.Index];
+                }
 
                 // ✔ Show your context menu NEXT
                 Tools.Show(Cursor.Position);
@@ -788,7 +852,7 @@ namespace thecalcify
 
                 //uiManager?.SetFontSizeComboBoxVisibility(true);
 
-
+                pnlSearch.Visible = true;
                 searchTextLabel.Visible = true;
                 txtsearch.Visible = true;
                 txtsearch.Text = string.Empty;
@@ -1006,10 +1070,12 @@ namespace thecalcify
                     };
 
                     // Search Placeholder Logic
-                    searchBox.Enter += (s, args) => {
+                    searchBox.Enter += (s, args) =>
+                    {
                         if (searchBox.Text == "Search...") { searchBox.Text = ""; searchBox.ForeColor = Color.Black; }
                     };
-                    searchBox.Leave += (s, args) => {
+                    searchBox.Leave += (s, args) =>
+                    {
                         if (string.IsNullOrWhiteSpace(searchBox.Text)) { searchBox.Text = "Search..."; searchBox.ForeColor = Color.Gray; }
                     };
 
@@ -1415,7 +1481,7 @@ namespace thecalcify
 
                         var clickedItem = (ToolStripMenuItem)sender;
 
-                        saveFileName = clickedItem.Text.Replace("👁️‍🗨️","").Trim();
+                        saveFileName = clickedItem.Text.Replace("👁️‍🗨️", "").Trim();
                         addEditSymbolsToolStripMenuItem.Enabled = true;
                         lastOpenMarketWatch = saveFileName;
 
@@ -1501,6 +1567,7 @@ namespace thecalcify
                 fontSizeComboBox.Visible = true;
                 //uiManager?.SetFontSizeComboBoxVisibility(true);
 
+                pnlSearch.Visible = true;
                 searchTextLabel.Visible = true;
                 txtsearch.Clear();
                 txtsearch.Visible = true;
@@ -1565,6 +1632,10 @@ namespace thecalcify
                 // Update menu items
                 toolsToolStripMenuItem.Enabled = true;
                 newCTRLNToolStripMenuItem1.Enabled = false;
+
+                pnlSearch.Visible = true;
+                searchTextLabel.Visible = true;
+                txtsearch.Visible = true;
 
                 // Update save button visibility
                 saveMarketWatchHost.Visible = true;
@@ -1730,6 +1801,7 @@ namespace thecalcify
                 //DisposeSignalRConnection();
                 saveMarketWatchHost.Visible = false;
                 fontSizeComboBox.Visible = false;
+                pnlSearch.Visible = false;
                 searchTextLabel.Visible = false;
                 txtsearch.Visible = false;
                 refreshMarketWatchHost.Visible = false;
@@ -2823,7 +2895,7 @@ namespace thecalcify
                 // Find and click the matching menu item
                 foreach (ToolStripMenuItem item in viewToolStripMenuItem.DropDownItems)
                 {
-                    if (item.Text == lastOpenMarketWatch)
+                    if (item.Text.Replace("👁️‍🗨️", "").Trim() == lastOpenMarketWatch)
                     {
                         item.PerformClick();
                         break;
@@ -2835,6 +2907,7 @@ namespace thecalcify
                 ApplicationLogger.LogException(ex);
             }
         }
+
 
         private void SafeInvoke(Action action)
         {
@@ -2937,6 +3010,7 @@ namespace thecalcify
                 fontSizeComboBox.Visible = false;
                 //uiManager?.SetFontSizeComboBoxVisibility(false);
 
+                pnlSearch.Visible = false;
                 searchTextLabel.Visible = false;
                 txtsearch.Visible = false;
                 //uiManager?.SetSearchBoxVisibility(false);
@@ -3200,7 +3274,7 @@ namespace thecalcify
 
 
                 // Try to find existing sheet
-                Microsoft.Office.Interop.Excel.Worksheet costCalcWs = GetSheetIfExists("Cost.Cal"); 
+                Microsoft.Office.Interop.Excel.Worksheet costCalcWs = GetSheetIfExists("Cost.Cal");
 
                 if (costCalcWs == null)
                 {
@@ -3455,7 +3529,7 @@ namespace thecalcify
             try
             {
                 string officeVersion = GetOfficeVersion();
-                
+
                 string AppIcon = $@"Software\Microsoft\Windows\CurrentVersion\Uninstall\{{45A18102-1652-4AAA-8C62-4306D49EF5AB}}";
                 string excelOptionsPath = $@"Software\Microsoft\Office\{officeVersion}\Excel\Options";
                 string graphicsPath = $@"Software\Microsoft\Office\{officeVersion}\Common\Graphics";
@@ -3675,7 +3749,7 @@ namespace thecalcify
         #endregion Excel Export
 
         #region News
-        
+
         public async void NewsListToolStripMenuItem_Click(object sender, EventArgs e)
         {
             try
@@ -3713,6 +3787,7 @@ namespace thecalcify
                 fontSizeComboBox.Visible = false;
                 //uiManager?.SetFontSizeComboBoxVisibility(false);
 
+                pnlSearch.Visible = false;
                 searchTextLabel.Visible = false;
                 txtsearch.Visible = false;
                 //uiManager?.SetSearchBoxVisibility(false);
@@ -3801,6 +3876,7 @@ namespace thecalcify
                 fontSizeComboBox.Visible = false;
                 //uiManager?.SetFontSizeComboBoxVisibility(false);
 
+                pnlSearch.Visible = false;
                 searchTextLabel.Visible = false;
                 txtsearch.Visible = false;
                 //uiManager?.SetSearchBoxVisibility(false);
@@ -3891,6 +3967,7 @@ namespace thecalcify
                 fontSizeComboBox.Visible = false;
                 //uiManager?.SetFontSizeComboBoxVisibility(false);
 
+                pnlSearch.Visible = false;
                 searchTextLabel.Visible = false;
                 txtsearch.Visible = false;
                 //uiManager?.SetSearchBoxVisibility(false);
@@ -4127,7 +4204,7 @@ namespace thecalcify
             {
                 List<SheetWrapperDto> sheets = await UserExcelExportForm.GetSheetListAsync(token);
 
-                foreach (SheetWrapperDto sheetWrapper in sheets) 
+                foreach (SheetWrapperDto sheetWrapper in sheets)
                 {
                     if (sheetWrapper != null && sheetWrapper.Type == "json")
                     {
@@ -4635,7 +4712,7 @@ namespace thecalcify
                 }
 
                 string updateServiceName = "thecalcifyUpdate";
-                
+
                 using (ServiceController sc = new ServiceController(updateServiceName))
                 {
                     if (sc.Status == ServiceControllerStatus.Stopped || sc.Status == ServiceControllerStatus.Paused)

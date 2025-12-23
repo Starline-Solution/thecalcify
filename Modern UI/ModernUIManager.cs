@@ -134,7 +134,6 @@ namespace thecalcify.Modern_UI
 				ForeColor = Color.Gray,
 				TextAlign = ContentAlignment.MiddleCenter,
 				UseCompatibleTextRendering = true,
-				Visible = _form.refreshMarketWatchHost.Available // Sync initial state
 			};
 			btnRefresh.FlatAppearance.BorderSize = 0;
 			btnRefresh.FlatAppearance.MouseOverBackColor = c_InputBg;
@@ -156,7 +155,6 @@ namespace thecalcify.Modern_UI
 				Cursor = Cursors.Hand,
 				ForeColor = c_Accent, // Blue text to indicate action
 				TextAlign = ContentAlignment.MiddleCenter,
-				Visible = _form.saveMarketWatchHost.Available // Sync initial state
 			};
 			btnSave.FlatAppearance.BorderColor = c_Accent;
 			btnSave.FlatAppearance.BorderSize = 1;
@@ -267,22 +265,6 @@ namespace thecalcify.Modern_UI
 				titleLabel.TextChanged += (s, e) => CenterTitle();
 			}
 
-			// ====================================================================
-			// 6. SYNCHRONIZATION EVENTS (Hooking Modern UI to Old Logic)
-			// ====================================================================
-
-			// Sync Refresh Button Visibility (using AvailableChanged because MenuStrip is hidden)
-			_form.refreshMarketWatchHost.AvailableChanged += (s, e) =>
-			{
-				btnRefresh.Visible = _form.refreshMarketWatchHost.Available;
-			};
-
-
-			// Sync Save Button Visibility
-			_form.saveMarketWatchHost.AvailableChanged += (s, e) =>
-			{
-				btnSave.Visible = _form.saveMarketWatchHost.Available;
-			};
 		}
 
 		// --- HELPER METHODS ---

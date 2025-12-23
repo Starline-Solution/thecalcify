@@ -42,383 +42,366 @@ namespace thecalcify.News
         #region Component Designer generated code
         private void InitializeComponent()
         {
-            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle3 = new DataGridViewCellStyle();
-            dgvNews = new DataGridView();
-            dataGridViewTextBoxColumn1 = new DataGridViewTextBoxColumn();
-            DGVTitle = new DataGridViewTextBoxColumn();
-            DVGCategory = new DataGridViewTextBoxColumn();
-            DVGSubCategory = new DataGridViewTextBoxColumn();
-            cmbCategory = new ComboBox();
-            cmbSubCategory = new ComboBox();
-            btnSearchNews = new Button();
-            lblCategory = new Label();
-            lblSubCategory = new Label();
-            pnlTop = new Panel();
-            tocalender = new MonthCalendar();
-            fromcalender = new MonthCalendar();
-            todateTextbox = new TextBox();
-            fromTextbox = new TextBox();
-            btnRefresh = new Button();
-            label1 = new Label();
-            newsSearch = new TextBox();
-            newsUpdateLable = new Label();
-            pnlBottom = new Panel();
-            btnPrevPage = new Button();
-            lblPageInfo = new Label();
-            btnNextPage = new Button();
-            ((ISupportInitialize)(dgvNews)).BeginInit();
-            pnlTop.SuspendLayout();
-            pnlBottom.SuspendLayout();
-            SuspendLayout();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
+            this.dgvNews = new System.Windows.Forms.DataGridView();
+            this.dataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.DGVTitle = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.DVGCategory = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.DVGSubCategory = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.cmbCategory = new System.Windows.Forms.ComboBox();
+            this.cmbSubCategory = new System.Windows.Forms.ComboBox();
+            this.btnSearchNews = new System.Windows.Forms.Button();
+            this.lblCategory = new System.Windows.Forms.Label();
+            this.lblSubCategory = new System.Windows.Forms.Label();
+            this.pnlTop = new System.Windows.Forms.Panel();
+            this.tocalender = new System.Windows.Forms.MonthCalendar();
+            this.fromcalender = new System.Windows.Forms.MonthCalendar();
+            this.todateTextbox = new System.Windows.Forms.TextBox();
+            this.fromTextbox = new System.Windows.Forms.TextBox();
+            this.btnRefresh = new System.Windows.Forms.Button();
+            this.label1 = new System.Windows.Forms.Label();
+            this.newsSearch = new System.Windows.Forms.TextBox();
+            this.pnlBottom = new System.Windows.Forms.Panel();
+            this.btnPrevPage = new System.Windows.Forms.Button();
+            this.lblPageInfo = new System.Windows.Forms.Label();
+            this.btnNextPage = new System.Windows.Forms.Button();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvNews)).BeginInit();
+            this.pnlTop.SuspendLayout();
+            this.pnlBottom.SuspendLayout();
+            this.SuspendLayout();
             // 
             // dgvNews
             // 
-            dgvNews.AllowDrop = true;
-            dgvNews.AllowUserToAddRows = false;
-            dgvNews.AllowUserToDeleteRows = false;
-            dgvNews.AllowUserToResizeRows = false;
-            dataGridViewCellStyle1.BackColor = Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(248)))), ((int)(((byte)(250)))));
-            dgvNews.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
-            dgvNews.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-            dgvNews.BackgroundColor = Color.White;
-            dgvNews.BorderStyle = BorderStyle.None;
-            dgvNews.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
-            dgvNews.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
-            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle2.BackColor = Color.FromArgb(((int)(((byte)(81)))), ((int)(((byte)(213)))), ((int)(((byte)(220)))));
-            dataGridViewCellStyle2.Font = new Font("Segoe UI", 14F, FontStyle.Bold, GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle2.ForeColor = Color.White;
-            dataGridViewCellStyle2.Padding = new Padding(10, 0, 0, 0);
-            dataGridViewCellStyle2.SelectionBackColor = Color.FromArgb(((int)(((byte)(81)))), ((int)(((byte)(213)))), ((int)(((byte)(220)))));
-            dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.True;
-            dgvNews.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
-            dgvNews.ColumnHeadersHeight = 45;
-            dgvNews.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
-            dgvNews.Columns.AddRange(new DataGridViewColumn[] {
-            dataGridViewTextBoxColumn1,
-            DGVTitle,
-            DVGCategory,
-            DVGSubCategory});
-            dataGridViewCellStyle3.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle3.BackColor = Color.White;
-            dataGridViewCellStyle3.Font = new Font("Segoe UI", 16F);
-            dataGridViewCellStyle3.ForeColor = Color.Black;
-            dataGridViewCellStyle3.Padding = new Padding(5, 0, 0, 0);
-            dataGridViewCellStyle3.SelectionBackColor = Color.FromArgb(((int)(((byte)(225)))), ((int)(((byte)(248)))), ((int)(((byte)(249)))));
-            dataGridViewCellStyle3.SelectionForeColor = Color.Black;
-            dataGridViewCellStyle3.WrapMode = DataGridViewTriState.False;
-            dgvNews.DefaultCellStyle = dataGridViewCellStyle3;
-            dgvNews.Dock = DockStyle.Fill;
-            dgvNews.EnableHeadersVisualStyles = false;
-            dgvNews.GridColor = Color.WhiteSmoke;
-            dgvNews.Location = new Point(0, 306);
-            dgvNews.Name = "dgvNews";
-            dgvNews.ReadOnly = true;
-            dgvNews.RowHeadersVisible = false;
-            dgvNews.RowHeadersWidth = 51;
-            dgvNews.RowTemplate.Height = 40;
-            dgvNews.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            dgvNews.Size = new Size(1255, 144);
-            dgvNews.TabIndex = 0;
-            dgvNews.CellDoubleClick += new DataGridViewCellEventHandler(DgvNews_CellDoubleClick);
+            this.dgvNews.AllowDrop = true;
+            this.dgvNews.AllowUserToAddRows = false;
+            this.dgvNews.AllowUserToDeleteRows = false;
+            this.dgvNews.AllowUserToResizeRows = false;
+            dataGridViewCellStyle1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(250)))), ((int)(((byte)(250)))), ((int)(((byte)(250))))); this.dgvNews.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
+            this.dgvNews.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.dgvNews.BackgroundColor = System.Drawing.Color.White;
+            this.dgvNews.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.dgvNews.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.Raised;
+            this.dgvNews.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter; // Centered headers like Home
+            dataGridViewCellStyle2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(81)))), ((int)(((byte)(213)))), ((int)(((byte)(220)))));
+            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold); // Changed Font
+            dataGridViewCellStyle2.ForeColor = System.Drawing.Color.WhiteSmoke; // Changed to WhiteSmoke
+            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(81)))), ((int)(((byte)(213)))), ((int)(((byte)(220)))));
+            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.Color.WhiteSmoke;
+            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgvNews.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
+            this.dgvNews.ColumnHeadersHeight = 40;
+            this.dgvNews.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
+            this.dgvNews.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.dataGridViewTextBoxColumn1,
+            this.DGVTitle,
+            this.DVGCategory,
+            this.DVGSubCategory});
+            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle3.BackColor = System.Drawing.Color.White;
+            dataGridViewCellStyle3.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F); // Changed Font
+            dataGridViewCellStyle3.ForeColor = System.Drawing.Color.Black;
+            dataGridViewCellStyle3.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(81)))), ((int)(((byte)(213)))), ((int)(((byte)(220)))));
+            dataGridViewCellStyle3.SelectionForeColor = System.Drawing.Color.WhiteSmoke;
+            dataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgvNews.DefaultCellStyle = dataGridViewCellStyle3;
+            this.dgvNews.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.dgvNews.EnableHeadersVisualStyles = false;
+            this.dgvNews.GridColor = System.Drawing.Color.Gainsboro;
+            this.dgvNews.Location = new System.Drawing.Point(0, 307);
+            this.dgvNews.Name = "dgvNews";
+            this.dgvNews.ReadOnly = true;
+            this.dgvNews.RowHeadersVisible = false;
+            this.dgvNews.RowHeadersWidth = 51;
+            this.dgvNews.RowTemplate.Height = 36;
+            this.dgvNews.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.dgvNews.Size = new System.Drawing.Size(1255, 143);
+            this.dgvNews.TabIndex = 0;
+            this.dgvNews.CellDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.DgvNews_CellDoubleClick);
             // 
             // dataGridViewTextBoxColumn1
             // 
-            dataGridViewTextBoxColumn1.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
-            dataGridViewTextBoxColumn1.HeaderText = "Time";
-            dataGridViewTextBoxColumn1.MinimumWidth = 6;
-            dataGridViewTextBoxColumn1.Name = "dataGridViewTextBoxColumn1";
-            dataGridViewTextBoxColumn1.ReadOnly = true;
-            dataGridViewTextBoxColumn1.Width = 150;
+            this.dataGridViewTextBoxColumn1.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+            this.dataGridViewTextBoxColumn1.HeaderText = "Time";
+            this.dataGridViewTextBoxColumn1.MinimumWidth = 6;
+            this.dataGridViewTextBoxColumn1.Name = "dataGridViewTextBoxColumn1";
+            this.dataGridViewTextBoxColumn1.ReadOnly = true;
+            this.dataGridViewTextBoxColumn1.Width = 150;
             // 
             // DGVTitle
             // 
-            DGVTitle.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-            DGVTitle.HeaderText = "Title";
-            DGVTitle.MinimumWidth = 6;
-            DGVTitle.Name = "DGVTitle";
-            DGVTitle.ReadOnly = true;
+            this.DGVTitle.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.DGVTitle.HeaderText = "Title";
+            this.DGVTitle.MinimumWidth = 6;
+            this.DGVTitle.Name = "DGVTitle";
+            this.DGVTitle.ReadOnly = true;
             // 
             // DVGCategory
             // 
-            DVGCategory.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
-            DVGCategory.HeaderText = "Category";
-            DVGCategory.MinimumWidth = 6;
-            DVGCategory.Name = "DVGCategory";
-            DVGCategory.ReadOnly = true;
-            DVGCategory.Width = 150;
+            this.DVGCategory.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+            this.DVGCategory.HeaderText = "Category";
+            this.DVGCategory.MinimumWidth = 6;
+            this.DVGCategory.Name = "DVGCategory";
+            this.DVGCategory.ReadOnly = true;
+            this.DVGCategory.Width = 150;
             // 
             // DVGSubCategory
             // 
-            DVGSubCategory.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
-            DVGSubCategory.HeaderText = "SubCategory";
-            DVGSubCategory.MinimumWidth = 6;
-            DVGSubCategory.Name = "DVGSubCategory";
-            DVGSubCategory.ReadOnly = true;
-            DVGSubCategory.Width = 150;
+            this.DVGSubCategory.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+            this.DVGSubCategory.HeaderText = "SubCategory";
+            this.DVGSubCategory.MinimumWidth = 6;
+            this.DVGSubCategory.Name = "DVGSubCategory";
+            this.DVGSubCategory.ReadOnly = true;
+            this.DVGSubCategory.Width = 150;
             // 
             // cmbCategory
             // 
-            cmbCategory.DropDownStyle = ComboBoxStyle.DropDownList;
-            cmbCategory.Font = new Font("Segoe UI", 10F);
-            cmbCategory.Location = new Point(25, 45);
-            cmbCategory.Name = "cmbCategory";
-            cmbCategory.Size = new Size(180, 31);
-            cmbCategory.TabIndex = 1;
-            cmbCategory.Visible = false;
+            this.cmbCategory.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbCategory.Font = new System.Drawing.Font("Segoe UI", 10F);
+            this.cmbCategory.Location = new System.Drawing.Point(237, 46);
+            this.cmbCategory.Name = "cmbCategory";
+            this.cmbCategory.Size = new System.Drawing.Size(180, 31);
+            this.cmbCategory.TabIndex = 1;
+            this.cmbCategory.Visible = false;
             // 
             // cmbSubCategory
             // 
-            cmbSubCategory.DropDownStyle = ComboBoxStyle.DropDownList;
-            cmbSubCategory.Enabled = false;
-            cmbSubCategory.Font = new Font("Segoe UI", 10F);
-            cmbSubCategory.Location = new Point(220, 45);
-            cmbSubCategory.Name = "cmbSubCategory";
-            cmbSubCategory.Size = new Size(180, 31);
-            cmbSubCategory.TabIndex = 3;
-            cmbSubCategory.Visible = false;
+            this.cmbSubCategory.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbSubCategory.Enabled = false;
+            this.cmbSubCategory.Font = new System.Drawing.Font("Segoe UI", 10F);
+            this.cmbSubCategory.Location = new System.Drawing.Point(432, 46);
+            this.cmbSubCategory.Name = "cmbSubCategory";
+            this.cmbSubCategory.Size = new System.Drawing.Size(180, 31);
+            this.cmbSubCategory.TabIndex = 3;
+            this.cmbSubCategory.Visible = false;
             // 
             // btnSearchNews
             // 
-            btnSearchNews.BackColor = Color.FromArgb(((int)(((byte)(81)))), ((int)(((byte)(213)))), ((int)(((byte)(220)))));
-            btnSearchNews.Cursor = Cursors.Hand;
-            btnSearchNews.FlatAppearance.BorderSize = 0;
-            btnSearchNews.FlatStyle = FlatStyle.Flat;
-            btnSearchNews.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
-            btnSearchNews.ForeColor = Color.White;
-            btnSearchNews.Location = new Point(666, 43);
-            btnSearchNews.Name = "btnSearchNews";
-            btnSearchNews.Size = new Size(110, 32);
-            btnSearchNews.TabIndex = 4;
-            btnSearchNews.Text = "SEARCH";
-            btnSearchNews.UseVisualStyleBackColor = false;
-            btnSearchNews.Visible = false;
+            this.btnSearchNews.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(81)))), ((int)(((byte)(213)))), ((int)(((byte)(220)))));
+            this.btnSearchNews.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnSearchNews.FlatAppearance.BorderSize = 0;
+            this.btnSearchNews.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnSearchNews.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.btnSearchNews.ForeColor = System.Drawing.Color.White;
+            this.btnSearchNews.Location = new System.Drawing.Point(878, 44);
+            this.btnSearchNews.Name = "btnSearchNews";
+            this.btnSearchNews.Size = new System.Drawing.Size(110, 32);
+            this.btnSearchNews.TabIndex = 4;
+            this.btnSearchNews.Text = "SEARCH";
+            this.btnSearchNews.UseVisualStyleBackColor = false;
+            this.btnSearchNews.Visible = false;
             // 
             // lblCategory
             // 
-            lblCategory.AutoSize = true;
-            lblCategory.Font = new Font("Segoe UI Semibold", 9F, FontStyle.Bold);
-            lblCategory.ForeColor = Color.Black;
-            lblCategory.Location = new Point(22, 22);
-            lblCategory.Name = "lblCategory";
-            lblCategory.Size = new Size(76, 20);
-            lblCategory.TabIndex = 0;
-            lblCategory.Text = "Category:";
-            lblCategory.Visible = false;
+            this.lblCategory.AutoSize = true;
+            this.lblCategory.Font = new System.Drawing.Font("Segoe UI Semibold", 9F, System.Drawing.FontStyle.Bold);
+            this.lblCategory.ForeColor = System.Drawing.Color.Black;
+            this.lblCategory.Location = new System.Drawing.Point(234, 23);
+            this.lblCategory.Name = "lblCategory";
+            this.lblCategory.Size = new System.Drawing.Size(76, 20);
+            this.lblCategory.TabIndex = 0;
+            this.lblCategory.Text = "Category:";
+            this.lblCategory.Visible = false;
             // 
             // lblSubCategory
             // 
-            lblSubCategory.AutoSize = true;
-            lblSubCategory.Font = new Font("Segoe UI Semibold", 9F, FontStyle.Bold);
-            lblSubCategory.ForeColor = Color.DimGray;
-            lblSubCategory.Location = new Point(217, 22);
-            lblSubCategory.Name = "lblSubCategory";
-            lblSubCategory.Size = new Size(102, 20);
-            lblSubCategory.TabIndex = 2;
-            lblSubCategory.Text = "SubCategory:";
-            lblSubCategory.Visible = false;
+            this.lblSubCategory.AutoSize = true;
+            this.lblSubCategory.Font = new System.Drawing.Font("Segoe UI Semibold", 9F, System.Drawing.FontStyle.Bold);
+            this.lblSubCategory.ForeColor = System.Drawing.Color.DimGray;
+            this.lblSubCategory.Location = new System.Drawing.Point(429, 23);
+            this.lblSubCategory.Name = "lblSubCategory";
+            this.lblSubCategory.Size = new System.Drawing.Size(102, 20);
+            this.lblSubCategory.TabIndex = 2;
+            this.lblSubCategory.Text = "SubCategory:";
+            this.lblSubCategory.Visible = false;
             // 
             // pnlTop
             // 
-            pnlTop.AutoSize = true;
-            pnlTop.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            pnlTop.BackColor = Color.White;
-            pnlTop.Controls.Add(tocalender);
-            pnlTop.Controls.Add(fromcalender);
-            pnlTop.Controls.Add(todateTextbox);
-            pnlTop.Controls.Add(fromTextbox);
-            pnlTop.Controls.Add(btnRefresh);
-            pnlTop.Controls.Add(label1);
-            pnlTop.Controls.Add(newsSearch);
-            pnlTop.Controls.Add(newsUpdateLable);
-            pnlTop.Controls.Add(lblCategory);
-            pnlTop.Controls.Add(cmbCategory);
-            pnlTop.Controls.Add(lblSubCategory);
-            pnlTop.Controls.Add(cmbSubCategory);
-            pnlTop.Controls.Add(btnSearchNews);
-            pnlTop.Dock = DockStyle.Top;
-            pnlTop.Location = new Point(0, 0);
-            pnlTop.Margin = new Padding(3, 10, 3, 3);
-            pnlTop.Name = "pnlTop";
-            pnlTop.Padding = new Padding(10);
-            pnlTop.Size = new Size(1255, 306);
-            pnlTop.TabIndex = 1;
+            this.pnlTop.AutoSize = true;
+            this.pnlTop.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.pnlTop.BackColor = System.Drawing.Color.White;
+            this.pnlTop.Controls.Add(this.tocalender);
+            this.pnlTop.Controls.Add(this.fromcalender);
+            this.pnlTop.Controls.Add(this.todateTextbox);
+            this.pnlTop.Controls.Add(this.fromTextbox);
+            this.pnlTop.Controls.Add(this.btnRefresh);
+            this.pnlTop.Controls.Add(this.label1);
+            this.pnlTop.Controls.Add(this.newsSearch);
+            this.pnlTop.Controls.Add(this.lblCategory);
+            this.pnlTop.Controls.Add(this.cmbCategory);
+            this.pnlTop.Controls.Add(this.lblSubCategory);
+            this.pnlTop.Controls.Add(this.cmbSubCategory);
+            this.pnlTop.Controls.Add(this.btnSearchNews);
+            this.pnlTop.Dock = System.Windows.Forms.DockStyle.Top;
+            this.pnlTop.Location = new System.Drawing.Point(0, 0);
+            this.pnlTop.Margin = new System.Windows.Forms.Padding(3, 10, 3, 3);
+            this.pnlTop.Name = "pnlTop";
+            this.pnlTop.Padding = new System.Windows.Forms.Padding(10);
+            this.pnlTop.Size = new System.Drawing.Size(1255, 307);
+            this.pnlTop.TabIndex = 1;
             // 
             // tocalender
             // 
-            tocalender.Location = new Point(540, 80);
-            tocalender.MaxSelectionCount = 31;
-            tocalender.Name = "tocalender";
-            tocalender.TabIndex = 12;
-            tocalender.Visible = false;
-            tocalender.DateSelected += new DateRangeEventHandler(tocalender_DateSelected);
+            this.tocalender.Location = new System.Drawing.Point(752, 81);
+            this.tocalender.MaxSelectionCount = 31;
+            this.tocalender.Name = "tocalender";
+            this.tocalender.TabIndex = 12;
+            this.tocalender.Visible = false;
+            this.tocalender.DateSelected += new System.Windows.Forms.DateRangeEventHandler(this.tocalender_DateSelected);
             // 
             // fromcalender
             // 
-            fromcalender.Location = new Point(415, 80);
-            fromcalender.MaxSelectionCount = 31;
-            fromcalender.Name = "fromcalender";
-            fromcalender.TabIndex = 10;
-            fromcalender.Visible = false;
-            fromcalender.DateSelected += new DateRangeEventHandler(fromcalender_DateSelected);
+            this.fromcalender.Location = new System.Drawing.Point(627, 81);
+            this.fromcalender.MaxSelectionCount = 31;
+            this.fromcalender.Name = "fromcalender";
+            this.fromcalender.TabIndex = 10;
+            this.fromcalender.Visible = false;
+            this.fromcalender.DateSelected += new System.Windows.Forms.DateRangeEventHandler(this.fromcalender_DateSelected);
             // 
             // todateTextbox
             // 
-            todateTextbox.BackColor = Color.WhiteSmoke;
-            todateTextbox.BorderStyle = BorderStyle.FixedSingle;
-            todateTextbox.Font = new Font("Segoe UI", 10F);
-            todateTextbox.Location = new Point(540, 45);
-            todateTextbox.Name = "todateTextbox";
-            todateTextbox.Size = new Size(120, 30);
-            todateTextbox.TabIndex = 14;
-            todateTextbox.Text = "To Date";
-            todateTextbox.Visible = false;
-            todateTextbox.Click += new EventHandler(todateTextbox_Click);
-            todateTextbox.Leave += new EventHandler(todateTextbox_Leave);
+            this.todateTextbox.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.todateTextbox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.todateTextbox.Font = new System.Drawing.Font("Segoe UI", 10F);
+            this.todateTextbox.Location = new System.Drawing.Point(752, 46);
+            this.todateTextbox.Name = "todateTextbox";
+            this.todateTextbox.Size = new System.Drawing.Size(120, 30);
+            this.todateTextbox.TabIndex = 14;
+            this.todateTextbox.Text = "To Date";
+            this.todateTextbox.Visible = false;
+            this.todateTextbox.Click += new System.EventHandler(this.todateTextbox_Click);
+            this.todateTextbox.Leave += new System.EventHandler(this.todateTextbox_Leave);
             // 
             // fromTextbox
             // 
-            fromTextbox.BackColor = Color.WhiteSmoke;
-            fromTextbox.BorderStyle = BorderStyle.FixedSingle;
-            fromTextbox.Font = new Font("Segoe UI", 10F);
-            fromTextbox.Location = new Point(415, 45);
-            fromTextbox.Name = "fromTextbox";
-            fromTextbox.Size = new Size(120, 30);
-            fromTextbox.TabIndex = 13;
-            fromTextbox.Text = "From Date";
-            fromTextbox.Visible = false;
-            fromTextbox.Click += new EventHandler(fromTextbox_Click);
-            fromTextbox.Leave += new EventHandler(fromTextbox_Leave);
+            this.fromTextbox.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.fromTextbox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.fromTextbox.Font = new System.Drawing.Font("Segoe UI", 10F);
+            this.fromTextbox.Location = new System.Drawing.Point(627, 46);
+            this.fromTextbox.Name = "fromTextbox";
+            this.fromTextbox.Size = new System.Drawing.Size(120, 30);
+            this.fromTextbox.TabIndex = 13;
+            this.fromTextbox.Text = "From Date";
+            this.fromTextbox.Visible = false;
+            this.fromTextbox.Click += new System.EventHandler(this.fromTextbox_Click);
+            this.fromTextbox.Leave += new System.EventHandler(this.fromTextbox_Leave);
             // 
             // btnRefresh
             // 
-            btnRefresh.Anchor = ((AnchorStyles)((AnchorStyles.Top | AnchorStyles.Right)));
-            btnRefresh.Cursor = Cursors.Hand;
-            btnRefresh.FlatAppearance.BorderSize = 0;
-            btnRefresh.FlatStyle = FlatStyle.Flat;
-            btnRefresh.Font = new Font("Segoe UI Symbol", 17F, FontStyle.Regular, GraphicsUnit.Point, ((byte)(0)));
-            btnRefresh.Location = new Point(1192, 31);
-            btnRefresh.Name = "btnRefresh";
-            btnRefresh.Size = new Size(50, 46);
-            btnRefresh.TabIndex = 11;
-            btnRefresh.Text = "↻";
-            btnRefresh.UseVisualStyleBackColor = true;
-            btnRefresh.Click += new EventHandler(BtnRefresh_Click);
+            this.btnRefresh.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnRefresh.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnRefresh.FlatAppearance.BorderSize = 0;
+            this.btnRefresh.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnRefresh.Font = new System.Drawing.Font("Segoe UI Symbol", 17F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnRefresh.Location = new System.Drawing.Point(1192, 31);
+            this.btnRefresh.Name = "btnRefresh";
+            this.btnRefresh.Size = new System.Drawing.Size(50, 46);
+            this.btnRefresh.TabIndex = 11;
+            this.btnRefresh.Text = "↻";
+            this.btnRefresh.UseVisualStyleBackColor = true;
+            this.btnRefresh.Click += new System.EventHandler(this.BtnRefresh_Click);
             // 
             // label1
             // 
-            label1.AutoSize = true;
-            label1.Font = new Font("Segoe UI Semibold", 9F, FontStyle.Bold);
-            label1.ForeColor = Color.Black;
-            label1.Location = new Point(790, 22);
-            label1.Name = "label1";
-            label1.Size = new Size(100, 20);
-            label1.TabIndex = 8;
-            label1.Text = "Search News:";
+            this.label1.AutoSize = true;
+            this.label1.Font = new System.Drawing.Font("Segoe UI Semibold", 9F, System.Drawing.FontStyle.Bold);
+            this.label1.ForeColor = System.Drawing.Color.Black;
+            this.label1.Location = new System.Drawing.Point(11, 23);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(100, 20);
+            this.label1.TabIndex = 8;
+            this.label1.Text = "Search News:";
             // 
             // newsSearch
             // 
-            newsSearch.BorderStyle = BorderStyle.FixedSingle;
-            newsSearch.Font = new Font("Segoe UI", 10F);
-            newsSearch.Location = new Point(790, 45);
-            newsSearch.Name = "newsSearch";
-            newsSearch.Size = new Size(220, 30);
-            newsSearch.TabIndex = 7;
-            newsSearch.TextChanged += new EventHandler(TextBox1_TextChanged);
-            newsSearch.KeyDown += new KeyEventHandler(textBox1_KeyDown);
-            // 
-            // newsUpdateLable
-            // 
-            newsUpdateLable.AutoSize = true;
-            newsUpdateLable.Font = new Font("Segoe UI", 8F);
-            newsUpdateLable.ForeColor = Color.Black;
-            newsUpdateLable.Location = new Point(1020, 50);
-            newsUpdateLable.Name = "newsUpdateLable";
-            newsUpdateLable.Size = new Size(132, 19);
-            newsUpdateLable.TabIndex = 5;
-            newsUpdateLable.Text = "Last Received At: -- ";
-            newsUpdateLable.Visible = false;
+            this.newsSearch.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.newsSearch.Font = new System.Drawing.Font("Segoe UI", 10F);
+            this.newsSearch.Location = new System.Drawing.Point(11, 46);
+            this.newsSearch.Name = "newsSearch";
+            this.newsSearch.Size = new System.Drawing.Size(220, 30);
+            this.newsSearch.TabIndex = 7;
+            this.newsSearch.TextChanged += new System.EventHandler(this.TextBox1_TextChanged);
+            this.newsSearch.KeyDown += new System.Windows.Forms.KeyEventHandler(this.textBox1_KeyDown);
             // 
             // pnlBottom
             // 
-            pnlBottom.BackColor = Color.White;
-            pnlBottom.Controls.Add(btnPrevPage);
-            pnlBottom.Controls.Add(lblPageInfo);
-            pnlBottom.Controls.Add(btnNextPage);
-            pnlBottom.Dock = DockStyle.Bottom;
-            pnlBottom.Location = new Point(0, 450);
-            pnlBottom.Name = "pnlBottom";
-            pnlBottom.Padding = new Padding(10, 5, 10, 5);
-            pnlBottom.Size = new Size(1255, 50);
-            pnlBottom.TabIndex = 2;
+            this.pnlBottom.BackColor = System.Drawing.Color.White;
+            this.pnlBottom.Controls.Add(this.btnPrevPage);
+            this.pnlBottom.Controls.Add(this.lblPageInfo);
+            this.pnlBottom.Controls.Add(this.btnNextPage);
+            this.pnlBottom.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.pnlBottom.Location = new System.Drawing.Point(0, 450);
+            this.pnlBottom.Name = "pnlBottom";
+            this.pnlBottom.Padding = new System.Windows.Forms.Padding(10, 5, 10, 5);
+            this.pnlBottom.Size = new System.Drawing.Size(1255, 50);
+            this.pnlBottom.TabIndex = 2;
             // 
             // btnPrevPage
             // 
-            btnPrevPage.BackColor = Color.FromArgb(((int)(((byte)(81)))), ((int)(((byte)(213)))), ((int)(((byte)(220)))));
-            btnPrevPage.Cursor = Cursors.Hand;
-            btnPrevPage.FlatAppearance.BorderSize = 0;
-            btnPrevPage.FlatStyle = FlatStyle.Flat;
-            btnPrevPage.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
-            btnPrevPage.ForeColor = Color.White;
-            btnPrevPage.Location = new Point(13, 8);
-            btnPrevPage.Name = "btnPrevPage";
-            btnPrevPage.Size = new Size(110, 32);
-            btnPrevPage.TabIndex = 2;
-            btnPrevPage.Text = "< Home";
-            btnPrevPage.UseVisualStyleBackColor = false;
-            btnPrevPage.Visible = false;
-            btnPrevPage.Click += new EventHandler(BtnPrevPage_Click);
+            this.btnPrevPage.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(81)))), ((int)(((byte)(213)))), ((int)(((byte)(220)))));
+            this.btnPrevPage.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnPrevPage.FlatAppearance.BorderSize = 0;
+            this.btnPrevPage.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnPrevPage.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.btnPrevPage.ForeColor = System.Drawing.Color.White;
+            this.btnPrevPage.Location = new System.Drawing.Point(13, 8);
+            this.btnPrevPage.Name = "btnPrevPage";
+            this.btnPrevPage.Size = new System.Drawing.Size(110, 32);
+            this.btnPrevPage.TabIndex = 2;
+            this.btnPrevPage.Text = "< Home";
+            this.btnPrevPage.UseVisualStyleBackColor = false;
+            this.btnPrevPage.Visible = false;
+            this.btnPrevPage.Click += new System.EventHandler(this.BtnPrevPage_Click);
             // 
             // lblPageInfo
             // 
-            lblPageInfo.Anchor = AnchorStyles.None;
-            lblPageInfo.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point, ((byte)(0)));
-            lblPageInfo.ForeColor = Color.DimGray;
-            lblPageInfo.Location = new Point(395, 10);
-            lblPageInfo.Name = "lblPageInfo";
-            lblPageInfo.Size = new Size(465, 30);
-            lblPageInfo.TabIndex = 0;
-            lblPageInfo.Text = "Records : 30";
-            lblPageInfo.TextAlign = ContentAlignment.MiddleCenter;
-            lblPageInfo.Visible = false;
+            this.lblPageInfo.Anchor = System.Windows.Forms.AnchorStyles.None;
+            this.lblPageInfo.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblPageInfo.ForeColor = System.Drawing.Color.DimGray;
+            this.lblPageInfo.Location = new System.Drawing.Point(395, 10);
+            this.lblPageInfo.Name = "lblPageInfo";
+            this.lblPageInfo.Size = new System.Drawing.Size(465, 30);
+            this.lblPageInfo.TabIndex = 0;
+            this.lblPageInfo.Text = "Records : 30";
+            this.lblPageInfo.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblPageInfo.Visible = false;
             // 
             // btnNextPage
             // 
-            btnNextPage.Anchor = ((AnchorStyles)((AnchorStyles.Top | AnchorStyles.Right)));
-            btnNextPage.BackColor = Color.FromArgb(((int)(((byte)(81)))), ((int)(((byte)(213)))), ((int)(((byte)(220)))));
-            btnNextPage.Cursor = Cursors.Hand;
-            btnNextPage.FlatAppearance.BorderSize = 0;
-            btnNextPage.FlatStyle = FlatStyle.Flat;
-            btnNextPage.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
-            btnNextPage.ForeColor = Color.White;
-            btnNextPage.Location = new Point(1133, 8);
-            btnNextPage.Name = "btnNextPage";
-            btnNextPage.Size = new Size(110, 32);
-            btnNextPage.TabIndex = 1;
-            btnNextPage.Text = "Next >";
-            btnNextPage.UseVisualStyleBackColor = false;
-            btnNextPage.Visible = false;
-            btnNextPage.Click += new EventHandler(BtnNextPage_Click);
+            this.btnNextPage.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnNextPage.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(81)))), ((int)(((byte)(213)))), ((int)(((byte)(220)))));
+            this.btnNextPage.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnNextPage.FlatAppearance.BorderSize = 0;
+            this.btnNextPage.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnNextPage.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.btnNextPage.ForeColor = System.Drawing.Color.White;
+            this.btnNextPage.Location = new System.Drawing.Point(1133, 8);
+            this.btnNextPage.Name = "btnNextPage";
+            this.btnNextPage.Size = new System.Drawing.Size(110, 32);
+            this.btnNextPage.TabIndex = 1;
+            this.btnNextPage.Text = "Next >";
+            this.btnNextPage.UseVisualStyleBackColor = false;
+            this.btnNextPage.Visible = false;
+            this.btnNextPage.Click += new System.EventHandler(this.BtnNextPage_Click);
             // 
             // NewsControl
             // 
-            AutoScaleDimensions = new SizeF(14F, 31F);
-            AutoScaleMode = AutoScaleMode.Font;
-            Controls.Add(dgvNews);
-            Controls.Add(pnlBottom);
-            Controls.Add(pnlTop);
-            Font = new Font("Segoe UI", 14F, FontStyle.Bold, GraphicsUnit.Point, ((byte)(0)));
-            Name = "NewsControl";
-            Size = new Size(1255, 500);
-            ((ISupportInitialize)(dgvNews)).EndInit();
-            pnlTop.ResumeLayout(false);
-            pnlTop.PerformLayout();
-            pnlBottom.ResumeLayout(false);
-            ResumeLayout(false);
-            PerformLayout();
+            this.AutoScaleDimensions = new System.Drawing.SizeF(14F, 31F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.dgvNews);
+            this.Controls.Add(this.pnlBottom);
+            this.Controls.Add(this.pnlTop);
+            this.Font = new System.Drawing.Font("Segoe UI", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Name = "NewsControl";
+            this.Size = new System.Drawing.Size(1255, 500);
+            ((System.ComponentModel.ISupportInitialize)(this.dgvNews)).EndInit();
+            this.pnlTop.ResumeLayout(false);
+            this.pnlTop.PerformLayout();
+            this.pnlBottom.ResumeLayout(false);
+            this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -428,7 +411,6 @@ namespace thecalcify.News
         private DataGridViewTextBoxColumn DGVTitle;
         private DataGridViewTextBoxColumn DVGCategory;
         private DataGridViewTextBoxColumn DVGSubCategory;
-        private Label newsUpdateLable;
         private TextBox newsSearch;
         private Label label1;
         private Button btnRefresh;

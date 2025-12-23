@@ -91,6 +91,7 @@
     <Compile Include="Excel Helper\UserExcelExportForm.Designer.cs">
       <DependentUpon>UserExcelExportForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Helper\MessagePopup.cs" />
     <Compile Include="Update Service\About.cs">
       <SubType>UserControl</SubType>
     </Compile>
