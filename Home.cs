@@ -459,16 +459,17 @@ namespace thecalcify
         {
             txtsearch.Focus();
         }
-
+        
         private void SetupModernSearchBox()
         {
             Color inputBg = Color.FromArgb(245, 248, 250);
+            Color inputBg1 = Color.FromArgb(245, 248, 250);
             Color borderColor = Color.FromArgb(220, 220, 220);
 
             pnlSearch.BackColor = inputBg;
 
-            pnlSearch.Size = new Size(270, 25);
-            pnlSearch.Location = new Point(pnlSearch.Location.X - 70, pnlSearch.Location.Y + 10);    
+            pnlSearch.Size = new Size(270, 28);
+            pnlSearch.Location = new Point(pnlSearch.Location.X - 70, pnlSearch.Location.Y + 5);    
 
             pnlSearch.Padding = new Padding(0);
             pnlSearch.Cursor = Cursors.IBeam;

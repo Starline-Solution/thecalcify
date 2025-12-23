@@ -41,9 +41,9 @@ namespace thecalcify
         public void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(thecalcify));
             this.defaultGrid = new System.Windows.Forms.DataGridView();
             this.Tools = new System.Windows.Forms.ContextMenuStrip(this.components);
@@ -56,12 +56,11 @@ namespace thecalcify
             this.toolsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.disconnectESCToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.fullScreenF11ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.saveMarketWatchHost = new System.Windows.Forms.ToolStripMenuItem();
-            this.refreshMarketWatchHost = new System.Windows.Forms.ToolStripMenuItem();
             this.newCTRLNToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.newCTRLNToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.viewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
             this.exportWorksheetsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.newsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.newswatchListToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -70,9 +69,11 @@ namespace thecalcify
             this.notificationSettings = new System.Windows.Forms.ToolStripMenuItem();
             this.alertToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.saveMarketWatchHost = new System.Windows.Forms.Button();
+            this.refreshMarketWatchHost = new System.Windows.Forms.Button();
             this.headerPanel = new System.Windows.Forms.Panel();
-            this.titleLabel = new System.Windows.Forms.Label();
             this.logoPictureBox = new System.Windows.Forms.PictureBox();
+            this.titleLabel = new System.Windows.Forms.Label();
             this.pnlSearch = new System.Windows.Forms.Panel();
             this.txtsearch = new System.Windows.Forms.TextBox();
             this.searchTextLabel = new System.Windows.Forms.Label();
@@ -81,7 +82,6 @@ namespace thecalcify
             this.savelabel = new System.Windows.Forms.Label();
             this.fontSizeComboBox = new ModernComboBox();
             this.newMarketWatchMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
             ((System.ComponentModel.ISupportInitialize)(this.defaultGrid)).BeginInit();
             this.Tools.SuspendLayout();
             this.menuStrip1.SuspendLayout();
@@ -97,31 +97,31 @@ namespace thecalcify
             this.defaultGrid.AllowUserToAddRows = false;
             this.defaultGrid.AllowUserToDeleteRows = false;
             this.defaultGrid.AllowUserToResizeRows = false;
-            dataGridViewCellStyle4.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(250)))), ((int)(((byte)(250)))), ((int)(((byte)(250)))));
-            this.defaultGrid.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle4;
+            dataGridViewCellStyle1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(250)))), ((int)(((byte)(250)))), ((int)(((byte)(250)))));
+            this.defaultGrid.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
             this.defaultGrid.BackgroundColor = System.Drawing.Color.White;
             this.defaultGrid.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.defaultGrid.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.Raised;
             this.defaultGrid.ClipboardCopyMode = System.Windows.Forms.DataGridViewClipboardCopyMode.EnableWithoutHeaderText;
-            dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle5.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(81)))), ((int)(((byte)(213)))), ((int)(((byte)(220)))));
-            dataGridViewCellStyle5.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold);
-            dataGridViewCellStyle5.ForeColor = System.Drawing.Color.WhiteSmoke;
-            dataGridViewCellStyle5.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(81)))), ((int)(((byte)(213)))), ((int)(((byte)(220)))));
-            dataGridViewCellStyle5.SelectionForeColor = System.Drawing.Color.WhiteSmoke;
-            dataGridViewCellStyle5.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.defaultGrid.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle5;
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(81)))), ((int)(((byte)(213)))), ((int)(((byte)(220)))));
+            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold);
+            dataGridViewCellStyle2.ForeColor = System.Drawing.Color.WhiteSmoke;
+            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(81)))), ((int)(((byte)(213)))), ((int)(((byte)(220)))));
+            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.Color.WhiteSmoke;
+            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.defaultGrid.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
             this.defaultGrid.ColumnHeadersHeight = 40;
             this.defaultGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             this.defaultGrid.ContextMenuStrip = this.Tools;
-            dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle6.BackColor = System.Drawing.Color.White;
-            dataGridViewCellStyle6.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F);
-            dataGridViewCellStyle6.ForeColor = System.Drawing.Color.Black;
-            dataGridViewCellStyle6.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(81)))), ((int)(((byte)(213)))), ((int)(((byte)(220)))));
-            dataGridViewCellStyle6.SelectionForeColor = System.Drawing.Color.WhiteSmoke;
-            dataGridViewCellStyle6.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.defaultGrid.DefaultCellStyle = dataGridViewCellStyle6;
+            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle3.BackColor = System.Drawing.Color.White;
+            dataGridViewCellStyle3.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F);
+            dataGridViewCellStyle3.ForeColor = System.Drawing.Color.Black;
+            dataGridViewCellStyle3.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(81)))), ((int)(((byte)(213)))), ((int)(((byte)(220)))));
+            dataGridViewCellStyle3.SelectionForeColor = System.Drawing.Color.WhiteSmoke;
+            dataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.defaultGrid.DefaultCellStyle = dataGridViewCellStyle3;
             this.defaultGrid.Dock = System.Windows.Forms.DockStyle.Fill;
             this.defaultGrid.EnableHeadersVisualStyles = false;
             this.defaultGrid.GridColor = System.Drawing.Color.Gainsboro;
@@ -202,8 +202,6 @@ namespace thecalcify
             this.menuStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolsToolStripMenuItem,
-            this.saveMarketWatchHost,
-            this.refreshMarketWatchHost,
             this.newCTRLNToolStripMenuItem,
             this.newsToolStripMenuItem,
             this.alertToolStripMenuItem,
@@ -238,30 +236,6 @@ namespace thecalcify
             this.fullScreenF11ToolStripMenuItem.Text = "🔲 Full Screen (ESC)";
             this.fullScreenF11ToolStripMenuItem.Click += new System.EventHandler(this.FullScreenF11ToolStripMenuItem_Click);
             // 
-            // saveMarketWatchHost
-            // 
-            this.saveMarketWatchHost.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.saveMarketWatchHost.BackColor = System.Drawing.Color.Transparent;
-            this.saveMarketWatchHost.ForeColor = System.Drawing.Color.Black;
-            this.saveMarketWatchHost.Margin = new System.Windows.Forms.Padding(5, 0, 10, 0);
-            this.saveMarketWatchHost.Name = "saveMarketWatchHost";
-            this.saveMarketWatchHost.Size = new System.Drawing.Size(164, 24);
-            this.saveMarketWatchHost.Text = "Save MarketWatch";
-            this.saveMarketWatchHost.Visible = false;
-            this.saveMarketWatchHost.Click += new System.EventHandler(this.SaveMarketWatchHost_Click);
-            // 
-            // refreshMarketWatchHost
-            // 
-            this.refreshMarketWatchHost.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.refreshMarketWatchHost.BackColor = System.Drawing.Color.Transparent;
-            this.refreshMarketWatchHost.ForeColor = System.Drawing.Color.Black;
-            this.refreshMarketWatchHost.Image = ((System.Drawing.Image)(resources.GetObject("refreshMarketWatchHost.Image")));
-            this.refreshMarketWatchHost.Margin = new System.Windows.Forms.Padding(5, 0, 10, 0);
-            this.refreshMarketWatchHost.Name = "refreshMarketWatchHost";
-            this.refreshMarketWatchHost.Size = new System.Drawing.Size(34, 24);
-            this.refreshMarketWatchHost.ToolTipText = "Refresh MarketWatch";
-            this.refreshMarketWatchHost.Click += new System.EventHandler(this.RefreshMarketWatchHost_Click);
-            // 
             // newCTRLNToolStripMenuItem
             // 
             this.newCTRLNToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -293,6 +267,11 @@ namespace thecalcify
             this.deleteToolStripMenuItem.Size = new System.Drawing.Size(255, 26);
             this.deleteToolStripMenuItem.Text = "🗑 Delete";
             this.deleteToolStripMenuItem.Click += new System.EventHandler(this.DeleteToolStripMenuItem_Click);
+            // 
+            // toolStripMenuItem1
+            // 
+            this.toolStripMenuItem1.Name = "toolStripMenuItem1";
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(252, 6);
             // 
             // exportWorksheetsToolStripMenuItem
             // 
@@ -357,6 +336,40 @@ namespace thecalcify
             this.aboutToolStripMenuItem.ToolTipText = "Click CTRL + U";
             this.aboutToolStripMenuItem.Click += new System.EventHandler(this.AboutToolStripMenuItem_Click);
             // 
+            // saveMarketWatchHost
+            // 
+            this.saveMarketWatchHost.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.saveMarketWatchHost.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.saveMarketWatchHost.FlatAppearance.BorderSize = 0;
+            this.saveMarketWatchHost.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.saveMarketWatchHost.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.saveMarketWatchHost.ForeColor = System.Drawing.Color.Black;
+            this.saveMarketWatchHost.Location = new System.Drawing.Point(905, 30);
+            this.saveMarketWatchHost.Name = "saveMarketWatchHost";
+            this.saveMarketWatchHost.Size = new System.Drawing.Size(181, 30);
+            this.saveMarketWatchHost.TabIndex = 4;
+            this.saveMarketWatchHost.Text = "Save MarketWatch";
+            this.saveMarketWatchHost.UseVisualStyleBackColor = false;
+            this.saveMarketWatchHost.Visible = false;
+            this.saveMarketWatchHost.Click += new System.EventHandler(this.SaveMarketWatchHost_Click);
+            // 
+            // refreshMarketWatchHost
+            // 
+            this.refreshMarketWatchHost.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.refreshMarketWatchHost.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.refreshMarketWatchHost.FlatAppearance.BorderSize = 0;
+            this.refreshMarketWatchHost.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.refreshMarketWatchHost.Font = new System.Drawing.Font("Segoe UI Symbol", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.refreshMarketWatchHost.Location = new System.Drawing.Point(1069, 30);
+            this.refreshMarketWatchHost.Name = "refreshMarketWatchHost";
+            this.refreshMarketWatchHost.Size = new System.Drawing.Size(35, 30);
+            this.refreshMarketWatchHost.TabIndex = 5;
+            this.refreshMarketWatchHost.Text = "↻";
+            this.refreshMarketWatchHost.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            this.refreshMarketWatchHost.Padding = new System.Windows.Forms.Padding(0, 0, 0, 0);
+            this.refreshMarketWatchHost.UseVisualStyleBackColor = false;
+            this.refreshMarketWatchHost.Click += new System.EventHandler(this.RefreshMarketWatchHost_Click);
+            // 
             // headerPanel
             // 
             this.headerPanel.BackColor = System.Drawing.Color.White;
@@ -368,21 +381,6 @@ namespace thecalcify
             this.headerPanel.Padding = new System.Windows.Forms.Padding(15, 0, 0, 0);
             this.headerPanel.Size = new System.Drawing.Size(1115, 40);
             this.headerPanel.TabIndex = 3;
-            // 
-            // titleLabel
-            // 
-            this.titleLabel.BackColor = System.Drawing.Color.White;
-            this.titleLabel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.titleLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 13F, System.Drawing.FontStyle.Bold);
-            this.titleLabel.ForeColor = System.Drawing.Color.Black;
-            this.titleLabel.Location = new System.Drawing.Point(165, 0);
-            this.titleLabel.Margin = new System.Windows.Forms.Padding(10, 0, 3, 0);
-            this.titleLabel.Name = "titleLabel";
-            this.titleLabel.Size = new System.Drawing.Size(950, 40);
-            this.titleLabel.TabIndex = 0;
-            this.titleLabel.Text = "DEFAULT";
-            this.titleLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            this.titleLabel.TextChanged += new System.EventHandler(this.TitleLabel_TextChanged);
             // 
             // logoPictureBox
             // 
@@ -396,6 +394,21 @@ namespace thecalcify
             this.logoPictureBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.logoPictureBox.TabIndex = 1;
             this.logoPictureBox.TabStop = false;
+            // 
+            // titleLabel
+            // 
+            this.titleLabel.BackColor = System.Drawing.Color.White;
+            this.titleLabel.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.titleLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 13F, System.Drawing.FontStyle.Bold);
+            this.titleLabel.ForeColor = System.Drawing.Color.Black;
+            this.titleLabel.Location = new System.Drawing.Point(15, 0);
+            this.titleLabel.Margin = new System.Windows.Forms.Padding(10, 0, 3, 0);
+            this.titleLabel.Name = "titleLabel";
+            this.titleLabel.Size = new System.Drawing.Size(1100, 40);
+            this.titleLabel.TabIndex = 0;
+            this.titleLabel.Text = "DEFAULT";
+            this.titleLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.titleLabel.TextChanged += new System.EventHandler(this.TitleLabel_TextChanged);
             // 
             // pnlSearch
             // 
@@ -479,7 +492,7 @@ namespace thecalcify
             this.fontSizeComboBox.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.fontSizeComboBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.fontSizeComboBox.FormattingEnabled = true;
-            this.fontSizeComboBox.ItemHeight = 20;
+            this.fontSizeComboBox.ItemHeight = 22;
             this.fontSizeComboBox.Items.AddRange(new object[] {
             "10",
             "12",
@@ -492,10 +505,10 @@ namespace thecalcify
             "26",
             "28",
             "30"});
-            this.fontSizeComboBox.Location = new System.Drawing.Point(902, 36);
+            this.fontSizeComboBox.Location = new System.Drawing.Point(902, 32);
             this.fontSizeComboBox.Margin = new System.Windows.Forms.Padding(4);
             this.fontSizeComboBox.Name = "fontSizeComboBox";
-            this.fontSizeComboBox.Size = new System.Drawing.Size(160, 26);
+            this.fontSizeComboBox.Size = new System.Drawing.Size(160, 28);
             this.fontSizeComboBox.TabIndex = 5;
             this.fontSizeComboBox.SelectedIndexChanged += new System.EventHandler(this.FontSizeComboBox_SelectedIndexChanged);
             this.fontSizeComboBox.TextChanged += new System.EventHandler(this.FontSizeComboBox_TextChanged);
@@ -505,17 +518,14 @@ namespace thecalcify
             this.newMarketWatchMenuItem.Name = "newMarketWatchMenuItem";
             this.newMarketWatchMenuItem.Size = new System.Drawing.Size(32, 19);
             // 
-            // toolStripMenuItem1
-            // 
-            this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(252, 6);
-            // 
             // thecalcify
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoScroll = true;
             this.ClientSize = new System.Drawing.Size(1115, 708);
+            this.Controls.Add(this.saveMarketWatchHost);
+            this.Controls.Add(this.refreshMarketWatchHost);
             this.Controls.Add(this.pnlSearch);
             this.Controls.Add(this.fontSizeComboBox);
             this.Controls.Add(this.defaultGrid);
@@ -837,7 +847,7 @@ namespace thecalcify
         public System.Windows.Forms.ToolStripMenuItem newMarketWatchMenuItem;
         public System.Windows.Forms.Panel headerPanel;
         public System.Windows.Forms.Label titleLabel;
-        public ToolStripMenuItem saveMarketWatchHost;
+        public Button saveMarketWatchHost;
         public ToolStripMenuItem newCTRLNToolStripMenuItem;
         public ToolStripMenuItem newCTRLNToolStripMenuItem1;
         public ToolStripMenuItem viewToolStripMenuItem;
@@ -846,7 +856,7 @@ namespace thecalcify
         public Label savelabel;
         public ToolStripMenuItem newsToolStripMenuItem;
         public ToolStripMenuItem alertToolStripMenuItem;
-        public ToolStripMenuItem refreshMarketWatchHost;
+        public Button refreshMarketWatchHost;
         public ToolStripMenuItem newswatchListToolStripMenuItem;
         public ToolStripMenuItem notificationSettings;
         public ToolStripMenuItem newsListToolStripMenuItem;
