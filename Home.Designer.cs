@@ -372,7 +372,7 @@ namespace thecalcify
             this.refreshMarketWatchHost.Font = new System.Drawing.Font("Segoe UI Symbol", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.refreshMarketWatchHost.Location = new System.Drawing.Point(1069, 30);
             this.refreshMarketWatchHost.Name = "refreshMarketWatchHost";
-            this.refreshMarketWatchHost.Size = new System.Drawing.Size(35, 30);
+            this.refreshMarketWatchHost.Size = new System.Drawing.Size(35, 40);
             this.refreshMarketWatchHost.TabIndex = 5;
             this.refreshMarketWatchHost.Text = "↻";
             this.refreshMarketWatchHost.TextAlign = System.Drawing.ContentAlignment.TopCenter;
@@ -428,7 +428,7 @@ namespace thecalcify
             this.pnlSearch.Controls.Add(this.txtsearch);
             this.pnlSearch.Controls.Add(this.searchTextLabel);
             this.pnlSearch.Cursor = System.Windows.Forms.Cursors.IBeam;
-            this.pnlSearch.Location = new System.Drawing.Point(690, 27);
+            this.pnlSearch.Location = new System.Drawing.Point(660, 27);
             this.pnlSearch.Name = "pnlSearch";
             this.pnlSearch.Size = new System.Drawing.Size(220, 30);
             this.pnlSearch.TabIndex = 6;
@@ -874,6 +874,7 @@ namespace thecalcify
         public ToolStripMenuItem newsListToolStripMenuItem;
         public ToolStripMenuItem newsHistoryToolStripMenuItem;
         public ToolStripMenuItem copyRowToolStripMenuItem;
+        public ToolStripMenuItem chartWindowToolStripMenuItem;
         public ToolStripMenuItem exportWorksheetsToolStripMenuItem;
         private System.ComponentModel.IContainer components;
         private System.Windows.Forms.PictureBox logoPictureBox;
