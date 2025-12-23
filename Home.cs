@@ -468,11 +468,12 @@ namespace thecalcify
             pnlSearch.BackColor = inputBg;
 
             pnlSearch.Size = new Size(270, 25);
-            pnlSearch.Location = new Point(pnlSearch.Location.X - 70, pnlSearch.Location.Y );    
+            pnlSearch.Location = new Point(pnlSearch.Location.X - 70, pnlSearch.Location.Y + 10);    
 
             pnlSearch.Padding = new Padding(0);
             pnlSearch.Cursor = Cursors.IBeam;
 
+            this.MinimumSize = new Size(1100, 700);
             pnlSearch.Paint -= PnlSearch_Paint;
             pnlSearch.Paint += (s, e) =>
             {
@@ -846,7 +847,7 @@ namespace thecalcify
 
                 //uiManager?.SetFontSizeComboBoxVisibility(true);
 
-
+                pnlSearch.Visible = true;
                 searchTextLabel.Visible = true;
                 txtsearch.Visible = true;
                 txtsearch.Text = string.Empty;
@@ -1559,6 +1560,7 @@ namespace thecalcify
                 fontSizeComboBox.Visible = true;
                 //uiManager?.SetFontSizeComboBoxVisibility(true);
 
+                pnlSearch.Visible = true;
                 searchTextLabel.Visible = true;
                 txtsearch.Clear();
                 txtsearch.Visible = true;
@@ -1788,6 +1790,7 @@ namespace thecalcify
                 //DisposeSignalRConnection();
                 saveMarketWatchHost.Visible = false;
                 fontSizeComboBox.Visible = false;
+                pnlSearch.Visible = false;
                 searchTextLabel.Visible = false;
                 txtsearch.Visible = false;
                 refreshMarketWatchHost.Visible = false;
@@ -2995,6 +2998,7 @@ namespace thecalcify
                 fontSizeComboBox.Visible = false;
                 //uiManager?.SetFontSizeComboBoxVisibility(false);
 
+                pnlSearch.Visible = false;
                 searchTextLabel.Visible = false;
                 txtsearch.Visible = false;
                 //uiManager?.SetSearchBoxVisibility(false);
@@ -3771,6 +3775,7 @@ namespace thecalcify
                 fontSizeComboBox.Visible = false;
                 //uiManager?.SetFontSizeComboBoxVisibility(false);
 
+                pnlSearch.Visible = false;
                 searchTextLabel.Visible = false;
                 txtsearch.Visible = false;
                 //uiManager?.SetSearchBoxVisibility(false);
@@ -3859,6 +3864,7 @@ namespace thecalcify
                 fontSizeComboBox.Visible = false;
                 //uiManager?.SetFontSizeComboBoxVisibility(false);
 
+                pnlSearch.Visible = false;
                 searchTextLabel.Visible = false;
                 txtsearch.Visible = false;
                 //uiManager?.SetSearchBoxVisibility(false);
@@ -3949,6 +3955,7 @@ namespace thecalcify
                 fontSizeComboBox.Visible = false;
                 //uiManager?.SetFontSizeComboBoxVisibility(false);
 
+                pnlSearch.Visible = false;
                 searchTextLabel.Visible = false;
                 txtsearch.Visible = false;
                 //uiManager?.SetSearchBoxVisibility(false);
