@@ -180,6 +180,9 @@
     <EmbeddedResource Include="Alert\AlertPopup.resx">
       <DependentUpon>AlertPopup.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Charts\Views\Chart.resx">
+      <DependentUpon>Chart.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Excel Helper\UserExcelExportForm.resx">
       <DependentUpon>UserExcelExportForm.cs</DependentUpon>
     </EmbeddedResource>

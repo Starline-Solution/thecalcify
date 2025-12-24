@@ -74,6 +74,21 @@ namespace thecalcify.Charts.Views
                 var env = await CoreWebView2Environment.CreateAsync();
                 await _webView.EnsureCoreWebView2Async(env);
 
+                _webView.CoreWebView2.Settings.IsWebMessageEnabled = true;
+
+                await _webView.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync(
+                    @"console.error = function(m) { 
+                        window.chrome.webview.postMessage('JS_ERR::' + m); 
+                    };"
+                );
+
+                _webView.CoreWebView2.WebMessageReceived += (s, e) =>
+                {
+                    var msg = e.TryGetWebMessageAsString();
+                    if (msg.StartsWith("JS_ERR::"))
+                        ApplicationLogger.Log("[CHART] " + msg);
+                };
+
                 string assetsFolderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Charts", "WebAssets");
 
                 if (!Directory.Exists(assetsFolderPath))
