@@ -11,6 +11,9 @@ namespace thecalcify.Helper
         public static string UATUrl => "http://35.176.5.121:1008/";
         public static string LocalMarketURL => "http://localhost:5000/market";
 
+        public static string ApplicationURL => $"{ProdUrl}";
+        public static string SignalRConnection => $"excel?type=Desktop"; //UAT :- qa-excel?type=Desktop | Prod :- excel?type=Desktop | Local :- dev-excel?type=Desktop
+
         public static string RtwConfigPath =>
          Path.Combine(
              Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
