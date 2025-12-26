@@ -1,12 +1,15 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.IO.Pipes;
 using System.Text;
 using System.Threading;
 using System.Threading.Channels;
@@ -21,7 +24,7 @@ namespace thecalcifyRTW
         private readonly ILogger<MarketDataWorker> _logger;
         private Timer _configReloadTimer;
 
-        private HubConnection? _signalRConnection;
+        private HubConnection _signalRConnection;
 
         // Latest tick per symbol (used to form snapshot, not for queue reset)
         private readonly ConcurrentDictionary<string, byte[]> _latestBySymbol =
@@ -39,8 +42,10 @@ namespace thecalcifyRTW
 
         private SharedMemoryQueue _queue;
 
-        private string[] _currentSymbols = Array.Empty<string>();
-        private readonly string _configPath = RTWAPIUrl.SharedConfigFilePath;
+        private static string[] _currentSymbols = Array.Empty<string>();
+        private static readonly string _configPath = RTWAPIUrl.SharedConfigFilePath;
+
+        public static MarketDataWorker Instance { get; private set; }
 
         public MarketDataWorker(ILogger<MarketDataWorker> logger)
         {
@@ -67,9 +72,13 @@ namespace thecalcifyRTW
 
             // 🔥 Start publisher loop
             _ = Task.Run(() => PublisherLoop(stoppingToken), stoppingToken);
+            _ = Task.Run(() => PipeListenerLoop(stoppingToken), stoppingToken); // ✅ ADD THIS
 
             // 🔥 Start SignalR logic
             await RunSignalRLoop(stoppingToken);
+
+            //signalRestart(stoppingToken);
+
         }
 
         // ----------------------------------------------------------------------
@@ -180,6 +189,9 @@ namespace thecalcifyRTW
                 try
                 {
                     ApplicationLogger.Log("[SignalR] Sending subscription request…");
+                    //Console.WriteLine($"Subscribing to {_currentSymbols.Length} symbols...");
+                    
+                    await _signalRConnection.InvokeAsync("SymbolLastTick", _currentSymbols, token);
                     await _signalRConnection.InvokeAsync("SubscribeSymbols", _currentSymbols, token);
                     ApplicationLogger.Log($"[SignalR] Subscribed to Count symbols. {_currentSymbols.Length}");
                     return;
@@ -217,7 +229,7 @@ namespace thecalcifyRTW
                 if (!ok)
                 {
                     // Queue overflow → optional log
-                    // ApplicationLogger.Log("[RTW] Queue full, tick dropped.");
+                     ApplicationLogger.Log("[RTW] Queue full, tick dropped.");
                 }
             }
         }
@@ -245,7 +257,7 @@ namespace thecalcifyRTW
             LoadSymbolConfig();
         }
 
-        private void OnConfigChanged(object sender, FileSystemEventArgs e)
+        public void OnConfigChanged(object sender, FileSystemEventArgs e)
         {
             ApplicationLogger.Log("[RTW] Config change detected, scheduling reload…");
 
@@ -264,8 +276,8 @@ namespace thecalcifyRTW
                 }
             }, null, 300, Timeout.Infinite); // ← delay
         }
-
-        private void RestartSignalRSubscription()
+                
+        private async void RestartSignalRSubscription()
         {
             try
             {
@@ -286,7 +298,10 @@ namespace thecalcifyRTW
 
                 ApplicationLogger.Log("[RTW] Restarting SignalR subscription…");
 
-                _ = _signalRConnection.InvokeAsync("SubscribeSymbols", _currentSymbols);
+                //Console.WriteLine($"Restarting SignalR subscription for {_currentSymbols.Length} symbols...");
+               
+                await _signalRConnection.InvokeAsync("SymbolLastTick", _currentSymbols);
+                await _signalRConnection.InvokeAsync("SubscribeSymbols", _currentSymbols);
 
                 ApplicationLogger.Log("[RTW] Subscription restart complete.");
             }
@@ -296,8 +311,7 @@ namespace thecalcifyRTW
             }
         }
 
-
-        private void LoadSymbolConfig()
+        public void LoadSymbolConfig()
         {
             try
             {
@@ -315,6 +329,7 @@ namespace thecalcifyRTW
 
                 _currentSymbols = list.ToArray();
                 //ApplicationLogger.Log("[RTW] Loaded {Count} symbols.", _currentSymbols.Length);
+                //Console.WriteLine(JsonConvert.SerializeObject(_currentSymbols));
                 ApplicationLogger.Log($"[RTW] Loaded Count symbols. {_currentSymbols.Length}");
 
 
@@ -341,7 +356,9 @@ namespace thecalcifyRTW
                 //ApplicationLogger.Log("[RTW] Re-subscribing to {Count} symbols…", _currentSymbols.Length);
                 ApplicationLogger.Log($"[RTW] Re-subscribing to Count symbols. {_currentSymbols.Length}");
 
+                //Console.WriteLine($"Resubscribing to {_currentSymbols.Length} symbols...");
 
+                await _signalRConnection.InvokeAsync("SymbolLastTick", _currentSymbols);
                 await _signalRConnection.InvokeAsync("SubscribeSymbols", _currentSymbols);
 
                 ApplicationLogger.Log("[RTW] Re-subscribe OK.");
@@ -367,10 +384,57 @@ namespace thecalcifyRTW
                 try { await _signalRConnection.StopAsync(cancellationToken); } catch { }
                 try { await _signalRConnection.DisposeAsync(); } catch { }
                 _signalRConnection = null;
+
             }
 
             await base.StopAsync(cancellationToken);
         }
+
+        private async Task PipeListenerLoop(CancellationToken stoppingToken)
+        {
+            const string PipeName = "TheCalcifyPipe";
+
+            ApplicationLogger.Log("[PIPE] Listener started.");
+
+            while (!stoppingToken.IsCancellationRequested)
+            {
+                try
+                {
+                    using var pipe = new NamedPipeServerStream(
+                        PipeName,
+                        PipeDirection.In,
+                        1,
+                        PipeTransmissionMode.Message,
+                        PipeOptions.Asynchronous);
+
+                    await pipe.WaitForConnectionAsync(stoppingToken);
+
+                    using var reader = new StreamReader(pipe, Encoding.UTF8);
+                    var message = await reader.ReadLineAsync();
+
+                    if (string.IsNullOrWhiteSpace(message))
+                        continue;
+
+                    ApplicationLogger.Log($"[PIPE] Received: {message}");
+
+                    if (message == "RESTART")
+                    {
+                        LoadSymbolConfig();
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    break; // service stopping
+                }
+                catch (Exception ex)
+                {
+                    ApplicationLogger.LogException(ex, "[PIPE] Listener error");
+                }
+            }
+
+            ApplicationLogger.Log("[PIPE] Listener stopped.");
+        }
+
     }
 
     // ---------------------------------------------------------
@@ -380,7 +444,7 @@ namespace thecalcifyRTW
     {
         public static Task WaitForClosedAsync(this HubConnection connection, CancellationToken token)
         {
-            var tcs = new TaskCompletionSource<object?>();
+            var tcs = new TaskCompletionSource<object>();
 
             connection.Closed += error =>
             {

@@ -71,21 +71,21 @@ namespace thecalcify.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
         /// </summary>
-        internal static System.Drawing.Bitmap AppIcon {
+        internal static System.Drawing.Icon ApplicationIcon {
             get {
-                object obj = ResourceManager.GetObject("AppIcon", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
+                object obj = ResourceManager.GetObject("ApplicationIcon", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
             }
         }
         
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap delete {
+        internal static System.Drawing.Bitmap ApplicationIcon_Excel {
             get {
-                object obj = ResourceManager.GetObject("delete", resourceCulture);
+                object obj = ResourceManager.GetObject("ApplicationIcon_Excel", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -113,9 +113,9 @@ namespace thecalcify.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap excel_icon {
+        internal static System.Drawing.Bitmap Excel_Image {
             get {
-                object obj = ResourceManager.GetObject("excel_icon", resourceCulture);
+                object obj = ResourceManager.GetObject("Excel_Image", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

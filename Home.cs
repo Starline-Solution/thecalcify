@@ -11,12 +11,13 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.IO.Compression;
+using System.IO.Pipes;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.NetworkInformation;
-using System.Reflection;
+using System.Reflection; 
 using System.Runtime.InteropServices;
 using System.ServiceProcess;
 using System.Text;
@@ -35,12 +36,12 @@ using thecalcify.News;
 using thecalcify.RTDWorker;
 using thecalcify.Shared;
 using thecalcify.Update_Service;
-using Application = System.Windows.Forms.Application;
+using static thecalcify.Helper.APIUrl;
 using CellData = thecalcify.Helper.CellData;
 
 namespace thecalcify
 {
-    public partial class thecalcify : Form
+    public partial class thecalcify : Form, ILiveMarketGrid
     {
         #region Declaration and Initialization
 
@@ -52,7 +53,7 @@ namespace thecalcify
         // ======================
         public readonly string AppFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "thecalcify");
 
-        public string token, licenceDate, username, password;
+        public static string token, licenceDate, username, password;
 
         // ======================
         // 📌 Flags / States
@@ -81,7 +82,7 @@ namespace thecalcify
         // ======================
         // 📌 Core Data Collections
         // ======================
-        public List<string> identifiers;
+        public List<string> identifiers { get; set; }
 
         public List<string> selectedSymbols = new List<string>();
         public List<MarketDataDto> pastRateTickDTO = new List<MarketDataDto>();
@@ -93,7 +94,7 @@ namespace thecalcify
             "V","Time","ATP","Bid Size","Total Bid Size","Ask Size","Total Ask Size",
             "Volume","Open Interest","Last Size"
         };
-        private static readonly string APIPath = APIUrl.ProdUrl;
+        private static readonly string APIPath = APIUrl.ApplicationURL;
 
         public List<string> FileLists = new List<string>();
         public List<(string Symbol, string SymbolName)> SymbolName = new List<(string Symbol, string SymbolName)>();
@@ -126,7 +127,7 @@ namespace thecalcify
         // 📌 Excel Interop
         // ======================
         private readonly string excelFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "thecalcify.xlsx");
-        private static readonly string marketInitDataPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "initdata.dat");
+        //private static readonly string marketInitDataPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "initdata.dat");
 
         // ======================
         // 📌 UI Elements
@@ -172,6 +173,12 @@ namespace thecalcify
         private bool _isGridBuilding = false;
         private static bool _excelWarmedUp = false;
         private int _rightClickedRowIndex = -1;
+        private MarketwatchServerAPI _marketwatchServerAPI;
+        private MarketWatchItem marketWatchItem;
+        //public List<(string Symbol, string SymbolName)> SubscribeSymbol = new List<(string Symbol, string SymbolName)>();
+        // Add this at class level (Home.cs)
+        private Dictionary<string, string> _symbolNameMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        private bool reloadRequire = true;
 
         #endregion Declaration and Initialization
 
@@ -180,7 +187,8 @@ namespace thecalcify
         {
             InitializeComponent();
             //this.args = args;
-            this.Shown += (s, e2) => WarmUpExcelLazy();
+            this.ShowInTaskbar = true;
+            this.ShowIcon = true;
 
         }
 
@@ -203,6 +211,7 @@ namespace thecalcify
                 SetStyle(ControlStyles.OptimizedDoubleBuffer |
                          ControlStyles.AllPaintingInWmPaint |
                          ControlStyles.UserPaint, true);
+
 
                 // --- PARALLEL INITIALIZATION ---
                 var initializationTasks = new List<Task>();
@@ -248,10 +257,11 @@ namespace thecalcify
                 // --- MENU SETUP ---
                 if (LoginInfo.IsRate && LoginInfo.IsNews && LoginInfo.RateExpiredDate.Date >= DateTime.Today.Date && LoginInfo.NewsExpiredDate >= DateTime.Today.Date)
                 {
-                    MenuLoad();
+                    _marketwatchServerAPI = new MarketwatchServerAPI(token);
+
+                    await MenuLoadAsync();
 
                     // --- LOAD INITIAL DATA ASYNCHRONOUSLY ---
-                    await LoadInitialMarketDataAsync();
                     HandleLastOpenedMarketWatch();
 
 
@@ -283,14 +293,12 @@ namespace thecalcify
                     _uiTimer.Tick += UiTimer_Tick;
                     _uiTimer.Start();
 
-
-
                     //pageSwitched = true;
 
                     // Start SignalR
                     //SignalRTimer();
                     //await EnsureSignalRConnectedAndSubscribedAsync();
-
+                    licenceDate = LoginInfo.RateExpiredDate.ToString("dd:MM:yyyy");
 
                     RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
                     if (RemainingDays <= 7)
@@ -301,40 +309,23 @@ namespace thecalcify
                     {
                         licenceExpire.Text = $"License Expired On :- {licenceDate}";
                     }
-
-                    //if (args != null)
-                    //{
-                    //    licenceDate = LoginInfo.NewsExpiredDate.ToString().Replace("0:00:00", "");
-
-                    //    this.NewsListToolStripMenuItem_Click_1(this, EventArgs.Empty);
-                    //    newCTRLNToolStripMenuItem.Visible = false;
-                    //    toolsToolStripMenuItem.Enabled = true;
-
-
-                    //    RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
-                    //    if (RemainingDays <= 7)
-                    //    {
-                    //        await CheckLicenceLoop();
-                    //    }
-                    //    else
-                    //    {
-                    //        licenceExpire.Text = $"Licence Expire At:- {licenceDate.Replace("0:00:00", "").Replace("12:00:00 AM", "").Replace("00:00:00", "").Replace("00:00", "").Replace("00:00 AM", "").TrimEnd('0').Trim()}";
-                    //    }
-
-                    //}
+                    //SendRestartSignal();
+                    RestartRTWService();
 
                 }
                 else if (LoginInfo.IsRate && LoginInfo.RateExpiredDate >= DateTime.Today.Date)
                 {
+                    _marketwatchServerAPI = new MarketwatchServerAPI(token);
 
                     licenceDate = LoginInfo.RateExpiredDate.ToString("dd:MM:yyyy");
 
-                    MenuLoad();
+                    await MenuLoadAsync();
                     newsToolStripMenuItem.Visible = false;
 
 
                     // --- LOAD INITIAL DATA ASYNCHRONOUSLY ---
-                    await LoadInitialMarketDataAsync();
+                    //SendRestartSignal();
+
                     HandleLastOpenedMarketWatch();
 
 
@@ -375,7 +366,6 @@ namespace thecalcify
                     //SignalRTimer();
                     //await EnsureSignalRConnectedAndSubscribedAsync();
 
-
                     RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
                     if (RemainingDays <= 7)
                     {
@@ -385,6 +375,8 @@ namespace thecalcify
                     {
                         licenceExpire.Text = $"License Expired On :- {licenceDate}";
                     }
+
+                    RestartRTWService();
 
                 }
                 else if (LoginInfo.IsNews && LoginInfo.NewsExpiredDate >= DateTime.Today.Date)
@@ -397,7 +389,6 @@ namespace thecalcify
                     newCTRLNToolStripMenuItem.Visible = false;
                     alertToolStripMenuItem.Visible = false;
                     toolsToolStripMenuItem.Enabled = true;
-
 
                     RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
                     if (RemainingDays <= 7)
@@ -844,6 +835,14 @@ namespace thecalcify
             //await EnsureSignalRConnectedAndSubscribedAsync();
         }
 
+        protected override void OnShown(EventArgs e)
+        {
+            base.OnShown(e);
+            this.WindowState = FormWindowState.Maximized;
+            WarmUpExcelLazy();
+        }
+
+
         #endregion Form Method
 
         #region MarketWatch Click
@@ -893,7 +892,7 @@ namespace thecalcify
                 // ---------------------------------------------
                 // STEP 1: Load initial snapshot from API
                 // ---------------------------------------------
-                await LoadInitialMarketDataAsync();   // fills resultdefault and pastRateTickDTO
+                //SendRestartSignal();   // fills resultdefault and pastRateTickDTO
 
                 // ---------------------------------------------
                 // STEP 2: Prepare identifiers for default screen
@@ -908,7 +907,7 @@ namespace thecalcify
                 // ---------------------------------------------
                 // STEP 4: Update menu (files)
                 // ---------------------------------------------
-                MenuLoad();
+                await MenuLoadAsync();
 
                 // ---------------------------------------------
                 // STEP 5: ENSURE SIGNALR IS CONNECTED
@@ -927,85 +926,160 @@ namespace thecalcify
 
         public async void NewCTRLNToolStripMenuItem1_Click(object sender, EventArgs e)
         {
+            //try
+            //{
+            //    //// 6. Clean up current resources before switching
+            //    //CleanupBeforeViewSwitch();
+
+            //    //// 1. Set new view mode
+            //    //marketWatchViewMode = MarketWatchViewMode.New;
+
+            //    //// 2. Reset state if not in edit mode
+            //    //if (!isEdit)
+            //    //{
+            //    //    selectedSymbols.Clear();
+            //    //    saveFileName = null;
+            //    //    isLoadedSymbol = false;
+            //    //}
+
+            //    //// 3. Create and configure new editable grid
+            //    //var editableGrid = new EditableMarketWatchGrid
+            //    //{
+            //    //    Name = "editableMarketWatchGridView",
+            //    //    Dock = DockStyle.Fill,
+            //    //    //pastRateTickDTO = pastRateTickDTO,
+            //    //    isEditMarketWatch = true,
+            //    //    SymbolName = SubscribeSymbol,
+            //    //};
+
+            //    //// 4. Handle edit mode specific setup
+            //    //if (isEdit && editableGrid.selectedSymbols != null && string.IsNullOrEmpty(saveFileName))
+            //    //{
+            //    //    //editableGrid.saveFileName = saveFileName;
+            //    //}
+
+            //    //// 5. Add to controls and bring to front
+            //    //this.Controls.Add(editableGrid);
+            //    //editableGrid.BringToFront();
+            //    //editableGrid.Focus();
+
+            //    //// 7. Update UI state
+            //    //UpdateUIStateForNewMarketWatch();
+
+
+            //}
+            //catch (Exception ex)
+            //{
+            //    ApplicationLogger.LogException(ex);
+            //    MessageBox.Show($"Error switching to new market watch: {ex.Message}");
+            //}
+            //finally
+            //{
+            //    if (this.InvokeRequired)
+            //    {
+            //        this.Invoke(new Action(async () =>
+            //        {
+            //            notificationSettings.Visible = false;
+            //            licenceDate = LoginInfo.RateExpiredDate.ToString("dd:MM:yyyy");
+
+            //            RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
+            //            if (RemainingDays <= 7)
+            //            {
+            //                await CheckLicenceLoop();
+            //            }
+            //            else
+            //            {
+            //                licenceExpire.Text = $"License Expired On :- {licenceDate}";
+            //            }
+            //        }));
+            //    }
+            //    else
+            //    {
+            //        notificationSettings.Visible = false;
+            //        licenceDate = LoginInfo.RateExpiredDate.ToString("dd:MM:yyyy");
+
+            //        RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
+            //        if (RemainingDays <= 7)
+            //        {
+            //            await CheckLicenceLoop();
+            //        }
+            //        else
+            //        {
+            //            licenceExpire.Text = $"License Expired On :- {licenceDate}";
+            //        }
+            //    }
+            //}
+
             try
             {
-                // 6. Clean up current resources before switching
-                CleanupBeforeViewSwitch();
-
-                // 1. Set new view mode
-                marketWatchViewMode = MarketWatchViewMode.New;
-
-                // 2. Reset state if not in edit mode
-                if (!isEdit)
+                // 1. Clean up existing NewsControl if already present
+                var existingNewMarketWatch = this.Controls.Find("newMarketWatchControlView", true).FirstOrDefault();
+                if (existingNewMarketWatch != null)
                 {
-                    selectedSymbols.Clear();
-                    saveFileName = null;
-                    isLoadedSymbol = false;
+                    this.Controls.Remove(existingNewMarketWatch);
+                    existingNewMarketWatch.Dispose();
                 }
 
-                // 3. Create and configure new editable grid
-                var editableGrid = new EditableMarketWatchGrid
+                // 2. Create new AboutControl
+                var newMarketWatchControl = new EditableMarketWatchControl()
                 {
-                    Name = "editableMarketWatchGridView",
-                    Dock = DockStyle.Fill,
-                    pastRateTickDTO = pastRateTickDTO,
-                    isEditMarketWatch = true,
-                    SymbolName = SymbolName,
+                    Name = "newMarketWatchControlView",
+                    Dock = DockStyle.Fill
                 };
+                saveMarketWatchHost.Visible = true;
+                fontSizeComboBox.Visible = false;
+                //uiManager?.SetFontSizeComboBoxVisibility(false);
 
-                // 4. Handle edit mode specific setup
-                if (isEdit && editableGrid.selectedSymbols != null && string.IsNullOrEmpty(saveFileName))
+                pnlSearch.Visible = true;
+                searchTextLabel.Visible = true;
+                txtsearch.Visible = true;
+                //uiManager?.SetSearchBoxVisibility(false);
+
+                refreshMarketWatchHost.Visible = false;
+                newCTRLNToolStripMenuItem1.Enabled = false;
+                // Update status label
+
+                // Update title based on edit mode
+                titleLabel.Text = "New Market Watch";
+
+                // 🔥 THIS IS WHERE SetSymbolMaster IS CALLED
+                newMarketWatchControl.SetSymbolMaster(SymbolName);
+
+                // 3. Add it to main form
+                this.Controls.Add(newMarketWatchControl);
+                newMarketWatchControl.BringToFront();
+                newMarketWatchControl.Focus();
+
+                licenceDate = LoginInfo.RateExpiredDate.ToString();
+
+                RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
+                if (RemainingDays <= 7)
                 {
-                    editableGrid.saveFileName = saveFileName;
+                    await CheckLicenceLoop();
+                }
+                else
+                {
+                    licenceExpire.Text = $"Licence Expire At:- {LoginInfo.RateExpiredDate:dd:MM:yyyy}";
                 }
 
-                // 5. Add to controls and bring to front
-                this.Controls.Add(editableGrid);
-                editableGrid.BringToFront();
-                editableGrid.Focus();
-
-                // 7. Update UI state
-                UpdateUIStateForNewMarketWatch();
             }
             catch (Exception ex)
             {
                 ApplicationLogger.LogException(ex);
-                MessageBox.Show($"Error switching to new market watch: {ex.Message}");
+                MessageBox.Show($"Error loading News view: {ex.Message}");
             }
             finally
             {
                 if (this.InvokeRequired)
                 {
-                    this.Invoke(new Action(async () =>
+                    this.Invoke(new Action(() =>
                     {
                         notificationSettings.Visible = false;
-                        licenceDate = LoginInfo.RateExpiredDate.ToString();
-
-                        RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
-                        if (RemainingDays <= 7)
-                        {
-                            await CheckLicenceLoop();
-                        }
-                        else
-                        {
-                            licenceExpire.Text = $"License Expired On :- {licenceDate}";
-                        }
                     }));
                 }
                 else
                 {
                     notificationSettings.Visible = false;
-                    licenceDate = LoginInfo.RateExpiredDate.ToString();
-
-                    RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
-                    if (RemainingDays <= 7)
-                    {
-                        await CheckLicenceLoop();
-                    }
-                    else
-                    {
-                        licenceExpire.Text = $"License Expired On :- {licenceDate}";
-                    }
                 }
             }
         }
@@ -1014,12 +1088,12 @@ namespace thecalcify
         {
             try
             {
-                if (FileLists == null || FileLists.Count == 0)
-                {
-                    MessageBox.Show("No Market Watch available to delete.", "Information",
-                                  MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    return;
-                }
+                //if (FileLists == null || FileLists.Count == 0)
+                //{
+                //    MessageBox.Show("No Market Watch available to delete.", "Information",
+                //                  MessageBoxButtons.OK, MessageBoxIcon.Information);
+                //    return;
+                //}
 
                 using (var selectionForm = new Form())
                 {
@@ -1117,6 +1191,7 @@ namespace thecalcify
                     // Only one column
                     listView.Columns.Add("Name", 420);
 
+                    FileLists = (await _marketwatchServerAPI.GetMarketWatchListAsync()).ToList();
                     // Populate Data
                     foreach (string filePath in FileLists)
                     {
@@ -1210,7 +1285,7 @@ namespace thecalcify
 
                     btnCancel.Click += (s, args) => selectionForm.DialogResult = DialogResult.Cancel;
 
-                    btnDelete.Click += (s, args) =>
+                    btnDelete.Click += async (s, args) =>
                     {
                         var selectedFiles = listView.CheckedItems.Cast<ListViewItem>()
                                                     .Select(item => item.Tag.ToString())
@@ -1239,6 +1314,8 @@ namespace thecalcify
                                 }
 
                                 string fullpath = Path.Combine(AppFolder, username, $"{filePath}.slt");
+
+                                var marketwatchMenuItem = await _marketwatchServerAPI.GetMarketWatchByNameAsync(filePath);
                                 try
                                 {
                                     DeleteExcelSheet(filePath);
@@ -1248,6 +1325,8 @@ namespace thecalcify
                                         successCount++;
                                         isdeleted = true;
                                     }
+                                    var result = await _marketwatchServerAPI.DeleteMarketWatchAsync(marketwatchMenuItem.MarketWatchId);
+                                    if (result) { successCount++; }
                                 }
                                 catch (Exception ex)
                                 {
@@ -1275,7 +1354,7 @@ namespace thecalcify
                             if (successCount > 0)
                             {
                                 selectionForm.DialogResult = DialogResult.OK;
-                                MenuLoad(); // Refresh menu
+                                await MenuLoadAsync(); // Refresh menu
                             }
                         }
                     };
@@ -1329,7 +1408,7 @@ namespace thecalcify
                     this.Invoke(new Action(async () =>
                     {
                         notificationSettings.Visible = false;
-                        licenceDate = LoginInfo.RateExpiredDate.ToString();
+                        licenceDate = LoginInfo.RateExpiredDate.ToString("dd:MM:yyyy");
 
                         RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
                         if (RemainingDays <= 7)
@@ -1345,7 +1424,7 @@ namespace thecalcify
                 else
                 {
                     notificationSettings.Visible = false;
-                    licenceDate = LoginInfo.RateExpiredDate.ToString();
+                    licenceDate = LoginInfo.RateExpiredDate.ToString("dd:MM:yyyy");
 
                     RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
                     if (RemainingDays <= 7)
@@ -1439,126 +1518,269 @@ namespace thecalcify
 
         }
 
+        //public void MenuLoad()
+        //{
+        //    try
+        //    {
+        //        // Final folder path
+        //        string finalPath = Path.Combine(AppFolder, username);
 
-        public void MenuLoad()
+        //        // Get all .slt files from the application folder
+        //        List<string> fileNames = Directory.GetFiles(finalPath, "*.slt")
+        //                                         .Select(Path.GetFileNameWithoutExtension)
+        //                                         .ToList();
+
+        //        FileLists = fileNames;
+
+        //        // Clear existing menu items
+        //        viewToolStripMenuItem.DropDownItems.Clear();
+        //        // Add Default menu item with click handler
+        //        ToolStripMenuItem defaultMenuItem = new ToolStripMenuItem("👁️‍🗨️ Default");
+        //        defaultMenuItem.Click += async (sender, e) =>
+        //        {
+        //            selectedSymbols.Clear();
+        //            identifiers.Clear();
+        //            saveFileName = null;
+        //            lastOpenMarketWatch = "Default";
+
+        //            var clickedItem = (ToolStripMenuItem)sender;
+        //            await DefaultToolStripMenuItem_Click(sender, e);
+        //            addEditSymbolsToolStripMenuItem.Enabled = false;
+        //            await LoadInitialMarketDataAsync();
+        //            isGrid = true;
+        //            reloadGrid = true;
+        //        };
+
+        //        viewToolStripMenuItem.DropDownItems.Add(defaultMenuItem);
+
+        //        // Add each file as a menu item with a click handler
+        //        foreach (string fileName in fileNames)
+        //        {
+        //            ToolStripMenuItem menuItem = new ToolStripMenuItem("👁️‍🗨️ " + fileName);
+        //            menuItem.Click += async (sender, e) =>
+        //            {
+        //                selectedSymbols.Clear();
+        //                identifiers.Clear();
+        //                saveFileName = string.Empty;
+        //                //_updateQueue = new ConcurrentQueue<MarketDataDto>();
+
+        //                var clickedItem = (ToolStripMenuItem)sender;
+
+        //                saveFileName = clickedItem.Text.Replace("👁️‍🗨️", "").Trim();
+        //                addEditSymbolsToolStripMenuItem.Enabled = true;
+        //                lastOpenMarketWatch = saveFileName;
+
+        //                EditableMarketWatchGrid editableMarketWatchGrid = EditableMarketWatchGrid.CurrentInstance;
+        //                if (editableMarketWatchGrid != null)
+        //                {
+        //                    if (editableMarketWatchGrid.IsCurrentCellInEditMode)
+        //                    {
+        //                        editableMarketWatchGrid.EndEdit();
+        //                    }
+
+        //                    editableMarketWatchGrid.EditableDispose(); // Dispose the grid
+        //                    editableMarketWatchGrid.Dispose();
+        //                }
+
+        //                saveMarketWatchHost.Visible = false;
+        //                refreshMarketWatchHost.Visible = true;
+        //                await LoadSymbol(Path.Combine(saveFileName + ".slt"));
+
+        //                try
+        //                {
+        //                    if (titleLabel != null)
+        //                    {
+        //                        titleLabel.Text = !string.IsNullOrWhiteSpace(saveFileName)
+        //                            ? saveFileName.ToUpper()
+        //                            : "Default";
+        //                    }
+        //                    else
+        //                    {
+        //                        ApplicationLogger.Log("titleLabel is null at MenuLoad");
+        //                    }
+        //                }
+        //                catch (Exception ex)
+        //                {
+        //                    ApplicationLogger.LogException(ex);
+        //                    ApplicationLogger.Log("saveFileName: " + saveFileName ?? "NULL");
+        //                }
+
+        //                isEdit = false;
+        //                await LoadInitialMarketDataAsync();
+        //                isGrid = true;
+        //                reloadGrid = true;
+        //            };
+        //            viewToolStripMenuItem.DropDownItems.Add(menuItem);
+        //        }
+        //    }
+        //    catch (DirectoryNotFoundException)
+        //    {
+        //        // Clear existing menu items
+        //        viewToolStripMenuItem.DropDownItems.Clear();
+        //        // Add Default menu item with click handler
+        //        ToolStripMenuItem defaultMenuItem = new ToolStripMenuItem("Default");
+        //        defaultMenuItem.Click += async (sender, e) =>
+        //        {
+        //            selectedSymbols.Clear();
+        //            identifiers.Clear();
+        //            lastOpenMarketWatch = "Default";
+
+        //            var clickedItem = (ToolStripMenuItem)sender;
+        //            await DefaultToolStripMenuItem_Click(sender, e);
+        //            MenuLoad();
+        //            addEditSymbolsToolStripMenuItem.Enabled = false;
+        //            saveFileName = null;
+        //            titleLabel.Text = "DEFAULT";
+        //            await LoadInitialMarketDataAsync();
+        //            isGrid = true;
+        //            reloadGrid = true;
+        //        };
+        //        defaultMenuItem.Enabled = true;
+        //        viewToolStripMenuItem.DropDownItems.Add(defaultMenuItem);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        ApplicationLogger.LogException(ex);
+        //    }
+        //}
+
+        //public async Task LoadSymbol(string Filename)
+        //{
+        //    try
+        //    {
+        //        //savelabel.Visible = false;
+        //        //fontSizeComboBox.Visible = true;
+        //        //uiManager?.SetFontSizeComboBoxVisibility(true);
+
+        //        pnlSearch.Visible = true;
+        //        searchTextLabel.Visible = true;
+        //        txtsearch.Clear();
+        //        txtsearch.Visible = true;
+        //        //uiManager?.SetSearchBoxVisibility(true);
+
+
+        //        string finalPath = Path.Combine(AppFolder, username);
+        //        selectedSymbols.Clear();
+        //        Filename = Path.Combine(finalPath, Filename);
+        //        string cipherText = File.ReadAllText(Filename);
+        //        string json = CryptoHelper.Decrypt(cipherText, "v@d{4NME4sOSywXF");
+        //        var symbols = System.Text.Json.JsonSerializer.Deserialize<List<string>>(json);
+        //        selectedSymbols.AddRange(symbols);
+        //        identifiers = selectedSymbols.Distinct().ToList();
+        //        isLoadedSymbol = true;
+        //        marketWatchViewMode = MarketWatchViewMode.Default;
+        //        titleLabel.Text = Path.GetFileNameWithoutExtension(Filename).ToUpper();
+        //        InitializeDataGridView();          // Configure the grid
+
+        //        //pageSwitched = true;
+
+        //        //await EnsureSignalRConnectedAndSubscribedAsync();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        MessageBox.Show("File Was Never Save Or Moved Please Try Again!", "Load Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        //        ApplicationLogger.LogException(ex);
+        //    }
+
+        //    thecalcifyGrid();
+        //    MenuLoad();
+        //}
+
+        public async Task MenuLoadAsync()
         {
             try
             {
-                // Final folder path
-                string finalPath = Path.Combine(AppFolder, username);
+                var marketWatches = await _marketwatchServerAPI.GetMarketWatchAsync();
 
-                // Get all .slt files from the application folder
-                List<string> fileNames = Directory.GetFiles(finalPath, "*.slt")
-                                                 .Select(Path.GetFileNameWithoutExtension)
-                                                 .ToList();
-
-                FileLists = fileNames;
-
-                // Clear existing menu items
-                viewToolStripMenuItem.DropDownItems.Clear();
-                // Add Default menu item with click handler
-                ToolStripMenuItem defaultMenuItem = new ToolStripMenuItem("👁️‍🗨️ Default");
-                defaultMenuItem.Click += async (sender, e) =>
+                if (this.InvokeRequired)
                 {
-                    selectedSymbols.Clear();
-                    identifiers.Clear();
-                    saveFileName = null;
-                    lastOpenMarketWatch = "Default";
+                    this.Invoke(new Action(() =>
+                    {
+                        viewToolStripMenuItem.DropDownItems.Clear();
 
-                    var clickedItem = (ToolStripMenuItem)sender;
-                    await DefaultToolStripMenuItem_Click(sender, e);
-                    addEditSymbolsToolStripMenuItem.Enabled = false;
-                    await LoadInitialMarketDataAsync();
-                    isGrid = true;
-                    reloadGrid = true;
-                };
-
-                viewToolStripMenuItem.DropDownItems.Add(defaultMenuItem);
-
-                // Add each file as a menu item with a click handler
-                foreach (string fileName in fileNames)
-                {
-                    ToolStripMenuItem menuItem = new ToolStripMenuItem("👁️‍🗨️ " + fileName);
-                    menuItem.Click += async (sender, e) =>
+                    // Default
+                    var defaultMenuItem = new ToolStripMenuItem("👁️‍🗨️ Default");
+                    defaultMenuItem.Click += async (s, e) =>
                     {
                         selectedSymbols.Clear();
                         identifiers.Clear();
-                        saveFileName = string.Empty;
-                        //_updateQueue = new ConcurrentQueue<MarketDataDto>();
+                        lastOpenMarketWatch = "Default";
 
-                        var clickedItem = (ToolStripMenuItem)sender;
+                        await DefaultToolStripMenuItem_Click(s, e);
+                        addEditSymbolsToolStripMenuItem.Enabled = false;
 
-                        saveFileName = clickedItem.Text.Replace("👁️‍🗨️", "").Trim();
-                        addEditSymbolsToolStripMenuItem.Enabled = true;
-                        lastOpenMarketWatch = saveFileName;
-
-                        EditableMarketWatchGrid editableMarketWatchGrid = EditableMarketWatchGrid.CurrentInstance;
-                        if (editableMarketWatchGrid != null)
-                        {
-                            if (editableMarketWatchGrid.IsCurrentCellInEditMode)
-                            {
-                                editableMarketWatchGrid.EndEdit();
-                            }
-
-                            editableMarketWatchGrid.EditableDispose(); // Dispose the grid
-                            editableMarketWatchGrid.Dispose();
-                        }
-
-                        saveMarketWatchHost.Visible = false;
-                        refreshMarketWatchHost.Visible = true;
-                        await LoadSymbol(Path.Combine(saveFileName + ".slt"));
-
-                        try
-                        {
-                            if (titleLabel != null)
-                            {
-                                titleLabel.Text = !string.IsNullOrWhiteSpace(saveFileName)
-                                    ? saveFileName.ToUpper()
-                                    : "Default";
-                            }
-                            else
-                            {
-                                ApplicationLogger.Log("titleLabel is null at MenuLoad");
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            ApplicationLogger.LogException(ex);
-                            ApplicationLogger.Log("saveFileName: " + saveFileName ?? "NULL");
-                        }
-
-                        isEdit = false;
-                        await LoadInitialMarketDataAsync();
                         isGrid = true;
                         reloadGrid = true;
-                    };
-                    viewToolStripMenuItem.DropDownItems.Add(menuItem);
-                }
-            }
-            catch (DirectoryNotFoundException)
-            {
-                // Clear existing menu items
-                viewToolStripMenuItem.DropDownItems.Clear();
-                // Add Default menu item with click handler
-                ToolStripMenuItem defaultMenuItem = new ToolStripMenuItem("Default");
-                defaultMenuItem.Click += async (sender, e) =>
-                {
-                    selectedSymbols.Clear();
-                    identifiers.Clear();
-                    lastOpenMarketWatch = "Default";
 
-                    var clickedItem = (ToolStripMenuItem)sender;
-                    await DefaultToolStripMenuItem_Click(sender, e);
-                    MenuLoad();
-                    addEditSymbolsToolStripMenuItem.Enabled = false;
-                    saveFileName = null;
-                    titleLabel.Text = "DEFAULT";
-                    await LoadInitialMarketDataAsync();
-                    isGrid = true;
-                    reloadGrid = true;
-                };
-                defaultMenuItem.Enabled = true;
-                viewToolStripMenuItem.DropDownItems.Add(defaultMenuItem);
+                        SendRestartSignal();
+
+
+                    };
+
+                    viewToolStripMenuItem.DropDownItems.Add(defaultMenuItem);
+
+                    // API MarketWatches
+                    foreach (var mw in marketWatches)
+                    {
+                        var menuItem = new ToolStripMenuItem("👁️‍🗨️ " + mw.MarketWatchName);
+
+                        menuItem.Click += async (s, e) =>
+                        {
+
+                            await LoadMarketWatchFromApiAsync(mw);
+                            marketWatchItem = mw;
+
+                            SendRestartSignal();
+
+                        };
+
+                        viewToolStripMenuItem.DropDownItems.Add(menuItem);
+                    }
+                    }));
+                }
+                else 
+                {
+                    viewToolStripMenuItem.DropDownItems.Clear();
+
+                    // Default
+                    var defaultMenuItem = new ToolStripMenuItem("👁️‍🗨️ Default");
+                    defaultMenuItem.Click += async (s, e) =>
+                    {
+
+                        selectedSymbols.Clear();
+                        identifiers?.Clear();
+                        lastOpenMarketWatch = "Default";
+
+                        await DefaultToolStripMenuItem_Click(s, e);
+                        addEditSymbolsToolStripMenuItem.Enabled = false;
+
+                        isGrid = true;
+                        reloadGrid = true;
+
+                        SendRestartSignal();
+
+                    };
+
+                    viewToolStripMenuItem.DropDownItems.Add(defaultMenuItem);
+
+                    // API MarketWatches
+                    foreach (var mw in marketWatches)
+                    {
+                        var menuItem = new ToolStripMenuItem("👁️‍🗨️ " + mw.MarketWatchName);
+
+                        menuItem.Click += async (s, e) =>
+                        {
+
+                            await LoadMarketWatchFromApiAsync(mw);
+                            marketWatchItem = mw;
+
+                            SendRestartSignal();
+
+                        };
+
+                        viewToolStripMenuItem.DropDownItems.Add(menuItem);
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -1566,46 +1788,87 @@ namespace thecalcify
             }
         }
 
-        public async Task LoadSymbol(string Filename)
+        private async Task LoadMarketWatchFromApiAsync(MarketWatchItem marketWatch)
         {
             try
             {
                 savelabel.Visible = false;
                 fontSizeComboBox.Visible = true;
-                //uiManager?.SetFontSizeComboBoxVisibility(true);
 
-                pnlSearch.Visible = true;
                 searchTextLabel.Visible = true;
                 txtsearch.Clear();
                 txtsearch.Visible = true;
-                //uiManager?.SetSearchBoxVisibility(true);
 
-
-                string finalPath = Path.Combine(AppFolder, username);
                 selectedSymbols.Clear();
-                Filename = Path.Combine(finalPath, Filename);
-                string cipherText = File.ReadAllText(Filename);
-                string json = CryptoHelper.Decrypt(cipherText, EditableMarketWatchGrid.passphrase);
-                var symbols = System.Text.Json.JsonSerializer.Deserialize<List<string>>(json);
-                selectedSymbols.AddRange(symbols);
-                identifiers = selectedSymbols.Distinct().ToList();
+                identifiers.Clear();
                 isLoadedSymbol = true;
+
+                selectedSymbols.AddRange(marketWatch.Symbols);
+                selectedSymbols.RemoveAll(s =>
+                    string.IsNullOrWhiteSpace(s) || s.Equals("null", StringComparison.OrdinalIgnoreCase)
+                );
+
+                identifiers = marketWatch.Symbols.Distinct().ToList();
+                identifiers.RemoveAll(s =>
+                    string.IsNullOrWhiteSpace(s) || s.Equals("null", StringComparison.OrdinalIgnoreCase)
+                );
+
+                lastOpenMarketWatch = marketWatch.MarketWatchName;
+                titleLabel.Text = marketWatch.MarketWatchName.ToUpper();
+
+                // Dispose old grid
+                var grid = EditableMarketWatchGrid.CurrentInstance;
+                if (grid != null)
+                {
+                    if (grid.IsCurrentCellInEditMode)
+                        grid.EndEdit();
+
+                    grid.EditableDispose();
+                    grid.Dispose();
+                }
+
+
+                // Switch UI to main grid panel
+                thecalcifyGrid();
+
+
+                saveMarketWatchHost.Visible = false;
+                refreshMarketWatchHost.Visible = true;
+                addEditSymbolsToolStripMenuItem.Enabled = true;
                 marketWatchViewMode = MarketWatchViewMode.Default;
-                titleLabel.Text = Path.GetFileNameWithoutExtension(Filename).ToUpper();
-                InitializeDataGridView();          // Configure the grid
 
-                //pageSwitched = true;
 
-                //await EnsureSignalRConnectedAndSubscribedAsync();
+                InitializeDataGridView();
+
+
+                isEdit = false;
+                isGrid = true;
+                reloadGrid = true;
+
+                if ((selectedSymbols == null || selectedSymbols.Count == 0) && (identifiers == null || identifiers.Count == 0))
+                {
+                    var result = MessageBox.Show(
+                        "No symbols are currently selected.\n\n" +
+                        "Would you like to add symbols to this Market Watch now?",
+                        "No Symbols Selected",
+                        MessageBoxButtons.YesNo,
+                        MessageBoxIcon.Warning
+                    );
+
+                    if (result == DialogResult.Yes)
+                    {
+                        AddEditSymbolsToolStripMenuItem_Click(null, null);
+                    }
+                }
+
+
             }
             catch (Exception ex)
             {
-                MessageBox.Show("File Was Never Save Or Moved Please Try Again!", "Load Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 ApplicationLogger.LogException(ex);
+                MessageBox.Show("Failed to load MarketWatch", "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-
-            thecalcifyGrid();
-            MenuLoad();
         }
 
         private void ClearCollections()
@@ -1696,6 +1959,20 @@ namespace thecalcify
 
                 //_updateTimer?.Dispose();
                 //_updateTimer = null;
+
+                EditableMarketWatchGrid editableMarketWatchGrid = EditableMarketWatchGrid.CurrentInstance;
+                if (editableMarketWatchGrid != null)
+                {
+                    if (editableMarketWatchGrid.IsCurrentCellInEditMode)
+                    {
+                        editableMarketWatchGrid.EndEdit();
+                    }
+
+                    editableMarketWatchGrid.EditableDispose(); // Dispose the grid
+                    editableMarketWatchGrid.Dispose();
+                }
+
+
                 _latestUpdates.Clear();
                 txtsearch.Text = string.Empty;
                 // 3. Clean up DataGridView
@@ -1767,7 +2044,6 @@ namespace thecalcify
                 }
                 catch (Exception ex)
                 {
-                    //Console.WriteLine("Error killing Excel process: " + ex.Message);
                     ApplicationLogger.LogException(ex);
                 }
             }
@@ -2372,22 +2648,23 @@ namespace thecalcify
                             return;
                         }
 
-                        // Save changes
-                        EditableMarketWatchGrid editableMarketWatchGrid =
-                            EditableMarketWatchGrid.CurrentInstance ?? new EditableMarketWatchGrid();
+                        //// Save changes
+                        //EditableMarketWatchGrid editableMarketWatchGrid =
+                        //    EditableMarketWatchGrid.CurrentInstance ?? new EditableMarketWatchGrid();
 
-                        editableMarketWatchGrid.isGrid = false;
-                        editableMarketWatchGrid.saveFileName = saveFileName;
-                        editableMarketWatchGrid.username = username;
+                        //editableMarketWatchGrid.isGrid = false;
+                        ////editableMarketWatchGrid.saveFileName = saveFileName;
+                        //editableMarketWatchGrid.username = username;
 
                         selectedSymbols = currentlyCheckedSymbols;
-                        editableMarketWatchGrid.SaveSymbols(selectedSymbols);
+                        await EditableMarketWatchGrid.SaveMarketWatchAsync(selectedSymbols,marketWatchItem);
 
                         // identifiers drives the grid; SignalR still uses symbolMaster
                         identifiers = selectedSymbols;
 
                         SafeInvoke(InitializeDataGridView);
-                        await LoadInitialMarketDataAsync();
+                        SendRestartSignal();
+
                         //await EnsureSignalRConnectedAndSubscribedAsync();
 
                         panelAddSymbols.Visible = false;
@@ -2437,225 +2714,187 @@ namespace thecalcify
         {
             try
             {
-                using (var client = new HttpClient())
+                using (HttpClient client = new HttpClient())
                 {
+
                     var request = new HttpRequestMessage(HttpMethod.Get, $"{APIPath}getInstrument");
                     request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
                     request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-                    // ✅ Async call
                     var response = await client.SendAsync(request).ConfigureAwait(false);
 
-                    if (response.StatusCode == System.Net.HttpStatusCode.Forbidden ||
-                             response.StatusCode == System.Net.HttpStatusCode.Unauthorized ||
-                             response.StatusCode == HttpStatusCode.NotFound ||
-                             !response.IsSuccessStatusCode)
-                    {
-                        thecalcify thecalcify = thecalcify.CurrentInstance;
-                        thecalcify.DisconnectESCToolStripMenuItem_Click(null, null);
-                        MessageBox.Show("Session expired. Please log in again.", "Session Expired", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        ApplicationLogger.Log($"Session expired or unauthorized access. due to {response.StatusCode} from Symbol Load API");
-                        return;
-                    }
 
                     var jsonString = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                     resultdefault = JsonConvert.DeserializeObject<MarketApiResponse>(jsonString);
 
-                    if (resultdefault != null && resultdefault.data != null)
+                    if (resultdefault?.data == null)
+                        return;
+
+                    //SaveInitDataToFile(resultdefault.data);
+
+                    RunOnUIThread(async () =>
                     {
-                        SaveInitDataToFile(resultdefault.data);
+                        pastRateTickDTO = resultdefault.data;
 
-                        if (this.InvokeRequired)
-                        {
-                            if (!this.IsDisposed && this.IsHandleCreated)
-                            {
-                                this.BeginInvoke((MethodInvoker)async delegate
-                                {
-                                    pastRateTickDTO = resultdefault.data;
+                        InitializeIdentifiers(resultdefault.data);
+                        InitializeSymbolMaster(resultdefault.data);
 
-                                    // ✅ Initialize identifiers & SymbolName if needed
-                                    if (identifiers == null || string.IsNullOrEmpty(saveFileName))
-                                    {
-                                        identifiers = resultdefault.data
-                                            .Where(x => !string.IsNullOrEmpty(x.i))
-                                            .Select(x => x.i)
-                                            .ToList();
+                        // Filter with identifiers
+                        resultdefault.data = resultdefault.data
+                            .Where(x => identifiers != null && identifiers.Contains(x.i))
+                            .ToList();
 
-                                        SymbolName = resultdefault.data
-                                            .Where(x => !string.IsNullOrEmpty(x.i) && !string.IsNullOrEmpty(x.n))
-                                            .Select(x => (Symbol: x.i, SymbolName: x.n)) // ✅ works in C# 7.3
-                                            .ToList();
-                                    }
-
-                                    // ✅ Initialize symbolMaster only once
-                                    if (symbolMaster != null && symbolMaster.Count == 0)
-                                    {
-                                        symbolMaster = resultdefault.data
-                                            .Where(x => !string.IsNullOrEmpty(x.i))
-                                            .Select(x => x.i)
-                                            .ToList();
-
-                                        UpdateRtwConfig();
-                                    }
-
-                                    // ✅ Filter with identifiers
-                                    resultdefault.data = resultdefault.data
-                                        .Where(x => identifiers != null && identifiers.Contains(x.i))
-                                        .ToList();
-
-                                    await ApplyInitialSnapshotToGrid(resultdefault.data);
-                                });
-                            }
-                        }
-                        else
-                        {
-                            pastRateTickDTO = resultdefault.data;
-
-                            // ✅ Initialize identifiers & SymbolName if needed
-                            if (identifiers == null || string.IsNullOrEmpty(saveFileName))
-                            {
-                                identifiers = resultdefault.data
-                                    .Where(x => !string.IsNullOrEmpty(x.i))
-                                    .Select(x => x.i)
-                                    .ToList();
-
-                                SymbolName = resultdefault.data
-                                    .Where(x => !string.IsNullOrEmpty(x.i) && !string.IsNullOrEmpty(x.n))
-                                    .Select(x => (Symbol: x.i, SymbolName: x.n)) // ✅ works in C# 7.3
-                                    .ToList();
-
-                            }
-
-                            // ✅ Initialize symbolMaster only once
-                            if (symbolMaster != null && symbolMaster.Count == 0)
-                            {
-                                symbolMaster = resultdefault.data
-                                    .Where(x => !string.IsNullOrEmpty(x.i))
-                                    .Select(x => x.i)
-                                    .ToList();
-
-                                UpdateRtwConfig();
-                            }
-
-                            // ✅ Filter with identifiers
-                            resultdefault.data = resultdefault.data
-                                .Where(x => identifiers != null && identifiers.Contains(x.i))
-                                .ToList();
-
-                            await ApplyInitialSnapshotToGrid(resultdefault.data);
-                        }
-                    }
+                        ApplyInitialSnapshotToGrid(resultdefault.data);
+                    });
                 }
-            }
-            catch (WebException)
-            {
-                //connection = null;
-                //_eventHandlersAttached = false;
             }
             catch (Exception ex)
             {
-                //Console.WriteLine("Error loading initial market data: " + ex.Message);
                 ApplicationLogger.LogException(ex);
             }
             finally
             {
-                if (this.InvokeRequired)
-                {
-                    this.Invoke(new Action(async () =>
-                    {
-                        notificationSettings.Visible = false;
-                        licenceDate = LoginInfo.RateExpiredDate.ToString("dd:MM:yyyy");
-
-                        RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
-                        if (RemainingDays <= 7)
-                        {
-                            await CheckLicenceLoop();
-                        }
-                        else
-                        {
-                            licenceExpire.Text = $"License Expired On :- {licenceDate}";
-                        }
-                    }));
-                }
-                else
+                RunOnUIThread(async () =>
                 {
                     notificationSettings.Visible = false;
-                    licenceDate = LoginInfo.RateExpiredDate.ToString();
 
+                    licenceDate = LoginInfo.RateExpiredDate.ToString("dd:MM:yyyy");
                     RemainingDays = (Common.ParseToDate(licenceDate) - DateTime.Now.Date).Days;
+
                     if (RemainingDays <= 7)
-                    {
                         await CheckLicenceLoop();
-                    }
                     else
-                    {
                         licenceExpire.Text = $"License Expired On :- {licenceDate}";
-                    }
-                }
-
+                });
             }
         }
 
-        private static void SaveInitDataToFile(List<MarketDataDto> data)
+        private bool IsSessionExpired(HttpResponseMessage response)
         {
-            try
-            {
-                var dict = new Dictionary<string, Dictionary<string, object>>(StringComparer.OrdinalIgnoreCase);
-
-                foreach (var d in data)
-                {
-                    dict[d.i] = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
-                    {
-                        ["Name"] = d.n,
-                        ["Bid"] = d.b,
-                        ["Ask"] = d.a,
-                        ["LTP"] = d.ltp,
-                        ["High"] = d.h,
-                        ["Low"] = d.l,
-                        ["Open"] = d.o,
-                        ["Close"] = d.c,
-                        ["Net Chng"] = d.d,
-                        ["V"] = d.v,
-                        ["ATP"] = d.atp,
-                        ["Bid Size"] = d.bq,
-                        ["Total Bid Size"] = d.tbq,
-                        ["Ask Size"] = d.sq,
-                        ["Total Ask Size"] = d.tsq,
-                        ["Volume"] = d.vt,
-                        ["Open Interest"] = d.oi,
-                        ["Last Size"] = d.ltq,
-                        ["Time"] = Common.TimeStampConvert(d.t)
-                    };
-                }
-
-                Directory.CreateDirectory(Path.GetDirectoryName(marketInitDataPath));
-                string json = JsonConvert.SerializeObject(dict);
-                string encryptedJson = CryptoHelper.Encrypt(json, EditableMarketWatchGrid.passphrase);
-                File.WriteAllText(marketInitDataPath, encryptedJson);
-                SaveInitDataPathToRegistry();
-            }
-            catch (Exception ex)
-            {
-                ApplicationLogger.Log($"Error writing initdata.dat: {ex.Message} And {ex.StackTrace}");
-            }
+            return response.StatusCode == HttpStatusCode.Forbidden ||
+                   response.StatusCode == HttpStatusCode.Unauthorized ||
+                   response.StatusCode == HttpStatusCode.NotFound ||
+                   !response.IsSuccessStatusCode;
         }
 
-
-        private static void SaveInitDataPathToRegistry()
+        private void HandleSessionExpired(HttpStatusCode statusCode)
         {
-            try
-            {
-                using (var baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64))
-                using (var key = baseKey.CreateSubKey(@"SOFTWARE\thecalcify"))
-                {
-                    key.SetValue("InitDataPath", marketInitDataPath, RegistryValueKind.String);
-                }
-            }
-            catch (Exception ex)
-            {
-                ApplicationLogger.LogException(ex);
-            }
+            var app = thecalcify.CurrentInstance;
+            app.DisconnectESCToolStripMenuItem_Click(null, null);
+
+            MessageBox.Show(
+                "Session expired. Please log in again.",
+                "Session Expired",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
+
+            ApplicationLogger.Log(
+                $"Session expired or unauthorized access due to {statusCode} from Symbol Load API");
         }
+
+        private void RunOnUIThread(Func<Task> action)
+        {
+            if (IsDisposed || !IsHandleCreated)
+                return;
+
+            if (InvokeRequired)
+                BeginInvoke((MethodInvoker)(async () => await action()));
+            else
+                _ = action();
+        }
+
+
+        private void InitializeIdentifiers(List<MarketDataDto> data)
+        {
+            if (identifiers != null)
+                return;
+
+            identifiers = data
+                .Where(x => !string.IsNullOrEmpty(x.i))
+                .Select(x => x.i)
+                .ToList();
+
+            SymbolName = data
+                .Where(x => !string.IsNullOrEmpty(x.i) && !string.IsNullOrEmpty(x.n))
+                .Select(x => (Symbol: x.i, SymbolName: x.n))
+                .ToList();
+        }
+
+        private void InitializeSymbolMaster(List<MarketDataDto> data)
+        {
+            if (symbolMaster == null || symbolMaster.Count > 0)
+                return;
+
+            symbolMaster = data
+                .Where(x => !string.IsNullOrEmpty(x.i))
+                .Select(x => x.i)
+                .ToList();
+
+            UpdateRtwConfig();
+        }
+
+
+        //private static void SaveInitDataToFile(List<MarketDataDto> data)
+        //{
+        //    try
+        //    {
+        //        //var dict = new Dictionary<string, Dictionary<string, object>>(StringComparer.OrdinalIgnoreCase);
+
+        //        //foreach (var d in data)
+        //        //{
+        //        //    dict[d.i] = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
+        //        //    {
+        //        //        ["Name"] = d.n,
+        //        //        ["Bid"] = d.b,
+        //        //        ["Ask"] = d.a,
+        //        //        ["LTP"] = d.ltp,
+        //        //        ["High"] = d.h,
+        //        //        ["Low"] = d.l,
+        //        //        ["Open"] = d.o,
+        //        //        ["Close"] = d.c,
+        //        //        ["Net Chng"] = d.d,
+        //        //        ["V"] = d.v,
+        //        //        ["ATP"] = d.atp,
+        //        //        ["Bid Size"] = d.bq,
+        //        //        ["Total Bid Size"] = d.tbq,
+        //        //        ["Ask Size"] = d.sq,
+        //        //        ["Total Ask Size"] = d.tsq,
+        //        //        ["Volume"] = d.vt,
+        //        //        ["Open Interest"] = d.oi,
+        //        //        ["Last Size"] = d.ltq,
+        //        //        ["Time"] = Common.TimeStampConvert(d.t)
+        //        //    };
+        //        //}
+
+        //        var lastTick = LastTickStore.GetAll();
+
+        //        Directory.CreateDirectory(Path.GetDirectoryName(marketInitDataPath));
+        //        string json = JsonConvert.SerializeObject(lastTick);
+        //        string encryptedJson = CryptoHelper.Encrypt(json, "v@d{4NME4sOSywXF");
+        //        File.WriteAllText(marketInitDataPath, encryptedJson);
+        //        SaveInitDataPathToRegistry();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        ApplicationLogger.Log($"Error writing initdata.dat: {ex.Message} And {ex.StackTrace}");
+        //    }
+        //}
+
+        //private static void SaveInitDataPathToRegistry()
+        //{
+        //    try
+        //    {
+        //        using (var baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64))
+        //        using (var key = baseKey.CreateSubKey(@"SOFTWARE\thecalcify"))
+        //        {
+        //            key.SetValue("InitDataPath", marketInitDataPath, RegistryValueKind.String);
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        ApplicationLogger.LogException(ex);
+        //    }
+        //}
 
         private void InitializeGridColumns()
         {
@@ -2684,10 +2923,16 @@ namespace thecalcify
 
             foreach (var symbol in identifiers)
             {
+                // 🔑 Resolve Name from SubscribeSymbol tuple
+                string displayName;
+                if (!_symbolNameMap.TryGetValue(symbol, out displayName))
+                    displayName = symbol; // fallback
+
+
                 defaultGrid.Rows.Add(new object[]
                 {
-            symbol, "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A",
-            "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A"
+            symbol, displayName, "--", "--", "--", "--", "--", "--", "--", "--", "--",
+            "--", "--", "--", "--", "--", "--", "--", "--", "--"
                 });
             }
         }
@@ -2742,6 +2987,9 @@ namespace thecalcify
 
         private async void InitializeDataGridView()
         {
+            LiveGridRegistry.Register(this);
+            ReplayLastTicksToDefaultGrid();
+
             defaultGrid.SuspendLayout();
 
             defaultGrid.DataSource = null;
@@ -2757,14 +3005,14 @@ namespace thecalcify
             ApplyColumnPreferences();
             BuildSymbolRowMap();
 
-            if (resultdefault?.data != null)
-            {
-                // ✅ Filter resultdefault.data to keep only symbols in identifiers
-                resultdefault.data = resultdefault.data
-                    .Where(x => identifiers.Contains(x.i))
-                    .ToList();
-                await ApplyInitialSnapshotToGrid(resultdefault.data);
-            }
+            //if (resultdefault?.data != null && resultdefault.data.Count != 0)
+            //{
+            //    // ✅ Filter resultdefault.data to keep only symbols in identifiers
+            //    resultdefault.data = resultdefault.data
+            //        .Where(x => identifiers.Contains(x.i))
+            //        .ToList();
+            //    ApplyInitialSnapshotToGrid(resultdefault.data);
+            //}
 
             defaultGrid.DefaultCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", fontSize, FontStyle.Regular);
             defaultGrid.ColumnHeadersDefaultCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", fontSize, FontStyle.Bold);
@@ -2807,7 +3055,7 @@ namespace thecalcify
             }
         }
 
-        private async Task ApplyInitialSnapshotToGrid(List<MarketDataDto> snapshot)
+        private async void ApplyInitialSnapshotToGrid(List<MarketDataDto> snapshot)
         {
             if (snapshot == null || snapshot.Count == 0)
                 return;
@@ -2839,6 +3087,10 @@ namespace thecalcify
                     if (rowIndex < 0 || rowIndex >= defaultGrid.Rows.Count)
                         continue;
 
+                    dto.n = SymbolName 
+                        .Where(x => x.Symbol == dto.i)
+                        .Select(x => x.SymbolName)
+                        .FirstOrDefault();
 
                     LastTickStore.ExcelPublish(dto);
 
@@ -3115,8 +3367,7 @@ namespace thecalcify
 
                 // 🔄 Reload market data & ensure SignalR
                 InitializeDataGridView();
-                await LoadInitialMarketDataAsync();
-                //await EnsureSignalRConnectedAndSubscribedAsync();
+                SendRestartSignal(); //await EnsureSignalRConnectedAndSubscribedAsync();
 
                 ApplicationLogger.Log("Refresh: Switched back to DEFAULT Market Watch.");
             }
@@ -3157,42 +3408,43 @@ namespace thecalcify
                     File.Copy(excelFilePath, destExcelPath);
                 }
 
-                if (!File.Exists(marketInitDataPath))
-                {
-                    SplashManager.Hide();
-                    MessageBox.Show("initdata.dat not found.");
-                    return;
-                }
+                //if (!File.Exists(marketInitDataPath))
+                //{
+                //    SplashManager.Hide();
+                //    MessageBox.Show("initdata.dat not found.");
+                //    return;
+                //}
 
-                var dict = new Dictionary<string, Dictionary<string, object>>(StringComparer.OrdinalIgnoreCase);
+                //var dict = new Dictionary<string, Dictionary<string, object>>(StringComparer.OrdinalIgnoreCase);
+                var getPastData = LastTickStore.GetAll();
 
-                foreach (var d in resultdefault.data)
-                {
-                    dict[d.i] = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
-                    {
-                        ["Name"] = d.n,
-                        ["Bid"] = d.b,
-                        ["Ask"] = d.a,
-                        ["LTP"] = d.ltp,
-                        ["High"] = d.h,
-                        ["Low"] = d.l,
-                        ["Open"] = d.o,
-                        ["Close"] = d.c,
-                        ["Net Chng"] = d.d,
-                        ["V"] = d.v,
-                        ["ATP"] = d.atp,
-                        ["Bid Size"] = d.bq,
-                        ["Total Bid Size"] = d.tbq,
-                        ["Ask Size"] = d.sq,
-                        ["Total Ask Size"] = d.tsq,
-                        ["Volume"] = d.vt,
-                        ["Open Interest"] = d.oi,
-                        ["Last Size"] = d.ltq,
-                        ["Time"] = Common.TimeStampConvert(d.t)
-                    };
-                }
+                //foreach (var d in resultdefault.data)
+                //{
+                //    dict[d.i] = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
+                //    {
+                //        ["Name"] = d.n,
+                //        ["Bid"] = d.b,
+                //        ["Ask"] = d.a,
+                //        ["LTP"] = d.ltp,
+                //        ["High"] = d.h,
+                //        ["Low"] = d.l,
+                //        ["Open"] = d.o,
+                //        ["Close"] = d.c,
+                //        ["Net Chng"] = d.d,
+                //        ["V"] = d.v,
+                //        ["ATP"] = d.atp,
+                //        ["Bid Size"] = d.bq,
+                //        ["Total Bid Size"] = d.tbq,
+                //        ["Ask Size"] = d.sq,
+                //        ["Total Ask Size"] = d.tsq,
+                //        ["Volume"] = d.vt,
+                //        ["Open Interest"] = d.oi,
+                //        ["Last Size"] = d.ltq,
+                //        ["Time"] = Common.TimeStampConvert(d.t)
+                //    };
+                //}
 
-                List<ExcelFormulaCell> formulaCells = BuildFormulaCells(dict);
+                List<ExcelFormulaCell> formulaCells = BuildFormulaCells(getPastData);
 
                 // ✅ Excel attach/create
                 Microsoft.Office.Interop.Excel.Application excelApp = null;
@@ -4006,7 +4258,6 @@ namespace thecalcify
             catch (Exception ex)
             {
                 // Catch other unexpected issues
-                //Console.WriteLine("Error stopping background tasks: " + ex.Message);
                 SplashManager.Hide();
                 ApplicationLogger.LogException(ex);
                 MessageBox.Show($"Error loading News view: {ex.Message}");
@@ -4038,7 +4289,7 @@ namespace thecalcify
             bool hasPrevRate = LoginInfo.IsRate;
 
             var userconnection = new HubConnectionBuilder()
-                .WithUrl($"{APIPath}excel?type=Desktop")
+                .WithUrl($"{APIPath}{APIUrl.SignalRConnection}")
                 .WithAutomaticReconnect()
                 .WithStatefulReconnect()
                 .ConfigureLogging(logging =>
@@ -4053,6 +4304,7 @@ namespace thecalcify
             {
                 await userconnection.InvokeAsync("client", username);
                 //await userconnection.InvokeAsync("ClientWithDevice", username, Common.UUIDExtractor());
+
             };
 
             userconnection.On<object>("ReceiveMessage", async (base64) =>
@@ -4134,19 +4386,17 @@ namespace thecalcify
 
             userconnection.On<object>("ReceiveNewsNotification", async (data) =>
             {
+
                 try
                 {
-                    //Console.Clear();
 
                     string json = data?.ToString();
-                    //Console.WriteLine("Received JSON string: " + json);
 
                     if (!string.IsNullOrWhiteSpace(json) && !isDND)
                     {
                         var news = System.Text.Json.JsonSerializer.Deserialize<NewsNotificationDTO>(json);
 
                         Common.ShowWindowsToast(news.headLine, Common.TimeStampConvert(news.sortTimestamp));
-                        //ApplicationLogger.Log($"News Notification Received at: {DateTime.Now:HH:mm:ss}");
                     }
                     else
                     {
@@ -4161,6 +4411,7 @@ namespace thecalcify
 
             userconnection.On<string>("rateAlertNotification", (compressedBase64) =>
             {
+
                 try
                 {
                     // Base64 → byte[]
@@ -4209,6 +4460,7 @@ namespace thecalcify
 
             userconnection.On<bool>("SheetUpdated", async (status) =>
             {
+
                 List<SheetWrapperDto> sheets = await UserExcelExportForm.GetSheetListAsync(token);
 
                 foreach (SheetWrapperDto sheetWrapper in sheets)
@@ -4247,6 +4499,63 @@ namespace thecalcify
                     }
                 }
             });
+
+            userconnection.On<bool>("MarketWatchUpdated", async (reason) =>
+            {
+
+                ApplicationLogger.Log("Market Watch Update Signal Received.");
+                await MenuLoadAsync();
+            });
+
+            userconnection.On<object>("UserListOfSymbol", data =>
+            {
+
+                var parsed = JsonConvert.DeserializeObject<List<SymbolItem>>(data.ToString());
+             
+                SendRestartSignal();
+
+                // 1️⃣ store tuple list
+                SymbolName = parsed
+                    .Select(x => (x.i, x.n))
+                    .ToList();
+
+                // 2️⃣ populate symbol master
+                symbolMaster = SymbolName
+                    .Select(x => x.Symbol)
+                    .Distinct()
+                    .ToList();
+
+                UpdateRtwConfig();
+
+                identifiers = symbolMaster.ToList();
+
+                // 3️⃣ write RTW config
+                UpdateRtwConfig();
+
+                // 4️⃣ rebuild grid + row map on UI thread
+                SafeInvoke(() =>
+                {
+                    InitializeDataGridView();
+
+                    symbolRowMap.Clear();
+                    for (int i = 0; i < identifiers.Count; i++)
+                        symbolRowMap[identifiers[i]] = i;
+
+
+                    _symbolNameMap.Clear();
+
+                    foreach (var item in SymbolName)
+                    {
+                        // Symbol → Name
+                        if (!_symbolNameMap.ContainsKey(item.Symbol))
+                            _symbolNameMap[item.Symbol] = item.SymbolName;
+                    }
+                });
+            });
+
+
+
+
 
 
             await userconnection.StartAsync();
@@ -4441,7 +4750,12 @@ namespace thecalcify
             {
                 if (_latestTicks.TryRemove(key, out var dto))
                 {
-                    ApplyDtoToGridFast(dto);
+                    foreach (var grid in LiveGridRegistry.All)
+                    {
+                        if (grid.IsReady)
+                            grid.TryApplyDto(dto);
+                    }
+
 
                     //ExcelNotifier.NotifyExcel(dto.i,dto)
 
@@ -4492,6 +4806,10 @@ namespace thecalcify
             // ======================================
             // 1 EXCEL NOTIFIER (is fast; keep as is)
             // ======================================
+            dto.n = SymbolName
+                        .Where(x => x.Symbol == dto.i)
+                        .Select(x => x.SymbolName)
+                        .FirstOrDefault();
             LastTickStore.ExcelPublish(dto);
 
             // ======================================
@@ -4693,7 +5011,7 @@ namespace thecalcify
                 ApplicationLogger.Log("[RTW] Config updated successfully by thecalcify for " + symbolMaster.Count + " symbols.");
 
                 // Restart service so RTW reloads symbols
-                RestartRTWService();
+                //RestartRTWService();
             }
             catch (Exception ex)
             {
@@ -4706,19 +5024,17 @@ namespace thecalcify
             try
             {
                 string serviceName = "thecalcifyRTW";
-
                 using (ServiceController sc = new ServiceController(serviceName))
                 {
                     if (sc.Status == ServiceControllerStatus.Running)
                     {
                         sc.Stop();
                         sc.WaitForStatus(ServiceControllerStatus.Stopped, TimeSpan.FromSeconds(10));
+                        ApplicationLogger.Log("[RTW] Service stopped successfully by thecalcify.");
                     }
-
                     sc.Start();
                     sc.WaitForStatus(ServiceControllerStatus.Running, TimeSpan.FromSeconds(10));
-
-                    ApplicationLogger.Log("[RTW] Service restarted successfully by thecalcify.");
+                    ApplicationLogger.Log("[RTW] Service started successfully by thecalcify.");
                 }
             }
             catch (Exception ex)
@@ -4726,6 +5042,7 @@ namespace thecalcify
                 ApplicationLogger.LogException(ex);
             }
         }
+
 
         private void startRTWService()
         {
@@ -4873,5 +5190,98 @@ namespace thecalcify
         }
 
         #endregion
+
+        #region ILiveMarketGrid Implementation
+
+        public bool IsReady =>
+            !_isGridBuilding &&
+            !defaultGrid.IsDisposed &&
+            defaultGrid.IsHandleCreated &&
+            defaultGrid.Rows.Count > 0;
+
+        public bool TryApplyDto(MarketDataDto dto)
+        {
+            ApplyDtoToGridFast(dto);
+            return true;
+        }
+
+        private void ReplayLastTicksToDefaultGrid()
+        {
+            var all = LastTickStore.GetAll();
+
+            foreach (var kv in all)
+            {
+                ApplySnapshotToGrid(kv.Key, kv.Value);
+            }
+        }
+
+
+        private void ApplySnapshotToGrid(string symbol, Dictionary<string, object> snapshot)
+        {
+            if (defaultGrid == null || defaultGrid.IsDisposed)
+                return;
+
+            if (!symbolRowMap.TryGetValue(symbol, out int rowIndex))
+                return;
+
+            if (rowIndex < 0 || rowIndex >= defaultGrid.Rows.Count)
+                return;
+
+            var row = defaultGrid.Rows[rowIndex];
+
+            foreach (var kv in snapshot)
+            {
+                if (!defaultGrid.Columns.Contains(kv.Key))
+                    continue;
+
+                row.Cells[kv.Key].Value = kv.Value;
+            }
+        }
+
+
+        //public static void SendRestartSignal()
+        //{
+        //    using (var evt = EventWaitHandle.OpenExisting(IpcConstants.RestartSignalName))
+        //    {
+        //        evt.Set(); // 🔥 sends the signal
+        //    }
+        //}
+
+        public static void SendRestartSignal()
+        {
+            try
+            {
+                using (var client = new NamedPipeClientStream(
+                    ".",
+                    "TheCalcifyPipe",
+                    PipeDirection.Out))
+                {
+                    // Wait max 1 second for service
+                    client.Connect(1000);
+
+                    using (var writer = new StreamWriter(client, Encoding.UTF8))
+                    {
+                        writer.AutoFlush = true;
+                        writer.WriteLine("RESTART");
+                    }
+                }
+            }
+            catch (System.TimeoutException)
+            {
+                // Service not running — ignore
+            }
+            catch (IOException)
+            {
+                // Pipe not available — ignore
+            }
+            catch (Exception)
+            {
+                // Optional logging
+            }
+        }
+
+
+        #endregion
+
     }
 }

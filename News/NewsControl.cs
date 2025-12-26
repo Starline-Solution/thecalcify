@@ -21,7 +21,7 @@ namespace thecalcify.News
     {
         private readonly string _username, _password;
         private string _type { get; set; }
-        private static readonly string apiUrl = APIUrl.ProdUrl;
+        private static readonly string apiUrl = APIUrl.ApplicationURL;
         private static readonly HttpClient client = new HttpClient();
         private string _token;
         private CancellationTokenSource _cts { get; set; }

@@ -13,22 +13,23 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using thecalcify.Helper;
+using thecalcify.Properties;
 
 namespace thecalcify.MarketWatch
 {
-    public class EditableMarketWatchGrid : DataGridView
+    public class EditableMarketWatchGrid : DataGridView, ILiveMarketGrid
     {
         #region Declarations and Initializations
 
         // ======================
         // 📌 Config / Constants
         // ======================
-        public static readonly string AppFolder = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "thecalcify");
+        //public static readonly string AppFolder = Path.Combine(
+        //    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        //    "thecalcify");
 
-        public static readonly string SymbolListFile = Path.Combine(AppFolder, "symbols.slt");
-        public static readonly string passphrase = "v@d{4NME4sOSywXF";
+        //public static readonly string SymbolListFile = Path.Combine(AppFolder, "symbols.slt");
+        //public static readonly string passphrase = "v@d{4NME4sOSywXF";
 
         // ======================
         // 📌 Core Data / State
@@ -39,7 +40,7 @@ namespace thecalcify.MarketWatch
         public List<(string Symbol, string SymbolName)> SymbolName = new List<(string Symbol, string SymbolName)>();
         private bool isSymbolMasterInitialized = false;
         public List<string> selectedSymbols = new List<string>();
-        public List<MarketDataDto> pastRateTickDTO = new List<MarketDataDto>();
+        //public List<MarketDataDto> pastRateTickDTO = new List<MarketDataDto>();
         public List<string> identifiers;
 
         // ======================
@@ -47,7 +48,8 @@ namespace thecalcify.MarketWatch
         // ======================
         public int fontSize = 12; // Default font size
 
-        public string saveFileName, serchstring, username;
+        //public string saveFileName, serchstring, username;
+        public string serchstring, username;
         public List<string> columnPreferences = new List<string>();
         public List<string> columnPreferencesDefault = new List<string>();
 
@@ -71,7 +73,7 @@ namespace thecalcify.MarketWatch
         // ======================
         // 📌 UI Elements
         // ======================
-        private DataGridView editableMarketWatchGridView;
+        private static DataGridView editableMarketWatchGridView;
 
         private ContextMenuStrip rightClickMenu;
 
@@ -91,6 +93,12 @@ namespace thecalcify.MarketWatch
         private Button btnConfirmAddColumns;
         private Button btnCancelAddColumns;
 
+        private static int? currentMarketWatchId = null; // null = new
+        private static string currentMarketWatchName = null;
+
+        private string _lastSearchKey = string.Empty;
+        private DateTime _lastSearchTime = DateTime.MinValue;
+
         #endregion Declarations and Initializations
 
         #region 🔄 Initialization / Lifecycle
@@ -104,6 +112,9 @@ namespace thecalcify.MarketWatch
             columnPreferences = live_Rate.columnPreferences ?? new List<string>();
             columnPreferencesDefault = live_Rate.columnPreferencesDefault ?? new List<string>();
 
+            currentMarketWatchId = 0;
+            currentMarketWatchName = null;
+
             _uiContext = SynchronizationContext.Current;
             //CommonClass = new Helper.Common(this);
             CurrentInstance = this;
@@ -113,6 +124,9 @@ namespace thecalcify.MarketWatch
             InitializeAddSymbolPanel();
             this.KeyDown += EditableMarketWatchGrid_KeyDown;
             InitializeToolTip();
+
+            LiveGridRegistry.Register(this);
+
         }
 
         public async void InitializeEditableMarketWatchGridAsync()
@@ -149,6 +163,9 @@ namespace thecalcify.MarketWatch
                 isEditMarketWatch = false;
                 isDelete = false;
                 isGrid = true; // Reset flag if necessary
+
+                LiveGridRegistry.Unregister(this);
+
             }
             catch (Exception ex)
             {
@@ -402,6 +419,138 @@ namespace thecalcify.MarketWatch
             };
         }
 
+        private static string PromptMarketWatchName()
+        {
+            using (Form prompt = new Form())
+            {
+                prompt.Width = 400;
+                prompt.Height = 150;
+                prompt.Text = "Save MarketWatch";
+                prompt.Icon = Resources.ApplicationIcon;
+                //prompt.Location = Windows.Center
+
+                Label textLabel = new Label() { Left = 20, Top = 20, Text = "MarketWatch Name:" };
+                TextBox inputBox = new TextBox() { Left = 20, Top = 45, Width = 340 };
+                Button confirmation = new Button() { Text = "Save", Left = 260, Width = 100, Top = 75 };
+
+                confirmation.Click += (sender, e) => { prompt.DialogResult = DialogResult.OK; };
+
+                prompt.Controls.Add(textLabel);
+                prompt.Controls.Add(inputBox);
+                prompt.Controls.Add(confirmation);
+                prompt.AcceptButton = confirmation;
+
+                return prompt.ShowDialog() == DialogResult.OK
+                    ? inputBox.Text.Trim()
+                    : null;
+            }
+        }
+
+
+        private static List<string> GetSymbolsFromGrid()
+        {
+            return editableMarketWatchGridView.Rows
+                .Cast<DataGridViewRow>()
+                .Where(r => !r.IsNewRow && r.Cells["symbol"].Value != null)
+                .Select(r => r.Cells["symbol"].Value.ToString())
+                .Distinct()
+                .ToList();
+        }
+
+
+        public static async Task SaveMarketWatchAsync(List<string> symbol = null, MarketWatchItem existingMarketWatchItem = null)
+        {
+            try
+            {
+                var marketWatchService = new MarketwatchServerAPI(thecalcify.token);
+
+                if (symbol == null)
+                {
+                    symbol = GetSymbolsFromGrid();
+                }
+
+                if (!symbol.Any())
+                {
+                    MessageBox.Show("Please select at least one symbol.");
+                    return;
+                }
+
+                if (existingMarketWatchItem != null)
+                {
+                    currentMarketWatchName = existingMarketWatchItem.MarketWatchName;
+                    currentMarketWatchId = existingMarketWatchItem.MarketWatchId;
+                }
+
+                // Ask name only if first time
+                if (string.IsNullOrWhiteSpace(currentMarketWatchName))
+                {
+                    currentMarketWatchName = PromptMarketWatchName();
+
+                    if (string.IsNullOrWhiteSpace(currentMarketWatchName))
+                        return;
+
+                    // Check for duplicate names
+                    var existingWatch = await marketWatchService.GetMarketWatchByNameAsync(currentMarketWatchName);
+                    if (existingWatch != null)
+                    {
+                        MessageBox.Show("A MarketWatch with this name already exists. Please choose a different name.");
+                        currentMarketWatchName = null;
+                        return;
+                    }
+                }
+
+                var marketWatchItem = new MarketWatchItem
+                {
+                    MarketWatchId = currentMarketWatchId ?? 0,
+                    MarketWatchName = currentMarketWatchName,
+                    Symbols = symbol
+                };
+
+                if (currentMarketWatchId != 0)
+                {
+                    var savedItem = await marketWatchService.UpdateMarketWatchAsync(marketWatchItem);
+
+
+                    if (savedItem == null)
+                    {
+                        MessageBox.Show("Failed to save MarketWatch.");
+                        return;
+                    }
+
+                    // ✅ Update state from server
+                    currentMarketWatchId = savedItem?.MarketWatchId ?? 0;
+                    currentMarketWatchName = savedItem?.MarketWatchName ?? currentMarketWatchName;
+
+                }
+                else
+                {
+                    var savedItem = await marketWatchService.SaveMarketWatchAsync(marketWatchItem);
+
+
+                    if (savedItem == null)
+                    {
+                        MessageBox.Show("Failed to save MarketWatch.");
+                        return;
+                    }
+
+                    // ✅ Update state from server
+                    currentMarketWatchId = savedItem?.MarketWatchId ?? 0;
+                    currentMarketWatchName = savedItem?.MarketWatchName ?? currentMarketWatchName;
+
+                }
+
+                thecalcify.CurrentInstance.titleLabel.Text =
+                    $"Edit {currentMarketWatchName} MarketWatch";
+
+                MessageBox.Show("MarketWatch saved successfully.");
+            }
+            catch (Exception ex)
+            {
+                ApplicationLogger.LogException(ex);
+                MessageBox.Show("Error while saving MarketWatch.");
+            }
+        }
+
         #endregion 🔄 Initialization / Lifecycle
 
         #region 🌐 Connection Handling
@@ -569,20 +718,80 @@ namespace thecalcify.MarketWatch
 
         // KeyDown, editing, cell events, and button click handlers
 
-        private void EditableMarketWatchGrid_KeyDown(object sender, KeyEventArgs e)
+        private async void EditableMarketWatchGrid_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Control && e.KeyCode == Keys.S)
             {
-                SaveSymbols(selectedSymbols);
+                await SaveMarketWatchAsync();
             }
         }
 
-        private void EditableMarketWatchGrid_EditingControlShowing(object sender, DataGridViewEditingControlShowingEventArgs e)
+        private void EditableMarketWatchGrid_EditingControlShowing(
+            object sender,
+            DataGridViewEditingControlShowingEventArgs e)
         {
-            if (e.Control is ComboBox comboBox)
+            if (CurrentCell == null)
+                return;
+
+            // Only for Name column
+            if (CurrentCell.ColumnIndex == Columns["Name"].Index &&
+                e.Control is ComboBox combo)
             {
-                comboBox.Font = new Font(this.Font.FontFamily, this.fontSize);
+                // 🔑 ComboBox behavior settings
+                combo.DropDownStyle = ComboBoxStyle.DropDown;
+                combo.AutoCompleteMode = AutoCompleteMode.None;
+                combo.AutoCompleteSource = AutoCompleteSource.None;
+
+                // 🔁 REMOVE old handlers (VERY IMPORTANT)
+                combo.SelectionChangeCommitted -= Combo_SelectionChangeCommitted;
+                combo.KeyPress -= Combo_KeyPress;
+
+                // ✅ ADD correct handlers
+                combo.SelectionChangeCommitted += Combo_SelectionChangeCommitted;
+                combo.KeyPress += Combo_KeyPress;
             }
+        }
+
+        private void Combo_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (!(sender is ComboBox combo)) return;
+
+            var now = DateTime.Now;
+
+            // Reset search if paused
+            if ((now - _lastSearchTime).TotalMilliseconds > 800)
+                _lastSearchKey = string.Empty;
+
+            _lastSearchTime = now;
+            _lastSearchKey += e.KeyChar;
+
+            var items = combo.Items.Cast<string>().ToList();
+            if (items.Count == 0) return;
+
+            // Find next matching item
+            int startIndex = combo.SelectedIndex + 1;
+            if (startIndex >= items.Count) startIndex = 0;
+
+            for (int i = 0; i < items.Count; i++)
+            {
+                int idx = (startIndex + i) % items.Count;
+                if (items[idx].StartsWith(_lastSearchKey, StringComparison.OrdinalIgnoreCase))
+                {
+                    combo.SelectedIndex = idx;
+                    e.Handled = true;
+                    return;
+                }
+            }
+        }
+
+
+        private void Combo_SelectionChangeCommitted(object sender, EventArgs e)
+        {
+            if (!(sender is ComboBox combo)) return;
+            if (CurrentCell == null) return;
+
+            int rowIndex = CurrentCell.RowIndex;
+            SetSymbolAndTriggerUpdate(rowIndex, combo.Text);
         }
 
         private void EditableMarketWatchGrid_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
@@ -641,7 +850,7 @@ namespace thecalcify.MarketWatch
                         if (foundRows.Length == 0)
                         {
                             // Search in DTO if not found
-                            var foundInDto = pastRateTickDTO.Where(x => x.i == matchedSymbol).ToList();
+                            var foundInDto = /*pastRateTickDTO.Where(x => x.i == matchedSymbol).ToList();*/ new List<MarketDataDto>();
 
                             if (foundInDto.Count > 0)
                             {
@@ -720,7 +929,7 @@ namespace thecalcify.MarketWatch
             ShowAddColumnPanel();
         }
 
-        private void BtnConfirmAddSymbols_Click(object sender, EventArgs e)
+        private async void BtnConfirmAddSymbols_Click(object sender, EventArgs e)
         {
             try
             {
@@ -757,7 +966,7 @@ namespace thecalcify.MarketWatch
                 UpdateGridWithLatestData();
 
                 // Save the changes
-                SaveSymbols(newSymbols);
+                await SaveMarketWatchAsync();
 
                 // Hide the panel
                 panelAddSymbols.Visible = false;
@@ -1323,76 +1532,25 @@ namespace thecalcify.MarketWatch
         // Data and grid update methods
         private void UpdateGridWithLatestData()
         {
-            // Create a dictionary for faster lookup of market data
-            var marketDataDict = new Dictionary<string, DataRow>();
-            foreach (DataRow row in marketWatchDatatable.Rows)
-            {
-                var symbol = row["symbol"].ToString();
-                //var symbolInfo = SymbolName.FirstOrDefault(sn => sn.SymbolName == symbol).Symbol;
+            var marketDataDict = marketWatchDatatable.AsEnumerable()
+                .ToDictionary(r => r.Field<string>("symbol"));
 
-                if (!marketDataDict.ContainsKey(symbol))
-                {
-                    marketDataDict.Add(symbol, row);
-                }
-            }
-
-            //this.DefaultCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", fontSize,FontStyle.Regular);
-            //this.ColumnHeadersDefaultCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", fontSize,FontStyle.Bold);
-
-            // Process rows in bulk
-            foreach (DataGridViewRow gridRow in editableMarketWatchGridView.Rows)
+            foreach (DataGridViewRow gridRow in Rows)
             {
                 if (gridRow.IsNewRow) continue;
 
-                var symbolCell = gridRow.Cells["symbol"];
+                var symbolObj = gridRow.Cells["symbol"].Value;
+                if (symbolObj == null) continue;
 
-                if (symbolCell.Value == null) continue;
+                string symbol = symbolObj.ToString();
 
-                string symbol = symbolCell.Value.ToString();
-                // Try to get data from market data first
                 if (!marketDataDict.TryGetValue(symbol, out DataRow dataRow))
-                {
-                    // Fall back to DTO if not found in market data
-                    var dto = pastRateTickDTO.FirstOrDefault(x => x.i == symbol);
-                    //if (IsRowDataDifferent(gridRow, dataRow))
-                    //{
-                    //    // Update all cells at once for this row
-                    //    UpdateRowCells(gridRow, dataRow);
+                    continue; // ⛔ no snapshot fallback anymore
 
-                    //}
-                    if (IsRowDataDifferent(gridRow, dto))
-                    {
-                        // Update from DTO
-                        gridRow.Cells["Name"].Value = dto.n;
-                        gridRow.Cells["Bid"].Value = dto.b;
-                        gridRow.Cells["Ask"].Value = dto.a;
-                        gridRow.Cells["LTP"].Value = dto.ltp;
-                        gridRow.Cells["High"].Value = dto.h;
-                        gridRow.Cells["Low"].Value = dto.l;
-                        gridRow.Cells["Open"].Value = dto.o;
-                        gridRow.Cells["Close"].Value = dto.c;
-                        gridRow.Cells["Net Chng"].Value = dto.d;
-                        gridRow.Cells["ATP"].Value = dto.atp;
-                        gridRow.Cells["Bid Size"].Value = dto.bq;
-                        gridRow.Cells["Total Bid Size"].Value = dto.tbq;
-                        gridRow.Cells["Ask Size"].Value = dto.sq;
-                        gridRow.Cells["Total Ask Size"].Value = dto.tsq;
-                        gridRow.Cells["Volume"].Value = dto.vt;
-                        gridRow.Cells["Open Interest"].Value = dto.oi;
-                        gridRow.Cells["Last Size"].Value = dto.ltq;
-                        gridRow.Cells["V"].Value = dto.v;
-                        gridRow.Cells["Time"].Value = Common.TimeStampConvert(dto.t);
-
-                        //isFirstSet = true;
-                    }
-                }
-                else
-                {
-                    // Update all cells at once for this row
-                    UpdateRowCells(gridRow, dataRow);
-                }
+                UpdateRowCells(gridRow, dataRow);
             }
         }
+
 
         private void UpdateRowCells(DataGridViewRow gridRow, DataRow dataRow)
         {
@@ -1659,6 +1817,8 @@ namespace thecalcify.MarketWatch
                 {
                     // Set the hidden symbol column value
                     Rows[rowIndex].Cells["symbol"].Value = symbolInfo.Symbol;
+                    ApplySnapshotToRow(Rows[rowIndex], symbolInfo.Symbol);
+
                     //Rows[rowIndex].Cells["Name"].Value = symbolInfo.SymbolName;
 
                     // Trigger update
@@ -1674,160 +1834,161 @@ namespace thecalcify.MarketWatch
                 }
             }
         }
-        public void SaveSymbols(List<string> SymbolList)
-        {
-            try
-            {
-                // Convert symbol names back to symbols if needed
-                var symbolsToSave = SymbolList
-                    .Select(s =>
-                    {
-                        var found = SymbolName.FirstOrDefault(sn => sn.SymbolName == s);
-                        return !found.Equals(default) ? found.Symbol : s;
-                    })
-                    .Distinct()
-                    .ToList();
+        
+        //public void SaveSymbols(List<string> SymbolList)
+        //{
+        //    try
+        //    {
+        //        // Convert symbol names back to symbols if needed
+        //        var symbolsToSave = SymbolList
+        //            .Select(s =>
+        //            {
+        //                var found = SymbolName.FirstOrDefault(sn => sn.SymbolName == s);
+        //                return !found.Equals(default) ? found.Symbol : s;
+        //            })
+        //            .Distinct()
+        //            .ToList();
 
-                // Rest of your existing save logic...
-                if (symbolsToSave.Count == 0)
-                {
-                    MessageBox.Show("Please select at least one symbol.");
-                    return;
-                }
+        //        // Rest of your existing save logic...
+        //        if (symbolsToSave.Count == 0)
+        //        {
+        //            MessageBox.Show("Please select at least one symbol.");
+        //            return;
+        //        }
 
-                int symbolCount = SymbolList.Count;
-                int rowCount = editableMarketWatchGridView.NewRowIndex >= 0
-                    ? editableMarketWatchGridView.Rows.Count - 1
-                    : editableMarketWatchGridView.Rows.Count;
+        //        int symbolCount = SymbolList.Count;
+        //        int rowCount = editableMarketWatchGridView.NewRowIndex >= 0
+        //            ? editableMarketWatchGridView.Rows.Count - 1
+        //            : editableMarketWatchGridView.Rows.Count;
 
-                rowCount--;
+        //        rowCount--;
 
-                if (symbolCount != rowCount && isGrid)
-                {
-                    // Clear the selectedSymbols list
-                    SymbolList.Clear();
+        //        if (symbolCount != rowCount && isGrid)
+        //        {
+        //            // Clear the selectedSymbols list
+        //            SymbolList.Clear();
 
-                    // Iterate through each row in the gridview
-                    foreach (DataGridViewRow row in editableMarketWatchGridView.Rows)
-                    {
-                        // Skip if the row is the new row (if applicable)
-                        if (!row.IsNewRow)
-                        {
-                            // Get the value from the "Symbol" column
-                            var symbolValue = row.Cells["symbol"].Value;
+        //            // Iterate through each row in the gridview
+        //            foreach (DataGridViewRow row in editableMarketWatchGridView.Rows)
+        //            {
+        //                // Skip if the row is the new row (if applicable)
+        //                if (!row.IsNewRow)
+        //                {
+        //                    // Get the value from the "Symbol" column
+        //                    var symbolValue = row.Cells["symbol"].Value;
 
-                            // Add to selectedSymbols if the value is not null
-                            if (symbolValue != null)
-                            {
-                                SymbolList.Add(symbolValue.ToString());
-                            }
-                        }
-                    }
-                }
+        //                    // Add to selectedSymbols if the value is not null
+        //                    if (symbolValue != null)
+        //                    {
+        //                        SymbolList.Add(symbolValue.ToString());
+        //                    }
+        //                }
+        //            }
+        //        }
 
-                if (SymbolList.Count == 0)
-                {
-                    MessageBox.Show("Please Select Atleast one Symbol for Save", "Alert", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-                    return;
-                }
+        //        if (SymbolList.Count == 0)
+        //        {
+        //            MessageBox.Show("Please Select Atleast one Symbol for Save", "Alert", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+        //            return;
+        //        }
 
-                SymbolList = SymbolList.Distinct().ToList();
-                if (saveFileName == null)
-                {// Show save file dialog
-                    using (var saveDialog = new SaveFileDialog())
-                    {
-                        string basePath = Path.Combine(
-                        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                        "thecalcify");
+        //        SymbolList = SymbolList.Distinct().ToList();
+        //        if (saveFileName == null)
+        //        {// Show save file dialog
+        //            using (var saveDialog = new SaveFileDialog())
+        //            {
+        //                string basePath = Path.Combine(
+        //                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        //                "thecalcify");
 
-                        //Live_Rate live_Rate = Live_Rate.CurrentInstance;
+        //                //Live_Rate live_Rate = Live_Rate.CurrentInstance;
 
-                        // Final folder path
-                        string finalPath = Path.Combine(basePath, thecalcify.CurrentInstance.username.Trim());
+        //                // Final folder path
+        //                string finalPath = Path.Combine(basePath, thecalcify.CurrentInstance.username.Trim());
 
-                        saveDialog.InitialDirectory = finalPath;  // Set default directory
-                        saveDialog.Filter = "Symbol List Files (*.slt)|*.slt|All files (*.*)|*.*";
-                        saveDialog.Title = "Save Symbol List";
-                        saveDialog.DefaultExt = ".slt";
-                        saveDialog.AddExtension = true;
+        //                saveDialog.InitialDirectory = finalPath;  // Set default directory
+        //                saveDialog.Filter = "Symbol List Files (*.slt)|*.slt|All files (*.*)|*.*";
+        //                saveDialog.Title = "Save Symbol List";
+        //                saveDialog.DefaultExt = ".slt";
+        //                saveDialog.AddExtension = true;
 
-                        if (!Directory.Exists(finalPath))
-                            Directory.CreateDirectory(finalPath);
+        //                if (!Directory.Exists(finalPath))
+        //                    Directory.CreateDirectory(finalPath);
 
-                        // If user selected a file
-                        if (saveDialog.ShowDialog() == DialogResult.OK)
-                        {
-                            if (Path.GetFileNameWithoutExtension(saveDialog.FileName).ToLower() == "default")
-                            {
-                                MessageBox.Show("You can not file name Default");
-                                return;
-                            }
-                            string json = System.Text.Json.JsonSerializer.Serialize(SymbolList);
-                            string encryptedJson = CryptoHelper.Encrypt(json, passphrase);
+        //                // If user selected a file
+        //                if (saveDialog.ShowDialog() == DialogResult.OK)
+        //                {
+        //                    if (Path.GetFileNameWithoutExtension(saveDialog.FileName).ToLower() == "default")
+        //                    {
+        //                        MessageBox.Show("You can not file name Default");
+        //                        return;
+        //                    }
+        //                    string json = System.Text.Json.JsonSerializer.Serialize(SymbolList);
+        //                    string encryptedJson = CryptoHelper.Encrypt(json, passphrase);
 
-                            // Ensure directory exists (should already exist from AppFolder)
-                            if (!Directory.Exists(finalPath))
-                                Directory.CreateDirectory(finalPath);
+        //                    // Ensure directory exists (should already exist from AppFolder)
+        //                    if (!Directory.Exists(finalPath))
+        //                        Directory.CreateDirectory(finalPath);
 
-                            // Save to the user-selected filename
-                            File.WriteAllText(saveDialog.FileName, encryptedJson);
+        //                    // Save to the user-selected filename
+        //                    File.WriteAllText(saveDialog.FileName, encryptedJson);
 
-                            if (isGrid)
-                            {
-                                SymbolList.Clear();
-                            }
+        //                    if (isGrid)
+        //                    {
+        //                        SymbolList.Clear();
+        //                    }
 
-                            saveFileName = Path.GetFileNameWithoutExtension(saveDialog.FileName);
+        //                    saveFileName = Path.GetFileNameWithoutExtension(saveDialog.FileName);
 
-                            MessageBox.Show($"{Path.GetFileNameWithoutExtension(saveDialog.FileName)} MarketWatch Save Successfully", "MarketWatch Save", MessageBoxButtons.OK);
-                        }
-                    }
-                }
-                else
-                {
-                    string json = System.Text.Json.JsonSerializer.Serialize(SymbolList);
-                    string encryptedJson = CryptoHelper.Encrypt(json, passphrase);
+        //                    MessageBox.Show($"{Path.GetFileNameWithoutExtension(saveDialog.FileName)} MarketWatch Save Successfully", "MarketWatch Save", MessageBoxButtons.OK);
+        //                }
+        //            }
+        //        }
+        //        else
+        //        {
+        //            string json = System.Text.Json.JsonSerializer.Serialize(SymbolList);
+        //            string encryptedJson = CryptoHelper.Encrypt(json, passphrase);
 
-                    // Ensure directory exists (should already exist from AppFolder)
-                    if (!Directory.Exists(AppFolder))
-                        Directory.CreateDirectory(AppFolder);
+        //            // Ensure directory exists (should already exist from AppFolder)
+        //            if (!Directory.Exists(AppFolder))
+        //                Directory.CreateDirectory(AppFolder);
 
-                    //Live_Rate live_Rate = Live_Rate.CurrentInstance;
+        //            //Live_Rate live_Rate = Live_Rate.CurrentInstance;
 
-                    saveFileName = Path.Combine(AppFolder, thecalcify.CurrentInstance.username.Trim(), $"{saveFileName}.slt");
-                    // Save to the user-selected filename
-                    File.WriteAllText(saveFileName, encryptedJson);
+        //            saveFileName = Path.Combine(AppFolder, thecalcify.CurrentInstance.username.Trim(), $"{saveFileName}.slt");
+        //            // Save to the user-selected filename
+        //            File.WriteAllText(saveFileName, encryptedJson);
 
-                    if (isGrid)
-                    {
-                        SymbolList.Clear();
-                    }
+        //            if (isGrid)
+        //            {
+        //                SymbolList.Clear();
+        //            }
 
-                    MessageBox.Show($"{Path.GetFileNameWithoutExtension(saveFileName)} Marketwatch Update Successfully", "MarketWatch Save", MessageBoxButtons.OK);
+        //            MessageBox.Show($"{Path.GetFileNameWithoutExtension(saveFileName)} Marketwatch Update Successfully", "MarketWatch Save", MessageBoxButtons.OK);
 
-                    saveFileName = Path.GetFileNameWithoutExtension(saveFileName);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Problem While Saving File: {ex.Message}", "Saving Error",
-                                MessageBoxButtons.OK, MessageBoxIcon.Error);
-                ApplicationLogger.LogException(ex);
-            }
-            finally
-            {
-                selectedSymbols = SymbolList;
-                thecalcify live_Rate = thecalcify.CurrentInstance;
-                if (live_Rate == null)
-                    live_Rate.thecalcifyGrid();
-                if (saveFileName != null)
-                {
-                    live_Rate.titleLabel.Text = $"Edit {saveFileName} MarketWatch";
-                }
-                live_Rate.isdeleted = false;
-                live_Rate.MenuLoad();
-            }
-        }
+        //            saveFileName = Path.GetFileNameWithoutExtension(saveFileName);
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        MessageBox.Show($"Problem While Saving File: {ex.Message}", "Saving Error",
+        //                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+        //        ApplicationLogger.LogException(ex);
+        //    }
+        //    finally
+        //    {
+        //        selectedSymbols = SymbolList;
+        //        thecalcify live_Rate = thecalcify.CurrentInstance;
+        //        if (live_Rate == null)
+        //            live_Rate.thecalcifyGrid();
+        //        if (saveFileName != null)
+        //        {
+        //            live_Rate.titleLabel.Text = $"Edit {saveFileName} MarketWatch";
+        //        }
+        //        live_Rate.isdeleted = false;
+        //        live_Rate.MenuLoadAsync();
+        //    }
+        //}
 
         #endregion
 
@@ -1879,5 +2040,83 @@ namespace thecalcify.MarketWatch
             return differs;
         }
         #endregion
+
+        #region ILiveMarketGrid Implementation
+
+        public bool IsReady =>
+            !IsDisposed &&
+            IsHandleCreated &&
+            Rows.Count > 0;
+
+        public bool TryApplyDto(MarketDataDto dto)
+        {
+            if (dto == null) return false;
+
+            foreach (DataGridViewRow row in Rows)
+            {
+                if (row.IsNewRow) continue;
+
+                if (row.Cells["symbol"].Value?.ToString() != dto.i)
+                    continue;
+
+                // Name is STATIC – do NOT touch here
+                row.Cells["Bid"].Value = dto.b;
+                row.Cells["Ask"].Value = dto.a;
+                row.Cells["LTP"].Value = dto.ltp;
+                row.Cells["High"].Value = dto.h;
+                row.Cells["Low"].Value = dto.l;
+                row.Cells["Open"].Value = dto.o;
+                row.Cells["Close"].Value = dto.c;
+                row.Cells["Net Chng"].Value = dto.d;
+                row.Cells["ATP"].Value = dto.atp;
+                row.Cells["Bid Size"].Value = dto.bq;
+                row.Cells["Total Bid Size"].Value = dto.tbq;
+                row.Cells["Ask Size"].Value = dto.sq;
+                row.Cells["Total Ask Size"].Value = dto.tsq;
+                row.Cells["Volume"].Value = dto.vt;
+                row.Cells["Open Interest"].Value = dto.oi;
+                row.Cells["Last Size"].Value = dto.ltq;
+                row.Cells["Time"].Value = Common.TimeStampConvert(dto.t);
+
+                return true;
+            }
+
+            return false;
+        }
+
+        private void ApplySnapshotToRow(DataGridViewRow row, string symbol)
+        {
+            var all = LastTickStore.GetAll();
+
+            if (!all.TryGetValue(symbol, out var snapshot))
+                return;
+
+            foreach (var field in snapshot)
+            {
+                if (!Columns.Contains(field.Key))
+                    continue;
+
+                row.Cells[field.Key].Value = field.Value;
+            }
+        }
+
+        private void BindLastSnapshotForSymbol(DataGridViewRow row, string symbol)
+        {
+            var all = LastTickStore.GetAll();
+
+            if (!all.TryGetValue(symbol, out var snapshot))
+                return; // no past data yet
+
+            foreach (var kv in snapshot)
+            {
+                if (!Columns.Contains(kv.Key))
+                    continue;
+
+                row.Cells[kv.Key].Value = kv.Value;
+            }
+        }
+
+        #endregion
+
     }
 }

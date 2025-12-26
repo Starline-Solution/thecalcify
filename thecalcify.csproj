@@ -100,6 +100,15 @@
       <DependentUpon>UserExcelExportForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Helper\MessagePopup.cs" />
+    <Compile Include="MarketWatch\EditableMarketWatchControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="MarketWatch\EditableMarketWatchControl.Designer.cs">
+      <DependentUpon>EditableMarketWatchControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MarketWatch\ILiveMarketGrid.cs" />
+    <Compile Include="MarketWatch\LiveGridRegistry.cs" />
+    <Compile Include="MarketWatch\MarketwatchServerAPI.cs" />
     <Compile Include="Update Service\About.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -185,6 +194,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Excel Helper\UserExcelExportForm.resx">
       <DependentUpon>UserExcelExportForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MarketWatch\EditableMarketWatchControl.resx">
+      <DependentUpon>EditableMarketWatchControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Update Service\About.resx">
       <DependentUpon>About.cs</DependentUpon>

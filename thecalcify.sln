@@ -8,11 +8,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "thecalcify", "thecalcify.cs
 		{807FD249-18AA-455D-940D-1ECCB0605CAB} = {807FD249-18AA-455D-940D-1ECCB0605CAB}
 	EndProjectSection
 EndProject
-Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "thecalcify Application", "thecalcify Setup\thecalcify Application\thecalcify Application.vdproj", "{FDDF6D8A-1951-71A8-21D2-C288DB632B86}"
-	ProjectSection(ProjectDependencies) = postProject
-		{807FD249-18AA-455D-940D-1ECCB0605CAB} = {807FD249-18AA-455D-940D-1ECCB0605CAB}
-	EndProjectSection
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "thecalcify.CustomActions", "theclacify.CustomActions\thecalcify.CustomActions.csproj", "{8A290C33-51EE-4209-A35B-968B3D554116}"
 	ProjectSection(ProjectDependencies) = postProject
 		{807FD249-18AA-455D-940D-1ECCB0605CAB} = {807FD249-18AA-455D-940D-1ECCB0605CAB}
@@ -26,6 +21,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "thecalcify.Shared", "thecal
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "thecalcify Update Service", "thecalcify Update Agent\thecalcify Update Service.csproj", "{8D7C34C3-931C-4A1A-9D9C-1B9C44400BE2}"
 EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "thecalcify Application", "thecalcify Setup\thecalcify Application\thecalcify Application.vdproj", "{FDDF6D8A-1951-71A8-21D2-C288DB632B86}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,10 +33,6 @@ Global
 		{7FEB9280-D0CB-478E-8F19-DA11C98DE247}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7FEB9280-D0CB-478E-8F19-DA11C98DE247}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7FEB9280-D0CB-478E-8F19-DA11C98DE247}.Release|Any CPU.Build.0 = Release|Any CPU
-		{FDDF6D8A-1951-71A8-21D2-C288DB632B86}.Debug|Any CPU.ActiveCfg = Debug
-		{FDDF6D8A-1951-71A8-21D2-C288DB632B86}.Debug|Any CPU.Build.0 = Debug
-		{FDDF6D8A-1951-71A8-21D2-C288DB632B86}.Release|Any CPU.ActiveCfg = Release
-		{FDDF6D8A-1951-71A8-21D2-C288DB632B86}.Release|Any CPU.Build.0 = Release
 		{8A290C33-51EE-4209-A35B-968B3D554116}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8A290C33-51EE-4209-A35B-968B3D554116}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8A290C33-51EE-4209-A35B-968B3D554116}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -60,6 +53,10 @@ Global
 		{8D7C34C3-931C-4A1A-9D9C-1B9C44400BE2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8D7C34C3-931C-4A1A-9D9C-1B9C44400BE2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8D7C34C3-931C-4A1A-9D9C-1B9C44400BE2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FDDF6D8A-1951-71A8-21D2-C288DB632B86}.Debug|Any CPU.ActiveCfg = Debug
+		{FDDF6D8A-1951-71A8-21D2-C288DB632B86}.Debug|Any CPU.Build.0 = Debug
+		{FDDF6D8A-1951-71A8-21D2-C288DB632B86}.Release|Any CPU.ActiveCfg = Release
+		{FDDF6D8A-1951-71A8-21D2-C288DB632B86}.Release|Any CPU.Build.0 = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
