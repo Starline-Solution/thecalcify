@@ -171,7 +171,7 @@ namespace thecalcify.Excel_Helper
 
             if (grid.Columns[e.ColumnIndex].Name != "SaveSheet" && grid.Columns[e.ColumnIndex].Name != "DeleteSheet") return;
 
-            grid.Enabled = false; 
+            grid.Enabled = false;
 
             try
             {
@@ -185,9 +185,9 @@ namespace thecalcify.Excel_Helper
                         grid.Rows[e.RowIndex].Cells["ModifiedDate"].Value = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss");
                         grid.Sort(grid.Columns["sheetUploaded"], System.ComponentModel.ListSortDirection.Descending);
                     }
-                    if (type == "json") 
+                    if (type == "json")
                     {
-                       await ReloadExcelSheetGridAsync();
+                        await ReloadExcelSheetGridAsync();
                     }
                 }
                 else if (grid.Columns[e.ColumnIndex].Name == "DeleteSheet" && !IsDeleteDisabled(e.RowIndex))
@@ -200,9 +200,20 @@ namespace thecalcify.Excel_Helper
                         bool success = await DeleteSheetAsync(sheetId);
                         if (success)
                         {
-                            grid.Rows[e.RowIndex].Cells["sheetUploaded"].Value = false;
-                            grid.Rows[e.RowIndex].Cells["ModifiedDate"].Value = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss");
-                            grid.Sort(grid.Columns["sheetUploaded"], System.ComponentModel.ListSortDirection.Descending);
+                            bool isCostCalHtml = sheetName.Equals("Cost.Cal", StringComparison.OrdinalIgnoreCase) &&
+                                                 type.Equals("html", StringComparison.OrdinalIgnoreCase);
+
+                            if (isCostCalHtml)
+                            {
+                                grid.Rows.RemoveAt(e.RowIndex);
+                            }
+                            else
+                            {
+                                grid.Rows[e.RowIndex].Cells["sheetUploaded"].Value = false;
+                                grid.Rows[e.RowIndex].Cells["ModifiedDate"].Value = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss");
+                                grid.Sort(grid.Columns["sheetUploaded"], System.ComponentModel.ListSortDirection.Descending);
+                            }
+
                             MessageBox.Show(this, $"{sheetName} Sheet Deleted", "Deleted", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         }
                     }
@@ -340,54 +351,109 @@ namespace thecalcify.Excel_Helper
                 return;
             }
 
-            excelSheetGrid.Rows.Clear();
-            excelSheetGrid.AutoGenerateColumns = false;
-
             var sheetWrapperDtos = await GetSheetListAsync(_token);
+
             List<string> sheetNames;
             string modifiedDate;
+
             ExcelDataBinder.ExceldataBinder(out sheetNames, out modifiedDate);
 
+            if (sheetNames == null)
+            {
+                await Task.Delay(1000); 
+                ExcelDataBinder.ExceldataBinder(out sheetNames, out modifiedDate);
+            }
+
+            var apiSheetsMap = new Dictionary<string, SheetWrapperDto>();
             if (sheetWrapperDtos != null)
             {
-                foreach (var sheet in sheetWrapperDtos)
+                foreach (var s in sheetWrapperDtos)
                 {
-                    excelSheetGrid.Rows.Add(
-                        sheet.SheetId,
-                        sheet.Type,
-                        Regex.Replace(sheet.SheetName, @"\.json$|\.html$", "", RegexOptions.IgnoreCase),
-                        true,
-                        "Save",
-                        "Delete",
-                        sheet.ModifiedDate
-                    );
+                    string cleanName = Regex.Replace(s.SheetName, @"\.json$|\.html$", "", RegexOptions.IgnoreCase);
+                    string key = $"{cleanName}_{s.Type}".ToLower();
+                    if (!apiSheetsMap.ContainsKey(key)) apiSheetsMap.Add(key, s);
                 }
             }
 
-            if (sheetNames != null && sheetNames.Count > 0)
+            var localSheetsMap = new HashSet<string>();
+            if (sheetNames != null)
+            {
+                foreach (var name in sheetNames)
+                {
+                    if (name == "Sheet1") continue;
+                    string type = (name == "Cost.Cal") ? "json" : "html";
+                    string key = $"{name}_{type}".ToLower();
+                    localSheetsMap.Add(key);
+                }
+            }
+
+            List<DataGridViewRow> rowsToRemove = new List<DataGridViewRow>();
+            HashSet<string> processedKeys = new HashSet<string>();
+
+            foreach (DataGridViewRow row in excelSheetGrid.Rows)
+            {
+                string rName = row.Cells["SheetName"].Value?.ToString();
+                string rType = row.Cells["type"].Value?.ToString();
+                string key = $"{rName}_{rType}".ToLower();
+
+                processedKeys.Add(key);
+
+                if (apiSheetsMap.ContainsKey(key))
+                {
+                    var dto = apiSheetsMap[key];
+                    row.Cells["sheetID"].Value = dto.SheetId;
+
+                    if ((bool)row.Cells["sheetUploaded"].Value == false)
+                    {
+                        row.Cells["sheetUploaded"].Value = true;
+                    }
+                    row.Cells["ModifiedDate"].Value = dto.ModifiedDate;
+                }
+                else if (localSheetsMap.Contains(key))
+                {
+                    row.Cells["sheetID"].Value = 0;
+                    row.Cells["sheetUploaded"].Value = false;
+                    row.Cells["ModifiedDate"].Value = modifiedDate;
+                }
+                else
+                {
+                    rowsToRemove.Add(row);
+                }
+            }
+
+            foreach (var row in rowsToRemove)
+            {
+                excelSheetGrid.Rows.Remove(row);
+            }
+
+            foreach (var kvp in apiSheetsMap)
+            {
+                if (!processedKeys.Contains(kvp.Key))
+                {
+                    var sheet = kvp.Value;
+                    string cleanName = Regex.Replace(sheet.SheetName, @"\.json$|\.html$", "", RegexOptions.IgnoreCase);
+                    excelSheetGrid.Rows.Add(sheet.SheetId, sheet.Type, cleanName, true, "Save", "Delete", sheet.ModifiedDate);
+                    processedKeys.Add(kvp.Key);
+                }
+            }
+
+            if (sheetNames != null)
             {
                 foreach (string name in sheetNames)
                 {
                     if (name == "Sheet1") continue;
+                    string type = (name == "Cost.Cal") ? "json" : "html";
+                    string key = $"{name}_{type}".ToLower();
 
-                    if (sheetWrapperDtos == null)
+                    if (!processedKeys.Contains(key))
                     {
-                        excelSheetGrid.Rows.Add(0, name == "Cost.Cal" ? "json" : "html", name, false, "Save", "Delete", modifiedDate);
-                        continue;
-                    }
-                    else
-                    {
-                        bool exists = sheetWrapperDtos.Any(s =>
-                            string.Equals(Regex.Replace(s.SheetName, @"\.json$|\.html$", "", RegexOptions.IgnoreCase),
-                                name, StringComparison.OrdinalIgnoreCase));
-
-                        if (!exists)
-                        {
-                            excelSheetGrid.Rows.Add(0, name == "Cost.Cal" ? "json" : "html", name, false, "Save", "Delete", modifiedDate);
-                        }
+                        excelSheetGrid.Rows.Add(0, type, name, false, "Save", "Delete", modifiedDate);
+                        processedKeys.Add(key);
                     }
                 }
             }
+
+            excelSheetGrid.Sort(excelSheetGrid.Columns["sheetUploaded"], System.ComponentModel.ListSortDirection.Descending);
         }
         #endregion
 
