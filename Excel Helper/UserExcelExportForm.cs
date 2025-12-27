@@ -4,9 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -181,12 +181,6 @@ namespace thecalcify.Excel_Helper
 
                     if (success)
                     {
-                        grid.Rows[e.RowIndex].Cells["sheetUploaded"].Value = true;
-                        grid.Rows[e.RowIndex].Cells["ModifiedDate"].Value = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss");
-                        grid.Sort(grid.Columns["sheetUploaded"], System.ComponentModel.ListSortDirection.Descending);
-                    }
-                    if (type == "json")
-                    {
                         await ReloadExcelSheetGridAsync();
                     }
                 }
@@ -209,6 +203,7 @@ namespace thecalcify.Excel_Helper
                             }
                             else
                             {
+                                grid.Rows[e.RowIndex].Cells["sheetID"].Value = 0;
                                 grid.Rows[e.RowIndex].Cells["sheetUploaded"].Value = false;
                                 grid.Rows[e.RowIndex].Cells["ModifiedDate"].Value = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss");
                                 grid.Sort(grid.Columns["sheetUploaded"], System.ComponentModel.ListSortDirection.Descending);
@@ -320,6 +315,15 @@ namespace thecalcify.Excel_Helper
 
             foreach (DataGridViewColumn col in excelSheetGrid.Columns)
                 col.Resizable = DataGridViewTriState.False;
+
+            // Smooth scrolling
+            typeof(DataGridView).InvokeMember(
+                "DoubleBuffered",
+                BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.SetProperty,
+                null,
+                excelSheetGrid,
+                new object[] { true }
+            );
         }
 
         private bool IsDeleteDisabled(int rowIndex)
@@ -360,7 +364,7 @@ namespace thecalcify.Excel_Helper
 
             if (sheetNames == null)
             {
-                await Task.Delay(1000); 
+                await Task.Delay(1000);
                 ExcelDataBinder.ExceldataBinder(out sheetNames, out modifiedDate);
             }
 
@@ -490,7 +494,7 @@ namespace thecalcify.Excel_Helper
         }
 
         public async Task<bool> SaveSheetExcelBase64Async(string base64, string fileName)
-            {
+        {
             try
             {
                 var content = new StringContent($"\"{base64}\"", Encoding.UTF8, "application/json");
@@ -544,8 +548,8 @@ namespace thecalcify.Excel_Helper
 
                     if (!jsonResult)
                     {
-                        SplashManager.Hide(); 
-                        BringAppToFront();    
+                        SplashManager.Hide();
+                        BringAppToFront();
                         MessageBox.Show(this, "Failed to sync JSON sheet.", "Failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         return false;
                     }
@@ -581,7 +585,7 @@ namespace thecalcify.Excel_Helper
                     this.ParentForm.WindowState = FormWindowState.Normal;
 
                 this.ParentForm.Activate();
-                this.ParentForm.TopMost = true;  
+                this.ParentForm.TopMost = true;
                 this.ParentForm.TopMost = false;
                 this.ParentForm.Focus();
             }
