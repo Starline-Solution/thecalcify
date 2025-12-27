@@ -16,7 +16,7 @@ namespace thecalcify.News
 {
     public partial class NewsSetting : UserControl
     {
-        private static string apiUrl = APIUrl.ProdUrl;
+        private static string apiUrl = APIUrl.ApplicationURL;
         private string[] keywords;
         private bool isDND { get; set; }
         private int userId;

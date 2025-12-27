@@ -7,7 +7,8 @@ namespace thecalcify.Shared
     public class TickBinary
     {
         public string Symbol, v, n;
-        public double B, A, Ltp, H, L, O, C, D, Atp;
+        public double B, A, Ltp, H, L;
+        public double? O, C, D, Atp;
         public long T, Bq, Tbq, Sq, Tsq, Vt, Oi, Ltq;
 
         const int SYMBOL_SIZE = 32;
@@ -29,10 +30,10 @@ namespace thecalcify.Shared
                 bw.Write(Ltp);
                 bw.Write(H);
                 bw.Write(L);
-                bw.Write(O);
-                bw.Write(C);
-                bw.Write(D);
-                bw.Write(Atp);
+                bw.Write(O ?? Double.NaN);
+                bw.Write(C ?? Double.NaN);
+                bw.Write(D ?? Double.NaN);
+                bw.Write(Atp ?? Double.NaN);
 
                 WriteFixedString(bw, v, V_SIZE);
                 bw.Write(T);
@@ -65,9 +66,9 @@ namespace thecalcify.Shared
                 tick.Ltp = br.ReadDouble();
                 tick.H = br.ReadDouble();
                 tick.L = br.ReadDouble();
-                tick.O = br.ReadDouble();
-                tick.C = br.ReadDouble();
-                tick.D = br.ReadDouble();
+                tick.O = ReadNullableDouble(br);
+                tick.C = ReadNullableDouble(br);
+                tick.D = ReadNullableDouble(br);
                 tick.Atp = br.ReadDouble();
 
                 tick.v = ReadFixedString(br, V_SIZE);
@@ -100,5 +101,12 @@ namespace thecalcify.Shared
             if (len < 0) len = bytes.Length;
             return Encoding.UTF8.GetString(bytes, 0, len);
         }
+
+        static double? ReadNullableDouble(BinaryReader br)
+        {
+            var value = br.ReadDouble();
+            return double.IsNaN(value) ? (double?)null : value;
+        }
+
     }
 }

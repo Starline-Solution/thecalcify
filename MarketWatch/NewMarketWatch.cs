@@ -13,6 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using thecalcify.Helper;
+using thecalcify.Properties;
 
 namespace thecalcify.MarketWatch
 {
@@ -91,6 +92,9 @@ namespace thecalcify.MarketWatch
         private Button btnConfirmAddColumns;
         private Button btnCancelAddColumns;
 
+        private static int? currentMarketWatchId = null; // null = new
+        private static string currentMarketWatchName = null;
+
         #endregion Declarations and Initializations
 
         #region 🔄 Initialization / Lifecycle
@@ -103,6 +107,9 @@ namespace thecalcify.MarketWatch
             thecalcify live_Rate = thecalcify.CurrentInstance;
             columnPreferences = live_Rate.columnPreferences ?? new List<string>();
             columnPreferencesDefault = live_Rate.columnPreferencesDefault ?? new List<string>();
+
+            currentMarketWatchId = null;
+            currentMarketWatchName = null;
 
             _uiContext = SynchronizationContext.Current;
             //CommonClass = new Helper.Common(this);
@@ -569,11 +576,11 @@ namespace thecalcify.MarketWatch
 
         // KeyDown, editing, cell events, and button click handlers
 
-        private void EditableMarketWatchGrid_KeyDown(object sender, KeyEventArgs e)
+        private async void EditableMarketWatchGrid_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Control && e.KeyCode == Keys.S)
             {
-                SaveSymbols(selectedSymbols);
+                await SaveMarketWatchAsync();
             }
         }
 
@@ -720,7 +727,7 @@ namespace thecalcify.MarketWatch
             ShowAddColumnPanel();
         }
 
-        private void BtnConfirmAddSymbols_Click(object sender, EventArgs e)
+        private async void BtnConfirmAddSymbols_Click(object sender, EventArgs e)
         {
             try
             {
@@ -757,7 +764,7 @@ namespace thecalcify.MarketWatch
                 UpdateGridWithLatestData();
 
                 // Save the changes
-                SaveSymbols(newSymbols);
+                await SaveMarketWatchAsync();
 
                 // Hide the panel
                 panelAddSymbols.Visible = false;
@@ -1743,7 +1750,7 @@ namespace thecalcify.MarketWatch
                         //Live_Rate live_Rate = Live_Rate.CurrentInstance;
 
                         // Final folder path
-                        string finalPath = Path.Combine(basePath, thecalcify.CurrentInstance.username.Trim());
+                        string finalPath = Path.Combine(basePath, thecalcify.username.Trim());
 
                         saveDialog.InitialDirectory = finalPath;  // Set default directory
                         saveDialog.Filter = "Symbol List Files (*.slt)|*.slt|All files (*.*)|*.*";
@@ -1794,7 +1801,7 @@ namespace thecalcify.MarketWatch
 
                     //Live_Rate live_Rate = Live_Rate.CurrentInstance;
 
-                    saveFileName = Path.Combine(AppFolder, thecalcify.CurrentInstance.username.Trim(), $"{saveFileName}.slt");
+                    saveFileName = Path.Combine(AppFolder,thecalcify.username.Trim(), $"{saveFileName}.slt");
                     // Save to the user-selected filename
                     File.WriteAllText(saveFileName, encryptedJson);
 
@@ -1828,6 +1835,141 @@ namespace thecalcify.MarketWatch
                 live_Rate.MenuLoad();
             }
         }
+
+
+        private static string PromptMarketWatchName()
+        {
+            using (Form prompt = new Form())
+            {
+                prompt.Width = 400;
+                prompt.Height = 150;
+                prompt.Text = "Save MarketWatch";
+                prompt.Icon = Icon.FromHandle(((Bitmap)Resources.AppIcon).GetHicon());
+
+                //prompt.Location = Windows.Center
+
+                Label textLabel = new Label() { Left = 20, Top = 20, Text = "MarketWatch Name:" };
+                TextBox inputBox = new TextBox() { Left = 20, Top = 45, Width = 340 };
+                Button confirmation = new Button() { Text = "Save", Left = 260, Width = 100, Top = 75 };
+
+                confirmation.Click += (sender, e) => { prompt.DialogResult = DialogResult.OK; };
+
+                prompt.Controls.Add(textLabel);
+                prompt.Controls.Add(inputBox);
+                prompt.Controls.Add(confirmation);
+                prompt.AcceptButton = confirmation;
+
+                return prompt.ShowDialog() == DialogResult.OK
+                    ? inputBox.Text.Trim()
+                    : null;
+            }
+        }
+
+
+        private List<string> GetSymbolsFromGrid()
+        {
+            return editableMarketWatchGridView.Rows
+                .Cast<DataGridViewRow>()
+                .Where(r => !r.IsNewRow && r.Cells["symbol"].Value != null)
+                .Select(r => r.Cells["symbol"].Value.ToString())
+                .Distinct()
+                .ToList();
+        }
+
+        public async Task SaveMarketWatchAsync(List<string> symbol = null, string existingMarketWatchName = null)
+        {
+            try
+            {
+                var marketWatchService = new MarketwatchServerAPI(thecalcify.token);
+
+                if (symbol == null)
+                {
+                    symbol = GetSymbolsFromGrid();
+                }
+
+                if (!symbol.Any())
+                {
+                    MessageBox.Show("Please select at least one symbol.");
+                    return;
+                }
+
+                if (existingMarketWatchName != null)
+                {
+                    var existingMarketWatchItem = await marketWatchService.GetMarketWatchByNameAsync(existingMarketWatchName);
+                    currentMarketWatchName = existingMarketWatchItem.MarketWatchName;
+                    currentMarketWatchId = existingMarketWatchItem.MarketWatchId;
+                }
+
+                // Ask name only if first time
+                if (string.IsNullOrWhiteSpace(currentMarketWatchName))
+                {
+                    currentMarketWatchName = PromptMarketWatchName();
+
+                    if (string.IsNullOrWhiteSpace(currentMarketWatchName))
+                        return;
+
+                    // Check for duplicate names
+                    var existingWatch = await marketWatchService.GetMarketWatchByNameAsync(currentMarketWatchName);
+                    if (existingWatch != null)
+                    {
+                        MessageBox.Show("A MarketWatch with this name already exists. Please choose a different name.");
+                        currentMarketWatchName = null;
+                        return;
+                    }
+                }
+
+                var marketWatchItem = new MarketWatchItem
+                {
+                    MarketWatchId = currentMarketWatchId ?? 0,
+                    MarketWatchName = currentMarketWatchName,
+                    Symbols = symbol
+                };
+
+                if (currentMarketWatchId != null && currentMarketWatchId != 0)
+                {
+                    var savedItem = await marketWatchService.UpdateMarketWatchAsync(marketWatchItem);
+
+
+                    if (savedItem == null)
+                    {
+                        MessageBox.Show("Failed to save MarketWatch.");
+                        return;
+                    }
+
+                    // ✅ Update state from server
+                    currentMarketWatchId = savedItem?.MarketWatchId ?? 0;
+                    currentMarketWatchName = savedItem?.MarketWatchName ?? currentMarketWatchName;
+
+                }
+                else
+                {
+                    var savedItem = await marketWatchService.SaveMarketWatchAsync(marketWatchItem);
+
+
+                    if (savedItem == null)
+                    {
+                        MessageBox.Show("Failed to save MarketWatch.");
+                        return;
+                    }
+
+                    // ✅ Update state from server
+                    currentMarketWatchId = savedItem?.MarketWatchId ?? 0;
+                    currentMarketWatchName = savedItem?.MarketWatchName ?? currentMarketWatchName;
+
+                }
+
+                thecalcify.CurrentInstance.titleLabel.Text =
+                    $"Edit {currentMarketWatchName} MarketWatch";
+
+                MessageBox.Show("MarketWatch saved successfully.");
+            }
+            catch (Exception ex)
+            {
+                ApplicationLogger.LogException(ex);
+                MessageBox.Show("Error while saving MarketWatch.");
+            }
+        }
+
 
         #endregion
 

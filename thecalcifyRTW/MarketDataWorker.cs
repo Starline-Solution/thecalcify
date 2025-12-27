@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -180,6 +181,7 @@ namespace thecalcifyRTW
                 try
                 {
                     ApplicationLogger.Log("[SignalR] Sending subscription request…");
+                    await _signalRConnection.InvokeAsync("SymbolLastTick", _currentSymbols, token);
                     await _signalRConnection.InvokeAsync("SubscribeSymbols", _currentSymbols, token);
                     ApplicationLogger.Log($"[SignalR] Subscribed to Count symbols. {_currentSymbols.Length}");
                     return;
@@ -286,6 +288,7 @@ namespace thecalcifyRTW
 
                 ApplicationLogger.Log("[RTW] Restarting SignalR subscription…");
 
+                _ = _signalRConnection.InvokeAsync("SymbolLastTick", _currentSymbols);
                 _ = _signalRConnection.InvokeAsync("SubscribeSymbols", _currentSymbols);
 
                 ApplicationLogger.Log("[RTW] Subscription restart complete.");
@@ -341,7 +344,7 @@ namespace thecalcifyRTW
                 //ApplicationLogger.Log("[RTW] Re-subscribing to {Count} symbols…", _currentSymbols.Length);
                 ApplicationLogger.Log($"[RTW] Re-subscribing to Count symbols. {_currentSymbols.Length}");
 
-
+                await _signalRConnection.InvokeAsync("SymbolLastTick", _currentSymbols);
                 await _signalRConnection.InvokeAsync("SubscribeSymbols", _currentSymbols);
 
                 ApplicationLogger.Log("[RTW] Re-subscribe OK.");

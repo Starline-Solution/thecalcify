@@ -567,7 +567,7 @@ namespace thecalcify
 
         }
 
-        public void SaveMarketWatchHost_Click(object sender, EventArgs e)
+        public async void SaveMarketWatchHost_Click(object sender, EventArgs e)
         {
             if (saveMarketWatchHost.Text == "Save MarketWatch")
             {
@@ -576,7 +576,7 @@ namespace thecalcify
                 if (editableMarketWatchGrid != null && editableMarketWatchGrid.selectedSymbols != null)
                 {
                     selectedSymbols = editableMarketWatchGrid.selectedSymbols;
-                    editableMarketWatchGrid.SaveSymbols(selectedSymbols);
+                    await editableMarketWatchGrid.SaveMarketWatchAsync();
                 }
                 else
                 {

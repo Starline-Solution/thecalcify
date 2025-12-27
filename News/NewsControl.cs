@@ -21,7 +21,7 @@ namespace thecalcify.News
     {
         private readonly string _username, _password;
         private string _type { get; set; }
-        private static readonly string apiUrl = APIUrl.ProdUrl;
+        private static readonly string apiUrl = APIUrl.ApplicationURL;
         private static readonly HttpClient client = new HttpClient();
         private string _token;
         private CancellationTokenSource _cts { get; set; }
@@ -496,24 +496,13 @@ namespace thecalcify.News
                 TimeZoneInfo istZone = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
 
                 var newsItems = result.Data.Search.Items;
-                if (string.IsNullOrEmpty(dateRange))
-                {
-                    // Parse and compare each item's SortTimestamp in IST
-                    newsItems = result.Data.Search.Items
+
+                newsItems = result.Data.Search.Items
                         .OrderBy(x => TimeZoneInfo.ConvertTimeFromUtc(
                             DateTime.Parse(x.SortTimestamp, null, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal),
                             istZone))
                         .ToList();
-                }
-                else
-                {
-                    // Parse and compare each item's SortTimestamp in IST
-                    newsItems = result.Data.Search.Items
-                        .OrderByDescending(x => TimeZoneInfo.ConvertTimeFromUtc(
-                            DateTime.Parse(x.SortTimestamp, null, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal),
-                            istZone))
-                        .ToList();
-                }
+
 
                 // If no items for today, do not display and disable pagination
                 if (newsItems.Count == 0)

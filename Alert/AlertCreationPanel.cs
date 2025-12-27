@@ -36,7 +36,7 @@ namespace thecalcify.Alert
         private readonly Color TextColor = Color.FromArgb(64, 64, 64);
         private readonly Font ModernFont = new Font("Microsoft Sans Serif", 10);
         private readonly Font ModernFontBold = new Font("Microsoft Sans Serif Semibold", 10);
-        private string baseUrl = APIUrl.ProdUrl;
+        private string baseUrl = APIUrl.ApplicationURL;
 
         #endregion
 

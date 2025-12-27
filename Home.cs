@@ -52,7 +52,7 @@ namespace thecalcify
         // ======================
         public readonly string AppFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "thecalcify");
 
-        public string token, licenceDate, username, password;
+        public static string token, licenceDate, username, password;
 
         // ======================
         // 📌 Flags / States
@@ -93,7 +93,7 @@ namespace thecalcify
             "V","Time","ATP","Bid Size","Total Bid Size","Ask Size","Total Ask Size",
             "Volume","Open Interest","Last Size"
         };
-        private static readonly string APIPath = APIUrl.ProdUrl;
+        private static readonly string APIPath = APIUrl.ApplicationURL;
 
         public List<string> FileLists = new List<string>();
         public List<(string Symbol, string SymbolName)> SymbolName = new List<(string Symbol, string SymbolName)>();
@@ -172,6 +172,8 @@ namespace thecalcify
         private bool _isGridBuilding = false;
         private static bool _excelWarmedUp = false;
         private int _rightClickedRowIndex = -1;
+        private MarketwatchServerAPI marketwatchServerAPI;
+        private List<string> marketWatcheFileList = new List<string>();
 
         #endregion Declaration and Initialization
 
@@ -248,6 +250,8 @@ namespace thecalcify
                 // --- MENU SETUP ---
                 if (LoginInfo.IsRate && LoginInfo.IsNews && LoginInfo.RateExpiredDate.Date >= DateTime.Today.Date && LoginInfo.NewsExpiredDate >= DateTime.Today.Date)
                 {
+                    marketwatchServerAPI = new MarketwatchServerAPI(token);
+
                     MenuLoad();
 
                     // --- LOAD INITIAL DATA ASYNCHRONOUSLY ---
@@ -326,6 +330,7 @@ namespace thecalcify
                 }
                 else if (LoginInfo.IsRate && LoginInfo.RateExpiredDate >= DateTime.Today.Date)
                 {
+                    marketwatchServerAPI = new MarketwatchServerAPI(token);
 
                     licenceDate = LoginInfo.RateExpiredDate.ToString("dd:MM:yyyy");
 
@@ -1210,7 +1215,7 @@ namespace thecalcify
 
                     btnCancel.Click += (s, args) => selectionForm.DialogResult = DialogResult.Cancel;
 
-                    btnDelete.Click += (s, args) =>
+                    btnDelete.Click += async (s, args) =>
                     {
                         var selectedFiles = listView.CheckedItems.Cast<ListViewItem>()
                                                     .Select(item => item.Tag.ToString())
@@ -1245,6 +1250,13 @@ namespace thecalcify
                                     if (File.Exists(fullpath))
                                     {
                                         File.Delete(fullpath);
+                                        successCount++;
+                                        isdeleted = true;
+                                    }
+                                    else 
+                                    {
+                                        var menuItem = await marketwatchServerAPI.GetMarketWatchByNameAsync(filePath);
+                                        await marketwatchServerAPI.DeleteMarketWatchAsync(menuItem.MarketWatchId);
                                         successCount++;
                                         isdeleted = true;
                                     }
@@ -1440,7 +1452,7 @@ namespace thecalcify
         }
 
 
-        public void MenuLoad()
+        public async Task MenuLoad()
         {
             try
             {
@@ -1452,7 +1464,13 @@ namespace thecalcify
                                                  .Select(Path.GetFileNameWithoutExtension)
                                                  .ToList();
 
+
+                var marketWatches = await marketwatchServerAPI.GetMarketWatchAsync();
+                marketWatcheFileList = marketWatches.Select(mw => mw.MarketWatchName).ToList();
+
                 FileLists = fileNames;
+
+                FileLists.AddRange(marketWatcheFileList);
 
                 // Clear existing menu items
                 viewToolStripMenuItem.DropDownItems.Clear();
@@ -1583,15 +1601,36 @@ namespace thecalcify
 
                 string finalPath = Path.Combine(AppFolder, username);
                 selectedSymbols.Clear();
-                Filename = Path.Combine(finalPath, Filename);
-                string cipherText = File.ReadAllText(Filename);
-                string json = CryptoHelper.Decrypt(cipherText, EditableMarketWatchGrid.passphrase);
-                var symbols = System.Text.Json.JsonSerializer.Deserialize<List<string>>(json);
+                string storedFilename = Path.Combine(finalPath, Filename);
+                List<string> symbols = new List<string>();
+                try
+                {
+                    string cipherText = File.ReadAllText(storedFilename);
+                    string json = CryptoHelper.Decrypt(cipherText, EditableMarketWatchGrid.passphrase);
+                    symbols = System.Text.Json.JsonSerializer.Deserialize<List<string>>(json);
+                }
+                catch (FileNotFoundException)
+                {
+                    try
+                    {
+                        var menu = await marketwatchServerAPI.GetMarketWatchByNameAsync(Filename.Replace(".slt",""));
+                        symbols = menu.Symbols;
+                    }
+                    catch (Exception ex)
+                    {
+
+                        ApplicationLogger.LogException(ex);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ApplicationLogger.LogException(ex);
+                }
                 selectedSymbols.AddRange(symbols);
                 identifiers = selectedSymbols.Distinct().ToList();
                 isLoadedSymbol = true;
                 marketWatchViewMode = MarketWatchViewMode.Default;
-                titleLabel.Text = Path.GetFileNameWithoutExtension(Filename).ToUpper();
+                titleLabel.Text = Filename;
                 InitializeDataGridView();          // Configure the grid
 
                 //pageSwitched = true;
@@ -2381,7 +2420,8 @@ namespace thecalcify
                         editableMarketWatchGrid.username = username;
 
                         selectedSymbols = currentlyCheckedSymbols;
-                        editableMarketWatchGrid.SaveSymbols(selectedSymbols);
+
+                        await editableMarketWatchGrid.SaveMarketWatchAsync(selectedSymbols);
 
                         // identifiers drives the grid; SignalR still uses symbolMaster
                         identifiers = selectedSymbols;
@@ -4038,7 +4078,7 @@ namespace thecalcify
             bool hasPrevRate = LoginInfo.IsRate;
 
             var userconnection = new HubConnectionBuilder()
-                .WithUrl($"{APIPath}excel?type=Desktop")
+                .WithUrl($"{APIPath}{APIUrl.SignalRConnection}")
                 .WithAutomaticReconnect()
                 .WithStatefulReconnect()
                 .ConfigureLogging(logging =>
@@ -4248,6 +4288,42 @@ namespace thecalcify
                 }
             });
 
+
+            userconnection.On<bool>("MarketWatchUpdated", async (reason) =>
+            {
+
+                ApplicationLogger.Log("Market Watch Update Signal Received.");
+                SafeInvoke(() => MenuLoad());
+            });
+
+
+            userconnection.On<object>("UserListOfSymbol", data =>
+            {
+
+                var parsed = JsonConvert.DeserializeObject<List<SymbolItem>>(data.ToString());
+
+                // 1️⃣ store tuple list
+                SymbolName = parsed
+                    .Select(x => (x.i, x.n))
+                    .ToList();
+
+                // 2️⃣ populate symbol master
+                symbolMaster = SymbolName
+                    .Select(x => x.Symbol)
+                    .Distinct()
+                    .ToList();
+
+                identifiers = symbolMaster.ToList();
+
+                // 3️⃣ write RTW config
+                UpdateRtwConfig();
+
+                // 4️⃣ rebuild grid + row map on UI thread
+                SafeInvoke(() =>
+                {
+                    HandleLastOpenedMarketWatch();
+                });
+            });
 
             await userconnection.StartAsync();
             await userconnection.InvokeAsync("client", username);

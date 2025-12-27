@@ -239,13 +239,7 @@ namespace thecalcify.Helper
 
                 long timestamp = long.Parse(value); // Parse the value to a long for timestamp
 
-                DateTimeOffset dateTimeOffset = DateTimeOffset.FromUnixTimeMilliseconds(timestamp);
-
-                // If the original time zone is UTC (+00:00), convert it to IST (+05:30)
-                if (dateTimeOffset.Offset == TimeSpan.Zero)
-                {
-                    dateTimeOffset = dateTimeOffset.ToOffset(TimeSpan.FromHours(5).Add(TimeSpan.FromMinutes(30))); // IST offset: UTC +5:30
-                }
+                DateTimeOffset dateTimeOffset = ParseUnixTimeWithIstRule(timestamp);
 
                 // Pass the converted DateTimeOffset to ParseToDate method for further formatting
                 string formattedDate = ParseToDate(dateTimeOffset.ToString()).ToString();
@@ -257,6 +251,29 @@ namespace thecalcify.Helper
                 ApplicationLogger.Log(value); // Log the input value for troubleshooting
                 ApplicationLogger.LogException(ex); // Log the exception details
                 return null; // Return null if any error occurs
+            }
+        }
+
+
+        public static DateTimeOffset ParseUnixTimeWithIstRule(long timestamp)
+        {
+            TimeSpan istOffset = TimeSpan.FromHours(5).Add(TimeSpan.FromMinutes(30));
+
+            // Seconds (10 digits) → UTC
+            if (timestamp < 10_000_000_000L)
+            {
+                // interpret as local IST time
+                var dt = DateTimeOffset.FromUnixTimeSeconds(timestamp).ToOffset(istOffset);
+                return dt;
+            }
+
+            // Milliseconds (13 digits) → UTC
+            else
+            {
+                // convert UTC → IST
+                return DateTimeOffset
+                    .FromUnixTimeMilliseconds(timestamp)
+                    .ToOffset(istOffset);
             }
         }
 
@@ -795,6 +812,15 @@ namespace thecalcify.Helper
         public string HorizontalAlign { get; set; }
         public string VerticalAlign { get; set; }
     }
+
+
+    // Helper classes for RTW config symbol info
+    public class SymbolItem
+    {
+        public string i { get; set; }
+        public string n { get; set; }
+    }
+
 
 
 }

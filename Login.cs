@@ -17,7 +17,7 @@ namespace thecalcify
         private bool passwordVisible = false; // Track password visibility state
         public string token, licenceDate, username, userpassword;
         public static Login CurrentInstance { get; private set; }
-        private static readonly string APIPath = APIUrl.ProdUrl;
+        private static readonly string APIPath = APIUrl.ApplicationURL;
 
         public Login()
         {
