@@ -1484,7 +1484,7 @@ namespace thecalcify
                     var clickedItem = (ToolStripMenuItem)sender;
                     await DefaultToolStripMenuItem_Click(sender, e);
                     addEditSymbolsToolStripMenuItem.Enabled = false;
-                    await LoadInitialMarketDataAsync();
+                    //await LoadInitialMarketDataAsync();
                     isGrid = true;
                     reloadGrid = true;
                 };
@@ -1569,7 +1569,7 @@ namespace thecalcify
                     addEditSymbolsToolStripMenuItem.Enabled = false;
                     saveFileName = null;
                     titleLabel.Text = "DEFAULT";
-                    await LoadInitialMarketDataAsync();
+                    //await LoadInitialMarketDataAsync();
                     isGrid = true;
                     reloadGrid = true;
                 };
@@ -4090,7 +4090,6 @@ namespace thecalcify
         #endregion
 
         #region User Activity Moniter
-
         public async Task UserInfoSignalREvent(string username)
         {
 
@@ -4298,6 +4297,7 @@ namespace thecalcify
                                 rng.Value2 = (double)cellValue;
                             }
                             workbook.Save();
+                            ApplicationLogger.Log("Requested for Sheet Update");
                         }
                         finally
                         {
@@ -4312,13 +4312,14 @@ namespace thecalcify
             userconnection.On<bool>("MarketWatchUpdated", async (reason) =>
             {
 
-                ApplicationLogger.Log("Market Watch Update Signal Received.");
+                ApplicationLogger.Log("Received Request from Admin to restart Menu.");
                 SafeInvoke(async () => await MenuLoad());
             });
 
 
             userconnection.On<object>("UserListOfSymbol", data =>
             {
+                ApplicationLogger.Log("Received Request from Admin to restart page");
 
                 var parsed = JsonConvert.DeserializeObject<List<SymbolItem>>(data.ToString());
 
