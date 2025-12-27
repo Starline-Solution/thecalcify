@@ -517,20 +517,9 @@ namespace thecalcify
         {
             if (_excelWarmedUp) return;
 
-            Task.Run(() =>
-            {
-                try
-                {
-                    var xl = new Microsoft.Office.Interop.Excel.Application();
-                    xl.Quit();
-                    Marshal.ReleaseComObject(xl);
-                }
-                catch { }
-                finally
-                {
-                    _excelWarmedUp = true;
-                }
-            });
+            ExcelAppManager.GetExcelApp();
+            ExcelAppManager.ReleaseExcelApp();
+            _excelWarmedUp = true;
         }
 
         private Task CheckLicenceLoop()

@@ -154,8 +154,10 @@ namespace thecalcify.Excel_Helper
         #region Form Events
         private async void UserExcelExportForm_Load(object sender, EventArgs e)
         {
+            SplashManager.Show(Form.ActiveForm, "Loading Sheets...");
             ConfigureGridColumns();
             await ReloadExcelSheetGridAsync();
+            SplashManager.Hide();
         }
 
         private async void excelSheetGrid_CellContentClick(object sender, DataGridViewCellEventArgs e)
@@ -183,6 +185,10 @@ namespace thecalcify.Excel_Helper
                         grid.Rows[e.RowIndex].Cells["ModifiedDate"].Value = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss");
                         grid.Sort(grid.Columns["sheetUploaded"], System.ComponentModel.ListSortDirection.Descending);
                     }
+                    if (type == "json") 
+                    {
+                       await ReloadExcelSheetGridAsync();
+                    }
                 }
                 else if (grid.Columns[e.ColumnIndex].Name == "DeleteSheet" && !IsDeleteDisabled(e.RowIndex))
                 {
@@ -191,9 +197,14 @@ namespace thecalcify.Excel_Helper
 
                     if (result == DialogResult.OK)
                     {
-                        await DeleteSheetAsync(sheetId);
-                        grid.Rows.RemoveAt(e.RowIndex);
-                        MessageBox.Show(this, $"{sheetName} Sheet Deleted", "Deleted", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        bool success = await DeleteSheetAsync(sheetId);
+                        if (success)
+                        {
+                            grid.Rows[e.RowIndex].Cells["sheetUploaded"].Value = false;
+                            grid.Rows[e.RowIndex].Cells["ModifiedDate"].Value = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss");
+                            grid.Sort(grid.Columns["sheetUploaded"], System.ComponentModel.ListSortDirection.Descending);
+                            MessageBox.Show(this, $"{sheetName} Sheet Deleted", "Deleted", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        }
                     }
                 }
             }
