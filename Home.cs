@@ -181,10 +181,18 @@ namespace thecalcify
         public thecalcify()
         {
             InitializeComponent();
-            //this.args = args;
-            this.Shown += (s, e2) => WarmUpExcelLazy();
+            this.ShowInTaskbar = true;
+            this.ShowIcon = true;
 
         }
+
+        protected override void OnShown(EventArgs e)
+        {
+            base.OnShown(e);
+            this.WindowState = FormWindowState.Maximized;
+            WarmUpExcelLazy();
+        }
+
 
         private async void Home_Load(object sender, EventArgs e)
         {
@@ -252,7 +260,7 @@ namespace thecalcify
                 {
                     marketwatchServerAPI = new MarketwatchServerAPI(token);
 
-                    MenuLoad();
+                    await MenuLoad();
 
                     // --- LOAD INITIAL DATA ASYNCHRONOUSLY ---
                     await LoadInitialMarketDataAsync();
@@ -334,7 +342,7 @@ namespace thecalcify
 
                     licenceDate = LoginInfo.RateExpiredDate.ToString("dd:MM:yyyy");
 
-                    MenuLoad();
+                    await MenuLoad();
                     newsToolStripMenuItem.Visible = false;
 
 
@@ -902,7 +910,7 @@ namespace thecalcify
                 // ---------------------------------------------
                 // STEP 4: Update menu (files)
                 // ---------------------------------------------
-                MenuLoad();
+                await MenuLoad();
 
                 // ---------------------------------------------
                 // STEP 5: ENSURE SIGNALR IS CONNECTED
@@ -1276,7 +1284,7 @@ namespace thecalcify
                             if (successCount > 0)
                             {
                                 selectionForm.DialogResult = DialogResult.OK;
-                                MenuLoad(); // Refresh menu
+                                await MenuLoad(); // Refresh menu
                             }
                         }
                     };
@@ -1358,6 +1366,7 @@ namespace thecalcify
                         licenceExpire.Text = $"License Expired On :- {licenceDate}";
                     }
                 }
+
             }
         }
 
@@ -1513,7 +1522,7 @@ namespace thecalcify
 
                         saveMarketWatchHost.Visible = false;
                         refreshMarketWatchHost.Visible = true;
-                        await LoadSymbol(Path.Combine(saveFileName + ".slt"));
+                        await LoadSymbol(Path.Combine(saveFileName + ".slt"),sender,e);
 
                         try
                         {
@@ -1556,7 +1565,7 @@ namespace thecalcify
 
                     var clickedItem = (ToolStripMenuItem)sender;
                     await DefaultToolStripMenuItem_Click(sender, e);
-                    MenuLoad();
+                    await MenuLoad();
                     addEditSymbolsToolStripMenuItem.Enabled = false;
                     saveFileName = null;
                     titleLabel.Text = "DEFAULT";
@@ -1573,7 +1582,7 @@ namespace thecalcify
             }
         }
 
-        public async Task LoadSymbol(string Filename)
+        public async Task LoadSymbol(string Filename,object sendKeys = null ,EventArgs e = null)
         {
             try
             {
@@ -1603,7 +1612,19 @@ namespace thecalcify
                     try
                     {
                         var menu = await marketwatchServerAPI.GetMarketWatchByNameAsync(Filename.Replace(".slt",""));
-                        symbols = menu.Symbols;
+                        menu.Symbols.RemoveAll(s => string.IsNullOrWhiteSpace(s) || s == "null");
+                        if (menu.Symbols.Count != 0)
+                        { 
+                            symbols = menu.Symbols;
+                        }
+                        else
+                        {
+                            var result = MessageBox.Show($"You Don't Have any Selected Symbols want to Subscribe anything for {Filename.Replace(".slt", "")} marketwatch", "Subscribe Symbol", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+
+                            if (result == DialogResult.Yes)
+                                AddEditSymbolsToolStripMenuItem_Click(sendKeys, e);
+                        }                        
+
                     }
                     catch (Exception ex)
                     {
@@ -1633,7 +1654,7 @@ namespace thecalcify
             }
 
             thecalcifyGrid();
-            MenuLoad();
+            await MenuLoad();
         }
 
         private void ClearCollections()
@@ -2223,6 +2244,16 @@ namespace thecalcify
                     panelAddColumns.Visible = false;
 
                 // Create panel if it hasn't been initialized yet
+
+                // If panel already exists, remove and dispose it
+                if (panelAddSymbols != null)
+                {
+                    this.Controls.Remove(panelAddSymbols);
+                    panelAddSymbols.Dispose();
+                    panelAddSymbols = null;
+                }
+
+
                 if (panelAddSymbols == null)
                 {
                     // Initialize panel
@@ -4282,7 +4313,7 @@ namespace thecalcify
             {
 
                 ApplicationLogger.Log("Market Watch Update Signal Received.");
-                SafeInvoke(() => MenuLoad());
+                SafeInvoke(async () => await MenuLoad());
             });
 
 

@@ -548,7 +548,6 @@ namespace thecalcify
             this.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.Name = "thecalcify";
             this.Text = "thecalcify";
-            this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Home_FormClosed);
             this.Load += new System.EventHandler(this.Home_Load);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Thecalcify_KeyDown);

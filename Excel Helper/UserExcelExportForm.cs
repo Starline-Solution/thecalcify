@@ -348,19 +348,20 @@ namespace thecalcify.Excel_Helper
             string modifiedDate;
             ExcelDataBinder.ExceldataBinder(out sheetNames, out modifiedDate);
 
-            if (sheetWrapperDtos == null) return;
-
-            foreach (var sheet in sheetWrapperDtos)
+            if (sheetWrapperDtos != null)
             {
-                excelSheetGrid.Rows.Add(
-                    sheet.SheetId,
-                    sheet.Type,
-                    Regex.Replace(sheet.SheetName, @"\.json$|\.html$", "", RegexOptions.IgnoreCase),
-                    true,
-                    "Save",
-                    "Delete",
-                    sheet.ModifiedDate
-                );
+                foreach (var sheet in sheetWrapperDtos)
+                {
+                    excelSheetGrid.Rows.Add(
+                        sheet.SheetId,
+                        sheet.Type,
+                        Regex.Replace(sheet.SheetName, @"\.json$|\.html$", "", RegexOptions.IgnoreCase),
+                        true,
+                        "Save",
+                        "Delete",
+                        sheet.ModifiedDate
+                    );
+                }
             }
 
             if (sheetNames != null && sheetNames.Count > 0)
@@ -369,13 +370,21 @@ namespace thecalcify.Excel_Helper
                 {
                     if (name == "Sheet1") continue;
 
-                    bool exists = sheetWrapperDtos.Any(s =>
-                        string.Equals(Regex.Replace(s.SheetName, @"\.json$|\.html$", "", RegexOptions.IgnoreCase),
-                            name, StringComparison.OrdinalIgnoreCase));
-
-                    if (!exists)
+                    if (sheetWrapperDtos == null)
                     {
                         excelSheetGrid.Rows.Add(0, name == "Cost.Cal" ? "json" : "html", name, false, "Save", "Delete", modifiedDate);
+                        continue;
+                    }
+                    else
+                    {
+                        bool exists = sheetWrapperDtos.Any(s =>
+                            string.Equals(Regex.Replace(s.SheetName, @"\.json$|\.html$", "", RegexOptions.IgnoreCase),
+                                name, StringComparison.OrdinalIgnoreCase));
+
+                        if (!exists)
+                        {
+                            excelSheetGrid.Rows.Add(0, name == "Cost.Cal" ? "json" : "html", name, false, "Save", "Delete", modifiedDate);
+                        }
                     }
                 }
             }
@@ -415,7 +424,7 @@ namespace thecalcify.Excel_Helper
         }
 
         public async Task<bool> SaveSheetExcelBase64Async(string base64, string fileName)
-        {
+            {
             try
             {
                 var content = new StringContent($"\"{base64}\"", Encoding.UTF8, "application/json");

@@ -1681,160 +1681,161 @@ namespace thecalcify.MarketWatch
                 }
             }
         }
-        public void SaveSymbols(List<string> SymbolList)
-        {
-            try
-            {
-                // Convert symbol names back to symbols if needed
-                var symbolsToSave = SymbolList
-                    .Select(s =>
-                    {
-                        var found = SymbolName.FirstOrDefault(sn => sn.SymbolName == s);
-                        return !found.Equals(default) ? found.Symbol : s;
-                    })
-                    .Distinct()
-                    .ToList();
+        
+        //public async Task SaveSymbols(List<string> SymbolList)
+        //{
+        //    try
+        //    {
+        //        // Convert symbol names back to symbols if needed
+        //        var symbolsToSave = SymbolList
+        //            .Select(s =>
+        //            {
+        //                var found = SymbolName.FirstOrDefault(sn => sn.SymbolName == s);
+        //                return !found.Equals(default) ? found.Symbol : s;
+        //            })
+        //            .Distinct()
+        //            .ToList();
 
-                // Rest of your existing save logic...
-                if (symbolsToSave.Count == 0)
-                {
-                    MessageBox.Show("Please select at least one symbol.");
-                    return;
-                }
+        //        // Rest of your existing save logic...
+        //        if (symbolsToSave.Count == 0)
+        //        {
+        //            MessageBox.Show("Please select at least one symbol.");
+        //            return;
+        //        }
 
-                int symbolCount = SymbolList.Count;
-                int rowCount = editableMarketWatchGridView.NewRowIndex >= 0
-                    ? editableMarketWatchGridView.Rows.Count - 1
-                    : editableMarketWatchGridView.Rows.Count;
+        //        int symbolCount = SymbolList.Count;
+        //        int rowCount = editableMarketWatchGridView.NewRowIndex >= 0
+        //            ? editableMarketWatchGridView.Rows.Count - 1
+        //            : editableMarketWatchGridView.Rows.Count;
 
-                rowCount--;
+        //        rowCount--;
 
-                if (symbolCount != rowCount && isGrid)
-                {
-                    // Clear the selectedSymbols list
-                    SymbolList.Clear();
+        //        if (symbolCount != rowCount && isGrid)
+        //        {
+        //            // Clear the selectedSymbols list
+        //            SymbolList.Clear();
 
-                    // Iterate through each row in the gridview
-                    foreach (DataGridViewRow row in editableMarketWatchGridView.Rows)
-                    {
-                        // Skip if the row is the new row (if applicable)
-                        if (!row.IsNewRow)
-                        {
-                            // Get the value from the "Symbol" column
-                            var symbolValue = row.Cells["symbol"].Value;
+        //            // Iterate through each row in the gridview
+        //            foreach (DataGridViewRow row in editableMarketWatchGridView.Rows)
+        //            {
+        //                // Skip if the row is the new row (if applicable)
+        //                if (!row.IsNewRow)
+        //                {
+        //                    // Get the value from the "Symbol" column
+        //                    var symbolValue = row.Cells["symbol"].Value;
 
-                            // Add to selectedSymbols if the value is not null
-                            if (symbolValue != null)
-                            {
-                                SymbolList.Add(symbolValue.ToString());
-                            }
-                        }
-                    }
-                }
+        //                    // Add to selectedSymbols if the value is not null
+        //                    if (symbolValue != null)
+        //                    {
+        //                        SymbolList.Add(symbolValue.ToString());
+        //                    }
+        //                }
+        //            }
+        //        }
 
-                if (SymbolList.Count == 0)
-                {
-                    MessageBox.Show("Please Select Atleast one Symbol for Save", "Alert", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-                    return;
-                }
+        //        if (SymbolList.Count == 0)
+        //        {
+        //            MessageBox.Show("Please Select Atleast one Symbol for Save", "Alert", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+        //            return;
+        //        }
 
-                SymbolList = SymbolList.Distinct().ToList();
-                if (saveFileName == null)
-                {// Show save file dialog
-                    using (var saveDialog = new SaveFileDialog())
-                    {
-                        string basePath = Path.Combine(
-                        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                        "thecalcify");
+        //        SymbolList = SymbolList.Distinct().ToList();
+        //        if (saveFileName == null)
+        //        {// Show save file dialog
+        //            using (var saveDialog = new SaveFileDialog())
+        //            {
+        //                string basePath = Path.Combine(
+        //                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        //                "thecalcify");
 
-                        //Live_Rate live_Rate = Live_Rate.CurrentInstance;
+        //                //Live_Rate live_Rate = Live_Rate.CurrentInstance;
 
-                        // Final folder path
-                        string finalPath = Path.Combine(basePath, thecalcify.username.Trim());
+        //                // Final folder path
+        //                string finalPath = Path.Combine(basePath, thecalcify.username.Trim());
 
-                        saveDialog.InitialDirectory = finalPath;  // Set default directory
-                        saveDialog.Filter = "Symbol List Files (*.slt)|*.slt|All files (*.*)|*.*";
-                        saveDialog.Title = "Save Symbol List";
-                        saveDialog.DefaultExt = ".slt";
-                        saveDialog.AddExtension = true;
+        //                saveDialog.InitialDirectory = finalPath;  // Set default directory
+        //                saveDialog.Filter = "Symbol List Files (*.slt)|*.slt|All files (*.*)|*.*";
+        //                saveDialog.Title = "Save Symbol List";
+        //                saveDialog.DefaultExt = ".slt";
+        //                saveDialog.AddExtension = true;
 
-                        if (!Directory.Exists(finalPath))
-                            Directory.CreateDirectory(finalPath);
+        //                if (!Directory.Exists(finalPath))
+        //                    Directory.CreateDirectory(finalPath);
 
-                        // If user selected a file
-                        if (saveDialog.ShowDialog() == DialogResult.OK)
-                        {
-                            if (Path.GetFileNameWithoutExtension(saveDialog.FileName).ToLower() == "default")
-                            {
-                                MessageBox.Show("You can not file name Default");
-                                return;
-                            }
-                            string json = System.Text.Json.JsonSerializer.Serialize(SymbolList);
-                            string encryptedJson = CryptoHelper.Encrypt(json, passphrase);
+        //                // If user selected a file
+        //                if (saveDialog.ShowDialog() == DialogResult.OK)
+        //                {
+        //                    if (Path.GetFileNameWithoutExtension(saveDialog.FileName).ToLower() == "default")
+        //                    {
+        //                        MessageBox.Show("You can not file name Default");
+        //                        return;
+        //                    }
+        //                    string json = System.Text.Json.JsonSerializer.Serialize(SymbolList);
+        //                    string encryptedJson = CryptoHelper.Encrypt(json, passphrase);
 
-                            // Ensure directory exists (should already exist from AppFolder)
-                            if (!Directory.Exists(finalPath))
-                                Directory.CreateDirectory(finalPath);
+        //                    // Ensure directory exists (should already exist from AppFolder)
+        //                    if (!Directory.Exists(finalPath))
+        //                        Directory.CreateDirectory(finalPath);
 
-                            // Save to the user-selected filename
-                            File.WriteAllText(saveDialog.FileName, encryptedJson);
+        //                    // Save to the user-selected filename
+        //                    File.WriteAllText(saveDialog.FileName, encryptedJson);
 
-                            if (isGrid)
-                            {
-                                SymbolList.Clear();
-                            }
+        //                    if (isGrid)
+        //                    {
+        //                        SymbolList.Clear();
+        //                    }
 
-                            saveFileName = Path.GetFileNameWithoutExtension(saveDialog.FileName);
+        //                    saveFileName = Path.GetFileNameWithoutExtension(saveDialog.FileName);
 
-                            MessageBox.Show($"{Path.GetFileNameWithoutExtension(saveDialog.FileName)} MarketWatch Save Successfully", "MarketWatch Save", MessageBoxButtons.OK);
-                        }
-                    }
-                }
-                else
-                {
-                    string json = System.Text.Json.JsonSerializer.Serialize(SymbolList);
-                    string encryptedJson = CryptoHelper.Encrypt(json, passphrase);
+        //                    MessageBox.Show($"{Path.GetFileNameWithoutExtension(saveDialog.FileName)} MarketWatch Save Successfully", "MarketWatch Save", MessageBoxButtons.OK);
+        //                }
+        //            }
+        //        }
+        //        else
+        //        {
+        //            string json = System.Text.Json.JsonSerializer.Serialize(SymbolList);
+        //            string encryptedJson = CryptoHelper.Encrypt(json, passphrase);
 
-                    // Ensure directory exists (should already exist from AppFolder)
-                    if (!Directory.Exists(AppFolder))
-                        Directory.CreateDirectory(AppFolder);
+        //            // Ensure directory exists (should already exist from AppFolder)
+        //            if (!Directory.Exists(AppFolder))
+        //                Directory.CreateDirectory(AppFolder);
 
-                    //Live_Rate live_Rate = Live_Rate.CurrentInstance;
+        //            //Live_Rate live_Rate = Live_Rate.CurrentInstance;
 
-                    saveFileName = Path.Combine(AppFolder,thecalcify.username.Trim(), $"{saveFileName}.slt");
-                    // Save to the user-selected filename
-                    File.WriteAllText(saveFileName, encryptedJson);
+        //            saveFileName = Path.Combine(AppFolder,thecalcify.username.Trim(), $"{saveFileName}.slt");
+        //            // Save to the user-selected filename
+        //            File.WriteAllText(saveFileName, encryptedJson);
 
-                    if (isGrid)
-                    {
-                        SymbolList.Clear();
-                    }
+        //            if (isGrid)
+        //            {
+        //                SymbolList.Clear();
+        //            }
 
-                    MessageBox.Show($"{Path.GetFileNameWithoutExtension(saveFileName)} Marketwatch Update Successfully", "MarketWatch Save", MessageBoxButtons.OK);
+        //            MessageBox.Show($"{Path.GetFileNameWithoutExtension(saveFileName)} Marketwatch Update Successfully", "MarketWatch Save", MessageBoxButtons.OK);
 
-                    saveFileName = Path.GetFileNameWithoutExtension(saveFileName);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Problem While Saving File: {ex.Message}", "Saving Error",
-                                MessageBoxButtons.OK, MessageBoxIcon.Error);
-                ApplicationLogger.LogException(ex);
-            }
-            finally
-            {
-                selectedSymbols = SymbolList;
-                thecalcify live_Rate = thecalcify.CurrentInstance;
-                if (live_Rate == null)
-                    live_Rate.thecalcifyGrid();
-                if (saveFileName != null)
-                {
-                    live_Rate.titleLabel.Text = $"Edit {saveFileName} MarketWatch";
-                }
-                live_Rate.isdeleted = false;
-                live_Rate.MenuLoad();
-            }
-        }
+        //            saveFileName = Path.GetFileNameWithoutExtension(saveFileName);
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        MessageBox.Show($"Problem While Saving File: {ex.Message}", "Saving Error",
+        //                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+        //        ApplicationLogger.LogException(ex);
+        //    }
+        //    finally
+        //    {
+        //        selectedSymbols = SymbolList;
+        //        thecalcify live_Rate = thecalcify.CurrentInstance;
+        //        if (live_Rate == null)
+        //            live_Rate.thecalcifyGrid();
+        //        if (saveFileName != null)
+        //        {
+        //            live_Rate.titleLabel.Text = $"Edit {saveFileName} MarketWatch";
+        //        }
+        //        live_Rate.isdeleted = false;
+        //        await live_Rate.MenuLoad();
+        //    }
+        //}
 
 
         private static string PromptMarketWatchName()
