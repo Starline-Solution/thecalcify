@@ -215,10 +215,18 @@ namespace thecalcifyRTD
             _topics[topicId] = (symbol, field);
 
             // Initial value from live / default store
-            var initial = GetCurrentValue(symbol, field);
-            _lastTopicValues[topicId] = initial;
+            var value = GetCurrentValue(symbol, field);
 
-            return initial;
+            // Ensure topic is primed even if no live tick comes later
+            _lastTopicValues[topicId] = value;
+
+            // Force Excel to refresh
+            newValues = true;
+
+            NotifyExcelUpdate();
+
+            return value;
+
         }
 
         public Array RefreshData(ref int topicCount)
